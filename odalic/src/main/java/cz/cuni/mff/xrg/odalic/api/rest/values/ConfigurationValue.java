@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 
 /**
@@ -22,22 +23,24 @@ public final class ConfigurationValue implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
   
-  @XmlElement(name = "input")
   private String input;
 
-  @XmlElement(name = "feedback")
   private Feedback feedback;
+  
+  private KnowledgeBase primaryBase;
 
   public ConfigurationValue() {}
 
   public ConfigurationValue(Configuration adaptee) {
     input = adaptee.getInput().getId();
     feedback = adaptee.getFeedback();
+    primaryBase = adaptee.getPrimaryBase();
   }
 
   /**
    * @return the input
    */
+  @XmlElement
   @Nullable
   public String getInput() {
     return input;
@@ -55,6 +58,7 @@ public final class ConfigurationValue implements Serializable {
   /**
    * @return the feedback
    */
+  @XmlElement
   @Nullable
   public Feedback getFeedback() {
     return feedback;
@@ -70,11 +74,30 @@ public final class ConfigurationValue implements Serializable {
     this.feedback = feedback;
   }
 
+  /**
+   * @return the primary knowledge base
+   */
+  @XmlElement(name = "primary_base")
+  @Nullable
+  public KnowledgeBase getPrimaryBase() {
+    return primaryBase;
+  }
+
+  /**
+   * @param primaryBase the primary knowledge base to set
+   */
+  public void setPrimaryBase(KnowledgeBase primaryBase) {
+    Preconditions.checkNotNull(primaryBase);
+    
+    this.primaryBase = primaryBase;
+  }
+
   /* (non-Javadoc)
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "ConfigurationValue [input=" + input + ", feedback=" + feedback + "]";
+    return "ConfigurationValue [input=" + input + ", feedback=" + feedback + ", primaryBase="
+        + primaryBase + "]";
   }
 }

@@ -35,8 +35,8 @@
 		<!-- Core -->
 		<dependency>
 			<groupId>uk.ac.shef.dcs</groupId>
-			<artifactId>sti</artifactId>
-			<version>1.0</version>
+			<artifactId>sti-main</artifactId>
+			<version>1.0alpha</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>guava-jdk5</artifactId>
@@ -131,6 +131,33 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
 			<version>${jcloverslf4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.json</groupId>
+			<artifactId>javax.json-api</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<!-- JAX-RS API -->
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>jsr311-api</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+	
+		<!-- Apache Commons CSV -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.4</version>
+		</dependency>
+		
+		<!-- RDF4J -->
+		<dependency>
+			<groupId>org.eclipse.rdf4j</groupId>
+			<artifactId>rdf4j-runtime</artifactId>
+			<version>2.0</version>
 		</dependency>
 	</dependencies>
 
