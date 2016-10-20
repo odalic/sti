@@ -93,13 +93,18 @@ public class CoreExecutionBatch {
 
     // TableMinerPlus algorithm run
     Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
+    Map<String, Long> workTimes = new HashMap<>();
+
     try {
       for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : semanticTableInterpreters.entrySet()) {
+        long startTime = System.nanoTime();
         Constraints constraints = new DefaultFeedbackToConstraintsAdapter()
             .toConstraints(config.getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
 
         TAnnotation annotationResult = interpreterEntry.getValue().start(table, constraints);
+        long duration = System.nanoTime() - startTime;
 
+        workTimes.put(interpreterEntry.getKey(), duration);
         results.put(new KnowledgeBase(interpreterEntry.getKey()), annotationResult);
       }
     } catch (STIException e) {
@@ -110,6 +115,14 @@ public class CoreExecutionBatch {
 
     // Odalic Result creation
     Result odalicResult = new DefaultAnnotationToResultAdapter().toResult(results);
+
+    StringBuilder logMessage = new StringBuilder("Interpreter work times: ");
+    for(Map.Entry<String, Long> workTime : workTimes.entrySet()) {
+      logMessage.append(System.getProperty("line.separator"));
+      logMessage.append(String.format("%s: %d ms", workTime.getKey(), workTime.getValue() / 1000000));
+    }
+
+    log.info(logMessage.toString());
     log.info("Odalic Result is: " + odalicResult);
 
     return odalicResult;
