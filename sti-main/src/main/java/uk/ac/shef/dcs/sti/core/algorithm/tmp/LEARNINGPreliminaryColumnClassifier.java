@@ -84,7 +84,7 @@ public class LEARNINGPreliminaryColumnClassifier {
         boolean stopped = false;
         Map<Object, Double> state = new HashMap<>();
 
-        LOG.info("\t>> (LEANRING) Preliminary Column Classification begins");
+        LOG.info("\t>> (LEARNING) Preliminary Column Classification begins");
         for (List<Integer> blockOfRows : ranking) {
             countProcessed++;
             totalRows += blockOfRows.size();
