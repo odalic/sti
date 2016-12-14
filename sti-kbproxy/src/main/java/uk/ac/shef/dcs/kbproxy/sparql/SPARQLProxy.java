@@ -164,6 +164,7 @@ public abstract class SPARQLProxy extends KBProxy {
   }
 
   /**
+   * Returns the entity URL and if available, also type of that entity)
    * @param sparqlQuery
    * @param string
    * @return
@@ -442,7 +443,7 @@ public abstract class SPARQLProxy extends KBProxy {
         log.error(e.getLocalizedMessage(), e);
       }
     }
-    if (result == null) {
+    if (result == null || result.isEmpty()) {
       result = new ArrayList<>();
       try {
         //1. try exact string
