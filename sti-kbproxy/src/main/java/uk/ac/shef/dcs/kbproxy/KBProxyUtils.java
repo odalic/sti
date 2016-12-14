@@ -13,7 +13,7 @@ public class KBProxyUtils {
    * @return True if the set contains the specified value.
    */
   public static boolean contains(Set<String> set, String value) {
-    value = value.toLowerCase();
+    //value = value.toLowerCase();
     return set.contains(value) || set.contains(value.replace("http://", "https://")) || set.contains(value.replace("https://", "http://"));
   }
 }

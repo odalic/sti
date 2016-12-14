@@ -337,7 +337,7 @@ public class KBDefinition {
       String[] valuesArray = values.split(URL_SEPARATOR);
 
       for (String value : valuesArray) {
-        boolean valueAdded = predicateValues.add(value.toLowerCase());
+        boolean valueAdded = predicateValues.add(value);
 
         if (!valueAdded) {
           log.warn(String.format("Predicate value %1$s for the key %2$s is already loaded.", value, key));
