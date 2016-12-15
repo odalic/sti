@@ -238,19 +238,12 @@ public abstract class SPARQLProxy extends KBProxy {
 
   @Override
   public List<Entity> findEntityCandidates(String content) throws KBProxyException {
-    return findEntityCandidatesOfTypes(content);
+    return queryEntityCandidates(content);
   }
 
   @Override
   public List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws KBProxyException {
-    final String sparqlQuery;
-    if (types.length > 0) {
-      sparqlQuery = createExactMatchQueries(content);
-    } else {
-      sparqlQuery = createExactMatchWithOptionalTypes(content);
-    }
-
-    return queryEntityCandidates(content, sparqlQuery, types);
+    return queryEntityCandidates(content, types);
   }
 
   @Override
@@ -404,26 +397,20 @@ public abstract class SPARQLProxy extends KBProxy {
   }
 
   @SuppressWarnings("unchecked")
-  private List<Entity> queryEntityCandidates(String content, String sparqlQuery, String... types)
+  private List<Entity> queryEntityCandidates(String content, String... types)
       throws KBProxyException {
+
+    //prepare cache
     String queryCache = createSolrCacheQuery_findResources(content);
-
-    content = StringEscapeUtils.unescapeXml(content);
-    int bracket = content.indexOf("(");
-    if (bracket != -1) {
-      content = content.substring(0, bracket).trim();
-    }
-    if (StringUtils.toAlphaNumericWhitechar(content).trim().length() == 0)
-      return new ArrayList<>();
-
 
     List<Entity> result = null;
     if (!ALWAYS_CALL_REMOTE_SEARCHAPI) {
+      //if cache is not disabled, try to examine the cache first
       try {
         result = (List<Entity>) cacheEntity.retrieve(queryCache);
         if (result != null) {
           log.debug("QUERY (entities, cache load)=" + queryCache + "|" + queryCache);
-          if (types.length > 0) {
+          if (types.length > 0) {  //there are some type restrictions, which have to be verified
             Iterator<Entity> it = result.iterator();
             while (it.hasNext()) {
               Entity ec = it.next();
@@ -443,10 +430,31 @@ public abstract class SPARQLProxy extends KBProxy {
         log.error(e.getLocalizedMessage(), e);
       }
     }
+
     if (result == null || result.isEmpty()) {
+      //there is nothing suitable in the cache or the cache is disabled
       result = new ArrayList<>();
+
+      // adjust the content string before query is executed
+      content = StringEscapeUtils.unescapeXml(content);
+      int bracket = content.indexOf("(");
+      if (bracket != -1) {
+        content = content.substring(0, bracket).trim();
+      }
+      if (StringUtils.toAlphaNumericWhitechar(content).trim().length() == 0)
+        return new ArrayList<>();
+
+
       try {
+
         //1. try exact string
+        // prepare the query
+        String sparqlQuery;
+        if (types.length > 0) {
+          sparqlQuery = createExactMatchQueries(content);
+        } else {
+          sparqlQuery = createExactMatchWithOptionalTypes(content);
+        }
         List<Pair<String, String>> resourceAndType = queryByLabel(sparqlQuery, content);
         boolean hasExactMatch = resourceAndType.size() > 0;
         if (types.length > 0) {
@@ -499,6 +507,7 @@ public abstract class SPARQLProxy extends KBProxy {
           result.add(ec);
         }
 
+        //write the entity to the cache
         cacheEntity.cache(queryCache, result, AUTO_COMMIT);
         log.debug("QUERY (entities, cache save)=" + queryCache + "|" + queryCache);
       } catch (Exception e) {
