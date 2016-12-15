@@ -13,6 +13,7 @@ import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateProcessor;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.simmetrics.StringMetric;
 import org.simmetrics.metrics.Levenshtein;
 
@@ -116,44 +117,25 @@ public abstract class SPARQLProxy extends KBProxy {
    * @throws ParseException Invalid regex expression
    * @throws KBProxyException Invalid KB definition
    */
-  protected Query createRegexQuery(String content, Integer limit, String... types) throws ParseException, KBProxyException {
-    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_SUBJECT, SPARQL_VARIABLE_OBJECT);
-
-    if (limit != null){
-      builder = builder.setLimit(limit);
-    }
-
-    // Label conditions
-    SelectBuilder subBuilder = new SelectBuilder().addVar(SPARQL_VARIABLE_SUBJECT).addVar(SPARQL_VARIABLE_OBJECT);
-    for (String labelPredicate : kbDefinition.getPredicateLabel()) {
-      SelectBuilder unionBuilder = new SelectBuilder();
-      unionBuilder = unionBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(labelPredicate), SPARQL_VARIABLE_OBJECT);
-
-      if (kbDefinition.getUseBifContains()) {
-        unionBuilder = unionBuilder.addWhere(SPARQL_VARIABLE_OBJECT, SPARQL_PREDICATE_BIF_CONTAINS, createSPARQLLiteral(content, true));
-      }
-      subBuilder = subBuilder.addUnion(unionBuilder);
-    }
-    builder = builder.addSubQuery(subBuilder);
-
-    if (!kbDefinition.getUseBifContains()) {
-      String regexFilter = String.format(SPARQL_FILTER_REGEX, createSPARQLLiteral(content));
-      builder = builder.addFilter(regexFilter);
-    }
-
-    // Types restriction
-    if (types.length > 0) {
-      subBuilder = new SelectBuilder().addVar(SPARQL_VARIABLE_SUBJECT);
-      for (String type : types) {
-        SelectBuilder unionBuilder = new SelectBuilder();
-        unionBuilder = unionBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, createSPARQLResource(type));
-        subBuilder = subBuilder.addUnion(unionBuilder);
-      }
-      builder = builder.addSubQuery(subBuilder);
-    }
+  protected Query createFulltextQueryForResources(String content, Integer limit, String... types) throws ParseException, KBProxyException {
+    SelectBuilder builder = createFulltextQueryBuilder(content, limit, types);
 
     // Class restriction
     builder = addClassRestriction(builder);
+
+    return builder.build();
+  }
+
+  protected Query createFulltextQueryForClasses(String content, Integer limit) throws ParseException, KBProxyException {
+    Set<String> classTypes = kbDefinition.getStructureClass();
+    SelectBuilder builder = createFulltextQueryBuilder(content, limit, classTypes.toArray(new String[classTypes.size()]));
+
+    return builder.build();
+  }
+
+  protected Query createFulltextQueryForPredicates(String content, Integer limit, String domain, String range) throws ParseException, KBProxyException {
+    Set<String> predicateTypes = kbDefinition.getStructureProperty();
+    SelectBuilder builder = createFulltextQueryBuilder(content, limit, predicateTypes.toArray(new String[predicateTypes.size()]));
 
     return builder.build();
   }
@@ -268,24 +250,40 @@ public abstract class SPARQLProxy extends KBProxy {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public List<Entity> findEntityByFulltext(String pattern, int limit) throws KBProxyException {
-    String queryCache = createSolrCacheQuery_fulltextSearch(pattern, limit);
+  public List<Entity> findResourceByFulltext(String pattern, int limit) throws KBProxyException {
+    String queryCache = createSolrCacheQuery_fulltextSearchResources(pattern, limit);
 
     try {
-      List<Entity> result = (List<Entity>) cacheEntity.retrieve(queryCache);
+      Query query = createFulltextQueryForResources(pattern, limit);
+      return findByFulltext(pattern, queryCache, query);
+    }
+    catch (Exception e){
+      throw new KBProxyException(e);
+    }
+  }
 
-      if (result != null) {
-        return  result;
-      }
+  @Override
+  public List<Entity> findClassByFulltext(String pattern, int limit) throws KBProxyException {
+    String queryCache = createSolrCacheQuery_fulltextSearchClasses(pattern, limit);
 
-      Query query = createRegexQuery(pattern, limit);
-      List<Pair<String, String>> queryResult = queryByLabel(query, pattern);
+    try {
+      Query query = createFulltextQueryForClasses(pattern, limit);
+      return findByFulltext(pattern, queryCache, query);
+    }
+    catch (Exception e){
+      throw new KBProxyException(e);
+    }
+  }
 
-      result = queryResult.stream().map(pair -> new Entity(pair.getKey(), pair.getValue())).collect(Collectors.toList());
-      cacheEntity.cache(queryCache, result, AUTO_COMMIT);
+  @Override
+  public List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain, URI range) throws KBProxyException {
+    String domainString = domain != null ? domain.toString() : null;
+    String rangeString = range != null ? range.toString() : null;
+    String queryCache = createSolrCacheQuery_fulltextSearchPredicates(pattern, limit, domainString, rangeString);
 
-      return result;
+    try {
+      Query query = createFulltextQueryForPredicates(pattern, limit, domainString, rangeString);
+      return findByFulltext(pattern, queryCache, query);
     }
     catch (Exception e){
       throw new KBProxyException(e);
@@ -360,6 +358,22 @@ public abstract class SPARQLProxy extends KBProxy {
 
     insert(tripleDefinition.toString());
     return new Entity(url, label);
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<Entity> findByFulltext(String pattern, String queryCache, Query query) throws SolrServerException, ClassNotFoundException, IOException {
+    List<Entity> result = (List<Entity>) cacheEntity.retrieve(queryCache);
+
+    if (result != null) {
+      return  result;
+    }
+
+    List<Pair<String, String>> queryResult = queryByLabel(query, pattern);
+
+    result = queryResult.stream().map(pair -> new Entity(pair.getKey(), pair.getValue())).collect(Collectors.toList());
+    cacheEntity.cache(queryCache, result, AUTO_COMMIT);
+
+    return result;
   }
 
   private boolean appendCollection(StringBuilder tripleDefinition, String predicate, Collection<String> values, boolean isLiteral) {
@@ -530,7 +544,7 @@ public abstract class SPARQLProxy extends KBProxy {
         //2. if result is empty, try regex
         if (!hasExactMatch && fuzzyKeywords) {
           log.debug("(query by regex. This can take a long time)");
-          sparqlQuery = createRegexQuery(content, null, types);
+          sparqlQuery = createFulltextQueryForResources(content, null, types);
           queryResult = queryByLabel(sparqlQuery, content);
         }
         //3. rank result by the degree of matches
@@ -684,6 +698,45 @@ public abstract class SPARQLProxy extends KBProxy {
 
   protected String createSolrCacheQuery_findLabelForResource(String url) {
     return "LABEL_" + url;
+  }
+
+  private SelectBuilder createFulltextQueryBuilder(String content, Integer limit, String... types) throws ParseException {
+    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_SUBJECT, SPARQL_VARIABLE_OBJECT);
+
+    if (limit != null){
+      builder = builder.setLimit(limit);
+    }
+
+    // Label conditions
+    SelectBuilder subBuilder = new SelectBuilder().addVar(SPARQL_VARIABLE_SUBJECT).addVar(SPARQL_VARIABLE_OBJECT);
+    for (String labelPredicate : kbDefinition.getPredicateLabel()) {
+      SelectBuilder unionBuilder = new SelectBuilder();
+      unionBuilder = unionBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(labelPredicate), SPARQL_VARIABLE_OBJECT);
+
+      if (kbDefinition.getUseBifContains()) {
+        unionBuilder = unionBuilder.addWhere(SPARQL_VARIABLE_OBJECT, SPARQL_PREDICATE_BIF_CONTAINS, createSPARQLLiteral(content, true));
+      }
+      subBuilder = subBuilder.addUnion(unionBuilder);
+    }
+    builder = builder.addSubQuery(subBuilder);
+
+    if (!kbDefinition.getUseBifContains()) {
+      String regexFilter = String.format(SPARQL_FILTER_REGEX, createSPARQLLiteral(content));
+      builder = builder.addFilter(regexFilter);
+    }
+
+    // Types restriction
+    if (types.length > 0) {
+      subBuilder = new SelectBuilder().addVar(SPARQL_VARIABLE_SUBJECT);
+      for (String type : types) {
+        SelectBuilder unionBuilder = new SelectBuilder();
+        unionBuilder = unionBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, createSPARQLResource(type));
+        subBuilder = subBuilder.addUnion(unionBuilder);
+      }
+      builder = builder.addSubQuery(subBuilder);
+    }
+
+    return builder;
   }
 
   private SelectBuilder addLabelRestriction(String content, SelectBuilder builder) {
