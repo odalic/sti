@@ -51,6 +51,7 @@ public abstract class SPARQLProxy extends KBProxy {
   static final String REGEX_QUERY_CONTAINS = "SELECT DISTINCT ?s ?o WHERE {%1$s .\n%2$s}";
   static final String EXACT_MATCH_QUERY = "SELECT DISTINCT ?s WHERE {%1$s .}";
   static final String EXACT_MATCH_WITH_OPTIONAL_TYPES_QUERY = "SELECT DISTINCT ?s ?o WHERE {%1$s .\nOPTIONAL {?s a ?o}}";
+  static final String EXACT_MATCH_WITH_TYPES_QUERY = "SELECT DISTINCT ?s ?o WHERE {%1$s .\n ?s a ?o}";
   static final String LABEL_QUERY = "SELECT DISTINCT ?o WHERE {%1$s .}";
 
   static final String REGEX_WHERE = "?s <%1$s> ?o";
@@ -134,6 +135,14 @@ public abstract class SPARQLProxy extends KBProxy {
     return query;
   }
 
+  protected String createExactMatchQueriesWithTypes(String content) {
+    String filter = createFilter(kbDefinition.getPredicateLabel(), MATCH_WHERE, escapeSPARQLLiteral(content), kbDefinition.getLanguageSuffix());
+    String query = String.format(EXACT_MATCH_QUERY, filter);
+
+    return query;
+  }
+
+
   protected String createExactMatchWithOptionalTypes(String content) {
     String filter = createFilter(kbDefinition.getPredicateLabel(), MATCH_WHERE, escapeSPARQLLiteral(content), kbDefinition.getLanguageSuffix());
     String query = String.format(EXACT_MATCH_WITH_OPTIONAL_TYPES_QUERY, filter);
@@ -166,10 +175,9 @@ public abstract class SPARQLProxy extends KBProxy {
   /**
    * Returns the entity URL and if available, also type of that entity)
    * @param sparqlQuery
-   * @param string
    * @return
    */
-  protected List<Pair<String, String>> queryByLabel(String sparqlQuery, String string) {
+  protected List<Pair<String, String>> queryReturnTuples(String sparqlQuery) {
     log.info("SPARQL query: \n" + sparqlQuery);
 
     org.apache.jena.query.Query query = QueryFactory.create(sparqlQuery);
@@ -182,7 +190,29 @@ public abstract class SPARQLProxy extends KBProxy {
       QuerySolution qs = rs.next();
       RDFNode subject = qs.get("?s");
       RDFNode object = qs.get("?o");
-      out.add(new Pair<>(subject.toString(), object != null ? object.toString() : string));
+      out.add(new Pair<>(subject.toString(), object.toString()));
+    }
+    return out;
+  }
+
+  /**
+   * Returns the entity URL
+   * @param sparqlQuery
+   * @return
+   */
+  protected List<String> queryReturnSingleValues(String sparqlQuery) {
+    log.info("SPARQL query: \n" + sparqlQuery);
+
+    org.apache.jena.query.Query query = QueryFactory.create(sparqlQuery);
+    QueryExecution qexec = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), query);
+
+    List<String> out = new ArrayList<>();
+    ResultSet rs = qexec.execSelect();
+    while (rs.hasNext()) {
+
+      QuerySolution qs = rs.next();
+      RDFNode subject = qs.get("?s");
+      out.add(subject.toString());
     }
     return out;
   }
@@ -190,7 +220,7 @@ public abstract class SPARQLProxy extends KBProxy {
   protected abstract List<String> queryForLabel(String sparqlQuery, String resourceURI) throws KBProxyException;
 
   /**
-   * Compares the similarity of the object value of certain resource (entity) and the cell value text (original label).
+   * Compares the similarity of the object value in the pair (containing the label obtained from the KB) of certain resource (entity) and the cell value text (original label).
    * Then, it also sorts the list of candidates based on the scores.
    *
    * @param candidates
@@ -224,7 +254,7 @@ public abstract class SPARQLProxy extends KBProxy {
       }
 
       String query = createRegexQuery(pattern, limit);
-      List<Pair<String, String>> queryResult = queryByLabel(query, pattern);
+      List<Pair<String, String>> queryResult = queryReturnTuples(query);
 
       result = queryResult.stream().map(pair -> new Entity(pair.getKey(), pair.getValue())).collect(Collectors.toList());
       cacheEntity.cache(queryCache, result, AUTO_COMMIT);
@@ -449,15 +479,12 @@ public abstract class SPARQLProxy extends KBProxy {
 
         //1. try exact string
         // prepare the query
-        String sparqlQuery;
+        List<Pair<String, String>> queryResult = new ArrayList<>();
+        boolean hasExactMatch = false;
         if (types.length > 0) {
-          sparqlQuery = createExactMatchQueries(content);
-        } else {
-          sparqlQuery = createExactMatchWithOptionalTypes(content);
-        }
-        List<Pair<String, String>> resourceAndType = queryByLabel(sparqlQuery, content);
-        boolean hasExactMatch = resourceAndType.size() > 0;
-        if (types.length > 0) {
+          //if there are certain type restrictions
+          String sparqlQuery = createExactMatchQueriesWithTypes(content);
+          List<Pair<String, String>> resourceAndType = queryReturnTuples(sparqlQuery);
           Iterator<Pair<String, String>> it = resourceAndType.iterator();
           while (it.hasNext()) {
             Pair<String, String> ec = it.next();
@@ -470,24 +497,35 @@ public abstract class SPARQLProxy extends KBProxy {
             }
             if (!typeSatisfied)
               it.remove();
+          } //with this query the 'value' of the pair will be the type, now need to reset it to actual value
+          hasExactMatch = resourceAndType.size() > 0;
+          if (resourceAndType.size() > 0) {
+            Pair<String, String> matchedResource = resourceAndType.get(0);
+            queryResult.add(new Pair<>(matchedResource.getKey(), content)); //I may add content because it is exact match
           }
-        }//with this query the 'value' of the pair will be the type, now need to reset it to actual value
-        List<Pair<String, String>> queryResult = new ArrayList<>();
-        if (resourceAndType.size() > 0) {
-          Pair<String, String> matchedResource = resourceAndType.get(0);
-          queryResult.add(new Pair<>(matchedResource.getKey(), content));
+
+        } else {
+          //if there are no type restrictions
+          String sparqlQuery = createExactMatchQueries(content);
+          List<String> resourceAndType = queryReturnSingleValues(sparqlQuery);
+          hasExactMatch = resourceAndType.size() > 0;
+          if (resourceAndType.size() > 0) {
+            String matchedResource = resourceAndType.get(0);
+            queryResult.add(new Pair<>(matchedResource, content)); //I may add content because it is exact match
+          }
         }
 
-        //2. if result is empty, try regex
+        //2. if result is empty, try regex (if allowed)
+        //the same for type/non-type restrictions ??
         if (!hasExactMatch && fuzzyKeywords) {
           log.debug("(query by regex. This can take a long time)");
-          sparqlQuery = createRegexQuery(content, null, types);
-          queryResult = queryByLabel(sparqlQuery, content);
+          String sparqlQuery = createRegexQuery(content, null, types);
+          queryResult = queryReturnTuples(sparqlQuery);
         }
-        //3. rank result by the degree of matches
+        //3. rank result by the degree of matches.
         rank(queryResult, content);
 
-        //firstly fetch candidate freebase topics. pass 'true' to only keep candidates whose name overlap with the query term
+        //get all attributes for the candidates, set also types (based on the predicates which may contain type)
         log.debug("(DB QUERY =" + queryResult.size() + " results)");
         for (Pair<String, String> candidate : queryResult) {
           //Next get attributes for each topic
