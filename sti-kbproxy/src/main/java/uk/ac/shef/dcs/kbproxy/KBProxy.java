@@ -3,6 +3,9 @@ package uk.ac.shef.dcs.kbproxy;
 import com.sun.jndi.toolkit.url.Uri;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
@@ -26,6 +29,9 @@ import java.util.NavigableSet;
 /**
  */
 public abstract class KBProxy {
+
+  static final String CACHE_VERSION_ID = "9274dff6-c606-4f5d-8bb5-d528c764e655";
+  static final String CACHE_VERSION = "1.0.0";
 
   protected SolrCache cacheEntity;
   protected SolrCache cacheConcept;
@@ -106,7 +112,25 @@ public abstract class KBProxy {
    * @return
    * @throws IOException
    */
-  public abstract List<Entity> findEntityByFulltext(String pattern, int limit) throws KBProxyException;
+  public abstract List<Entity> findResourceByFulltext(String pattern, int limit) throws KBProxyException;
+
+  /**
+   * Given a string, fetch candidate entities (classes) from the KB based on a fulltext search.
+   * @param pattern
+   * @param limit
+   * @return
+   * @throws IOException
+   */
+  public abstract List<Entity> findClassByFulltext(String pattern, int limit) throws KBProxyException;
+
+  /**
+   * Given a string, fetch candidate entities (predicates) from the KB based on a fulltext search.
+   * @param pattern
+   * @param limit
+   * @return
+   * @throws IOException
+   */
+  public abstract List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain, URI range) throws KBProxyException;
 
   /**
    * Given a string, fetch candidate entities (resources) from the KB
@@ -243,8 +267,16 @@ public abstract class KBProxy {
      then cache the results in solr. Again you should call these methods to create a query string, which should be
      passed as the id of the record to be added to solr
      */
-  protected String createSolrCacheQuery_fulltextSearch(String pattern, int limit) {
-    return "FULLTEXT_" + limit + "_" + pattern;
+  protected String createSolrCacheQuery_fulltextSearchResources(String pattern, int limit) {
+    return "FULLTEXT_RESOURCE_" + limit + "_" + pattern;
+  }
+
+  protected String createSolrCacheQuery_fulltextSearchClasses(String pattern, int limit) {
+    return "FULLTEXT_CLASS_" + limit + "_" + pattern;
+  }
+
+  protected String createSolrCacheQuery_fulltextSearchPredicates(String pattern, int limit, String domain, String range) {
+    return "FULLTEXT_PREDICATE_" + limit + "_" + pattern + "_" + domain + "_" + range;
   }
 
   protected String createSolrCacheQuery_findResources(String content) {
@@ -287,6 +319,23 @@ public abstract class KBProxy {
       }
     }
 
-    return new EmbeddedSolrServer(cachePath, cacheIdentifier);
+    EmbeddedSolrServer server = new EmbeddedSolrServer(cachePath, cacheIdentifier);
+    verifyServerVersion(server);
+    return server;
+  }
+
+  private void verifyServerVersion(EmbeddedSolrServer server) throws KBProxyException {
+    try {
+      SolrCache cache = new SolrCache(server);
+      String cacheVersion = (String)cache.retrieve(CACHE_VERSION_ID);
+      if (!CACHE_VERSION.equals(cacheVersion)) {
+        server.deleteByQuery("*:*");
+        cache.cache(CACHE_VERSION_ID, CACHE_VERSION, true);
+      }
+    } catch (SolrServerException | IOException | ClassNotFoundException e) {
+      String error = "Error initializing the cache.";
+      log.error(error, e);
+      throw new KBProxyException(error, e);
+    }
   }
 }

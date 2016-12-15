@@ -31,7 +31,7 @@ public class KBDefinition {
 
   private static final String CACHE_TEMPLATE_PATH_PROPERTY_NAME = "kb.cacheTemplatePath";
 
-  private static final String PREDICATES_PROPERTY_NAME = "kb.predicates";
+  private static final String STRUCTURE_PROPERTY_NAME = "kb.structure";
   private static final String LANGUAGE_SUFFIX = "kb.languageSuffix";
   private static final String USE_BIF_CONTAINS = "kb.useBifContains";
 
@@ -41,6 +41,7 @@ public class KBDefinition {
   private static final String PREDICATE_TYPE_PROPERTY_NAME = "kb.predicate.type";
 
   private static final String STRUCTURE_CLASS = "kb.structure.class";
+  private static final String STRUCTURE_PROPERTY = "kb.structure.property";
 
   private static final String INSERT_SUPPORTED = "kb.insert.supported";
   private static final String INSERT_PREFIX_SCHEMA_ELEMENT = "kb.insert.prefix.schema.element";
@@ -169,6 +170,10 @@ public class KBDefinition {
     return structure.get(STRUCTURE_CLASS);
   }
 
+  public Set<String> getStructureProperty() {
+    return structure.get(STRUCTURE_PROPERTY);
+  }
+
   public boolean isInsertSupported() {
     return insertSupported;
   }
@@ -259,6 +264,7 @@ public class KBDefinition {
     structure.put(PREDICATE_DESCRIPTION_PROPERTY_NAME, new HashSet<>());
     structure.put(PREDICATE_TYPE_PROPERTY_NAME, new HashSet<>());
     structure.put(STRUCTURE_CLASS, new HashSet<>());
+    structure.put(STRUCTURE_PROPERTY, new HashSet<>());
   }
 
   //endregion
@@ -294,22 +300,22 @@ public class KBDefinition {
 
     // Loading structure
     // Individual paths to definition files are separated by ";"
-    String predicates = kbProperties.getProperty(PREDICATES_PROPERTY_NAME);
-    String[] predicatesArray = predicates.split(PATH_SEPARATOR);
+    String structureDefinitions = kbProperties.getProperty(STRUCTURE_PROPERTY_NAME);
+    String[] structureDefinitionsArray = structureDefinitions.split(PATH_SEPARATOR);
 
-    for (String predicateFile : predicatesArray) {
-      String predicateFileNormalized = combinePaths(workingDirectory, predicateFile);
+    for (String structureDefinitionsFile : structureDefinitionsArray) {
+      String definitionFileNormalized = combinePaths(workingDirectory, structureDefinitionsFile);
 
-      File file = new File(predicateFileNormalized);
+      File file = new File(definitionFileNormalized);
       if (!file.exists() || file.isDirectory()) {
-        log.error("The specified properties file does not exist: " + predicateFileNormalized);
+        log.error("The specified properties file does not exist: " + definitionFileNormalized);
         continue;
       }
 
       Properties properties = new Properties();
-      try (InputStream fileStream = new FileInputStream(predicateFileNormalized)) {
+      try (InputStream fileStream = new FileInputStream(definitionFileNormalized)) {
         properties.load(fileStream);
-        loadPredicates(properties);
+        loadStructure(properties);
       }
     }
 
@@ -331,13 +337,13 @@ public class KBDefinition {
     }
   }
 
-  private void loadPredicates(Properties properties) {
+  private void loadStructure(Properties properties) {
     for (Map.Entry<Object, Object> entry : properties.entrySet()) {
       String key = (String) entry.getKey();
-      Set<String> predicateValues = structure.getOrDefault(key, null);
+      Set<String> structureValues = structure.getOrDefault(key, null);
 
-      if (predicateValues == null) {
-        log.error("Unknown predicate key: " + key);
+      if (structureValues == null) {
+        log.error("Unknown structure key: " + key);
         continue;
       }
 
@@ -345,10 +351,10 @@ public class KBDefinition {
       String[] valuesArray = values.split(URL_SEPARATOR);
 
       for (String value : valuesArray) {
-        boolean valueAdded = predicateValues.add(value.toLowerCase());
+        boolean valueAdded = structureValues.add(value);
 
         if (!valueAdded) {
-          log.warn(String.format("Predicate value %1$s for the key %2$s is already loaded.", value, key));
+          log.warn(String.format("Structure value %1$s for the key %2$s is already loaded.", value, key));
         }
       }
     }
