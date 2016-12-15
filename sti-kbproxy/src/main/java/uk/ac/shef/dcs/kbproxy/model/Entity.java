@@ -20,11 +20,9 @@ public class Entity extends Resource {
     }
 
     public void addType(Clazz c){
-        if(!types.contains(c)) {
-            types.add(c);
-            typeIds.add(c.getId());
-            typeNames.add(c.getLabel());
-        }
+        types.add(c);
+        typeIds.add(c.getId());
+        typeNames.add(c.getLabel());
     }
 
     public Set<String> getTypeIds() {
