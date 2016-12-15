@@ -102,7 +102,7 @@ public final class MemoryOnlyFileService implements FileService {
   @Override
   public void replace(File file) {
     final File previous = this.files.get(file.getId());
-    if (!previous.getLocation().equals(file.getLocation())) {
+    if (previous != null && !previous.getLocation().equals(file.getLocation())) {
       this.data.remove(previous.getLocation());
     }
     
