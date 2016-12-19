@@ -49,14 +49,11 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
   }
 
   @Override
-  public Map<String, KBProxy> getKBProxies() {
+  public Map<String, KBProxy> getKBProxies() throws STIException, IOException {
     if (kbProxies == null) {
-      try {
-        initComponents();
-      } catch (STIException | IOException e) {
-        e.printStackTrace();
-      }
+      initComponents();
     }
+
     return kbProxies;
   }
 
@@ -95,8 +92,7 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
           properties.getProperty(PROPERTY_HOME));
     } catch (Exception e) {
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
-      throw new STIException(
-          "Failed initializing KBProxy: " + getAbsolutePath(PROPERTY_PROXY_PROP_FILE), e);
+      throw new STIException("Failed initializing KBProxies.", e);
     }
   }
 

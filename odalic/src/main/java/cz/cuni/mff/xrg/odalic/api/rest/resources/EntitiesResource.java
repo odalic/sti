@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.NavigableSet;
 
@@ -24,6 +25,7 @@ import cz.cuni.mff.xrg.odalic.entities.ResourceProposal;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.sti.STIException;
 
 /**
  * Entities resource definition.
@@ -139,6 +141,9 @@ public final class EntitiesResource {
     } catch (KBProxyException e) {
       logger.error("KB proxy error", e);
       throw new InternalServerErrorException(e.getLocalizedMessage());
+    } catch (Exception e) {
+      logger.error("Unexpected exception", e);
+      throw new InternalServerErrorException(e.getLocalizedMessage());
     }
 
     return Reply.data(Response.Status.OK, createdClass, uriInfo).toResponse();
@@ -153,6 +158,9 @@ public final class EntitiesResource {
       createdEntity = this.entitiesService.propose(new KnowledgeBase(base), proposal);
     } catch (KBProxyException e) {
       logger.error("KB proxy error", e);
+      throw new InternalServerErrorException(e.getLocalizedMessage());
+    } catch (Exception e) {
+      logger.error("Unexpected exception", e);
       throw new InternalServerErrorException(e.getLocalizedMessage());
     }
 
