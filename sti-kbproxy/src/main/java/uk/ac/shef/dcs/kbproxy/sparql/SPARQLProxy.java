@@ -362,7 +362,7 @@ public abstract class SPARQLProxy extends KBProxy {
     queryExecution.execute();
   }
 
-  private String checkOrGenerateUrl(URI baseURI, URI uri) throws KBProxyException {
+  protected String checkOrGenerateUrl(URI baseURI, URI uri) throws KBProxyException {
     if (uri == null) {
       return combineURI(baseURI, UUID.randomUUID().toString());
     } else {
@@ -399,7 +399,7 @@ public abstract class SPARQLProxy extends KBProxy {
     }
   }
 
-  private boolean isNullOrEmpty(String string){
+  protected boolean isNullOrEmpty(String string){
     return string == null || string.isEmpty();
   }
 
