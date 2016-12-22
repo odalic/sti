@@ -30,7 +30,7 @@ public class FreebaseSearch extends KBProxy {
                         String cachesPath) throws IOException {
     super(null, fuzzyKeywords, cachesPath);
     searcher = new FreebaseQueryProxy(properties);
-    resultFilter = new FreebaseSearchResultFilter(properties.getProperty(KB_SEARCH_RESULT_STOPLIST));
+    resultFilter = new FreebaseSearchResultFilter(properties.getProperty(KB_SEARCH_RESULT_STOP_LIST));
   }
 
   @Override
@@ -82,7 +82,7 @@ public class FreebaseSearch extends KBProxy {
     }
     if (StringUtils.toAlphaNumericWhitechar(text).trim().length() == 0)
       return new ArrayList<>();
-    if (ALWAYS_CALL_REMOTE_SEARCHAPI)
+    if (ALWAYS_CALL_REMOTE_SEARCH_API)
       forceQuery = true;
 
 

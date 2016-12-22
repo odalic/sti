@@ -44,59 +44,31 @@ public class DBpediaProxy extends SPARQLProxy {
 
   @Override
   protected List<String> queryForLabel(Query sparqlQuery, String resourceURI) throws KBProxyException {
-    try {
-      QueryExecution qexec = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), sparqlQuery);
-
-      List<String> out = new ArrayList<>();
-      ResultSet rs = qexec.execSelect();
-      while (rs.hasNext()) {
-        QuerySolution qs = rs.next();
-        RDFNode domain = qs.get(SPARQL_VARIABLE_OBJECT);
-        String d = null;
-        if (domain != null)
-          d = domain.toString();
-        if (d != null) {
-          if (d.contains("@")) { //language tag in dbpedia literals
-            if (!d.endsWith("@en"))
-              continue;
-            else {
-              int trim = d.lastIndexOf("@en");
-              if (trim != -1)
-                d = d.substring(0, trim).trim();
-            }
-          }
-
-        }
-        out.add(d);
-      }
-
-      if (out.size() == 0) { //the resource has no statement with prop "rdfs:label", apply heuristics to parse the
-        //resource uri
-        int trim = resourceURI.lastIndexOf("#");
-        if (trim == -1)
-          trim = resourceURI.lastIndexOf("/");
-        if (trim != -1) {
-          String stringValue = resourceURI.substring(trim + 1).replaceAll("[^a-zA-Z0-9]", "").trim();
-          if (resourceURI.contains("yago")) { //this is an yago resource, which may have numbered ids as suffix
-            //e.g., City015467
-            int end = 0;
-            for (int i = 0; i < stringValue.length(); i++) {
-              if (Character.isDigit(stringValue.charAt(i))) {
-                end = i;
-                break;
-              }
-            }
-            if (end > 0)
-              stringValue = stringValue.substring(0, end);
-          }
-          stringValue = StringUtils.splitCamelCase(stringValue);
-          out.add(stringValue);
-        }
-      }
-      return out;
-    } catch (QueryParseException ex) {
-      throw new KBProxyException("Invalid query: " + sparqlQuery, ex);
+    List<String> baseOut = super.queryForLabel(sparqlQuery, resourceURI);
+    if (baseOut == null || baseOut.size() == 0) {
+      return baseOut;
     }
+
+    String suffix = kbDefinition.getLanguageSuffix();
+    if (isNullOrEmpty(suffix)) {
+      return baseOut;
+    }
+
+    List<String> out = new ArrayList<>();
+    for(String label : baseOut) {
+      if (label.contains("@")) { //language tag in dbpedia literals
+        if (label.endsWith(suffix)) {
+          label = label.substring(0, label.length() - suffix.length()).trim();
+        }
+        else {
+          continue;
+        }
+      }
+
+      out.add(label);
+    }
+
+    return out;
   }
 
   private OntModel loadModel(String ontURL) {

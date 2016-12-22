@@ -20,18 +20,20 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
+import java.util.stream.Collectors;
 
 /**
  */
 public abstract class KBProxy {
 
-  static final String CACHE_VERSION_ID = "9274dff6-c606-4f5d-8bb5-d528c764e655";
-  static final String CACHE_VERSION = "1.0.3";
+  private static final String CACHE_VERSION_ID = "9274dff6-c606-4f5d-8bb5-d528c764e655";
+  private static final String CACHE_VERSION = "1.0.5";
 
   protected SolrCache cacheEntity;
   protected SolrCache cacheConcept;
@@ -41,7 +43,7 @@ public abstract class KBProxy {
   private String cachesBasePath;
   private static final Map<String, CoreContainer> cacheCores = new HashMap<>();
 
-  protected static final String KB_SEARCH_RESULT_STOPLIST = "kb.search.result.stoplistfile";
+  protected static final String KB_SEARCH_RESULT_STOP_LIST = "kb.search.result.stoplistfile";
   protected static final String KB_SEARCH_CLASS = "kb.search.class";
   protected static final String KB_SEARCH_TRY_FUZZY_KEYWORD = "kb.search.tryfuzzykeyword";
 
@@ -51,7 +53,7 @@ public abstract class KBProxy {
   private static final String SIMILARITY_CACHE = "similarity";
 
   protected static final boolean AUTO_COMMIT = true;
-  protected static final boolean ALWAYS_CALL_REMOTE_SEARCHAPI = false;
+  protected static final boolean ALWAYS_CALL_REMOTE_SEARCH_API = false;
 
   protected KBSearchResultFilter resultFilter;
 
@@ -252,7 +254,6 @@ public abstract class KBProxy {
     } catch (Exception e) {
       throw new KBProxyException(e);
     }
-
   }
 
 
@@ -279,8 +280,16 @@ public abstract class KBProxy {
     return "FULLTEXT_PREDICATE_" + limit + "_" + pattern + "_" + domain + "_" + range;
   }
 
-  protected String createSolrCacheQuery_findResources(String content) {
-    return content;
+  protected String createSolrCacheQuery_findResources(String content, String... types) {
+    StringBuilder builder = new StringBuilder("FIND_RESOURCE_");
+    builder.append(content);
+
+    for(String type : Arrays.stream(types).sorted().collect(Collectors.toList())) {
+      builder.append("_TYPE_");
+      builder.append(type);
+    }
+
+    return builder.toString();
   }
 
   protected String createSolrCacheQuery_findAttributesOfResource(String resource) {
