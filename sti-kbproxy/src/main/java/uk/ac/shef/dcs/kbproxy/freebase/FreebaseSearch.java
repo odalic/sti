@@ -34,7 +34,17 @@ public class FreebaseSearch extends KBProxy {
   }
 
   @Override
-  public List<Entity> findEntityByFulltext(String pattern, int limit) throws KBProxyException {
+  public List<Entity> findResourceByFulltext(String pattern, int limit) throws KBProxyException {
+    throw new KBProxyException("Fulltext search in freebase is not supported.");
+  }
+
+  @Override
+  public List<Entity> findClassByFulltext(String pattern, int limit) throws KBProxyException {
+    throw new KBProxyException("Fulltext search in freebase is not supported.");
+  }
+
+  @Override
+  public List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain, URI range) throws KBProxyException {
     throw new KBProxyException("Fulltext search in freebase is not supported.");
   }
 

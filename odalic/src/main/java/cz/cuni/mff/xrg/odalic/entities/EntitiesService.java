@@ -1,7 +1,9 @@
 package cz.cuni.mff.xrg.odalic.entities;
 
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.sti.STIException;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.NavigableSet;
 
@@ -23,7 +25,7 @@ public interface EntitiesService {
    * @param limit maximum results count
    * @return found resources
    */
-  NavigableSet<Entity> searchResources(KnowledgeBase base, String query, int limit) throws KBProxyException;
+  NavigableSet<Entity> searchResources(KnowledgeBase base, String query, int limit) throws KBProxyException, STIException, IOException;
 
   /**
    * Searches for classes conforming to the query.
@@ -33,7 +35,7 @@ public interface EntitiesService {
    * @param limit maximum results count
    * @return found classes
    */
-  NavigableSet<Entity> searchClasses(KnowledgeBase knowledgeBase, String query, int limit) throws KBProxyException;
+  NavigableSet<Entity> searchClasses(KnowledgeBase knowledgeBase, String query, int limit) throws KBProxyException, STIException, IOException;
   
 
   /**
@@ -47,7 +49,7 @@ public interface EntitiesService {
    * @return found properties
    */
    NavigableSet<Entity> searchProperties(KnowledgeBase base, String query, int limit, URI domain, URI range)
-      throws IllegalArgumentException, KBProxyException;
+           throws IllegalArgumentException, KBProxyException, STIException, IOException;
   
   /**
    * Propose a new class to the primary base.
@@ -57,7 +59,7 @@ public interface EntitiesService {
    * @return created class
    * @throws IllegalArgumentException when the class is already defined or some part of the proposal is invalid
    */
-  Entity propose(KnowledgeBase base, ClassProposal proposal) throws KBProxyException;
+  Entity propose(KnowledgeBase base, ClassProposal proposal) throws KBProxyException, STIException, IOException;
 
   /**
    * Propose a new entity to the primary base.
@@ -67,7 +69,7 @@ public interface EntitiesService {
    * @return created entity
    * @throws IllegalArgumentException when the entity is already defined or some part of the proposal is invalid
    */
-  Entity propose(KnowledgeBase base, ResourceProposal proposal) throws KBProxyException;
+  Entity propose(KnowledgeBase base, ResourceProposal proposal) throws KBProxyException, STIException, IOException;
 
   /**
    * Propose a new property to the primary base.
