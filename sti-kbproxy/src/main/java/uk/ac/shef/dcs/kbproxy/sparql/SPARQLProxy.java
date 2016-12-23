@@ -31,9 +31,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public abstract class SPARQLProxy extends KBProxy {
+public class SPARQLProxy extends KBProxy {
 
   private static final String INSERT_BASE = "INSERT DATA {GRAPH <%1$s> {%2$s .}}";
 
@@ -140,29 +139,17 @@ public abstract class SPARQLProxy extends KBProxy {
     return builder.build();
   }
 
-  protected Query createExactMatchQueries(String content) {
+  protected Query createExactMatchQuery(String content, String... types) {
     SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_SUBJECT);
 
     // Label restriction
-    builder = addLabelRestriction(content, builder);
+    builder = addLabelRestriction(builder, content);
+
+    // Type restriction
+    builder = addTypeRestriction(builder, Arrays.asList(types));
 
     // Class restriction
     builder = addClassRestriction(builder);
-
-    return builder.build();
-  }
-
-  protected Query createExactMatchWithOptionalTypes(String content) {
-    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_SUBJECT);
-
-    // Label restriction
-    builder = addLabelRestriction(content, builder);
-
-    // Class restriction
-    builder = addClassRestriction(builder);
-
-    // Optional type
-    builder = builder.addOptional(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, SPARQL_VARIABLE_OBJECT);
 
     return builder.build();
   }
@@ -171,54 +158,22 @@ public abstract class SPARQLProxy extends KBProxy {
     resourceUrl = resourceUrl.replaceAll("\\s+", "");
 
     SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_OBJECT);
-    for (String labelPredicate : kbDefinition.getPredicateLabel()) {
-      SelectBuilder unionBuilder = new SelectBuilder();
-      unionBuilder = unionBuilder.addWhere(createSPARQLResource(resourceUrl), createSPARQLResource(labelPredicate), SPARQL_VARIABLE_OBJECT);
+    if (kbDefinition.getPredicateLabel().size() == 1) {
+      builder = builder.addWhere(createSPARQLResource(resourceUrl), createSPARQLResource(kbDefinition.getPredicateLabel().iterator().next()), SPARQL_VARIABLE_OBJECT);
+    }
+    else {
+      for (String labelPredicate : kbDefinition.getPredicateLabel()) {
+        SelectBuilder unionBuilder = new SelectBuilder();
+        unionBuilder = unionBuilder.addWhere(createSPARQLResource(resourceUrl), createSPARQLResource(labelPredicate), SPARQL_VARIABLE_OBJECT);
 
-      builder = builder.addUnion(unionBuilder);
+        builder = builder.addUnion(unionBuilder);
+      }
     }
 
     return builder.build();
   }
 
-  String createFilter(Collection<String> values, String pattern, String... args) {
-    if (values == null || values.size() == 0) {
-      return "";
-    }
-
-    if (values.size() == 1) {
-      return String.format(pattern, Stream.concat(values.stream(), Stream.of(args)).toArray());
-    }
-
-    final String newPattern = String.format("{%1$s}", pattern);
-    Stream<String> conditions = values.stream().map(item -> String.format(newPattern, Stream.concat(Stream.of(item), Stream.of(args)).toArray()));
-    return String.join(" UNION ", conditions.collect(Collectors.toList()));
-  }
-
-  /**
-   * Returns the entity URL and if available, also type of that entity)
-   * @param sparqlQuery
-   * @param label
-   * @return
-   */
-  protected List<Pair<String, String>> queryByLabel(Query sparqlQuery, String label) {
-    log.info("SPARQL query: \n" + sparqlQuery.toString());
-
-    QueryExecution execution = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), sparqlQuery);
-
-    List<Pair<String, String>> result = new ArrayList<>();
-    ResultSet rs = execution.execSelect();
-    while (rs.hasNext()) {
-
-      QuerySolution qs = rs.next();
-      RDFNode subject = qs.get(SPARQL_VARIABLE_SUBJECT);
-      RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
-      result.add(new Pair<>(subject.toString(), object != null ? object.toString() : label));
-    }
-    return result;
-  }
-
-  protected boolean Ask(Query sparqlQuery) {
+  protected boolean ask(Query sparqlQuery) {
     log.info("SPARQL query: \n" + sparqlQuery.toString());
 
     QueryExecution queryExecution = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), sparqlQuery);
@@ -226,10 +181,102 @@ public abstract class SPARQLProxy extends KBProxy {
     return queryExecution.execAsk();
   }
 
-  protected abstract List<String> queryForLabel(Query sparqlQuery, String resourceURI) throws KBProxyException;
 
   /**
-   * Compares the similarity of the object value of certain resource (entity) and the cell value text (original label).
+   * Returns the entity URL and if available, also type of that entity)
+   * @param query
+   * @return
+   */
+  protected List<Pair<String, String>> queryReturnTuples(Query query, String defaultObjectValue) {
+    log.info("SPARQL query: \n" + query.toString());
+
+    QueryExecution qexec = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), query);
+
+    List<Pair<String, String>> out = new ArrayList<>();
+    ResultSet rs = qexec.execSelect();
+    while (rs.hasNext()) {
+
+      QuerySolution qs = rs.next();
+      RDFNode subject = qs.get(SPARQL_VARIABLE_SUBJECT);
+      RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+      out.add(new Pair<>(subject.toString(), object != null ? object.toString() : defaultObjectValue));
+    }
+    return out;
+  }
+
+  /**
+   * Returns the entity URL
+   * @param query
+   * @return
+   */
+  protected List<String> queryReturnSingleValues(Query query) {
+    log.info("SPARQL query: \n" + query.toString());
+
+    QueryExecution qexec = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), query);
+
+    List<String> out = new ArrayList<>();
+    ResultSet rs = qexec.execSelect();
+    while (rs.hasNext()) {
+
+      QuerySolution qs = rs.next();
+      RDFNode subject = qs.get(SPARQL_VARIABLE_SUBJECT);
+      out.add(subject.toString());
+    }
+    return out;
+  }
+
+  protected List<String> queryForLabel(Query sparqlQuery, String resourceURI) throws KBProxyException {
+    try {
+      log.info("Sparql query: " + sparqlQuery.toString());
+
+      QueryExecution qexec = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), sparqlQuery);
+
+      List<String> out = new ArrayList<>();
+      ResultSet resultSet = qexec.execSelect();
+
+      resultSet.forEachRemaining(solution -> {
+        RDFNode labelNode = solution.get(SPARQL_VARIABLE_OBJECT);
+        if (labelNode == null) return;
+
+        String label = labelNode.toString();
+
+        if (label != null) {
+          out.add(label);
+        }
+      });
+
+      if (out.size() == 0) { //the resource has no statement with prop "rdfs:label", apply heuristics to parse the
+        //resource uri
+        int trim = resourceURI.lastIndexOf("#");
+        if (trim == -1)
+          trim = resourceURI.lastIndexOf("/");
+        if (trim != -1) {
+          String stringValue = resourceURI.substring(trim + 1).replaceAll("[^a-zA-Z0-9]", "").trim();
+          if (resourceURI.contains("yago")) { //this is an yago resource, which may have numbered ids as suffix
+            //e.g., City015467
+            int end = 0;
+            for (int i = 0; i < stringValue.length(); i++) {
+              if (Character.isDigit(stringValue.charAt(i))) {
+                end = i;
+                break;
+              }
+            }
+            if (end > 0)
+              stringValue = stringValue.substring(0, end);
+          }
+          stringValue = StringUtils.splitCamelCase(stringValue);
+          out.add(stringValue);
+        }
+      }
+
+      return out;
+    } catch (QueryParseException ex) {
+      throw new KBProxyException("Invalid query: " + sparqlQuery.toString(), ex);
+    }
+  }
+
+  /**
+   * Compares the similarity of the object value in the pair (containing the label obtained from the KB) of certain resource (entity) and the cell value text (original label).
    * Then, it also sorts the list of candidates based on the scores.
    *
    * @param candidates
@@ -255,8 +302,7 @@ public abstract class SPARQLProxy extends KBProxy {
     String queryCache = createSolrCacheQuery_fulltextSearchResources(pattern, limit);
 
     try {
-      Query query = createFulltextQueryForResources(pattern, limit);
-      return findByFulltext(pattern, queryCache, query);
+      return findByFulltext(queryCache, () -> createFulltextQueryForResources(pattern, limit));
     }
     catch (Exception e){
       throw new KBProxyException(e);
@@ -268,8 +314,7 @@ public abstract class SPARQLProxy extends KBProxy {
     String queryCache = createSolrCacheQuery_fulltextSearchClasses(pattern, limit);
 
     try {
-      Query query = createFulltextQueryForClasses(pattern, limit);
-      return findByFulltext(pattern, queryCache, query);
+      return findByFulltext(queryCache, () -> createFulltextQueryForClasses(pattern, limit));
     }
     catch (Exception e){
       throw new KBProxyException(e);
@@ -283,8 +328,7 @@ public abstract class SPARQLProxy extends KBProxy {
     String queryCache = createSolrCacheQuery_fulltextSearchPredicates(pattern, limit, domainString, rangeString);
 
     try {
-      Query query = createFulltextQueryForPredicates(pattern, limit, domainString, rangeString);
-      return findByFulltext(pattern, queryCache, query);
+      return findByFulltext(queryCache, () -> createFulltextQueryForPredicates(pattern, limit, domainString, rangeString));
     }
     catch (Exception e){
       throw new KBProxyException(e);
@@ -293,19 +337,12 @@ public abstract class SPARQLProxy extends KBProxy {
 
   @Override
   public List<Entity> findEntityCandidates(String content) throws KBProxyException {
-    return findEntityCandidatesOfTypes(content);
+    return queryEntityCandidates(content);
   }
 
   @Override
   public List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws KBProxyException {
-    final Query sparqlQuery;
-    if (types.length > 0) {
-      sparqlQuery = createExactMatchQueries(content);
-    } else {
-      sparqlQuery = createExactMatchWithOptionalTypes(content);
-    }
-
-    return queryEntityCandidates(content, sparqlQuery, types);
+    return queryEntityCandidates(content, types);
   }
 
   @Override
@@ -362,14 +399,15 @@ public abstract class SPARQLProxy extends KBProxy {
   }
 
   @SuppressWarnings("unchecked")
-  private List<Entity> findByFulltext(String pattern, String queryCache, Query query) throws SolrServerException, ClassNotFoundException, IOException {
+  private List<Entity> findByFulltext(String queryCache, QueryGetter queryGetter) throws SolrServerException, ClassNotFoundException, IOException, KBProxyException, ParseException {
     List<Entity> result = (List<Entity>) cacheEntity.retrieve(queryCache);
 
     if (result != null) {
       return  result;
     }
 
-    List<Pair<String, String>> queryResult = queryByLabel(query, pattern);
+    Query query = queryGetter.getQuery();
+    List<Pair<String, String>> queryResult = queryReturnTuples(query, "");
 
     result = queryResult.stream().map(pair -> new Entity(pair.getKey(), pair.getValue())).collect(Collectors.toList());
     cacheEntity.cache(queryCache, result, AUTO_COMMIT);
@@ -471,87 +509,67 @@ public abstract class SPARQLProxy extends KBProxy {
     }
   }
 
-  private boolean isNullOrEmpty(String string){
+  protected boolean isNullOrEmpty(String string){
     return string == null || string.isEmpty();
   }
 
   @SuppressWarnings("unchecked")
-  private List<Entity> queryEntityCandidates(String content, Query sparqlQuery, String... types)
+  private List<Entity> queryEntityCandidates(String content, String... types)
       throws KBProxyException {
-    String queryCache = createSolrCacheQuery_findResources(content);
 
-    content = StringEscapeUtils.unescapeXml(content);
-    int bracket = content.indexOf("(");
-    if (bracket != -1) {
-      content = content.substring(0, bracket).trim();
-    }
-    if (StringUtils.toAlphaNumericWhitechar(content).trim().length() == 0)
-      return new ArrayList<>();
-
+    //prepare cache
+    String queryCache = createSolrCacheQuery_findResources(content, types);
 
     List<Entity> result = null;
-    if (!ALWAYS_CALL_REMOTE_SEARCHAPI) {
+    if (!ALWAYS_CALL_REMOTE_SEARCH_API) {
+      //if cache is not disabled, try to examine the cache first
       try {
         result = (List<Entity>) cacheEntity.retrieve(queryCache);
         if (result != null) {
           log.debug("QUERY (entities, cache load)=" + queryCache + "|" + queryCache);
-          if (types.length > 0) {
-            Iterator<Entity> it = result.iterator();
-            while (it.hasNext()) {
-              Entity ec = it.next();
-              boolean typeSatisfied = false;
-              for (String t : types) {
-                if (ec.hasType(t)) {
-                  typeSatisfied = true;
-                  break;
-                }
-              }
-              if (!typeSatisfied)
-                it.remove();
-            }
-          }
         }
       } catch (Exception e) {
         log.error(e.getLocalizedMessage(), e);
       }
     }
+
     if (result == null || result.isEmpty()) {
+      //there is nothing suitable in the cache or the cache is disabled
       result = new ArrayList<>();
+
+      // adjust the content string before query is executed
+      content = StringEscapeUtils.unescapeXml(content);
+      int bracket = content.indexOf("(");
+      if (bracket != -1) {
+        content = content.substring(0, bracket).trim();
+      }
+      if (StringUtils.toAlphaNumericWhitechar(content).trim().length() == 0)
+        return new ArrayList<>();
+
       try {
-        //1. try exact string
-        List<Pair<String, String>> resourceAndType = queryByLabel(sparqlQuery, content);
-        boolean hasExactMatch = resourceAndType.size() > 0;
-        if (types.length > 0) {
-          Iterator<Pair<String, String>> it = resourceAndType.iterator();
-          while (it.hasNext()) {
-            Pair<String, String> ec = it.next();
-            boolean typeSatisfied = false;
-            for (String t : types) {
-              if (t.equals(ec.getValue())) {
-                typeSatisfied = true;
-                break;
-              }
-            }
-            if (!typeSatisfied)
-              it.remove();
-          }
-        }//with this query the 'value' of the pair will be the type, now need to reset it to actual value
+
         List<Pair<String, String>> queryResult = new ArrayList<>();
-        if (resourceAndType.size() > 0) {
-          Pair<String, String> matchedResource = resourceAndType.get(0);
-          queryResult.add(new Pair<>(matchedResource.getKey(), content));
+
+        //1. try exact string
+        // prepare the query
+        Query sparqlQuery = createExactMatchQuery(content, types);
+        List<String> resourceAndType = queryReturnSingleValues(sparqlQuery);
+        for(String resource : resourceAndType) {
+          queryResult.add(new Pair<>(resource, content)); //I may add content because it is exact match
         }
 
-        //2. if result is empty, try regex
-        if (!hasExactMatch && fuzzyKeywords) {
+        //2. if result is empty, try regex (if allowed)
+        //the same for type/non-type restrictions ??
+        if (resourceAndType.size() == 0 && fuzzyKeywords) {
           log.debug("(query by regex. This can take a long time)");
           sparqlQuery = createFulltextQueryForResources(content, null, types);
-          queryResult = queryByLabel(sparqlQuery, content);
+          queryResult = queryReturnTuples(sparqlQuery, content);
         }
-        //3. rank result by the degree of matches
+
+        //3. rank result by the degree of matches.
         rank(queryResult, content);
 
-        //firstly fetch candidate freebase topics. pass 'true' to only keep candidates whose name overlap with the query term
+        //get all attributes for the candidates, set also types (based on the predicates which may contain type)
         log.debug("(DB QUERY =" + queryResult.size() + " results)");
         for (Pair<String, String> candidate : queryResult) {
           //Next get attributes for each topic
@@ -571,6 +589,7 @@ public abstract class SPARQLProxy extends KBProxy {
           result.add(ec);
         }
 
+        //write the entity to the cache
         cacheEntity.cache(queryCache, result, AUTO_COMMIT);
         log.debug("QUERY (entities, cache save)=" + queryCache + "|" + queryCache);
       } catch (Exception e) {
@@ -600,7 +619,7 @@ public abstract class SPARQLProxy extends KBProxy {
 
 
       List<String> result = null;
-      if (!ALWAYS_CALL_REMOTE_SEARCHAPI) {
+      if (!ALWAYS_CALL_REMOTE_SEARCH_API) {
         try {
           result = (List<String>) cacheEntity.retrieve(queryCache);
           if (result != null) {
@@ -643,7 +662,7 @@ public abstract class SPARQLProxy extends KBProxy {
 
     String queryCache = createSolrCacheQuery_findAttributesOfResource(id);
     List<Attribute> result = null;
-    if (!ALWAYS_CALL_REMOTE_SEARCHAPI) {
+    if (!ALWAYS_CALL_REMOTE_SEARCH_API) {
       try {
         result = (List<Attribute>) cache.retrieve(queryCache);
         if (result != null)
@@ -659,15 +678,16 @@ public abstract class SPARQLProxy extends KBProxy {
       SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT)
               .addWhere(createSPARQLResource(id), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
 
-
       Query query = builder.build();
+      log.info("SPARQL query: \n" + query.toString());
+
       QueryExecution qexec = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), query);
 
       ResultSet rs = qexec.execSelect();
       while (rs.hasNext()) {
         QuerySolution qs = rs.next();
-        RDFNode predicate = qs.get("?p");
-        RDFNode object = qs.get("?o");
+        RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
+        RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
         if (object != null) {
           Attribute attr = new SPARQLAttribute(predicate.toString(), object.toString());
           result.add(attr);
@@ -709,17 +729,19 @@ public abstract class SPARQLProxy extends KBProxy {
     }
 
     // Label conditions
-    SelectBuilder subBuilder = new SelectBuilder().addVar(SPARQL_VARIABLE_SUBJECT).addVar(SPARQL_VARIABLE_OBJECT);
-    for (String labelPredicate : kbDefinition.getPredicateLabel()) {
-      SelectBuilder unionBuilder = new SelectBuilder();
-      unionBuilder = unionBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(labelPredicate), SPARQL_VARIABLE_OBJECT);
+    builder = addUnion(
+            builder,
+            kbDefinition.getPredicateLabel(),
+            (subBuilder, value) -> {
+              subBuilder = subBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(value), SPARQL_VARIABLE_OBJECT);
 
-      if (kbDefinition.getUseBifContains()) {
-        unionBuilder = unionBuilder.addWhere(SPARQL_VARIABLE_OBJECT, SPARQL_PREDICATE_BIF_CONTAINS, createSPARQLLiteral(content, true));
-      }
-      subBuilder = subBuilder.addUnion(unionBuilder);
-    }
-    builder = builder.addSubQuery(subBuilder);
+              if (kbDefinition.getUseBifContains()) {
+                subBuilder = subBuilder.addWhere(SPARQL_VARIABLE_OBJECT, SPARQL_PREDICATE_BIF_CONTAINS, createSPARQLLiteral(content, true));
+              }
+
+              return subBuilder;
+            },
+            SPARQL_VARIABLE_SUBJECT, SPARQL_VARIABLE_OBJECT);
 
     if (!kbDefinition.getUseBifContains()) {
       String regexFilter = String.format(SPARQL_FILTER_REGEX, createSPARQLLiteral(content));
@@ -727,41 +749,35 @@ public abstract class SPARQLProxy extends KBProxy {
     }
 
     // Types restriction
-    if (types.length > 0) {
-      subBuilder = new SelectBuilder().addVar(SPARQL_VARIABLE_SUBJECT);
-      for (String type : types) {
-        SelectBuilder unionBuilder = new SelectBuilder();
-        unionBuilder = unionBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, createSPARQLResource(type));
-        subBuilder = subBuilder.addUnion(unionBuilder);
-      }
-      builder = builder.addSubQuery(subBuilder);
-    }
+    builder = addTypeRestriction(builder, Arrays.asList(types));
 
     return builder;
   }
 
-  private SelectBuilder addLabelRestriction(String content, SelectBuilder builder) {
-    SelectBuilder subBuilder = new SelectBuilder().addVar(SPARQL_VARIABLE_SUBJECT);
-    for (String labelPredicate : kbDefinition.getPredicateLabel()) {
-      SelectBuilder unionBuilder = new SelectBuilder();
-      unionBuilder = unionBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(labelPredicate), createSPARQLLiteral(content, false, true));
+  private SelectBuilder addLabelRestriction(SelectBuilder builder, String content) {
+    return addUnion(
+            builder,
+            kbDefinition.getPredicateLabel(),
+            (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(value), createSPARQLLiteral(content, false, true)),
+            SPARQL_VARIABLE_SUBJECT);
+  }
 
-      subBuilder = subBuilder.addUnion(unionBuilder);
-    }
-    return builder.addSubQuery(subBuilder);
+  private SelectBuilder addTypeRestriction(SelectBuilder builder, Collection<String> types) {
+    return addUnion(
+            builder,
+            types,
+            (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, createSPARQLResource(value)),
+            SPARQL_VARIABLE_SUBJECT);
   }
 
   private SelectBuilder addClassRestriction(SelectBuilder builder) {
     if (kbDefinition.getStructureClass().size() > 0) {
       builder = builder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, SPARQL_VARIABLE_CLASS);
-
-      SelectBuilder subBuilder = new SelectBuilder().addVar(SPARQL_VARIABLE_CLASS);
-      for (String kbClass : kbDefinition.getStructureClass()) {
-        SelectBuilder unionBuilder = new SelectBuilder();
-        unionBuilder = unionBuilder.addWhere(SPARQL_VARIABLE_CLASS, SPARQL_PREDICATE_TYPE, createSPARQLResource(kbClass));
-        subBuilder = subBuilder.addUnion(unionBuilder);
-      }
-      builder = builder.addSubQuery(subBuilder);
+      builder = addUnion(
+              builder,
+              kbDefinition.getStructureClass(),
+              (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_CLASS, SPARQL_PREDICATE_TYPE, createSPARQLResource(value)),
+              SPARQL_VARIABLE_CLASS);
     }
 
     return builder;
@@ -818,5 +834,36 @@ public abstract class SPARQLProxy extends KBProxy {
     }
 
     return builder.toString();
+  }
+
+  private SelectBuilder addUnion(SelectBuilder builder, Collection<String> values, BuilderAction action, String... variables) {
+    if (values.size() == 0) {
+      return builder;
+    }
+
+    if (values.size() == 1) {
+      return action.performAction(builder, values.iterator().next());
+    }
+
+    SelectBuilder subBuilder = new SelectBuilder();
+    for(String variable : variables) {
+      subBuilder = subBuilder.addVar(variable);
+    }
+
+    for (String value : values) {
+      SelectBuilder unionBuilder = new SelectBuilder();
+      unionBuilder = action.performAction(unionBuilder, value);
+      subBuilder = subBuilder.addUnion(unionBuilder);
+    }
+
+    return builder.addSubQuery(subBuilder);
+  }
+
+  private interface QueryGetter {
+    abstract Query getQuery() throws KBProxyException, ParseException;
+  }
+
+  private interface BuilderAction {
+    abstract SelectBuilder performAction(SelectBuilder builder, String value);
   }
 }
