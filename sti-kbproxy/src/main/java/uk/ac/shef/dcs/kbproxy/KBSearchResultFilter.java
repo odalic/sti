@@ -17,12 +17,12 @@ import java.util.*;
  * implementing classes.
  */
 public abstract class KBSearchResultFilter {
-    protected Map<String, Set<String>> stoplists = new HashMap<>();
+    protected Map<String, Set<String>> stopLists = new HashMap<>();
     protected static final String LABEL_INVALID_CLAZZ="!invalid_clazz";
     protected static final String LABEL_INVALID_ATTRIBUTE="!invalid_attribute";
 
-    public KBSearchResultFilter(String stoplistsFile) throws IOException {
-        loadStoplists(stoplistsFile);
+    public KBSearchResultFilter(String stopListsFile) throws IOException {
+        loadStopLists(stopListsFile);
     }
 
     /**
@@ -31,11 +31,11 @@ public abstract class KBSearchResultFilter {
      *
      * It loads all given classes/relations/entities to a Map, which contains as the key for the set of stop wrods the label obtained from the file (from the line starting with !).
      * So there are different stop words for attributes and classes, e.g.
-     * @param stoplistsFile
+     * @param stopListsFile
      * @throws IOException
      */
-    protected void loadStoplists(String stoplistsFile) throws IOException {
-        LineIterator it = FileUtils.lineIterator(new File(stoplistsFile));
+    protected void loadStopLists(String stopListsFile) throws IOException {
+        LineIterator it = FileUtils.lineIterator(new File(stopListsFile));
         String label="";
         Set<String> elements = new HashSet<>();
         while(it.hasNext()){
@@ -46,7 +46,7 @@ public abstract class KBSearchResultFilter {
 
             if(line.startsWith("!")){
                 if(elements.size()>0)
-                    stoplists.put(label, elements);
+                    stopLists.put(label, elements);
 
                 elements= new HashSet<>();
                 label=line;
@@ -55,7 +55,7 @@ public abstract class KBSearchResultFilter {
             }
         }
         if(elements.size()!=0)
-            stoplists.put(label, elements);
+            stopLists.put(label, elements);
     }
 
     public List<Clazz> filterClazz(Collection<Clazz> types) {
@@ -75,16 +75,16 @@ public abstract class KBSearchResultFilter {
      */
     protected boolean isValidClazz(Clazz c) {
 
-        Set<String> stop = stoplists.get(LABEL_INVALID_CLAZZ);
+        Set<String> stop = stopLists.get(LABEL_INVALID_CLAZZ);
         if (stop == null)
             return true;
 
         for (String s : stop) {
-            if (c.getId().contains(s) || c.getLabel().equalsIgnoreCase(s))
+            if (c.getId().contains(s) || (c.getLabel() != null && c.getLabel().equalsIgnoreCase(s)))
                 return false;
         }
-        return true;
 
+        return true;
     }
 
     /**
@@ -110,7 +110,7 @@ public abstract class KBSearchResultFilter {
      */
     protected boolean isValidAttribute(Attribute attribute) {
 
-        Set<String> stop = stoplists.get(LABEL_INVALID_ATTRIBUTE);
+        Set<String> stop = stopLists.get(LABEL_INVALID_ATTRIBUTE);
         String relation = attribute.getRelationURI();
         if (stop != null) {
             for (String s : stop) {
