@@ -1,6 +1,5 @@
-package cz.cuni.mff.xrg.odalic.input;
+package cz.cuni.mff.xrg.odalic.files.formats;
 
-import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -12,15 +11,13 @@ import org.apache.commons.csv.CSVFormat;
 import com.google.common.base.Preconditions;
 
 /**
- * Configuration of the CSV file for the parser.
+ * Format of the CSV file.
  * 
  * @author Jan Váňa
  * @author Václav Brodec
  */
 @Immutable
-public final class CsvConfiguration implements Serializable {
-
-  private static final long serialVersionUID = 5335583951933923025L;
+public final class Format {
 
   private final Charset charset;
   private final char delimiter;
@@ -32,7 +29,7 @@ public final class CsvConfiguration implements Serializable {
   private final Character commentMarker;
 
 
-  public CsvConfiguration(Charset charset, char delimiter, boolean headerPresent,
+  public Format(Charset charset, char delimiter, boolean headerPresent,
       boolean emptyLinesIgnored, boolean headerCaseIgnored, @Nullable Character quoteCharacter,
       @Nullable Character escapeCharacter, @Nullable Character commentMarker) {
     Preconditions.checkNotNull(charset);
@@ -48,7 +45,7 @@ public final class CsvConfiguration implements Serializable {
   }
 
 
-  public CsvConfiguration() {
+  public Format() {
     charset = StandardCharsets.UTF_8;
     delimiter = ';';
     headerPresent = true;
@@ -188,7 +185,7 @@ public final class CsvConfiguration implements Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    CsvConfiguration other = (CsvConfiguration) obj;
+    Format other = (Format) obj;
     if (charset == null) {
       if (other.charset != null) {
         return false;

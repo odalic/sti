@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,21 +33,21 @@ public final class DefaultCsvInputParser implements CsvInputParser {
   }
   
   @Override
-  public Input parse(String content, String identifier, CsvConfiguration configuration) throws IOException {
+  public Input parse(String content, String identifier, Format configuration) throws IOException {
     try (Reader reader = new StringReader(content)) {
       return parse(reader, identifier, configuration);
     }
   }
 
   @Override
-  public Input parse(InputStream stream, String identifier, CsvConfiguration configuration) throws IOException {
+  public Input parse(InputStream stream, String identifier, Format configuration) throws IOException {
     try (Reader reader = new InputStreamReader(stream, configuration.getCharset())) {
       return parse(reader, identifier, configuration);
     }
   }
 
   @Override
-  public Input parse(Reader reader, String identifier, CsvConfiguration configuration) throws IOException {
+  public Input parse(Reader reader, String identifier, Format configuration) throws IOException {
     final CSVFormat format = configuration.toApacheConfiguration();
     final CSVParser parser = format.parse(reader);
 

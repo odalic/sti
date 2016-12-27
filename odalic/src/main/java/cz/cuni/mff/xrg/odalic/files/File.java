@@ -4,13 +4,12 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
 
-import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.FileValueOutputAdapter;
-import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 
 /**
  * File description.
@@ -18,7 +17,6 @@ import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
  * @author Václav Brodec
  *
  */
-@Immutable
 @XmlJavaTypeAdapter(FileValueOutputAdapter.class)
 public final class File implements Serializable {
 
@@ -32,7 +30,7 @@ public final class File implements Serializable {
   
   private final URL location;
   
-  private final CsvConfiguration parsingConfiguration;
+  private Format format;
   
   private final boolean cached;
 
@@ -43,21 +41,21 @@ public final class File implements Serializable {
    * @param uploaded time of upload
    * @param owner file owner description
    * @param location file location
-   * @param parsingConfiguration parser configuration
+   * @param format CSV file format
    * @param cached boolean
    */
-  public File(final String id, final Date uploaded, final String owner, final URL location, final CsvConfiguration parsingConfiguration, final boolean cached) {
+  public File(final String id, final Date uploaded, final String owner, final URL location, final Format format, final boolean cached) {
     Preconditions.checkNotNull(id);
     Preconditions.checkNotNull(uploaded);
     Preconditions.checkNotNull(owner);
     Preconditions.checkNotNull(location);
-    Preconditions.checkNotNull(parsingConfiguration);
+    Preconditions.checkNotNull(format);
     
     this.id = id;
     this.uploaded = uploaded;
     this.owner = owner;
     this.location = location;
-    this.parsingConfiguration = parsingConfiguration;
+    this.format = format;
     this.cached = cached;
   }
   
@@ -67,10 +65,11 @@ public final class File implements Serializable {
    * @param id file ID
    * @param owner file owner description
    * @param location file location
+   * @param format CSV file format
    * @param cached cached
    */
-  public File(final String id, final String owner, final URL location, final CsvConfiguration parsingConfiguration, final boolean cached) {
-    this(id, new Date(), owner, location, parsingConfiguration, cached);
+  public File(final String id, final String owner, final URL location, final Format format, final boolean cached) {
+    this(id, new Date(), owner, location, format, cached);
   }
 
   /**
@@ -102,10 +101,19 @@ public final class File implements Serializable {
   }
   
   /**
-   * @return the parser configuration
+   * @return the format
    */
-  public CsvConfiguration getParsingConfiguration() {
-    return parsingConfiguration;
+  public Format getFormat() {
+    return format;
+  }
+
+  /**
+   * @param format the format to set
+   */
+  public void setFormat(Format format) {
+    Preconditions.checkNotNull(format);
+    
+    this.format = format;
   }
 
   /**
@@ -157,6 +165,6 @@ public final class File implements Serializable {
   @Override
   public String toString() {
     return "File [id=" + id + ", uploaded=" + uploaded + ", owner=" + owner + ", location="
-        + location + ", cached=" + cached + "]";
+        + location + ", format=" + format + ", cached=" + cached + "]";
   }
 }

@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
-import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
@@ -58,7 +58,7 @@ public class RDFExportTest {
     Input extendedInput;
     try (final FileInputStream inputFileStream = new FileInputStream(inputFile)) {
       extendedInput = new DefaultCsvInputParser(new ListsBackedInputBuilder())
-          .parse(inputFileStream, inputFile.getName(), new CsvConfiguration());
+          .parse(inputFileStream, inputFile.getName(), new Format());
       log.info("Input CSV file loaded.");
     } catch (IOException e) {
       log.error("Error - loading input CSV file:");

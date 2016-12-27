@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.files.File;
-import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 
 /**
  * Domain class {@link File} adapted for REST API input.
@@ -24,13 +24,13 @@ public final class FileValueInput implements Serializable {
 
   private URL location;
   
-  private CsvConfiguration parsingConfiguration; 
+  private Format format; 
 
   public FileValueInput() {}
   
   public FileValueInput(File adaptee) {
     location = adaptee.getLocation();
-    parsingConfiguration = adaptee.getParsingConfiguration();
+    format = adaptee.getFormat();
   }
 
   /**
@@ -52,21 +52,21 @@ public final class FileValueInput implements Serializable {
   }
 
   /**
-   * @return the parser configuration
+   * @return the format
    */
   @Nullable
   @XmlElement
-  public CsvConfiguration getParsingConfiguration() {
-    return parsingConfiguration;
+  public Format getFormat() {
+    return format;
   }
 
   /**
-   * @param parsingConfiguration the parser configuration to set
+   * @param format the format to set
    */
-  public void setParsingConfiguration(CsvConfiguration parsingConfiguration) {
-    Preconditions.checkNotNull(parsingConfiguration);
+  public void setFormat(Format format) {
+    Preconditions.checkNotNull(format);
     
-    this.parsingConfiguration = parsingConfiguration;
+    this.format = format;
   }
 
   /* (non-Javadoc)
@@ -74,7 +74,7 @@ public final class FileValueInput implements Serializable {
    */
   @Override
   public String toString() {
-    return "FileValueInput [location=" + location + ", parsingConfiguration=" + parsingConfiguration
+    return "FileValueInput [location=" + location + ", format=" + format
         + "]";
   }
 }

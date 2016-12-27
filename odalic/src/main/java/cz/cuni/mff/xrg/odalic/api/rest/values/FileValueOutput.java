@@ -15,7 +15,7 @@ import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonSerializer;
 import cz.cuni.mff.xrg.odalic.files.File;
-import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonDeserializer;
 
 /**
@@ -37,7 +37,7 @@ public final class FileValueOutput implements Serializable {
   
   private URL location;
   
-  private CsvConfiguration parsingConfiguration;
+  private Format format;
   
   private boolean cached;
 
@@ -48,7 +48,7 @@ public final class FileValueOutput implements Serializable {
     uploaded = adaptee.getUploaded();
     owner = adaptee.getOwner();
     location = adaptee.getLocation();
-    parsingConfiguration = adaptee.getParsingConfiguration();
+    format = adaptee.getFormat();
     cached = adaptee.isCached();
   }
 
@@ -127,21 +127,21 @@ public final class FileValueOutput implements Serializable {
   }
   
   /**
-   * @return the parser configuration
+   * @return the format
    */
   @XmlElement
   @Nullable
-  public CsvConfiguration getParsingConfiguration() {
-    return parsingConfiguration;
+  public Format getFormat() {
+    return format;
   }
 
   /**
-   * @param parsingConfiguration the parser configuration to set
+   * @param format the format to set
    */
-  public void setParsingConfiguration(CsvConfiguration parsingConfiguration) {
-    Preconditions.checkNotNull(parsingConfiguration);
+  public void setFormat(Format format) {
+    Preconditions.checkNotNull(format);
     
-    this.parsingConfiguration = parsingConfiguration;
+    this.format = format;
   }
 
   /**
@@ -164,7 +164,7 @@ public final class FileValueOutput implements Serializable {
    */
   @Override
   public String toString() {
-    return "FileValueOutput [id=" + id + ", uploaded=" + uploaded + ", owner=" + owner + ", location="
-        + location + ", cached=" + cached + "]";
+    return "FileValueOutput [id=" + id + ", uploaded=" + uploaded + ", owner=" + owner
+        + ", location=" + location + ", format=" + format + ", cached=" + cached + "]";
   }
 }

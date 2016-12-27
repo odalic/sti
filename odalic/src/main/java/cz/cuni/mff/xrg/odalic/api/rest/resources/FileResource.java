@@ -34,7 +34,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
 import cz.cuni.mff.xrg.odalic.api.rest.values.FileValueInput;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
-import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 
 /**
  * File resource definition.
@@ -92,7 +92,7 @@ public final class FileResource {
     }
 
     final URL location = cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id);
-    final File file = new File(id, "", location, new CsvConfiguration(), true);
+    final File file = new File(id, "", location, new Format(), true);
 
     if (!fileService.existsFileWithId(id)) {
       fileService.create(file, fileInputStream);
@@ -121,7 +121,7 @@ public final class FileResource {
     }
 
     final File file =
-        new File(id, "", fileInput.getLocation(), fileInput.getParsingConfiguration(), false);
+        new File(id, "", fileInput.getLocation(), fileInput.getFormat(), false);
 
     if (!fileService.existsFileWithId(id)) {
       fileService.create(file);
@@ -158,7 +158,7 @@ public final class FileResource {
 
     final File file =
         new File(id, "", cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id),
-            new CsvConfiguration(), true);
+            new Format(), true);
 
     if (fileService.existsFileWithId(id)) {
       throw new WebApplicationException(

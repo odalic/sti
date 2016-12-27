@@ -45,6 +45,8 @@
 
 	<!-- Services -->
 	<bean id="fileService" class="cz.cuni.mff.xrg.odalic.files.MemoryOnlyFileService" />
+	<bean id="formatService"
+		class="cz.cuni.mff.xrg.odalic.files.formats.MemoryOnlyFormatService" />
 	<bean id="configurationService"
 		class="cz.cuni.mff.xrg.odalic.tasks.configurations.MemoryOnlyConfigurationService" />
 	<bean id="executionService"
@@ -69,6 +71,8 @@
 	<bean id="feedbackResource"
 		class="cz.cuni.mff.xrg.odalic.api.rest.resources.FeedbackResource" />
 	<bean id="fileResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.FileResource" />
+	<bean id="formatResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.FormatResource" />
 	<bean id="resultResource"
 		class="cz.cuni.mff.xrg.odalic.api.rest.resources.ResultResource" />
 	<bean id="stateResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.StateResource" />

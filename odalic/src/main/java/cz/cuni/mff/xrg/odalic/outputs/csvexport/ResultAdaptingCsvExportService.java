@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
-import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
@@ -23,7 +23,7 @@ import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
  * Implementation of {@link RdfExportService} that gets the extended CSV data by adapting present
- * {@link Result}, {@link Input} and {@link Configuration} instances.
+ * {@link Result}, {@link Input} and {@link Format} instances.
  * 
  * @author Václav Brodec
  *
@@ -71,7 +71,7 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
     final Input output = getExtendedInputForTaskId(id);
     
     // TODO: Get the real used CSV configuration.
-    final String data = csvExporter.export(output, new CsvConfiguration());
+    final String data = csvExporter.export(output, new Format());
 
     return data;
   }

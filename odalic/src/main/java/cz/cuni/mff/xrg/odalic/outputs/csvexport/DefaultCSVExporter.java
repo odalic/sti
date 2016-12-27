@@ -6,7 +6,7 @@ import java.io.StringWriter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
-import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.Input;
 
 /**
@@ -20,10 +20,10 @@ public class DefaultCSVExporter implements CSVExporter {
    * The default export implementation.
    * @throws IOException 
    * 
-   * @see cz.cuni.mff.xrg.odalic.outputs.csvexport.CSVExporter#export(cz.cuni.mff.xrg.odalic.input.Input, cz.cuni.mff.xrg.odalic.input.CsvConfiguration)
+   * @see cz.cuni.mff.xrg.odalic.outputs.csvexport.CSVExporter#export(cz.cuni.mff.xrg.odalic.input.Input, cz.cuni.mff.xrg.odalic.files.formats.Format)
    */
   @Override
-  public String export(Input content, CsvConfiguration configuration) throws IOException {
+  public String export(Input content, Format configuration) throws IOException {
     
     CSVFormat format = configuration.toApacheConfiguration();
     StringWriter stringWriter = new StringWriter();
