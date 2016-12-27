@@ -3,6 +3,8 @@
  */
 package cz.cuni.mff.xrg.odalic.files.formats;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.apache.commons.csv.CSVFormat;
 
 /**
@@ -12,6 +14,7 @@ import org.apache.commons.csv.CSVFormat;
  * @author Václav Brodec
  *
  */
+@Immutable
 public final class DefaultApacheCsvFormatAdapter implements ApacheCsvFormatAdapter {
 
   /*

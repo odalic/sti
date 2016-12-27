@@ -18,7 +18,7 @@ public final class MemoryOnlyFormatService implements FormatService {
   private final FileService fileService;
   
   /* (non-Javadoc)
-   * @see cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService#getForFileId(java.lang.String)
+   * @see cz.cuni.mff.xrg.odalic.files.formats.FormatService#getForFileId(java.lang.String)
    */
   @Override
   public Format getForFileId(String fileId) {
@@ -27,21 +27,20 @@ public final class MemoryOnlyFormatService implements FormatService {
     return file.getFormat();
   }
 
-  /**
-   * @param fileId
-   * @param configuration
+  /* (non-Javadoc)
+   * @see cz.cuni.mff.xrg.odalic.files.formats.FormatService#setForFileId(java.lang.String, cz.cuni.mff.xrg.odalic.files.formats.Format)
    */
   @Override
-  public void setForFileId(String fileId, Format configuration) {
+  public void setForFileId(String fileId, Format format) {
     final File file = fileService.getById(fileId);
     
-    file.setFormat(configuration);
+    file.setFormat(format);
   }
   
   @Autowired
-  public MemoryOnlyFormatService(FileService taskService) {
-    Preconditions.checkNotNull(taskService);
+  public MemoryOnlyFormatService(final FileService fileService) {
+    Preconditions.checkNotNull(fileService);
     
-    this.fileService = taskService;
+    this.fileService = fileService;
   }
 }
