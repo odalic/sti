@@ -5,10 +5,13 @@ import java.nio.charset.StandardCharsets;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.commons.csv.CSVFormat;
 
 import com.google.common.base.Preconditions;
+
+import cz.cuni.mff.xrg.odalic.api.rest.adapters.FormatAdapter;
 
 /**
  * Format of the CSV file.
@@ -17,6 +20,7 @@ import com.google.common.base.Preconditions;
  * @author Václav Brodec
  */
 @Immutable
+@XmlJavaTypeAdapter(value = FormatAdapter.class)
 public final class Format {
 
   private final Charset charset;

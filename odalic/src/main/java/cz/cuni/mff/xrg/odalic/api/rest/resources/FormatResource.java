@@ -38,7 +38,7 @@ public final class FormatResource {
   private UriInfo uriInfo;
 
   @Autowired
-  public FormatResource(FormatService formatService) {
+  public FormatResource(final FormatService formatService) {
     Preconditions.checkNotNull(formatService);
 
     this.formatService = formatService;
@@ -47,8 +47,8 @@ public final class FormatResource {
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response putFormatForFileId(@PathParam("id") String id,
-      FormatValue formatValue) {
+  public Response putFormatForFileId(final @PathParam("id") String id,
+      final FormatValue formatValue) {
     if (formatValue == null) {
       throw new BadRequestException("Format must be provided!");
     }
@@ -76,7 +76,7 @@ public final class FormatResource {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getFormatForFileId(@PathParam("id") String id) {
+  public Response getFormatForFileId(final @PathParam("id") String id) {
     final Format formatForFileId;
     try {
       formatForFileId = formatService.getForFileId(id);
