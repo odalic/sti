@@ -6,9 +6,6 @@ import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.apache.commons.csv.CSVFormat;
-
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.FormatAdapter;
@@ -33,10 +30,33 @@ public final class Format {
   private final Character commentMarker;
 
 
-  public Format(Charset charset, char delimiter, boolean headerPresent,
-      boolean emptyLinesIgnored, boolean headerCaseIgnored, @Nullable Character quoteCharacter,
-      @Nullable Character escapeCharacter, @Nullable Character commentMarker) {
+  /**
+   * Creates a new format instance.
+   * 
+   * @param charset character set
+   * @param delimiter fields delimiter
+   * @param headerPresent header is present
+   * @param emptyLinesIgnored ignore empty lines
+   * @param headerCaseIgnored ignore header case
+   * @param quoteCharacter use this quote character
+   * @param escapeCharacter use this escaping character
+   * @param commentMarker use this comment marker
+   */
+  public Format(final Charset charset, final char delimiter, final boolean headerPresent,
+      final boolean emptyLinesIgnored, final boolean headerCaseIgnored,
+      final @Nullable Character quoteCharacter, final @Nullable Character escapeCharacter,
+      final @Nullable Character commentMarker) {
     Preconditions.checkNotNull(charset);
+
+    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Characters.isLineBreak(delimiter),
+        "The delimiter is a line break character.");
+    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Characters.isLineBreak(quoteCharacter),
+        "The quote character is a line break character.");
+    Preconditions.checkArgument(
+        !cz.cuni.mff.xrg.odalic.util.Characters.isLineBreak(escapeCharacter),
+        "The escape character is a line break character.");
+    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Characters.isLineBreak(commentMarker),
+        "The comment marker is a line break character.");
 
     this.charset = charset;
     this.delimiter = delimiter;
@@ -49,6 +69,10 @@ public final class Format {
   }
 
 
+  /**
+   * Creates a default format, which assumes UTF-8 character set, semicolon delimiters, and the
+   * header to be present.
+   */
   public Format() {
     charset = StandardCharsets.UTF_8;
     delimiter = ';';
@@ -126,31 +150,6 @@ public final class Format {
   public Character getCommentMarker() {
     return commentMarker;
   }
-
-
-  public CSVFormat toApacheConfiguration() {
-    CSVFormat format = CSVFormat.newFormat(delimiter).withAllowMissingColumnNames()
-        .withIgnoreEmptyLines(emptyLinesIgnored).withIgnoreHeaderCase(headerCaseIgnored);
-
-    if (quoteCharacter != null) {
-      format = format.withQuote(quoteCharacter);
-    }
-
-    if (headerPresent) {
-      format = format.withHeader();
-    }
-
-    if (escapeCharacter != null) {
-      format = format.withEscape(escapeCharacter);
-    }
-
-    if (commentMarker != null) {
-      format = format.withCommentMarker(commentMarker);
-    }
-
-    return format;
-  }
-
 
   /*
    * (non-Javadoc)

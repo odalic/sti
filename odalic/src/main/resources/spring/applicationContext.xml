@@ -13,6 +13,9 @@
 	<bean id="inputToTableAdapter" class="cz.cuni.mff.xrg.odalic.input.DefaultInputToTableAdapter"
 		scope="prototype" />
 
+	<bean id="apacheCsvFormatAdapter" class="cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter"
+		scope="prototype" />
+
 	<bean id="csvInputParser" class="cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser"
 		scope="prototype" />
 	<bean id="annotationToResultAdapter"
