@@ -15,6 +15,7 @@ import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonSerializer;
 import cz.cuni.mff.xrg.odalic.files.File;
+import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonDeserializer;
 
 /**
@@ -36,6 +37,8 @@ public final class FileValueOutput implements Serializable {
   
   private URL location;
   
+  private CsvConfiguration parsingConfiguration;
+  
   private boolean cached;
 
   public FileValueOutput() {}
@@ -45,6 +48,7 @@ public final class FileValueOutput implements Serializable {
     uploaded = adaptee.getUploaded();
     owner = adaptee.getOwner();
     location = adaptee.getLocation();
+    parsingConfiguration = adaptee.getParsingConfiguration();
     cached = adaptee.isCached();
   }
 
@@ -122,6 +126,24 @@ public final class FileValueOutput implements Serializable {
     this.location = location;
   }
   
+  /**
+   * @return the parser configuration
+   */
+  @XmlElement
+  @Nullable
+  public CsvConfiguration getParsingConfiguration() {
+    return parsingConfiguration;
+  }
+
+  /**
+   * @param parsingConfiguration the parser configuration to set
+   */
+  public void setParsingConfiguration(CsvConfiguration parsingConfiguration) {
+    Preconditions.checkNotNull(parsingConfiguration);
+    
+    this.parsingConfiguration = parsingConfiguration;
+  }
+
   /**
    * @return cached
    */
