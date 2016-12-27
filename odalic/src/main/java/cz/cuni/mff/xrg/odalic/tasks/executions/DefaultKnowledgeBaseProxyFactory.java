@@ -18,8 +18,6 @@ import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.kbproxy.KBProxyFactory;
 import uk.ac.shef.dcs.sti.STIException;
 
-import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
-
 /**
  * Created by Jan
  */
@@ -105,9 +103,5 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing KBProxy cache.", e);
     }
-  }
-
-  private String getAbsolutePath(String propertyName) {
-    return combinePaths(properties.getProperty(PROPERTY_HOME), properties.getProperty(propertyName));
   }
 }

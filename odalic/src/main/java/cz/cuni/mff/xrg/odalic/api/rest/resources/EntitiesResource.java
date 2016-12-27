@@ -1,6 +1,5 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.NavigableSet;
 
@@ -25,7 +24,6 @@ import cz.cuni.mff.xrg.odalic.entities.ResourceProposal;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
-import uk.ac.shef.dcs.sti.STIException;
 
 /**
  * Entities resource definition.

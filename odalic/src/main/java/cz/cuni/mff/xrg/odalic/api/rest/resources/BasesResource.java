@@ -1,6 +1,5 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
-import java.io.IOException;
 import java.util.NavigableSet;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -14,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
-
-import uk.ac.shef.dcs.sti.STIException;
 
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
 import cz.cuni.mff.xrg.odalic.bases.BasesService;

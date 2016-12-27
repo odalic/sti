@@ -15,7 +15,6 @@ import uk.ac.shef.dcs.sti.STIException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
@@ -64,8 +63,7 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Override
   public NavigableSet<Entity> searchClasses(KnowledgeBase base, String query, int limit)
           throws IllegalArgumentException, KBProxyException, STIException, IOException {
-    @SuppressWarnings("unused")
-    KBProxy kbProxy = getKBProxy(base);
+    final KBProxy kbProxy = getKBProxy(base);
 
     List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
             kbProxy.findClassByFulltext(query, limit);
@@ -78,8 +76,7 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Override
   public NavigableSet<Entity> searchProperties(KnowledgeBase base, String query, int limit,
       URI domain, URI range) throws IllegalArgumentException, KBProxyException, STIException, IOException {
-    @SuppressWarnings("unused")
-    KBProxy kbProxy = getKBProxy(base);
+    final KBProxy kbProxy = getKBProxy(base);
 
     // TODO: Find only properties, restricted by the domain (the domains of found properties must be
     // sub-type of the provided domain, the same for ranges). Null means no restriction.
