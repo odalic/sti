@@ -15,6 +15,7 @@ import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonSerializer;
 import cz.cuni.mff.xrg.odalic.files.File;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonDeserializer;
 
 /**
@@ -36,6 +37,8 @@ public final class FileValueOutput implements Serializable {
   
   private URL location;
   
+  private Format format;
+  
   private boolean cached;
 
   public FileValueOutput() {}
@@ -45,6 +48,7 @@ public final class FileValueOutput implements Serializable {
     uploaded = adaptee.getUploaded();
     owner = adaptee.getOwner();
     location = adaptee.getLocation();
+    format = adaptee.getFormat();
     cached = adaptee.isCached();
   }
 
@@ -123,6 +127,24 @@ public final class FileValueOutput implements Serializable {
   }
   
   /**
+   * @return the format
+   */
+  @XmlElement
+  @Nullable
+  public Format getFormat() {
+    return format;
+  }
+
+  /**
+   * @param format the format to set
+   */
+  public void setFormat(Format format) {
+    Preconditions.checkNotNull(format);
+    
+    this.format = format;
+  }
+
+  /**
    * @return cached
    */
   @XmlElement
@@ -142,7 +164,7 @@ public final class FileValueOutput implements Serializable {
    */
   @Override
   public String toString() {
-    return "FileValueOutput [id=" + id + ", uploaded=" + uploaded + ", owner=" + owner + ", location="
-        + location + ", cached=" + cached + "]";
+    return "FileValueOutput [id=" + id + ", uploaded=" + uploaded + ", owner=" + owner
+        + ", location=" + location + ", format=" + format + ", cached=" + cached + "]";
   }
 }

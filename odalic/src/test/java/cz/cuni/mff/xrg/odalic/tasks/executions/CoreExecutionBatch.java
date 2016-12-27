@@ -27,7 +27,8 @@ import cz.cuni.mff.xrg.odalic.feedbacks.ColumnRelation;
 import cz.cuni.mff.xrg.odalic.feedbacks.DefaultFeedbackToConstraintsAdapter;
 import cz.cuni.mff.xrg.odalic.feedbacks.Disambiguation;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
-import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
+import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.DefaultInputToTableAdapter;
 import cz.cuni.mff.xrg.odalic.input.Input;
@@ -88,8 +89,9 @@ public class CoreExecutionBatch {
 
     // Code for extraction from CSV
     try (final FileInputStream inputFileStream = new FileInputStream(inputFile)) {
-      input = new DefaultCsvInputParser(new ListsBackedInputBuilder()).parse(inputFileStream,
-          inputFile.getName(), new CsvConfiguration());
+      input = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
+          new DefaultApacheCsvFormatAdapter()).parse(inputFileStream, inputFile.getName(),
+              new Format());
       log.info("Input CSV file loaded.");
     } catch (IOException e) {
       log.error("Error - loading input CSV file:");
@@ -102,8 +104,11 @@ public class CoreExecutionBatch {
 
     // Configuration settings
     try {
-      config = new Configuration(new cz.cuni.mff.xrg.odalic.files.File(inputFile.getName(), "x",
-          inputFile.toURI().toURL(), true), new KnowledgeBase("DBpedia"), feedback);
+      config =
+          new Configuration(
+              new cz.cuni.mff.xrg.odalic.files.File(inputFile.getName(), "x",
+                  inputFile.toURI().toURL(), new Format(), true),
+              new KnowledgeBase("DBpedia"), feedback);
     } catch (MalformedURLException e) {
       log.error("Error - Configuration settings:");
       e.printStackTrace();
@@ -162,8 +167,8 @@ public class CoreExecutionBatch {
       HashSet<EntityCandidate> candidatesClassification = new HashSet<>();
       candidatesClassification.add(
           new EntityCandidate(new Entity("http://schema.org/Bookxyz", "Booooook"), new Score(1.0)));
-      candidatesClassification.add(
-          new EntityCandidate(new Entity("http://schema.org/Book", "Book"), new Score(1.0)));
+      candidatesClassification
+          .add(new EntityCandidate(new Entity("http://schema.org/Book", "Book"), new Score(1.0)));
       HashMap<KnowledgeBase, HashSet<EntityCandidate>> headerAnnotation = new HashMap<>();
       headerAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesClassification);
       HashSet<Classification> classifications = new HashSet<>();

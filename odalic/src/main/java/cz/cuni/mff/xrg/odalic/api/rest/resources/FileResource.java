@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -34,6 +35,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
 import cz.cuni.mff.xrg.odalic.api.rest.values.FileValueInput;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 
 /**
  * File resource definition.
@@ -47,7 +49,7 @@ public final class FileResource {
   public static final String TEXT_CSV_MEDIA_TYPE = "text/csv";
 
   private final FileService fileService;
-  
+
   @Context
   private UriInfo uriInfo;
 
@@ -89,9 +91,9 @@ public final class FileResource {
     if (fileInputStream == null) {
       throw new BadRequestException("No input provided!");
     }
-    
+
     final URL location = cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id);
-    final File file = new File(id, "", location, true);
+    final File file = new File(id, "", location, new Format(), true);
 
     if (!fileService.existsFileWithId(id)) {
       fileService.create(file, fileInputStream);
@@ -114,12 +116,15 @@ public final class FileResource {
     if (fileInput == null) {
       throw new BadRequestException("No file description provided!");
     }
-    
+
     if (fileInput.getLocation() == null) {
       throw new BadRequestException("No location provided!");
     }
+
+    final Format usedFormat = getFormatOrDefault(fileInput);
     
-    final File file = new File(id, "", fileInput.getLocation(), false);
+    final File file =
+        new File(id, "", fileInput.getLocation(), usedFormat, false);
 
     if (!fileService.existsFileWithId(id)) {
       fileService.create(file);
@@ -135,6 +140,17 @@ public final class FileResource {
     }
   }
 
+  private Format getFormatOrDefault(FileValueInput fileInput) {
+    final @Nullable Format format = fileInput.getFormat();
+    final Format usedFormat;
+    if (format == null) {
+      usedFormat = new Format();
+    } else {
+      usedFormat = format;
+    }
+    return usedFormat;
+  }
+
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
@@ -144,18 +160,19 @@ public final class FileResource {
     if (fileInputStream == null) {
       throw new BadRequestException("No input provided!");
     }
-    
+
     if (fileDetail == null) {
       throw new BadRequestException("No input detail provided!");
     }
-    
+
     final String id = fileDetail.getFileName();
     if (id == null) {
       throw new BadRequestException("No file name provided!");
     }
-    
-    final File file = new File(id, "",
-        cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id), true);
+
+    final File file =
+        new File(id, "", cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id),
+            new Format(), true);
 
     if (fileService.existsFileWithId(id)) {
       throw new WebApplicationException(
