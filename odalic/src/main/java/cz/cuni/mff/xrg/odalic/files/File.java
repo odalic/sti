@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.FileValueOutputAdapter;
+import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
 
 /**
  * File description.
@@ -19,7 +20,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.FileValueOutputAdapter;
  */
 @Immutable
 @XmlJavaTypeAdapter(FileValueOutputAdapter.class)
-public class File implements Serializable {
+public final class File implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
@@ -31,6 +32,8 @@ public class File implements Serializable {
   
   private final URL location;
   
+  private final CsvConfiguration parsingConfiguration;
+  
   private final boolean cached;
 
   /**
@@ -40,18 +43,21 @@ public class File implements Serializable {
    * @param uploaded time of upload
    * @param owner file owner description
    * @param location file location
+   * @param parsingConfiguration parser configuration
    * @param cached boolean
    */
-  public File(String id, Date uploaded, String owner, URL location, boolean cached) {
+  public File(final String id, final Date uploaded, final String owner, final URL location, final CsvConfiguration parsingConfiguration, final boolean cached) {
     Preconditions.checkNotNull(id);
     Preconditions.checkNotNull(uploaded);
     Preconditions.checkNotNull(owner);
     Preconditions.checkNotNull(location);
+    Preconditions.checkNotNull(parsingConfiguration);
     
     this.id = id;
     this.uploaded = uploaded;
     this.owner = owner;
     this.location = location;
+    this.parsingConfiguration = parsingConfiguration;
     this.cached = cached;
   }
   
@@ -63,8 +69,8 @@ public class File implements Serializable {
    * @param location file location
    * @param cached cached
    */
-  public File(String id, String owner, URL location, boolean cached) {
-    this(id, new Date(), owner, location, cached);
+  public File(final String id, final String owner, final URL location, final CsvConfiguration parsingConfiguration, final boolean cached) {
+    this(id, new Date(), owner, location, parsingConfiguration, cached);
   }
 
   /**
@@ -95,6 +101,13 @@ public class File implements Serializable {
     return location;
   }
   
+  /**
+   * @return the parser configuration
+   */
+  public CsvConfiguration getParsingConfiguration() {
+    return parsingConfiguration;
+  }
+
   /**
    * @return cached
    */
