@@ -20,6 +20,7 @@ import cz.cuni.mff.xrg.odalic.feedbacks.FeedbackToConstraintsAdapter;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
+import cz.cuni.mff.xrg.odalic.files.formats.FormatService;
 import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.InputToTableAdapter;
@@ -51,6 +52,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
   private final TaskService taskService;
   private final FileService fileService;
+  private final FormatService formatService;
   private final AnnotationToResultAdapter annotationResultAdapter;
   private final SemanticTableInterpreterFactory semanticTableInterpreterFactory;
   private final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter;
@@ -60,13 +62,14 @@ public final class FutureBasedExecutionService implements ExecutionService {
   private final Map<Task, Future<Result>> tasksToResults = new HashMap<>();
 
   @Autowired
-  public FutureBasedExecutionService(TaskService taskService, FileService fileService,
-      AnnotationToResultAdapter annotationToResultAdapter,
-      SemanticTableInterpreterFactory semanticTableInterpreterFactory,
-      FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
-      CsvInputParser csvInputParser, InputToTableAdapter inputToTableAdapter) {
+  public FutureBasedExecutionService(final TaskService taskService, final FileService fileService,
+      final FormatService formatService, final AnnotationToResultAdapter annotationToResultAdapter,
+      final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
+      final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
+      final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter) {
     Preconditions.checkNotNull(taskService);
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(formatService);
     Preconditions.checkNotNull(annotationToResultAdapter);
     Preconditions.checkNotNull(semanticTableInterpreterFactory);
     Preconditions.checkNotNull(feedbackToConstraintsAdapter);
@@ -75,6 +78,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
     this.taskService = taskService;
     this.fileService = fileService;
+    this.formatService = formatService;
     this.annotationResultAdapter = annotationToResultAdapter;
     this.semanticTableInterpreterFactory = semanticTableInterpreterFactory;
     this.feedbackToConstraintsAdapter = feedbackToConstraintsAdapter;
@@ -96,25 +100,26 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
     final Configuration configuration = task.getConfiguration();
     final File file = configuration.getInput();
+    final String fileId = file.getId();
 
     final Callable<Result> execution = () -> {
-      final String data = fileService.getDataById(file.getId());
+      final String data = fileService.getDataById(fileId);
+      final Format format = formatService.getForFileId(fileId);
 
-      // TODO: Read configuration attributed to the file instead of the default one.
-      final Input input = csvInputParser.parse(data, file.getId(), new Format());
+      final Input input = csvInputParser.parse(data, fileId, format);
       final Table table = inputToTableAdapter.toTable(input);
 
-      final Map<String, SemanticTableInterpreter> interpreters = semanticTableInterpreterFactory.getInterpreters();
+      final Map<String, SemanticTableInterpreter> interpreters =
+          semanticTableInterpreterFactory.getInterpreters();
 
       Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
       for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters.entrySet()) {
-        final Constraints constraints = feedbackToConstraintsAdapter
-            .toConstraints(configuration.getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
+        final Constraints constraints = feedbackToConstraintsAdapter.toConstraints(
+            configuration.getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
         final TAnnotation annotationResult = interpreterEntry.getValue().start(table, constraints);
         results.put(new KnowledgeBase(interpreterEntry.getKey()), annotationResult);
       }
-      final Result result = annotationResultAdapter
-          .toResult(results);
+      final Result result = annotationResultAdapter.toResult(results);
 
       return result;
     };
@@ -123,15 +128,18 @@ public final class FutureBasedExecutionService implements ExecutionService {
     tasksToResults.put(task, future);
   }
 
-  /* (non-Javadoc)
-   * @see cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService#getResultForTaskId(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService#getResultForTaskId(java.lang.String)
    */
   @Override
   public Result getResultForTaskId(String id)
       throws InterruptedException, ExecutionException, CancellationException {
     final Task task = taskService.getById(id);
     final Future<Result> resultFuture = tasksToResults.get(task);
-    
+
     Preconditions.checkArgument(resultFuture != null);
 
     return resultFuture.get();
@@ -141,7 +149,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
   public void cancelForTaskId(String id) {
     final Task task = taskService.getById(id);
     final Future<Result> resultFuture = tasksToResults.get(task);
-    
+
     Preconditions.checkArgument(resultFuture != null);
 
     Preconditions.checkState(resultFuture.cancel(true));
@@ -153,7 +161,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     Preconditions.checkArgument(resultFuture != null);
-    
+
     return resultFuture.isDone();
   }
 
@@ -163,7 +171,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     Preconditions.checkArgument(resultFuture != null);
-    
+
     return resultFuture.isCancelled();
   }
 
@@ -180,14 +188,14 @@ public final class FutureBasedExecutionService implements ExecutionService {
     if (!isDoneForTaskId(id)) {
       return false;
     }
-    
+
     if (isCanceledForTaskId(id)) {
       return false;
     }
-    
+
     try {
       final Result result = getResultForTaskId(id);
-      
+
       return result.getWarnings().isEmpty();
     } catch (final InterruptedException | ExecutionException e) {
       return false;
@@ -199,14 +207,14 @@ public final class FutureBasedExecutionService implements ExecutionService {
     if (!isDoneForTaskId(id)) {
       return false;
     }
-    
+
     if (isCanceledForTaskId(id)) {
       return false;
     }
-    
+
     try {
       final Result result = getResultForTaskId(id);
-      
+
       return !result.getWarnings().isEmpty();
     } catch (final InterruptedException | ExecutionException e) {
       return false;
@@ -218,14 +226,14 @@ public final class FutureBasedExecutionService implements ExecutionService {
     if (!isDoneForTaskId(id)) {
       return false;
     }
-    
+
     if (isCanceledForTaskId(id)) {
       return false;
     }
-    
+
     try {
       getResultForTaskId(id);
-      
+
       return false;
     } catch (final InterruptedException | ExecutionException e) {
       return true;

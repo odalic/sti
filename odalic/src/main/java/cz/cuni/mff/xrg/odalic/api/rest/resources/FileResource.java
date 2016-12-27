@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -120,8 +121,10 @@ public final class FileResource {
       throw new BadRequestException("No location provided!");
     }
 
+    final Format usedFormat = getFormatOrDefault(fileInput);
+    
     final File file =
-        new File(id, "", fileInput.getLocation(), fileInput.getFormat(), false);
+        new File(id, "", fileInput.getLocation(), usedFormat, false);
 
     if (!fileService.existsFileWithId(id)) {
       fileService.create(file);
@@ -135,6 +138,17 @@ public final class FileResource {
       return Message.of("The file description has been updated.").toResponse(Response.Status.OK,
           cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id), uriInfo);
     }
+  }
+
+  private Format getFormatOrDefault(FileValueInput fileInput) {
+    final @Nullable Format format = fileInput.getFormat();
+    final Format usedFormat;
+    if (format == null) {
+      usedFormat = new Format();
+    } else {
+      usedFormat = format;
+    }
+    return usedFormat;
   }
 
   @POST
