@@ -139,9 +139,11 @@ public final class TaskResource {
       throw new BadRequestException("The input file does not exist!");
     }
 
+    final int usedRowsLimit = getRowsLimitOrMaximum(configurationValue);
+    
     final Configuration configuration =
         new Configuration(input, configurationValue.getPrimaryBase(),
-            configurationValue.getFeedback(), configurationValue.getRowsLimit());
+            configurationValue.getFeedback(), usedRowsLimit);
     final Task task = new Task(id,
         taskValue.getDescription() == null ? "" : taskValue.getDescription(), configuration);
 
@@ -159,6 +161,19 @@ public final class TaskResource {
           .of("The task you specified has been fully updated AT THE LOCATION you specified.")
           .toResponse(Response.Status.OK, location, uriInfo);
     }
+  }
+
+  private int getRowsLimitOrMaximum(final ConfigurationValue configurationValue) {
+    final int usedRowsLimit;
+    if (configurationValue.getRowsLimit() != null) {
+      usedRowsLimit = configurationValue.getRowsLimit();
+    } else {
+      usedRowsLimit = Integer.MAX_VALUE;
+    }
+    if (usedRowsLimit < 0) {
+      throw new BadRequestException("The rows limit must be nonnegative!");
+    }
+    return usedRowsLimit;
   }
 
   @DELETE
