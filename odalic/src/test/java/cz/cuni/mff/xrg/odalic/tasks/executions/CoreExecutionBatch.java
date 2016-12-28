@@ -108,7 +108,7 @@ public class CoreExecutionBatch {
           new Configuration(
               new cz.cuni.mff.xrg.odalic.files.File(inputFile.getName(), "x",
                   inputFile.toURI().toURL(), new Format(), true),
-              new KnowledgeBase("DBpedia"), feedback);
+              new KnowledgeBase("DBpedia"), feedback, Integer.MAX_VALUE);
     } catch (MalformedURLException e) {
       log.error("Error - Configuration settings:");
       e.printStackTrace();

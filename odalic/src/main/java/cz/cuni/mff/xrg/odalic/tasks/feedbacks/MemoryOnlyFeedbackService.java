@@ -55,7 +55,7 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
   public void setForTaskId(String taskId, Feedback feedback) {
     final Configuration oldConfiguration = configurationService.getForTaskId(taskId);
     configurationService.setForTaskId(taskId, new Configuration(oldConfiguration.getInput(),
-        oldConfiguration.getPrimaryBase(), feedback));
+        oldConfiguration.getPrimaryBase(), feedback, oldConfiguration.getRowsLimit()));
   }
 
   /*

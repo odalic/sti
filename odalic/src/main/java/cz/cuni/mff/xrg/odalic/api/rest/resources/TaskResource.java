@@ -53,7 +53,7 @@ public final class TaskResource {
 
   @Context
   private UriInfo uriInfo;
-  
+
   @Autowired
   public TaskResource(TaskService taskService, FileService fileService,
       ExecutionService executionService) {
@@ -91,7 +91,8 @@ public final class TaskResource {
       final Stream<StatefulTaskValue> statefulTasksStream = tasks.stream()
           .map(e -> new StatefulTaskValue(e, States.queryStateValue(executionService, e.getId())));
 
-      return Reply.data(Response.Status.OK, statefulTasksStream.collect(Collectors.toList()), uriInfo)
+      return Reply
+          .data(Response.Status.OK, statefulTasksStream.collect(Collectors.toList()), uriInfo)
           .toResponse(); // List is fine, as it serializes in the same way, and no monkeying with
                          // comparators is needed.
     }
@@ -138,8 +139,9 @@ public final class TaskResource {
       throw new BadRequestException("The input file does not exist!");
     }
 
-    final Configuration configuration = new Configuration(input,
-        configurationValue.getPrimaryBase(), configurationValue.getFeedback());
+    final Configuration configuration =
+        new Configuration(input, configurationValue.getPrimaryBase(),
+            configurationValue.getFeedback(), configurationValue.getRowsLimit());
     final Task task = new Task(id,
         taskValue.getDescription() == null ? "" : taskValue.getDescription(), configuration);
 

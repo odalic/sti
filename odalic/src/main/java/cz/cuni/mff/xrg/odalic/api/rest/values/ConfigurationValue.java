@@ -22,12 +22,14 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 public final class ConfigurationValue implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
-  
+
   private String input;
 
   private Feedback feedback;
-  
+
   private KnowledgeBase primaryBase;
+
+  private Integer rowsLimit;
 
   public ConfigurationValue() {}
 
@@ -35,6 +37,7 @@ public final class ConfigurationValue implements Serializable {
     input = adaptee.getInput().getId();
     feedback = adaptee.getFeedback();
     primaryBase = adaptee.getPrimaryBase();
+    rowsLimit = adaptee.getRowsLimit();
   }
 
   /**
@@ -51,10 +54,10 @@ public final class ConfigurationValue implements Serializable {
    */
   public void setInput(String input) {
     Preconditions.checkNotNull(input);
-    
+
     this.input = input;
   }
-  
+
   /**
    * @return the feedback
    */
@@ -70,7 +73,7 @@ public final class ConfigurationValue implements Serializable {
    */
   public void setFeedback(Feedback feedback) {
     Preconditions.checkNotNull(feedback);
-    
+
     this.feedback = feedback;
   }
 
@@ -88,16 +91,34 @@ public final class ConfigurationValue implements Serializable {
    */
   public void setPrimaryBase(KnowledgeBase primaryBase) {
     Preconditions.checkNotNull(primaryBase);
-    
+
     this.primaryBase = primaryBase;
   }
 
-  /* (non-Javadoc)
+
+  /**
+   * @return the maximum number of rows to process, {@code null} if no such limit set
+   */
+  @Nullable
+  public Integer getRowsLimit() {
+    return rowsLimit;
+  }
+
+  /**
+   * @param rowsLimit the maximum number of rows to process to set
+   */
+  public void setRowsLimit(final @Nullable Integer rowsLimit) {
+    this.rowsLimit = rowsLimit;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
     return "ConfigurationValue [input=" + input + ", feedback=" + feedback + ", primaryBase="
-        + primaryBase + "]";
+        + primaryBase + ", rowsLimit=" + rowsLimit + "]";
   }
 }
