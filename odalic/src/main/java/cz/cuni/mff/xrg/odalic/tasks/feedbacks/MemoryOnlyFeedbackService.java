@@ -55,7 +55,7 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
   public void setForTaskId(String taskId, Feedback feedback) {
     final Configuration oldConfiguration = configurationService.getForTaskId(taskId);
     configurationService.setForTaskId(taskId, new Configuration(oldConfiguration.getInput(),
-        oldConfiguration.getPrimaryBase(), feedback));
+        oldConfiguration.getPrimaryBase(), feedback, oldConfiguration.getRowsLimit()));
   }
 
   /*
@@ -65,6 +65,7 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
    */
   @Override
   public Input getInputForTaskId(String taskId) throws IllegalArgumentException, IOException {
+    //TODO: DRY access to the input.
     final Configuration configuration = configurationService.getForTaskId(taskId);
     final File file = configuration.getInput();
     final String fileId = file.getId();
@@ -72,6 +73,6 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
     final String data = fileService.getDataById(fileId);
     final Format format = formatService.getForFileId(fileId);
 
-    return inputParser.parse(data, fileId, format);
+    return inputParser.parse(data, fileId, format, configuration.getRowsLimit());
   }
 }

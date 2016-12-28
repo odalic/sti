@@ -69,12 +69,14 @@ public final class ConfigurationResource {
       throw new BadRequestException("The configured input file is not registered.");
     }
 
+    final int usedRowsLimit = getRowsLimitOrMaximum(configurationValue);
+
     final Configuration configuration;
     if (configurationValue.getFeedback() == null) {
-      configuration = new Configuration(input, configurationValue.getPrimaryBase());
+      configuration = new Configuration(input, configurationValue.getPrimaryBase(), usedRowsLimit);
     } else {
       configuration = new Configuration(input, configurationValue.getPrimaryBase(),
-          configurationValue.getFeedback());
+          configurationValue.getFeedback(), usedRowsLimit);
     }
 
     try {
@@ -83,6 +85,19 @@ public final class ConfigurationResource {
       throw new BadRequestException("The configured task does not exist.");
     }
     return Message.of("Configuration set.").toResponse(Response.Status.OK, uriInfo);
+  }
+
+  private int getRowsLimitOrMaximum(ConfigurationValue configurationValue) {
+    final int usedRowsLimit;
+    if (configurationValue.getRowsLimit() != null) {
+      usedRowsLimit = configurationValue.getRowsLimit();
+    } else {
+      usedRowsLimit = Integer.MAX_VALUE;
+    }
+    if (usedRowsLimit < 0) {
+      throw new BadRequestException("The rows limit must be nonnegative!");
+    }
+    return usedRowsLimit;
   }
 
   @GET
@@ -95,7 +110,6 @@ public final class ConfigurationResource {
       throw new NotFoundException("Configuration for the task does not exist.");
     }
 
-    return Reply.data(Response.Status.OK, configurationForTaskId, uriInfo)
-        .toResponse();
+    return Reply.data(Response.Status.OK, configurationForTaskId, uriInfo).toResponse();
   }
 }

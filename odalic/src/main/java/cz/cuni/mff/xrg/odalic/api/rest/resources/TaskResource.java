@@ -53,7 +53,7 @@ public final class TaskResource {
 
   @Context
   private UriInfo uriInfo;
-  
+
   @Autowired
   public TaskResource(TaskService taskService, FileService fileService,
       ExecutionService executionService) {
@@ -91,7 +91,8 @@ public final class TaskResource {
       final Stream<StatefulTaskValue> statefulTasksStream = tasks.stream()
           .map(e -> new StatefulTaskValue(e, States.queryStateValue(executionService, e.getId())));
 
-      return Reply.data(Response.Status.OK, statefulTasksStream.collect(Collectors.toList()), uriInfo)
+      return Reply
+          .data(Response.Status.OK, statefulTasksStream.collect(Collectors.toList()), uriInfo)
           .toResponse(); // List is fine, as it serializes in the same way, and no monkeying with
                          // comparators is needed.
     }
@@ -138,8 +139,11 @@ public final class TaskResource {
       throw new BadRequestException("The input file does not exist!");
     }
 
-    final Configuration configuration = new Configuration(input,
-        configurationValue.getPrimaryBase(), configurationValue.getFeedback());
+    final int usedRowsLimit = getRowsLimitOrMaximum(configurationValue);
+    
+    final Configuration configuration =
+        new Configuration(input, configurationValue.getPrimaryBase(),
+            configurationValue.getFeedback(), usedRowsLimit);
     final Task task = new Task(id,
         taskValue.getDescription() == null ? "" : taskValue.getDescription(), configuration);
 
@@ -157,6 +161,19 @@ public final class TaskResource {
           .of("The task you specified has been fully updated AT THE LOCATION you specified.")
           .toResponse(Response.Status.OK, location, uriInfo);
     }
+  }
+
+  private int getRowsLimitOrMaximum(final ConfigurationValue configurationValue) {
+    final int usedRowsLimit;
+    if (configurationValue.getRowsLimit() != null) {
+      usedRowsLimit = configurationValue.getRowsLimit();
+    } else {
+      usedRowsLimit = Integer.MAX_VALUE;
+    }
+    if (usedRowsLimit < 0) {
+      throw new BadRequestException("The rows limit must be nonnegative!");
+    }
+    return usedRowsLimit;
   }
 
   @DELETE

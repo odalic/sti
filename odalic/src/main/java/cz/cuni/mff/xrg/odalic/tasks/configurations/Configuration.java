@@ -29,14 +29,21 @@ public final class Configuration implements Serializable {
   private final Feedback feedback;
   
   private final KnowledgeBase primaryBase;
+  
+  private final int rowsLimit;
 
   /**
    * Creates configuration without any feedback, thus implying fully automatic processing.
    * 
-   * @param input input specification
+   * @param input
+   * @param primaryBase
+   * @param rowsLimit
+   * @param rowsLimit maximum number of rows to let the algorithm process
+   * 
+   * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number
    */
-  public Configuration(File input, KnowledgeBase primaryBase) {
-    this(input, primaryBase, new Feedback());
+  public Configuration(final File input, final KnowledgeBase primaryBase, final int rowsLimit) {
+    this(input, primaryBase, new Feedback(), rowsLimit);
   }
   
   /**
@@ -45,15 +52,21 @@ public final class Configuration implements Serializable {
    * @param input input specification
    * @param primaryBase primary knowledge base
    * @param feedback constraints for the algorithm
+   * @param rowsLimit maximum number of rows to let the algorithm process
+   * 
+   * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number
    */
-  public Configuration(File input, KnowledgeBase primaryBase, Feedback feedback) {
+  public Configuration(final File input, final KnowledgeBase primaryBase, final Feedback feedback, final int rowsLimit) {
     Preconditions.checkNotNull(input);
     Preconditions.checkNotNull(primaryBase);
     Preconditions.checkNotNull(feedback);
     
+    Preconditions.checkArgument(rowsLimit >= 0);
+    
     this.input = input;
     this.primaryBase = primaryBase;
     this.feedback = feedback;
+    this.rowsLimit = rowsLimit;
   }
 
   /**
@@ -77,6 +90,13 @@ public final class Configuration implements Serializable {
     return primaryBase;
   }
 
+  /**
+   * @return the maximum number of rows for the algorithm to process
+   */
+  public int getRowsLimit() {
+    return rowsLimit;
+  }
+
   /* (non-Javadoc)
    * @see java.lang.Object#hashCode()
    */
@@ -84,8 +104,10 @@ public final class Configuration implements Serializable {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((feedback == null) ? 0 : feedback.hashCode());
-    result = prime * result + ((input == null) ? 0 : input.hashCode());
+    result = prime * result + feedback.hashCode();
+    result = prime * result + input.hashCode();
+    result = prime * result + primaryBase.hashCode();
+    result = prime * result + rowsLimit;
     return result;
   }
 
@@ -104,18 +126,16 @@ public final class Configuration implements Serializable {
       return false;
     }
     Configuration other = (Configuration) obj;
-    if (feedback == null) {
-      if (other.feedback != null) {
-        return false;
-      }
-    } else if (!feedback.equals(other.feedback)) {
+    if (!feedback.equals(other.feedback)) {
       return false;
     }
-    if (input == null) {
-      if (other.input != null) {
-        return false;
-      }
-    } else if (!input.equals(other.input)) {
+    if (!input.equals(other.input)) {
+      return false;
+    }
+    if (!primaryBase.equals(other.primaryBase)) {
+      return false;
+    }
+    if (rowsLimit != other.rowsLimit) {
       return false;
     }
     return true;
@@ -126,6 +146,7 @@ public final class Configuration implements Serializable {
    */
   @Override
   public String toString() {
-    return "Configuration [input=" + input + ", feedback=" + feedback + "]";
+    return "Configuration [input=" + input + ", feedback=" + feedback + ", primaryBase="
+        + primaryBase + ", rowsLimit=" + rowsLimit + "]";
   }
 }

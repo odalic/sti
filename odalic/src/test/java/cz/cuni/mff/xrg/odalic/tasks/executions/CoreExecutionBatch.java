@@ -91,7 +91,7 @@ public class CoreExecutionBatch {
     try (final FileInputStream inputFileStream = new FileInputStream(inputFile)) {
       input = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
           new DefaultApacheCsvFormatAdapter()).parse(inputFileStream, inputFile.getName(),
-              new Format());
+              new Format(), Integer.MAX_VALUE);
       log.info("Input CSV file loaded.");
     } catch (IOException e) {
       log.error("Error - loading input CSV file:");
@@ -108,7 +108,7 @@ public class CoreExecutionBatch {
           new Configuration(
               new cz.cuni.mff.xrg.odalic.files.File(inputFile.getName(), "x",
                   inputFile.toURI().toURL(), new Format(), true),
-              new KnowledgeBase("DBpedia"), feedback);
+              new KnowledgeBase("DBpedia"), feedback, Integer.MAX_VALUE);
     } catch (MalformedURLException e) {
       log.error("Error - Configuration settings:");
       e.printStackTrace();

@@ -38,22 +38,24 @@ public final class DefaultCsvInputParser implements CsvInputParser {
   }
 
   @Override
-  public Input parse(String content, String identifier, Format configuration) throws IOException {
+  public Input parse(String content, String identifier, Format configuration, int rowsLimit) throws IOException {
     try (Reader reader = new StringReader(content)) {
-      return parse(reader, identifier, configuration);
+      return parse(reader, identifier, configuration, rowsLimit);
     }
   }
 
   @Override
-  public Input parse(InputStream stream, String identifier, Format configuration)
+  public Input parse(InputStream stream, String identifier, Format configuration, int rowsLimit)
       throws IOException {
     try (Reader reader = new InputStreamReader(stream, configuration.getCharset())) {
-      return parse(reader, identifier, configuration);
+      return parse(reader, identifier, configuration, rowsLimit);
     }
   }
 
   @Override
-  public Input parse(Reader reader, String identifier, Format configuration) throws IOException {
+  public Input parse(Reader reader, String identifier, Format configuration, int rowsLimit) throws IOException {
+    Preconditions.checkArgument(rowsLimit >= 0, "Rows limit must be a nonnegative number.");
+    
     final CSVFormat format = this.apacheCsvFormatAdapter.toApacheCsvFormat(configuration);
     final CSVParser parser = format.parse(reader);
 
@@ -63,6 +65,10 @@ public final class DefaultCsvInputParser implements CsvInputParser {
 
     int row = 0;
     for (CSVRecord record : parser) {
+      if (row >= rowsLimit) {
+        break;
+      }
+      
       handleInputRow(record, row);
       row++;
     }
