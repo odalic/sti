@@ -103,10 +103,12 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final String fileId = file.getId();
 
     final Callable<Result> execution = () -> {
+      //TODO: DRY access to the input.
+      
       final String data = fileService.getDataById(fileId);
       final Format format = formatService.getForFileId(fileId);
 
-      final Input input = csvInputParser.parse(data, fileId, format);
+      final Input input = csvInputParser.parse(data, fileId, format, configuration.getRowsLimit());
       final Table table = inputToTableAdapter.toTable(input);
 
       final Map<String, SemanticTableInterpreter> interpreters =

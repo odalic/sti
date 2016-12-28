@@ -91,7 +91,7 @@ public class CoreExecutionBatch {
     try (final FileInputStream inputFileStream = new FileInputStream(inputFile)) {
       input = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
           new DefaultApacheCsvFormatAdapter()).parse(inputFileStream, inputFile.getName(),
-              new Format());
+              new Format(), Integer.MAX_VALUE);
       log.info("Input CSV file loaded.");
     } catch (IOException e) {
       log.error("Error - loading input CSV file:");
