@@ -2,6 +2,7 @@ package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,10 +12,12 @@ import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,6 +30,7 @@ import cz.cuni.mff.xrg.odalic.feedbacks.ColumnRelation;
 import cz.cuni.mff.xrg.odalic.feedbacks.DefaultFeedbackToConstraintsAdapter;
 import cz.cuni.mff.xrg.odalic.feedbacks.Disambiguation;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
+import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
@@ -36,6 +40,7 @@ import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.positions.CellPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
+import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
@@ -51,9 +56,10 @@ public class CoreExecutionBatch {
 
   private static final Logger log = LoggerFactory.getLogger(CoreExecutionBatch.class);
 
-  private static File inputFile;
+  private static final Map<String, File> files = new HashMap<>();
+  private static final Map<URL, String> data = new HashMap<>();
+
   private static Input input;
-  private static Configuration config;
 
   /**
    * Expects sti.properties file path as the first and test input CSV file path as the second
@@ -63,60 +69,80 @@ public class CoreExecutionBatch {
    * 
    * @author Josef Janoušek
    * @author Jan Váňa
-   * @throws IOException when the initialization process fails to load its configuration
-   * @throws STIException when the interpreters fail to initialize
+   * 
    */
-  public static void main(String[] args) throws STIException, IOException {
+  public static void main(String[] args) {
 
     final String propertyFilePath = args[0];
     final String testInputFilePath = args[1];
 
+    // Core settings
+    final Task task = testCoreSettings(Paths.get(testInputFilePath));
+
+    if (task == null) {
+      log.warn("Task was not set correctly, so execution cannot be launched.");
+      return;
+    }
+
     // Core execution
-    testCoreExecution(propertyFilePath, testInputFilePath);
+    testCoreExecution(propertyFilePath, task);
   }
 
-  public static Result testCoreExecution(String propertyFilePath, String testInputFilePath)
-      throws STIException, IOException {
+  public static Task testCoreSettings(Path path) {
+    final String fileId = path.getFileName().toString();
 
-    inputFile = new File(testInputFilePath);
-
-    // TableMinerPlus initialization
-    final SemanticTableInterpreterFactory factory = new TableMinerPlusFactory(
-        new DefaultKnowledgeBaseProxyFactory(propertyFilePath), propertyFilePath);
-    final Map<String, SemanticTableInterpreter> semanticTableInterpreters =
-        factory.getInterpreters();
-    Preconditions.checkNotNull(semanticTableInterpreters);
-
-    // Code for extraction from CSV
-    try (final FileInputStream inputFileStream = new FileInputStream(inputFile)) {
-      input = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
-          new DefaultApacheCsvFormatAdapter()).parse(inputFileStream, inputFile.getName(),
-              new Format(), Integer.MAX_VALUE);
-      log.info("Input CSV file loaded.");
+    // File settings
+    try {
+      final File file = new File(fileId, "", path.toUri().toURL(), new Format(), true);
+      files.put(file.getId(), file);
+      data.put(file.getLocation(), IOUtils.toString(new FileInputStream(
+          file.getLocation().getFile()), StandardCharsets.UTF_8));
     } catch (IOException e) {
-      log.error("Error - loading input CSV file:");
-      e.printStackTrace();
+      log.error("Error - File settings:", e);
       return null;
     }
 
-    // Feedback settings
-    Feedback feedback = createFeedback(true);
+    // Format settings
+    files.get(fileId).setFormat(new Format(
+        StandardCharsets.UTF_8, ';', true, true, false, null, null, null));
 
-    // Configuration settings
+    // Task settings
+    return new Task("simple_task", "task description",
+        new Configuration(files.get(fileId), new KnowledgeBase("DBpedia"),
+            createFeedback(true), Integer.MAX_VALUE));
+  }
+
+  public static Result testCoreExecution(String propertyFilePath, Task task) {
+    final String fileId = task.getConfiguration().getInput().getId();
+
+    // Code for extraction from CSV
     try {
-      config =
-          new Configuration(
-              new cz.cuni.mff.xrg.odalic.files.File(inputFile.getName(), "x",
-                  inputFile.toURI().toURL(), new Format(), true),
-              new KnowledgeBase("DBpedia"), feedback, Integer.MAX_VALUE);
-    } catch (MalformedURLException e) {
-      log.error("Error - Configuration settings:");
-      e.printStackTrace();
+      input = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
+          new DefaultApacheCsvFormatAdapter()).parse(data.get(files.get(fileId).getLocation()),
+              fileId, files.get(fileId).getFormat(), task.getConfiguration().getRowsLimit());
+      log.info("Input CSV file loaded.");
+    } catch (IOException e) {
+      log.error("Error - loading input CSV file:", e);
       return null;
     }
 
     // input Table creation
     final Table table = new DefaultInputToTableAdapter().toTable(input);
+
+    // TableMinerPlus initialization
+    final SemanticTableInterpreterFactory factory = new TableMinerPlusFactory(
+        new DefaultKnowledgeBaseProxyFactory(propertyFilePath), propertyFilePath);
+    Map<String, SemanticTableInterpreter> semanticTableInterpreters;
+    try {
+      semanticTableInterpreters = factory.getInterpreters();
+    } catch (IOException e) {
+      log.error("Error - TMP initialization process fails to load its configuration:", e);
+      return null;
+    } catch (STIException e) {
+      log.error("Error - TMP interpreters fail to initialize:", e);
+      return null;
+    }
+    Preconditions.checkNotNull(semanticTableInterpreters);
 
     // TableMinerPlus algorithm run
     Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
@@ -124,35 +150,26 @@ public class CoreExecutionBatch {
       for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : semanticTableInterpreters
           .entrySet()) {
         Constraints constraints = new DefaultFeedbackToConstraintsAdapter()
-            .toConstraints(config.getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
+            .toConstraints(task.getConfiguration().getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
 
         TAnnotation annotationResult = interpreterEntry.getValue().start(table, constraints);
 
         results.put(new KnowledgeBase(interpreterEntry.getKey()), annotationResult);
       }
     } catch (STIException e) {
-      log.error("Error - running TableMinerPlus algorithm:");
-      e.printStackTrace();
+      log.error("Error - running TableMinerPlus algorithm:", e);
       return null;
     }
 
     // Odalic Result creation
-    Result odalicResult = new DefaultAnnotationToResultAdapter().toResult(results);
+    final Result odalicResult = new DefaultAnnotationToResultAdapter().toResult(results);
     log.info("Odalic Result is: " + odalicResult);
 
     return odalicResult;
   }
 
-  public static File getInputFile() {
-    return inputFile;
-  }
-
   public static Input getInput() {
     return input;
-  }
-
-  public static Configuration getConfiguration() {
-    return config;
   }
 
   private static Feedback createFeedback(boolean emptyFeedback) {

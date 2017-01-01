@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.GsonBuilder;
 
 import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
-import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.DefaultResultToAnnotatedTableAdapter;
@@ -50,7 +49,7 @@ public class CSVExportTest {
     String csv;
     try {
       csv = new DefaultCSVExporter(new DefaultApacheCsvFormatAdapter()).export(extendedInput,
-          new Format());
+          config.getInput().getFormat());
     } catch (IOException e) {
       log.error("Error - exporting extended Input to CSV:");
       e.printStackTrace();
