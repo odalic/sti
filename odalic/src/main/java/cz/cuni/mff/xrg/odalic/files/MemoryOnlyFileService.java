@@ -6,7 +6,6 @@ package cz.cuni.mff.xrg.odalic.files;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -150,7 +149,7 @@ public final class MemoryOnlyFileService implements FileService {
     
     final String data = this.data.get(file.getLocation());
     if (data == null) {
-      return IOUtils.toString(file.getLocation(), StandardCharsets.UTF_8);
+      return IOUtils.toString(file.getLocation(), file.getFormat().getCharset());
     } else {
       return data;
     }
