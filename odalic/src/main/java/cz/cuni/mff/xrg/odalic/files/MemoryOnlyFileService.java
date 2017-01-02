@@ -6,6 +6,7 @@ package cz.cuni.mff.xrg.odalic.files;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +25,9 @@ public final class MemoryOnlyFileService implements FileService {
 
   private final Map<String, File> files;
   
-  private final Map<URL, String> data;
+  private final Map<URL, byte[]> data;
     
-  private MemoryOnlyFileService(Map<String, File> files, Map<URL, String> data) {
+  private MemoryOnlyFileService(Map<String, File> files, Map<URL, byte[]> data) {
     Preconditions.checkNotNull(files);
     Preconditions.checkNotNull(data);
     
@@ -117,7 +118,7 @@ public final class MemoryOnlyFileService implements FileService {
     Preconditions.checkArgument(file.isCached());
     
     this.files.put(file.getId(), file);
-    this.data.put(file.getLocation(), IOUtils.toString(fileInputStream, file.getFormat().getCharset()));
+    this.data.put(file.getLocation(), IOUtils.toByteArray(fileInputStream));
   }
 
   /* (non-Javadoc)
@@ -147,11 +148,13 @@ public final class MemoryOnlyFileService implements FileService {
   public String getDataById(String id) throws IOException {
     final File file = getById(id);
     
-    final String data = this.data.get(file.getLocation());
+    final byte[] data = this.data.get(file.getLocation());
+    final Charset encoding = file.getFormat().getCharset();
+    
     if (data == null) {
-      return IOUtils.toString(file.getLocation(), file.getFormat().getCharset());
+      return IOUtils.toString(file.getLocation(), encoding);
     } else {
-      return data;
+      return new String(data, encoding);
     }
   }
 }
