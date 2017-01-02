@@ -91,27 +91,8 @@ public final class Format {
       final boolean emptyLinesIgnored, final boolean headerCaseIgnored,
       final @Nullable Character quoteCharacter, final @Nullable Character escapeCharacter,
       final @Nullable Character commentMarker) {
-    Preconditions.checkNotNull(charset);
-
-    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Characters.isLineBreak(delimiter),
-        "The delimiter is a line break character.");
-    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Characters.isLineBreak(quoteCharacter),
-        "The quote character is a line break character.");
-    Preconditions.checkArgument(
-        !cz.cuni.mff.xrg.odalic.util.Characters.isLineBreak(escapeCharacter),
-        "The escape character is a line break character.");
-    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Characters.isLineBreak(commentMarker),
-        "The comment marker is a line break character.");
-
-    this.charset = charset;
-    this.delimiter = delimiter;
-    this.headerPresent = headerPresent;
-    this.emptyLinesIgnored = emptyLinesIgnored;
-    this.headerCaseIgnored = headerCaseIgnored;
-    this.quoteCharacter = quoteCharacter;
-    this.escapeCharacter = escapeCharacter;
-    this.commentMarker = commentMarker;
-    this.lineSeparator = System.lineSeparator();
+    this(charset, delimiter, headerPresent, emptyLinesIgnored, headerCaseIgnored,
+        quoteCharacter, escapeCharacter, commentMarker, System.lineSeparator());
   }
 
 
@@ -307,6 +288,6 @@ public final class Format {
     return "CsvConfiguration [charset=" + charset + ", delimiter=" + delimiter + ", headerPresent="
         + headerPresent + ", emptyLinesIgnored=" + emptyLinesIgnored + ", headerCaseIgnored="
         + headerCaseIgnored + ", quoteCharacter=" + quoteCharacter + ", escapeCharacter="
-        + escapeCharacter + ", commentMarker=" + commentMarker + ", lineSeparator=" + lineSeparator +"]";
+        + escapeCharacter + ", commentMarker=" + commentMarker + ", lineSeparator=" + lineSeparator + "]";
   }
 }
