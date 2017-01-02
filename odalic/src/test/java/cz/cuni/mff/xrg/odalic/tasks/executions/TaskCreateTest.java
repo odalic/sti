@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -39,7 +40,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 @RunWith(value = Parameterized.class)
 public class TaskCreateTest {
 
-  @SuppressWarnings("unused")
   private static final Logger log = LoggerFactory.getLogger(TaskCreateTest.class);
 
   private static Client client;
@@ -77,6 +77,15 @@ public class TaskCreateTest {
 
   @Test
   public void TestFileCreateTask() {
+
+    // Test of server availability by simple get request
+    try {
+      Response testResponse = target.path("files").request().get();
+      testResponse.close();
+    } catch (ProcessingException e) {
+      log.info("Server is not running, so test was stopped: " + e.getMessage());
+      return;
+    }
 
     // File settings
     FileDataBodyPart filePart = new FileDataBodyPart("input", file);
