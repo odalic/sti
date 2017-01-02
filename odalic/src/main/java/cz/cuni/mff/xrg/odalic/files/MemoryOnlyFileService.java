@@ -118,7 +118,7 @@ public final class MemoryOnlyFileService implements FileService {
     Preconditions.checkArgument(file.isCached());
     
     this.files.put(file.getId(), file);
-    this.data.put(file.getLocation(), IOUtils.toString(fileInputStream, StandardCharsets.UTF_8));
+    this.data.put(file.getLocation(), IOUtils.toString(fileInputStream, file.getFormat().getCharset()));
   }
 
   /* (non-Javadoc)
