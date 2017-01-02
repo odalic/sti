@@ -73,6 +73,6 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
     final String data = fileService.getDataById(fileId);
     final Format format = formatService.getForFileId(fileId);
 
-    return inputParser.parse(data, fileId, format, configuration.getRowsLimit());
+    return inputParser.parse(data, fileId, format, configuration.getRowsLimit()).getInput();
   }
 }

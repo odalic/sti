@@ -37,6 +37,7 @@ import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.DefaultInputToTableAdapter;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
+import cz.cuni.mff.xrg.odalic.input.ParsingResult;
 import cz.cuni.mff.xrg.odalic.positions.CellPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
@@ -57,7 +58,7 @@ public class CoreExecutionBatch {
   private static final Logger log = LoggerFactory.getLogger(CoreExecutionBatch.class);
 
   private static final Map<String, File> files = new HashMap<>();
-  private static final Map<URL, String> data = new HashMap<>();
+  private static final Map<URL, byte[]> data = new HashMap<>();
 
   private static Input input;
 
@@ -95,8 +96,8 @@ public class CoreExecutionBatch {
     try {
       final File file = new File(fileId, "", path.toUri().toURL(), new Format(), true);
       files.put(file.getId(), file);
-      data.put(file.getLocation(), IOUtils.toString(new FileInputStream(
-          file.getLocation().getFile()), StandardCharsets.UTF_8));
+      data.put(file.getLocation(), IOUtils.toByteArray(new FileInputStream(
+          file.getLocation().getFile())));
     } catch (IOException e) {
       log.error("Error - File settings:", e);
       return null;
@@ -113,13 +114,16 @@ public class CoreExecutionBatch {
   }
 
   public static Result testCoreExecution(String propertyFilePath, Task task) {
-    final String fileId = task.getConfiguration().getInput().getId();
+    final File file = task.getConfiguration().getInput();
 
     // Code for extraction from CSV
     try {
-      input = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
-          new DefaultApacheCsvFormatAdapter()).parse(data.get(files.get(fileId).getLocation()),
-              fileId, files.get(fileId).getFormat(), task.getConfiguration().getRowsLimit());
+      final ParsingResult parsingResult = new DefaultCsvInputParser(
+          new ListsBackedInputBuilder(), new DefaultApacheCsvFormatAdapter()).parse(
+              new String(data.get(file.getLocation()), file.getFormat().getCharset()),
+              file.getId(), file.getFormat(), task.getConfiguration().getRowsLimit());
+      file.setFormat(parsingResult.getFormat());
+      input = parsingResult.getInput();
       log.info("Input CSV file loaded.");
     } catch (IOException e) {
       log.error("Error - loading input CSV file:", e);

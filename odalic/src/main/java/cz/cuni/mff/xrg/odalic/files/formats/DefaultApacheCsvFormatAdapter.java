@@ -28,7 +28,8 @@ public final class DefaultApacheCsvFormatAdapter implements ApacheCsvFormatAdapt
   public CSVFormat toApacheCsvFormat(Format applicationFormat) {
     CSVFormat format = CSVFormat.newFormat(applicationFormat.getDelimiter())
         .withAllowMissingColumnNames().withIgnoreEmptyLines(applicationFormat.isEmptyLinesIgnored())
-        .withIgnoreHeaderCase(applicationFormat.isHeaderCaseIgnored());
+        .withIgnoreHeaderCase(applicationFormat.isHeaderCaseIgnored())
+        .withRecordSeparator(applicationFormat.getLineSeparator());
 
     final Character quoteCharacter = applicationFormat.getQuoteCharacter();
     if (quoteCharacter != null) {

@@ -24,6 +24,7 @@ import cz.cuni.mff.xrg.odalic.files.formats.FormatService;
 import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.InputToTableAdapter;
+import cz.cuni.mff.xrg.odalic.input.ParsingResult;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
@@ -108,7 +109,10 @@ public final class FutureBasedExecutionService implements ExecutionService {
       final String data = fileService.getDataById(fileId);
       final Format format = formatService.getForFileId(fileId);
 
-      final Input input = csvInputParser.parse(data, fileId, format, configuration.getRowsLimit());
+      final ParsingResult parsingResult = csvInputParser.parse(data, fileId, format, configuration.getRowsLimit());
+      formatService.setForFileId(fileId, parsingResult.getFormat());
+
+      final Input input = parsingResult.getInput();
       final Table table = inputToTableAdapter.toTable(input);
 
       final Map<String, SemanticTableInterpreter> interpreters =

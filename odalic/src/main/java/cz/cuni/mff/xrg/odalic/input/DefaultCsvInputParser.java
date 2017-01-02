@@ -21,6 +21,7 @@ import java.util.Map;
  * Default implementation of the {@link CsvInputParser}.
  * 
  * @author Jan Váňa
+ * @author Josef Janoušek
  */
 public final class DefaultCsvInputParser implements CsvInputParser {
 
@@ -38,14 +39,14 @@ public final class DefaultCsvInputParser implements CsvInputParser {
   }
 
   @Override
-  public Input parse(String content, String identifier, Format configuration, int rowsLimit) throws IOException {
+  public ParsingResult parse(String content, String identifier, Format configuration, int rowsLimit) throws IOException {
     try (Reader reader = new StringReader(content)) {
       return parse(reader, identifier, configuration, rowsLimit);
     }
   }
 
   @Override
-  public Input parse(InputStream stream, String identifier, Format configuration, int rowsLimit)
+  public ParsingResult parse(InputStream stream, String identifier, Format configuration, int rowsLimit)
       throws IOException {
     try (Reader reader = new InputStreamReader(stream, configuration.getCharset())) {
       return parse(reader, identifier, configuration, rowsLimit);
@@ -53,7 +54,7 @@ public final class DefaultCsvInputParser implements CsvInputParser {
   }
 
   @Override
-  public Input parse(Reader reader, String identifier, Format configuration, int rowsLimit) throws IOException {
+  public ParsingResult parse(Reader reader, String identifier, Format configuration, int rowsLimit) throws IOException {
     Preconditions.checkArgument(rowsLimit >= 0, "Rows limit must be a nonnegative number.");
     
     final CSVFormat format = this.apacheCsvFormatAdapter.toApacheCsvFormat(configuration);
@@ -73,7 +74,12 @@ public final class DefaultCsvInputParser implements CsvInputParser {
       row++;
     }
 
-    return inputBuilder.build();
+    return new ParsingResult(inputBuilder.build(), new Format(
+        configuration.getCharset(), configuration.getDelimiter(),
+        configuration.isHeaderPresent(), configuration.isEmptyLinesIgnored(),
+        configuration.isHeaderCaseIgnored(), configuration.getQuoteCharacter(),
+        configuration.getEscapeCharacter(), configuration.getCommentMarker(),
+        detectSeparator(reader)));
   }
 
   private void handleInputRow(CSVRecord row, int rowIndex) throws IOException {
@@ -95,5 +101,32 @@ public final class DefaultCsvInputParser implements CsvInputParser {
     for (Map.Entry<String, Integer> headerEntry : headerMap.entrySet()) {
       inputBuilder.insertHeader(headerEntry.getKey(), headerEntry.getValue());
     }
+  }
+
+  private String detectSeparator(Reader reader) throws IOException {
+    try {
+      reader.reset();
+    } catch (IOException e) {
+      // maybe reader does not support reset(), but that could not matter
+    }
+    int c = reader.read();
+    while (c > -1) {
+      if (c == 10) {
+        // Unix-style separator found
+        return "\n";
+      } else if (c == 13) {
+        int c2 = reader.read();
+        if (c2 == 10) {
+          // Windows-style separator found
+          return "\r\n";
+        } else {
+          // Older Mac-style separator found
+          return "\r";
+        }
+      }
+      c = reader.read();
+    }
+    // no separator found
+    return System.lineSeparator();
   }
 }

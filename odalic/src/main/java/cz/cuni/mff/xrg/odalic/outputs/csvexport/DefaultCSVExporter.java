@@ -44,8 +44,7 @@ public class DefaultCSVExporter implements CSVExporter {
   public String export(final Input content, final Format configuration) throws IOException {
     final CSVFormat format = this.apacheCsvFormatAdapter.toApacheCsvFormat(configuration);
     StringWriter stringWriter = new StringWriter();
-    CSVPrinter csvPrinter =
-        new CSVPrinter(stringWriter, format.withRecordSeparator(System.lineSeparator()));
+    CSVPrinter csvPrinter = new CSVPrinter(stringWriter, format);
 
     csvPrinter.printRecord(content.headers());
     csvPrinter.printRecords(content.rows());

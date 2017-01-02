@@ -13,12 +13,12 @@ import cz.cuni.mff.xrg.odalic.files.formats.Format;
  *
  */
 public interface CsvInputParser {
-  Input parse(String csvContent, String identifier, Format configuration, int rowsLimit)
+  ParsingResult parse(String csvContent, String identifier, Format configuration, int rowsLimit)
       throws IOException;
 
-  Input parse(Reader csvReader, String identifier, Format configuration, int rowsLimit)
+  ParsingResult parse(Reader csvReader, String identifier, Format configuration, int rowsLimit)
       throws IOException;
 
-  Input parse(InputStream csvStream, String identifier, Format configuration, int rowsLimit)
+  ParsingResult parse(InputStream csvStream, String identifier, Format configuration, int rowsLimit)
       throws IOException;
 }
