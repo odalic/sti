@@ -199,6 +199,7 @@ public class SPARQLProxy extends KBProxy {
       QuerySolution qs = rs.next();
       RDFNode subject = qs.get(SPARQL_VARIABLE_SUBJECT);
       RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+
       out.add(new Pair<>(subject.toString(), object != null ? object.toString() : defaultObjectValue));
     }
     return out;
@@ -626,6 +627,7 @@ public class SPARQLProxy extends KBProxy {
             log.debug("QUERY (resource labels, cache load)=" + queryCache + "|" + queryCache);
           }
         } catch (Exception e) {
+          log.error("Error fetching resource from the cache.", e);
         }
       }
       if (result == null) {
@@ -647,6 +649,8 @@ public class SPARQLProxy extends KBProxy {
       } else {
         attr.setValueURI(value);
       }
+    } else {
+      attr.setValueURI(value);
     }
   }
 
