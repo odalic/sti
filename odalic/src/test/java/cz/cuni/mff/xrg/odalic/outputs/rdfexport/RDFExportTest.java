@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.junit.BeforeClass;
@@ -56,11 +57,13 @@ public class RDFExportTest {
     }
 
     // Convert CSV file to Java Object Input
+    Format format = new Format();
     Input extendedInput;
     try (final FileInputStream inputFileStream = new FileInputStream(inputFile)) {
       extendedInput = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
-          new DefaultApacheCsvFormatAdapter()).parse(inputFileStream, inputFile.getName(),
-              new Format(), Integer.MAX_VALUE);
+          new DefaultApacheCsvFormatAdapter()).parse(
+              IOUtils.toString(inputFileStream, format.getCharset()),
+              inputFile.getName(), format, Integer.MAX_VALUE).getInput();
       log.info("Input CSV file loaded.");
     } catch (IOException e) {
       log.error("Error - loading input CSV file:");
