@@ -37,7 +37,8 @@ public final class ConfigurationValue implements Serializable {
     input = adaptee.getInput().getId();
     feedback = adaptee.getFeedback();
     primaryBase = adaptee.getPrimaryBase();
-    rowsLimit = adaptee.getRowsLimit();
+    rowsLimit =
+        adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
   }
 
   /**
@@ -108,6 +109,8 @@ public final class ConfigurationValue implements Serializable {
    * @param rowsLimit the maximum number of rows to process to set
    */
   public void setRowsLimit(final @Nullable Integer rowsLimit) {
+    Preconditions.checkArgument(rowsLimit == null || rowsLimit >= 0);
+
     this.rowsLimit = rowsLimit;
   }
 

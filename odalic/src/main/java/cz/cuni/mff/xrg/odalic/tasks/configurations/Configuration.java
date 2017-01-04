@@ -2,6 +2,7 @@ package cz.cuni.mff.xrg.odalic.tasks.configurations;
 
 import java.io.Serializable;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -22,14 +23,19 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 @XmlJavaTypeAdapter(ConfigurationAdapter.class)
 public final class Configuration implements Serializable {
 
-  private static final long serialVersionUID = -6359038623760039155L;
+  /**
+   * Maximum number of rows that can be processed.
+   */
+  public static final int MAXIMUM_ROWS_LIMIT = Integer.MAX_VALUE;
   
+  private static final long serialVersionUID = -6359038623760039155L;
+
   private final File input;
 
   private final Feedback feedback;
-  
+
   private final KnowledgeBase primaryBase;
-  
+
   private final int rowsLimit;
 
   /**
@@ -42,12 +48,14 @@ public final class Configuration implements Serializable {
    * 
    * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number
    */
-  public Configuration(final File input, final KnowledgeBase primaryBase, final int rowsLimit) {
+  public Configuration(final File input, final KnowledgeBase primaryBase,
+      @Nullable final Integer rowsLimit) {
     this(input, primaryBase, new Feedback(), rowsLimit);
   }
-  
+
   /**
-   * Creates configuration with provided feedback, which serves as hint for the processing algorithm.
+   * Creates configuration with provided feedback, which serves as hint for the processing
+   * algorithm.
    * 
    * @param input input specification
    * @param primaryBase primary knowledge base
@@ -56,17 +64,18 @@ public final class Configuration implements Serializable {
    * 
    * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number
    */
-  public Configuration(final File input, final KnowledgeBase primaryBase, final Feedback feedback, final int rowsLimit) {
+  public Configuration(final File input, final KnowledgeBase primaryBase, final Feedback feedback,
+      @Nullable final Integer rowsLimit) {
     Preconditions.checkNotNull(input);
     Preconditions.checkNotNull(primaryBase);
     Preconditions.checkNotNull(feedback);
-    
-    Preconditions.checkArgument(rowsLimit >= 0);
-    
+
+    Preconditions.checkArgument(rowsLimit == null || rowsLimit >= 0);
+
     this.input = input;
     this.primaryBase = primaryBase;
     this.feedback = feedback;
-    this.rowsLimit = rowsLimit;
+    this.rowsLimit = rowsLimit == null ? MAXIMUM_ROWS_LIMIT : rowsLimit;
   }
 
   /**
@@ -97,7 +106,9 @@ public final class Configuration implements Serializable {
     return rowsLimit;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -111,7 +122,9 @@ public final class Configuration implements Serializable {
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
@@ -141,7 +154,9 @@ public final class Configuration implements Serializable {
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
