@@ -63,7 +63,7 @@ public class TaskCreateTest {
 
     return Arrays.asList(new Object[][]{
       {new File(directory, "Books-v2.csv"),
-        new Format(StandardCharsets.UTF_8, ';', true, true, false, null, null, null),
+        new Format(StandardCharsets.UTF_8, ';', true, false, null, null, null),
         10}
     });
   }

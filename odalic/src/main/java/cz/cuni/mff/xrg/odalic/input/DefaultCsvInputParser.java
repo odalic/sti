@@ -39,24 +39,26 @@ public final class DefaultCsvInputParser implements CsvInputParser {
   }
 
   @Override
-  public ParsingResult parse(String content, String identifier, Format configuration, int rowsLimit) throws IOException {
+  public ParsingResult parse(String content, String identifier, Format configuration, int rowsLimit)
+      throws IOException {
     try (Reader reader = new StringReader(content)) {
       return parse(reader, identifier, configuration, rowsLimit);
     }
   }
 
   @Override
-  public ParsingResult parse(InputStream stream, String identifier, Format configuration, int rowsLimit)
-      throws IOException {
+  public ParsingResult parse(InputStream stream, String identifier, Format configuration,
+      int rowsLimit) throws IOException {
     try (Reader reader = new InputStreamReader(stream, configuration.getCharset())) {
       return parse(reader, identifier, configuration, rowsLimit);
     }
   }
 
   @Override
-  public ParsingResult parse(Reader reader, String identifier, Format configuration, int rowsLimit) throws IOException {
+  public ParsingResult parse(Reader reader, String identifier, Format configuration, int rowsLimit)
+      throws IOException {
     Preconditions.checkArgument(rowsLimit >= 0, "Rows limit must be a nonnegative number.");
-    
+
     final CSVFormat format = this.apacheCsvFormatAdapter.toApacheCsvFormat(configuration);
     final CSVParser parser = format.parse(reader);
 
@@ -69,17 +71,16 @@ public final class DefaultCsvInputParser implements CsvInputParser {
       if (row >= rowsLimit) {
         break;
       }
-      
+
       handleInputRow(record, row);
       row++;
     }
 
-    return new ParsingResult(inputBuilder.build(), new Format(
-        configuration.getCharset(), configuration.getDelimiter(),
-        configuration.isHeaderPresent(), configuration.isEmptyLinesIgnored(),
-        configuration.isHeaderCaseIgnored(), configuration.getQuoteCharacter(),
-        configuration.getEscapeCharacter(), configuration.getCommentMarker(),
-        detectSeparator(reader)));
+    return new ParsingResult(inputBuilder.build(),
+        new Format(configuration.getCharset(), configuration.getDelimiter(),
+            configuration.isEmptyLinesIgnored(), configuration.isHeaderCaseIgnored(),
+            configuration.getQuoteCharacter(), configuration.getEscapeCharacter(),
+            configuration.getCommentMarker(), detectSeparator(reader)));
   }
 
   private void handleInputRow(CSVRecord row, int rowIndex) throws IOException {

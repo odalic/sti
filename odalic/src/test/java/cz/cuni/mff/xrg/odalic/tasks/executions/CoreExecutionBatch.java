@@ -105,7 +105,7 @@ public class CoreExecutionBatch {
 
     // Format settings
     files.get(fileId).setFormat(new Format(
-        StandardCharsets.UTF_8, ';', true, true, false, null, null, null));
+        StandardCharsets.UTF_8, ';', true, false, null, null, null));
 
     // Task settings
     return new Task("simple_task", "task description",

@@ -64,7 +64,7 @@ public final class FormatResource {
       throw new BadRequestException("Character set not set.");
     }
     
-    final Format format = new Format(charset, formatValue.getDelimiter(), formatValue.isHeaderPresent(), formatValue.isEmptyLinesIgnored(), formatValue.isHeaderCaseIgnored(), formatValue.getQuoteCharacter(), formatValue.getEscapeCharacter(), formatValue.getCommentMarker());
+    final Format format = new Format(charset, formatValue.getDelimiter(), formatValue.isEmptyLinesIgnored(), formatValue.isHeaderCaseIgnored(), formatValue.getQuoteCharacter(), formatValue.getEscapeCharacter(), formatValue.getCommentMarker());
 
     try {
       formatService.setForFileId(id, format);

@@ -21,7 +21,7 @@ public final class FormatValue implements Serializable {
 
   private String charset;
   private char delimiter;
-  private boolean headerPresent;
+  private Boolean headerPresent;
   private boolean emptyLinesIgnored;
   private boolean headerCaseIgnored;
   private Character quoteCharacter;
@@ -32,7 +32,7 @@ public final class FormatValue implements Serializable {
   public FormatValue(Format adaptee) {
     charset = adaptee.getCharset().name();
     delimiter = adaptee.getDelimiter();
-    headerPresent = adaptee.isHeaderPresent();
+    headerPresent = null; // Deprecated.
     emptyLinesIgnored = adaptee.isEmptyLinesIgnored();
     headerCaseIgnored = adaptee.isHeaderCaseIgnored();
     quoteCharacter = adaptee.getQuoteCharacter();
@@ -85,17 +85,20 @@ public final class FormatValue implements Serializable {
 
   /**
    * @return the headerPresent
+   * @deprecated
    */
   @XmlElement
-  public boolean isHeaderPresent() {
+  @Nullable
+  public Boolean isHeaderPresent() {
     return headerPresent;
   }
 
 
   /**
    * @param headerPresent the headerPresent to set
+   * @deprecated
    */
-  public void setHeaderPresent(boolean headerPresent) {
+  public void setHeaderPresent(@Nullable Boolean headerPresent) {
     this.headerPresent = headerPresent;
   }
 

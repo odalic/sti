@@ -36,9 +36,7 @@ public final class DefaultApacheCsvFormatAdapter implements ApacheCsvFormatAdapt
       format = format.withQuote(quoteCharacter);
     }
 
-    if (applicationFormat.isHeaderPresent()) {
-      format = format.withHeader();
-    }
+    format = format.withHeader(); // Must be present.
 
     final Character escapeCharacter = applicationFormat.getEscapeCharacter();
     if (escapeCharacter != null) {
