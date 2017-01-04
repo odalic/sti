@@ -212,4 +212,11 @@ public final class FileResource {
 
     return Response.ok(data).build();
   }
+  
+  @GET
+  @Path("{id}/data")
+  @Produces(TEXT_CSV_MEDIA_TYPE)
+  public Response getCsvDataByIdAtData(@PathParam("id") String id) throws IOException {
+    return getCsvDataById(id);
+  }
 }
