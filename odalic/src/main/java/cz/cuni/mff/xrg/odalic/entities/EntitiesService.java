@@ -79,5 +79,5 @@ public interface EntitiesService {
    * @return created entity
    * @throws IllegalArgumentException when the entity is already defined or some part of the proposal is invalid
    */
-  Entity propose(KnowledgeBase base, PropertyProposal proposal) throws KBProxyException;
+  Entity propose(KnowledgeBase base, PropertyProposal proposal) throws KBProxyException, STIException, IOException;
 }
