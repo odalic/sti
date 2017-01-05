@@ -353,13 +353,7 @@ public class SPARQLProxy extends KBProxy {
 
   @Override
   public Entity insertClass(URI uri, String label, Collection<String> alternativeLabels, String superClass) throws KBProxyException {
-    if (!isInsertSupported()){
-      throw new KBProxyException("Insertion of new classes is not supported for the " + kbDefinition.getName() + " knowledge base.");
-    }
-
-    if (isNullOrEmpty(label)){
-      throw new KBProxyException("Label of the new class must not be empty.");
-    }
+    performInsertChecks(label);
 
     String url = checkOrGenerateUrl(kbDefinition.getInsertSchemaElementPrefix(), uri);
 
@@ -378,13 +372,7 @@ public class SPARQLProxy extends KBProxy {
 
   @Override
   public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels, Collection<String> classes) throws KBProxyException {
-    if (!isInsertSupported()){
-      throw new KBProxyException("Insertion of new concepts is not supported for the " + kbDefinition.getName() + " knowledge base.");
-    }
-
-    if (isNullOrEmpty(label)){
-      throw new KBProxyException("Label of the new concept must not be empty.");
-    }
+    performInsertChecks(label);
 
     String url = checkOrGenerateUrl(kbDefinition.getInsertDataElementPrefix(), uri);
 
@@ -394,6 +382,24 @@ public class SPARQLProxy extends KBProxy {
     if (!typeSpecified){
       appendValue(tripleDefinition, kbDefinition.getInsertInstanceOf(), kbDefinition.getInsertRootClass(), false);
     }
+
+    insert(tripleDefinition.toString());
+    return new Entity(url, label);
+  }
+
+  @Override
+  public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range) throws KBProxyException {
+    performInsertChecks(label);
+
+    String url = checkOrGenerateUrl(kbDefinition.getInsertSchemaElementPrefix(), uri);
+
+    StringBuilder tripleDefinition = createTripleDefinitionBase(url, label);
+    appendCollection(tripleDefinition, kbDefinition.getInsertAlternativeLabel(), alternativeLabels, true);
+    appendValue(tripleDefinition, kbDefinition.getInsertInstanceOf(), kbDefinition.getInsertPropertyType(), false);
+
+    appendValueIfNotEmpty(tripleDefinition, kbDefinition.getInsertSubProperty(), superProperty, false);
+    appendValueIfNotEmpty(tripleDefinition, kbDefinition.getInsertDomain(), domain, false);
+    appendValueIfNotEmpty(tripleDefinition, kbDefinition.getInsertRange(), range, false);
 
     insert(tripleDefinition.toString());
     return new Entity(url, label);
@@ -416,6 +422,17 @@ public class SPARQLProxy extends KBProxy {
     return result;
   }
 
+
+  private void performInsertChecks(String label) throws KBProxyException {
+    if (!isInsertSupported()){
+      throw new KBProxyException("Insertion of is not supported for the " + kbDefinition.getName() + " knowledge base.");
+    }
+
+    if (isNullOrEmpty(label)){
+      throw new KBProxyException("Label must not be empty.");
+    }
+  }
+
   private boolean appendCollection(StringBuilder tripleDefinition, String predicate, Collection<String> values, boolean isLiteral) {
     if (values == null) {
       return false;
@@ -432,6 +449,12 @@ public class SPARQLProxy extends KBProxy {
     }
 
     return  valueAppended;
+  }
+
+  private void appendValueIfNotEmpty(StringBuilder tripleDefinition, String predicate, String value, boolean isLiteral) {
+    if (!isNullOrEmpty(value)) {
+      appendValue(tripleDefinition, predicate, value, isLiteral);
+    }
   }
 
   private void appendValue(StringBuilder tripleDefinition, String predicate, String value, boolean isLiteral) {

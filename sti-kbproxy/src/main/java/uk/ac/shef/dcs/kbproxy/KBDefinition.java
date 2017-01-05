@@ -53,6 +53,10 @@ public class KBDefinition {
   private static final String INSERT_INSTANCE_OF = "kb.insert.instance.of";
   private static final String INSERT_CLASS_TYPE = "kb.insert.class.type";
   private static final String INSERT_GRAPH = "kb.insert.graph";
+  private static final String INSERT_PROPERTY_TYPE = "kb.insert.property.type";
+  private static final String INSERT_SUB_PROPERTY = "kb.insert.sub.property";
+  private static final String INSERT_DOMAIN = "kb.insert.domain";
+  private static final String INSERT_RANGE = "kb.insert.range";
 
   //endregion
 
@@ -81,6 +85,10 @@ public class KBDefinition {
   private String insertInstanceOf;
   private String insertClassType;
   private String insertGraph;
+  private String insertPropertyType;
+  private String insertSubProperty;
+  private String insertDomain;
+  private String insertRange;
 
 //endregion
 
@@ -254,6 +262,38 @@ public class KBDefinition {
     this.insertGraph = insertGraph;
   }
 
+  public String getInsertPropertyType() {
+    return insertPropertyType;
+  }
+
+  private void setInsertPropertyType(String insertPropertyType) {
+    this.insertPropertyType = insertPropertyType;
+  }
+
+  public String getInsertSubProperty() {
+    return insertSubProperty;
+  }
+
+  private void setInsertSubProperty(String insertSubProperty) {
+    this.insertSubProperty = insertSubProperty;
+  }
+
+  public String getInsertDomain() {
+    return insertDomain;
+  }
+
+  private void setInsertDomain(String insertDomain) {
+    this.insertDomain = insertDomain;
+  }
+
+  public String getInsertRange() {
+    return insertRange;
+  }
+
+  private void setInsertRange(String insertRange) {
+    this.insertRange = insertRange;
+  }
+
   //endregion
 
   //region constructor
@@ -334,6 +374,10 @@ public class KBDefinition {
       setInsertInstanceOf(kbProperties.getProperty(INSERT_INSTANCE_OF));
       setInsertClassType(kbProperties.getProperty(INSERT_CLASS_TYPE));
       setInsertGraph(kbProperties.getProperty(INSERT_GRAPH));
+      setInsertPropertyType(kbProperties.getProperty(INSERT_PROPERTY_TYPE));
+      setInsertSubProperty(kbProperties.getProperty(INSERT_SUB_PROPERTY));
+      setInsertDomain(kbProperties.getProperty(INSERT_DOMAIN));
+      setInsertRange(kbProperties.getProperty(INSERT_RANGE));
     }
   }
 

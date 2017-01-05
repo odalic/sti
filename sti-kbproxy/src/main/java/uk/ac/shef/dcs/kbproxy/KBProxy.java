@@ -197,6 +197,11 @@ public abstract class KBProxy {
   public abstract Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels, Collection<String> classes) throws KBProxyException;
 
   /**
+   * Inserts a new propety into the knowledge base
+   */
+  public abstract Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range) throws KBProxyException;
+
+  /**
    * save the computed semantic similarity between the entity and class
    */
   public void cacheEntityClazzSimilarity(String entity_id, String clazz_url, double score, boolean biDirectional,
