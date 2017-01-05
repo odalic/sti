@@ -43,10 +43,9 @@ public final class Configuration implements Serializable {
    * 
    * @param input
    * @param primaryBase
-   * @param rowsLimit
    * @param rowsLimit maximum number of rows to let the algorithm process
    * 
-   * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number
+   * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number or zero
    */
   public Configuration(final File input, final KnowledgeBase primaryBase,
       @Nullable final Integer rowsLimit) {
@@ -62,7 +61,7 @@ public final class Configuration implements Serializable {
    * @param feedback constraints for the algorithm
    * @param rowsLimit maximum number of rows to let the algorithm process
    * 
-   * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number
+   * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number or zero
    */
   public Configuration(final File input, final KnowledgeBase primaryBase, final Feedback feedback,
       @Nullable final Integer rowsLimit) {
@@ -70,7 +69,7 @@ public final class Configuration implements Serializable {
     Preconditions.checkNotNull(primaryBase);
     Preconditions.checkNotNull(feedback);
 
-    Preconditions.checkArgument(rowsLimit == null || rowsLimit >= 0);
+    Preconditions.checkArgument(rowsLimit == null || rowsLimit > 0);
 
     this.input = input;
     this.primaryBase = primaryBase;

@@ -57,7 +57,7 @@ public final class DefaultCsvInputParser implements CsvInputParser {
   @Override
   public ParsingResult parse(Reader reader, String identifier, Format configuration, int rowsLimit)
       throws IOException {
-    Preconditions.checkArgument(rowsLimit >= 0, "Rows limit must be a nonnegative number.");
+    Preconditions.checkArgument(rowsLimit > 0, "Rows limit must be a positive number.");
 
     final CSVFormat format = this.apacheCsvFormatAdapter.toApacheCsvFormat(configuration);
     final CSVParser parser = format.parse(reader);
@@ -74,6 +74,10 @@ public final class DefaultCsvInputParser implements CsvInputParser {
 
       handleInputRow(record, row);
       row++;
+    }
+
+    if (row == 0) {
+      throw new IOException("There are no data rows in the CSV file.");
     }
 
     return new ParsingResult(inputBuilder.build(),
