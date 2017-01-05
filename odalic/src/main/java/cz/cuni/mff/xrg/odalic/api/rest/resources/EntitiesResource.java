@@ -175,6 +175,9 @@ public final class EntitiesResource {
     } catch (KBProxyException e) {
       logger.error("KB proxy error", e);
       throw new InternalServerErrorException(e.getLocalizedMessage());
+    } catch (Exception e) {
+      logger.error("Unexpected exception", e);
+      throw new InternalServerErrorException(e.getLocalizedMessage());
     }
 
     return Reply.data(Response.Status.OK, createdProperty, uriInfo).toResponse();

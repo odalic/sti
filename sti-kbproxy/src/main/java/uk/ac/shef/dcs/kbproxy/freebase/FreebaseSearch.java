@@ -318,6 +318,9 @@ public class FreebaseSearch extends KBProxy {
     throw new KBProxyException("Inserting new concepts in not supported for the Freebase.");
   }
 
+  public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range) throws KBProxyException {
+    throw new KBProxyException("Inserting new concepts in not supported for the Freebase.");
+  }
 
   @SuppressWarnings("unchecked")
   private List<Attribute> find_attributes(String id, SolrCache cache) throws KBProxyException {

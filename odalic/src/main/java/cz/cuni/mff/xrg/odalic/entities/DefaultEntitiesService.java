@@ -98,11 +98,7 @@ public final class DefaultEntitiesService implements EntitiesService {
   public Entity propose(KnowledgeBase base, ClassProposal proposal) throws KBProxyException, STIException, IOException {
     KBProxy kbProxy = getKBProxy(base);
 
-    String superClassUri = null;
-    Entity superClass = proposal.getSuperClass();
-    if (superClass != null) {
-      superClassUri = superClass.getResource();
-    }
+    String superClassUri = getEntityValue(proposal.getSuperClass());
 
     uk.ac.shef.dcs.kbproxy.model.Entity entity = kbProxy.insertClass(proposal.getSuffix(),
         proposal.getLabel(), proposal.getAlternativeLabels(), superClassUri);
@@ -111,10 +107,17 @@ public final class DefaultEntitiesService implements EntitiesService {
   }
   
   @Override
-  public Entity propose(KnowledgeBase base, PropertyProposal proposal) throws KBProxyException {
-    //TODO: Implement.
-    
-    return new Entity("http://odalic.eu/dummy", "Dummy label");
+  public Entity propose(KnowledgeBase base, PropertyProposal proposal) throws KBProxyException, STIException, IOException {
+    KBProxy kbProxy = getKBProxy(base);
+
+    String superPropertyUri = getEntityValue(proposal.getSuperProperty());
+    String rangeUri = getEntityValue(proposal.getRange());
+    String domainUri = getEntityValue(proposal.getDomain());
+
+    uk.ac.shef.dcs.kbproxy.model.Entity entity = kbProxy.insertProperty(proposal.getSuffix(),
+            proposal.getLabel(), proposal.getAlternativeLabels(), superPropertyUri, rangeUri, domainUri);
+
+    return new Entity(entity.getId(), entity.getLabel());
   }
 
   /*
@@ -147,5 +150,14 @@ public final class DefaultEntitiesService implements EntitiesService {
     }
 
     return kbProxy;
+  }
+
+  private String getEntityValue(Entity property) {
+    if (property != null) {
+      return property.getResource();
+    }
+    else {
+      return null;
+    }
   }
 }
