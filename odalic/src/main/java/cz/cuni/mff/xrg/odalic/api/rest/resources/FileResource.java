@@ -25,6 +25,8 @@ import javax.ws.rs.core.UriInfo;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,7 +49,9 @@ import cz.cuni.mff.xrg.odalic.files.formats.Format;
 public final class FileResource {
 
   public static final String TEXT_CSV_MEDIA_TYPE = "text/csv";
-
+  
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileResource.class);
+  
   private final FileService fileService;
 
   @Context
@@ -76,7 +80,7 @@ public final class FileResource {
     try {
       file = fileService.getById(id);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The file does not exist!");
+      throw new NotFoundException("The file does not exist!", e);
     }
 
     return Reply.data(Response.Status.OK, file, uriInfo).toResponse();
@@ -193,7 +197,7 @@ public final class FileResource {
     try {
       fileService.deleteById(id);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The file does not exist!");
+      throw new NotFoundException("The file does not exist!", e);
     }
 
     return Message.of("File definition deleted.").toResponse(Response.Status.OK, uriInfo);
@@ -207,6 +211,8 @@ public final class FileResource {
     try {
       data = fileService.getDataById(id);
     } catch (final IllegalArgumentException e) {
+      LOGGER.error(e.getMessage(), e);
+      
       return Response.status(Response.Status.NOT_FOUND).build();
     }
 

@@ -51,7 +51,7 @@ public final class CsvExportResource {
       throw new NotFoundException(
           "The underlying CSV is not available, because the processing did not finish. Check the result first!");
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("No such underlying CSV found!");
+      throw new NotFoundException("No such underlying CSV found!", e);
     }
 
     return Response.ok(csvContent).build();

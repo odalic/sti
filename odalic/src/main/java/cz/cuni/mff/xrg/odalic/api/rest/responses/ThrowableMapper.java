@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
  */
 public final class ThrowableMapper implements ExceptionMapper<Throwable> {
 
-  private static final Logger logger = LoggerFactory.getLogger(ThrowableMapper.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ThrowableMapper.class);
 
   @Context
   private HttpHeaders headers;
@@ -47,7 +47,7 @@ public final class ThrowableMapper implements ExceptionMapper<Throwable> {
 
     final String text = throwable.getMessage();
 
-    logger.warn("Mapping of throwable " + text, throwable);
+    LOGGER.warn("Mapping of throwable " + text, throwable);
 
     final StringWriter trace = new StringWriter();
     throwable.printStackTrace(new PrintWriter(trace));

@@ -51,9 +51,9 @@ public final class ResultResource {
     try {
       resultForTaskId = executionService.getResultForTaskId(taskId);
     } catch (final CancellationException e) {
-      throw new NotFoundException("Result is not available, because the processing was canceled.");
+      throw new NotFoundException("Result is not available, because the processing was canceled.", e);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task has not been scheduled or does not exist!");
+      throw new NotFoundException("The task has not been scheduled or does not exist!", e);
     }
     
     return Reply.data(Response.Status.OK, resultForTaskId, uriInfo).toResponse();

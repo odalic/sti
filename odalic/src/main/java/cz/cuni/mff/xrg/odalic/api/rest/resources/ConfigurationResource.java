@@ -66,7 +66,7 @@ public final class ConfigurationResource {
     try {
       input = fileService.getById(configurationValue.getInput());
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException("The configured input file is not registered.");
+      throw new BadRequestException("The configured input file is not registered.", e);
     }
 
     final Configuration configuration;
@@ -85,7 +85,7 @@ public final class ConfigurationResource {
     try {
       configurationService.setForTaskId(id, configuration);
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException("The configured task does not exist.");
+      throw new BadRequestException("The configured task does not exist.", e);
     }
     return Message.of("Configuration set.").toResponse(Response.Status.OK, uriInfo);
   }
@@ -97,7 +97,7 @@ public final class ConfigurationResource {
     try {
       configurationForTaskId = configurationService.getForTaskId(taskId);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("Configuration for the task does not exist.");
+      throw new NotFoundException("Configuration for the task does not exist.", e);
     }
 
     return Reply.data(Response.Status.OK, configurationForTaskId, uriInfo).toResponse();

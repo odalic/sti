@@ -50,9 +50,9 @@ public final class ExecutionResource {
     try {
       executionService.submitForTaskId(id);
     } catch (final IllegalStateException e) {
-      throw new WebApplicationException("The task has already been scheduled!", Response.Status.CONFLICT);
+      throw new WebApplicationException("The task has already been scheduled!", e, Response.Status.CONFLICT);
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException("The task does not exist!");
+      throw new BadRequestException("The task does not exist!", e);
     }
     
     return Message.of("Execution submitted.").toResponse(Response.Status.OK, uriInfo);
@@ -64,9 +64,9 @@ public final class ExecutionResource {
     try {
       executionService.cancelForTaskId(id);
     } catch (final IllegalStateException e) {
-      throw new WebApplicationException("The task has already finished!", Response.Status.CONFLICT);
+      throw new WebApplicationException("The task has already finished!", e, Response.Status.CONFLICT);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task has not been scheduled or does not exist!");
+      throw new NotFoundException("The task has not been scheduled or does not exist!", e);
     }
     
     return Message.of("Execution canceled.").toResponse(Response.Status.OK, uriInfo);
