@@ -3,6 +3,8 @@
  */
 package cz.cuni.mff.xrg.odalic.api.rest;
 
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
 import javax.xml.bind.JAXBException;
 
 import cz.cuni.mff.xrg.odalic.api.rest.resources.*;
@@ -11,6 +13,8 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
+
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import cz.cuni.mff.xrg.odalic.api.rest.filters.CorsResponseFilter;
 import cz.cuni.mff.xrg.odalic.api.rest.filters.LoggingResponseFilter;
@@ -26,6 +30,13 @@ import cz.cuni.mff.xrg.odalic.api.rest.responses.ThrowableMapper;
 public final class Configuration extends ResourceConfig {
 
   public Configuration() throws JAXBException {
+    /* Jersey JSON exception mapping bug workaround.
+     * 
+     * https://java.net/jira/browse/JERSEY-2722
+     * 
+     */
+    register(JacksonJaxbJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
+    
     // Resources registration
     register(FileResource.class);
     register(TaskResource.class);
@@ -52,7 +63,7 @@ public final class Configuration extends ResourceConfig {
     // Features registration
     register(JacksonFeature.class);
     register(MultiPartFeature.class);
-
+    
     // Prevent the container to interfere with the error entities. 
     property(ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR, "true");
   }
