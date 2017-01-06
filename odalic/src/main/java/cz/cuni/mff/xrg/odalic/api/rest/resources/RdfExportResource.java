@@ -5,12 +5,13 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,8 @@ public final class RdfExportResource {
   public static final String TURTLE_MIME_TYPE = "text/turtle";
   public static final String JSON_LD_MIME_TYPE = "application/ld+json";
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(RdfExportResource.class);
+
   private final RdfExportService rdfExportService;
 
   @Autowired
@@ -48,10 +51,15 @@ public final class RdfExportResource {
     try {
       rdfContent = rdfExportService.exportToTurtle(taskId);
     } catch (final CancellationException | ExecutionException e) {
-      throw new NotFoundException(
-          "RDF export is not available, because the processing did not finish. Check the result first!");
+      LOGGER.error(
+          "RDF export is not available, because the processing did not finish. Check the result first!",
+          e);
+
+      return Response.status(Response.Status.NOT_FOUND).build();
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task has not been scheduled or does not exist!");
+      LOGGER.error("The task has not been scheduled or does not exist!", e);
+
+      return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     return Response.ok(rdfContent).build();
@@ -65,10 +73,15 @@ public final class RdfExportResource {
     try {
       rdfContent = rdfExportService.exportToJsonLd(taskId);
     } catch (final CancellationException | ExecutionException e) {
-      throw new NotFoundException(
-          "RDF export is not available, because the processing did not finish. Check the result first!");
+      LOGGER.error(
+          "RDF export is not available, because the processing did not finish. Check the result first!",
+          e);
+
+      return Response.status(Response.Status.NOT_FOUND).build();
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task has not been scheduled or does not exist!");
+      LOGGER.error("The task has not been scheduled or does not exist!", e);
+
+      return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     return Response.ok(rdfContent).build();

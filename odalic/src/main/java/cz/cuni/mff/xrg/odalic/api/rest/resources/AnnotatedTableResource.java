@@ -49,9 +49,9 @@ public final class AnnotatedTableResource {
       table = annotatedTableService.getAnnotatedTableForTaskId(taskId);
     } catch (final CancellationException | ExecutionException e) {
       throw new NotFoundException(
-          "Annotated table is not available, because the processing did not finish. Check the result first!");
+          "Annotated table is not available, because the processing did not finish. Check the result first!", e);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task has not been scheduled or does not exist!");
+      throw new NotFoundException("The task has not been scheduled or does not exist!", e);
     }
 
     return Response.ok(table).build();

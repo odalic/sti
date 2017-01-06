@@ -106,7 +106,7 @@ public final class TaskResource {
     try {
       task = taskService.getById(id);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task does not exist!");
+      throw new NotFoundException("The task does not exist!", e);
     }
 
     return Reply.data(Response.Status.OK, task, uriInfo).toResponse();
@@ -136,7 +136,7 @@ public final class TaskResource {
     try {
       input = fileService.getById(configurationValue.getInput());
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException("The input file does not exist!");
+      throw new BadRequestException("The input file does not exist!", e);
     }
 
     final Configuration configuration;
@@ -173,7 +173,7 @@ public final class TaskResource {
     try {
       taskService.deleteById(id);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task does not exist!");
+      throw new NotFoundException("The task does not exist!", e);
     }
 
     return Message.of("Task deleted.").toResponse(Response.Status.OK, uriInfo);

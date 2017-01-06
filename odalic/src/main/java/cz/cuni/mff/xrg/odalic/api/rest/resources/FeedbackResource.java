@@ -53,7 +53,7 @@ public final class FeedbackResource {
     try {
       feedbackService.setForTaskId(id, feedback);
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException("The task that the feedback is made to does not exist!");
+      throw new BadRequestException("The task that the feedback is made to does not exist!", e);
     }
     
     return Message.of("Feedback set.").toResponse(Response.Status.OK, uriInfo);
@@ -66,7 +66,7 @@ public final class FeedbackResource {
     try {
       feedbackForTaskId = feedbackService.getForTaskId(taskId);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task does not exist!");
+      throw new NotFoundException("The task does not exist!", e);
     }
     
     return Reply.data(Response.Status.OK, feedbackForTaskId, uriInfo).toResponse();
@@ -80,7 +80,7 @@ public final class FeedbackResource {
     try {
       inputForTaskId = feedbackService.getInputForTaskId(id);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task does not exist!");
+      throw new NotFoundException("The task does not exist!", e);
     }
     
     return Reply.data(Response.Status.OK, inputForTaskId, uriInfo).toResponse();

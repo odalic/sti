@@ -49,7 +49,7 @@ public final class StateResource {
     try {
       state = States.queryStateValue(executionService, id);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task does not exist!");
+      throw new NotFoundException("The task does not exist!", e);
     }
     
     return Reply.data(Response.Status.OK, state, uriInfo)

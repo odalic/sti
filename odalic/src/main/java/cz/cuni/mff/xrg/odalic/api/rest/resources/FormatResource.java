@@ -57,11 +57,11 @@ public final class FormatResource {
     try {
       charset = Charset.forName(formatValue.getCharset());
     } catch (final IllegalCharsetNameException e) {
-      throw new BadRequestException("Illegal character set name.");
+      throw new BadRequestException("Illegal character set name.", e);
     } catch (final UnsupportedCharsetException e) {
-      throw new BadRequestException("Character set not supported.");
+      throw new BadRequestException("Character set not supported.", e);
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException("Character set not set.");
+      throw new BadRequestException("Character set not set.", e);
     }
     
     final Format format = new Format(charset, formatValue.getDelimiter(), formatValue.isEmptyLinesIgnored(), formatValue.isHeaderCaseIgnored(), formatValue.getQuoteCharacter(), formatValue.getEscapeCharacter(), formatValue.getCommentMarker());
@@ -69,7 +69,7 @@ public final class FormatResource {
     try {
       formatService.setForFileId(id, format);
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException("The file does not exist.");
+      throw new BadRequestException("The file does not exist.", e);
     }
     return Message.of("Format set.").toResponse(Response.Status.OK, uriInfo);
   }
@@ -81,7 +81,7 @@ public final class FormatResource {
     try {
       formatForFileId = formatService.getForFileId(id);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("File does not exist.");
+      throw new NotFoundException("File does not exist.", e);
     }
 
     return Reply.data(Response.Status.OK, formatForFileId, uriInfo)
