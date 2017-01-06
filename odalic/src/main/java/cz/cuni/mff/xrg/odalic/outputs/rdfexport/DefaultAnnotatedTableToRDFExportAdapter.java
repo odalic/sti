@@ -125,7 +125,12 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
           log.warn("Value in column named '{}' does not exist, no triple is produced", columnSubjectName);
           continue;
         }
-        subject = factory.createIRI(row.get(subjectPosition));
+        try {
+          subject = factory.createIRI(row.get(subjectPosition));
+        } catch (NullPointerException | IllegalArgumentException e) {
+          log.error("No triple is produced because of " + e);
+          continue;
+        }
         
         // create the object(s)
         objects.clear();
@@ -162,13 +167,21 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
               continue;
             }
             for (String item : row.get(objectPosition).split(oltp.getSeparator())) {
-              objects.add(factory.createIRI(item));
+              try {
+                objects.add(factory.createIRI(item));
+              } catch (NullPointerException | IllegalArgumentException e) {
+                log.error("No triple is produced because of " + e);
+              }
             }
           }
           else {
             // object pattern contains URIs:
             for (String item : oltp.getObjectPattern().split(oltp.getSeparator())) {
-              objects.add(factory.createIRI(item));
+              try {
+                objects.add(factory.createIRI(item));
+              } catch (NullPointerException | IllegalArgumentException e) {
+                log.error("No triple is produced because of " + e);
+              }
             }
           }
         }
@@ -188,11 +201,19 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
               log.warn("Value in column named '{}' does not exist, no triple is produced", columnName);
               continue;
             }
-            objects.add(factory.createIRI(row.get(objectPosition)));
+            try {
+              objects.add(factory.createIRI(row.get(objectPosition)));
+            } catch (NullPointerException | IllegalArgumentException e) {
+              log.error("No triple is produced because of " + e);
+            }
           }
           else {
             // object pattern contains URI:
-            objects.add(factory.createIRI(otp.getObjectPattern()));
+            try {
+              objects.add(factory.createIRI(otp.getObjectPattern()));
+            } catch (NullPointerException | IllegalArgumentException e) {
+              log.error("No triple is produced because of " + e);
+            }
           }
         }
         else {
