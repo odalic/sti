@@ -61,11 +61,8 @@ public class TaskCreateTest {
 
     String directory = "d:\\Documents\\Odalic\\TestFiles";
 
-    return Arrays.asList(new Object[][]{
-      {new File(directory, "Books-v2.csv"),
-        new Format(StandardCharsets.UTF_8, ';', true, false, null, null, null),
-        10}
-    });
+    return Arrays.asList(new Object[][] {{new File(directory, "Books-v2.csv"),
+        new Format(StandardCharsets.UTF_8, ';', true, null, null, null), 10}});
   }
 
   @BeforeClass
@@ -97,8 +94,8 @@ public class TaskCreateTest {
     fileResponse.close();
 
     // Format settings
-    Response formatResponse = target.path("files").path(file.getName()).path("format").request()
-        .put(Entity.json(format));
+    Response formatResponse =
+        target.path("files").path(file.getName()).path("format").request().put(Entity.json(format));
     formatResponse.close();
 
     // Task settings
@@ -114,8 +111,8 @@ public class TaskCreateTest {
     task.setDescription(file.getName() + " task description");
     task.setConfiguration(configuration);
 
-    Response taskResponse = target.path("tasks").path(task.getId()).request()
-        .put(Entity.json(task));
+    Response taskResponse =
+        target.path("tasks").path(task.getId()).request().put(Entity.json(task));
     taskResponse.close();
   }
 

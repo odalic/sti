@@ -96,21 +96,19 @@ public class CoreExecutionBatch {
     try {
       final File file = new File(fileId, "", path.toUri().toURL(), new Format(), true);
       files.put(file.getId(), file);
-      data.put(file.getLocation(), IOUtils.toByteArray(new FileInputStream(
-          file.getLocation().getFile())));
+      data.put(file.getLocation(),
+          IOUtils.toByteArray(new FileInputStream(file.getLocation().getFile())));
     } catch (IOException e) {
       log.error("Error - File settings:", e);
       return null;
     }
 
     // Format settings
-    files.get(fileId).setFormat(new Format(
-        StandardCharsets.UTF_8, ';', true, false, null, null, null));
+    files.get(fileId).setFormat(new Format(StandardCharsets.UTF_8, ';', true, null, null, null));
 
     // Task settings
-    return new Task("simple_task", "task description",
-        new Configuration(files.get(fileId), new KnowledgeBase("DBpedia"),
-            createFeedback(true), Integer.MAX_VALUE));
+    return new Task("simple_task", "task description", new Configuration(files.get(fileId),
+        new KnowledgeBase("DBpedia"), createFeedback(true), Integer.MAX_VALUE));
   }
 
   public static Result testCoreExecution(String propertyFilePath, Task task) {
@@ -118,10 +116,10 @@ public class CoreExecutionBatch {
 
     // Code for extraction from CSV
     try {
-      final ParsingResult parsingResult = new DefaultCsvInputParser(
-          new ListsBackedInputBuilder(), new DefaultApacheCsvFormatAdapter()).parse(
-              new String(data.get(file.getLocation()), file.getFormat().getCharset()),
-              file.getId(), file.getFormat(), task.getConfiguration().getRowsLimit());
+      final ParsingResult parsingResult = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
+          new DefaultApacheCsvFormatAdapter()).parse(
+              new String(data.get(file.getLocation()), file.getFormat().getCharset()), file.getId(),
+              file.getFormat(), task.getConfiguration().getRowsLimit());
       file.setFormat(parsingResult.getFormat());
       input = parsingResult.getInput();
       log.info("Input CSV file loaded.");
@@ -153,8 +151,8 @@ public class CoreExecutionBatch {
     try {
       for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : semanticTableInterpreters
           .entrySet()) {
-        Constraints constraints = new DefaultFeedbackToConstraintsAdapter()
-            .toConstraints(task.getConfiguration().getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
+        Constraints constraints = new DefaultFeedbackToConstraintsAdapter().toConstraints(
+            task.getConfiguration().getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
 
         TAnnotation annotationResult = interpreterEntry.getValue().start(table, constraints);
 

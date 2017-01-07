@@ -82,9 +82,9 @@ public final class DefaultCsvInputParser implements CsvInputParser {
 
     return new ParsingResult(inputBuilder.build(),
         new Format(configuration.getCharset(), configuration.getDelimiter(),
-            configuration.isEmptyLinesIgnored(), configuration.isHeaderCaseIgnored(),
-            configuration.getQuoteCharacter(), configuration.getEscapeCharacter(),
-            configuration.getCommentMarker(), detectSeparator(reader)));
+            configuration.isEmptyLinesIgnored(), configuration.getQuoteCharacter(),
+            configuration.getEscapeCharacter(), configuration.getCommentMarker(),
+            detectSeparator(reader)));
   }
 
   private void handleInputRow(CSVRecord row, int rowIndex) throws IOException {

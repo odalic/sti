@@ -63,8 +63,10 @@ public final class FormatResource {
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException("Character set not set.", e);
     }
-    
-    final Format format = new Format(charset, formatValue.getDelimiter(), formatValue.isEmptyLinesIgnored(), formatValue.isHeaderCaseIgnored(), formatValue.getQuoteCharacter(), formatValue.getEscapeCharacter(), formatValue.getCommentMarker());
+
+    final Format format = new Format(charset, formatValue.getDelimiter(),
+        formatValue.isEmptyLinesIgnored(), formatValue.getQuoteCharacter(),
+        formatValue.getEscapeCharacter(), formatValue.getCommentMarker());
 
     try {
       formatService.setForFileId(id, format);
@@ -84,7 +86,6 @@ public final class FormatResource {
       throw new NotFoundException("File does not exist.", e);
     }
 
-    return Reply.data(Response.Status.OK, formatForFileId, uriInfo)
-        .toResponse();
+    return Reply.data(Response.Status.OK, formatForFileId, uriInfo).toResponse();
   }
 }
