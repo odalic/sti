@@ -21,9 +21,7 @@ public final class FormatValue implements Serializable {
 
   private String charset;
   private char delimiter;
-  private Boolean headerPresent;
   private boolean emptyLinesIgnored;
-  private boolean headerCaseIgnored;
   private Character quoteCharacter;
   private Character escapeCharacter;
   private Character commentMarker;
@@ -32,9 +30,7 @@ public final class FormatValue implements Serializable {
   public FormatValue(Format adaptee) {
     charset = adaptee.getCharset().name();
     delimiter = adaptee.getDelimiter();
-    headerPresent = null; // Deprecated.
     emptyLinesIgnored = adaptee.isEmptyLinesIgnored();
-    headerCaseIgnored = adaptee.isHeaderCaseIgnored();
     quoteCharacter = adaptee.getQuoteCharacter();
     escapeCharacter = adaptee.getEscapeCharacter();
     commentMarker = adaptee.getCommentMarker();
@@ -84,26 +80,6 @@ public final class FormatValue implements Serializable {
 
 
   /**
-   * @return the headerPresent
-   * @deprecated
-   */
-  @XmlElement
-  @Nullable
-  public Boolean isHeaderPresent() {
-    return headerPresent;
-  }
-
-
-  /**
-   * @param headerPresent the headerPresent to set
-   * @deprecated
-   */
-  public void setHeaderPresent(@Nullable Boolean headerPresent) {
-    this.headerPresent = headerPresent;
-  }
-
-
-  /**
    * @return the emptyLinesIgnored
    */
   @XmlElement
@@ -122,19 +98,20 @@ public final class FormatValue implements Serializable {
 
   /**
    * @return the headerCaseIgnored
+   * @deprecated
    */
   @XmlElement
-  public boolean isHeaderCaseIgnored() {
-    return headerCaseIgnored;
+  @Nullable
+  public Boolean isHeaderCaseIgnored() {
+    return null;
   }
 
 
   /**
    * @param headerCaseIgnored the headerCaseIgnored to set
+   * @deprecated
    */
-  public void setHeaderCaseIgnored(boolean headerCaseIgnored) {
-    this.headerCaseIgnored = headerCaseIgnored;
-  }
+  public void setHeaderCaseIgnored(Boolean headerCaseIgnored) {}
 
 
   /**
@@ -198,9 +175,8 @@ public final class FormatValue implements Serializable {
    */
   @Override
   public String toString() {
-    return "FormatValue [charset=" + charset + ", delimiter=" + delimiter + ", headerPresent="
-        + headerPresent + ", emptyLinesIgnored=" + emptyLinesIgnored + ", headerCaseIgnored="
-        + headerCaseIgnored + ", quoteCharacter=" + quoteCharacter + ", escapeCharacter="
+    return "FormatValue [charset=" + charset + ", delimiter=" + delimiter + ", emptyLinesIgnored="
+        + emptyLinesIgnored + ", quoteCharacter=" + quoteCharacter + ", escapeCharacter="
         + escapeCharacter + ", commentMarker=" + commentMarker + "]";
   }
 }

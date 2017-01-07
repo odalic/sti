@@ -24,7 +24,6 @@ public final class Format {
   private final Charset charset;
   private final char delimiter;
   private final boolean emptyLinesIgnored;
-  private final boolean headerCaseIgnored;
   private final Character quoteCharacter;
   private final Character escapeCharacter;
   private final Character commentMarker;
@@ -38,16 +37,14 @@ public final class Format {
    * @param charset character set
    * @param delimiter fields delimiter
    * @param emptyLinesIgnored ignore empty lines
-   * @param headerCaseIgnored ignore header case
    * @param quoteCharacter use this quote character
    * @param escapeCharacter use this escaping character
    * @param commentMarker use this comment marker
    * @param lineSeparator use this line separator for generating new CSV file
    */
   public Format(final Charset charset, final char delimiter, final boolean emptyLinesIgnored,
-      final boolean headerCaseIgnored, final @Nullable Character quoteCharacter,
-      final @Nullable Character escapeCharacter, final @Nullable Character commentMarker,
-      final String lineSeparator) {
+      final @Nullable Character quoteCharacter, final @Nullable Character escapeCharacter,
+      final @Nullable Character commentMarker, final String lineSeparator) {
     Preconditions.checkNotNull(charset);
     Preconditions.checkNotNull(lineSeparator);
 
@@ -64,7 +61,6 @@ public final class Format {
     this.charset = charset;
     this.delimiter = delimiter;
     this.emptyLinesIgnored = emptyLinesIgnored;
-    this.headerCaseIgnored = headerCaseIgnored;
     this.quoteCharacter = quoteCharacter;
     this.escapeCharacter = escapeCharacter;
     this.commentMarker = commentMarker;
@@ -78,17 +74,15 @@ public final class Format {
    * @param charset character set
    * @param delimiter fields delimiter
    * @param emptyLinesIgnored ignore empty lines
-   * @param headerCaseIgnored ignore header case
    * @param quoteCharacter use this quote character
    * @param escapeCharacter use this escaping character
    * @param commentMarker use this comment marker
    */
-  public Format(final Charset charset, final char delimiter,
-      final boolean emptyLinesIgnored, final boolean headerCaseIgnored,
+  public Format(final Charset charset, final char delimiter, final boolean emptyLinesIgnored,
       final @Nullable Character quoteCharacter, final @Nullable Character escapeCharacter,
       final @Nullable Character commentMarker) {
-    this(charset, delimiter, emptyLinesIgnored, headerCaseIgnored, quoteCharacter, escapeCharacter,
-        commentMarker, System.lineSeparator());
+    this(charset, delimiter, emptyLinesIgnored, quoteCharacter, escapeCharacter, commentMarker,
+        System.lineSeparator());
   }
 
 
@@ -100,7 +94,6 @@ public final class Format {
     charset = StandardCharsets.UTF_8;
     delimiter = ';';
     emptyLinesIgnored = true;
-    headerCaseIgnored = false;
     quoteCharacter = null;
     escapeCharacter = null;
     commentMarker = null;
@@ -129,14 +122,6 @@ public final class Format {
    */
   public boolean isEmptyLinesIgnored() {
     return emptyLinesIgnored;
-  }
-
-
-  /**
-   * @return the header case ignored
-   */
-  public boolean isHeaderCaseIgnored() {
-    return headerCaseIgnored;
   }
 
 
@@ -189,7 +174,6 @@ public final class Format {
     result = prime * result + delimiter;
     result = prime * result + (emptyLinesIgnored ? 1231 : 1237);
     result = prime * result + ((escapeCharacter == null) ? 0 : escapeCharacter.hashCode());
-    result = prime * result + (headerCaseIgnored ? 1231 : 1237);
     result = prime * result + ((quoteCharacter == null) ? 0 : quoteCharacter.hashCode());
     result = prime * result + ((lineSeparator == null) ? 0 : lineSeparator.hashCode());
     return result;
@@ -240,9 +224,6 @@ public final class Format {
     } else if (!escapeCharacter.equals(other.escapeCharacter)) {
       return false;
     }
-    if (headerCaseIgnored != other.headerCaseIgnored) {
-      return false;
-    }
     if (quoteCharacter == null) {
       if (other.quoteCharacter != null) {
         return false;
@@ -269,8 +250,8 @@ public final class Format {
   @Override
   public String toString() {
     return "CsvConfiguration [charset=" + charset + ", delimiter=" + delimiter
-        + ", emptyLinesIgnored=" + emptyLinesIgnored + ", headerCaseIgnored=" + headerCaseIgnored
-        + ", quoteCharacter=" + quoteCharacter + ", escapeCharacter=" + escapeCharacter
-        + ", commentMarker=" + commentMarker + ", lineSeparator=" + lineSeparator + "]";
+        + ", emptyLinesIgnored=" + emptyLinesIgnored + ", quoteCharacter=" + quoteCharacter
+        + ", escapeCharacter=" + escapeCharacter + ", commentMarker=" + commentMarker
+        + ", lineSeparator=" + lineSeparator + "]";
   }
 }
