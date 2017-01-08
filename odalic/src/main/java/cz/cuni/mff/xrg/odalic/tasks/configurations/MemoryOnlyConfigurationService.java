@@ -16,14 +16,17 @@ import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 public final class MemoryOnlyConfigurationService implements ConfigurationService {
 
   private final TaskService taskService;
-  
-  /* (non-Javadoc)
-   * @see cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService#getForTaskId(java.lang.String)
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService#getForTaskId(java.lang.String)
    */
   @Override
   public Configuration getForTaskId(String taskId) {
     final Task task = taskService.getById(taskId);
-    
+
     return task.getConfiguration();
   }
 
@@ -32,16 +35,17 @@ public final class MemoryOnlyConfigurationService implements ConfigurationServic
    * @param configuration
    */
   @Override
-  public void setForTaskId(String taskId, Configuration configuration) {
+  public void setForTaskId(final String taskId, final Configuration configuration) {
     final Task task = taskService.getById(taskId);
-    
-    task.setConfiguration(configuration);
+
+    taskService
+        .replace(new Task(task.getId(), task.getDescription(), task.getCreated(), configuration));
   }
-  
+
   @Autowired
-  public MemoryOnlyConfigurationService(TaskService taskService) {
+  public MemoryOnlyConfigurationService(final TaskService taskService) {
     Preconditions.checkNotNull(taskService);
-    
+
     this.taskService = taskService;
   }
 }
