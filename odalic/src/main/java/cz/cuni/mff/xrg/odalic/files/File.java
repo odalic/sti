@@ -3,11 +3,9 @@ package cz.cuni.mff.xrg.odalic.files;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
-
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
-
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.FileValueOutputAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 
@@ -27,12 +25,12 @@ public final class File implements Serializable {
   private final Date uploaded;
 
   private final String owner;
-  
+
   private final URL location;
-  
-  private Format format;
-  
+
   private final boolean cached;
+
+  private Format format;
 
   /**
    * Create new file description.
@@ -44,13 +42,14 @@ public final class File implements Serializable {
    * @param format CSV file format
    * @param cached boolean
    */
-  public File(final String id, final Date uploaded, final String owner, final URL location, final Format format, final boolean cached) {
+  public File(final String id, final Date uploaded, final String owner, final URL location,
+      final Format format, final boolean cached) {
     Preconditions.checkNotNull(id);
     Preconditions.checkNotNull(uploaded);
     Preconditions.checkNotNull(owner);
     Preconditions.checkNotNull(location);
     Preconditions.checkNotNull(format);
-    
+
     this.id = id;
     this.uploaded = uploaded;
     this.owner = owner;
@@ -58,7 +57,7 @@ public final class File implements Serializable {
     this.format = format;
     this.cached = cached;
   }
-  
+
   /**
    * Create new file description for a file uploaded now.
    * 
@@ -68,7 +67,8 @@ public final class File implements Serializable {
    * @param format CSV file format
    * @param cached cached
    */
-  public File(final String id, final String owner, final URL location, final Format format, final boolean cached) {
+  public File(final String id, final String owner, final URL location, final Format format,
+      final boolean cached) {
     this(id, new Date(), owner, location, format, cached);
   }
 
@@ -99,7 +99,14 @@ public final class File implements Serializable {
   public URL getLocation() {
     return location;
   }
-  
+
+  /**
+   * @return cached
+   */
+  public boolean isCached() {
+    return cached;
+  }
+
   /**
    * @return the format
    */
@@ -112,15 +119,8 @@ public final class File implements Serializable {
    */
   public void setFormat(Format format) {
     Preconditions.checkNotNull(format);
-    
-    this.format = format;
-  }
 
-  /**
-   * @return cached
-   */
-  public boolean isCached() {
-    return cached;
+    this.format = format;
   }
 
   /**
@@ -159,7 +159,9 @@ public final class File implements Serializable {
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
