@@ -1,5 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
+import java.io.IOException;
+
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -42,7 +44,7 @@ public final class ExecutionResource {
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response putExecutionForTaskId(@PathParam("id") String id, ExecutionValue execution) {
+  public Response putExecutionForTaskId(@PathParam("id") String id, ExecutionValue execution) throws IOException {
     if (execution == null) {
       throw new BadRequestException("The execution must be provided!");
     }

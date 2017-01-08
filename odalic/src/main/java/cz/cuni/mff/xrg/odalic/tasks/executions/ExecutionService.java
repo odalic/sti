@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
+import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
@@ -18,8 +19,9 @@ public interface ExecutionService {
    * 
    * @param id task ID
    * @throws IllegalStateException if the task has already been submitted for execution
+   * @throws IOException when there is a I/O during input parsing
    */
-  void submitForTaskId(String id) throws IllegalStateException;
+  void submitForTaskId(String id) throws IllegalStateException, IOException;
   
   /**
    * Attempts to cancel execution of the task.

@@ -83,6 +83,10 @@ public final class FeedbackResource {
       throw new NotFoundException("The task does not exist!", e);
     }
     
+    if (inputForTaskId == null) {
+      throw new NotFoundException("The input snapshot does not exist yet!");
+    }
+    
     return Reply.data(Response.Status.OK, inputForTaskId, uriInfo).toResponse();
   }
 }

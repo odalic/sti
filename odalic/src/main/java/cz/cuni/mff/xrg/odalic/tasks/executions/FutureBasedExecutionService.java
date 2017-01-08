@@ -3,6 +3,7 @@
  */
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -93,7 +94,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
    * @see cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService#submitForTaskId(java.lang.String)
    */
   @Override
-  public void submitForTaskId(String id) throws IllegalStateException {
+  public void submitForTaskId(String id) throws IllegalStateException, IOException {
     final Task task = taskService.getById(id);
 
     final Future<Result> resultFuture = tasksToResults.get(task);
@@ -103,16 +104,18 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final File file = configuration.getInput();
     final String fileId = file.getId();
 
+    final String data = fileService.getDataById(fileId);
+    final Format format = formatService.getForFileId(fileId);
+    
+    final ParsingResult parsingResult = csvInputParser.parse(data, fileId, format, configuration.getRowsLimit());
+    formatService.setForFileId(fileId, parsingResult.getFormat());
+    
+    final Input input = parsingResult.getInput();
+    task.setInputSnapshot(input);
+    
     final Callable<Result> execution = () -> {
       //TODO: DRY access to the input.
       
-      final String data = fileService.getDataById(fileId);
-      final Format format = formatService.getForFileId(fileId);
-
-      final ParsingResult parsingResult = csvInputParser.parse(data, fileId, format, configuration.getRowsLimit());
-      formatService.setForFileId(fileId, parsingResult.getFormat());
-
-      final Input input = parsingResult.getInput();
       final Table table = inputToTableAdapter.toTable(input);
 
       final Map<String, SemanticTableInterpreter> interpreters =
