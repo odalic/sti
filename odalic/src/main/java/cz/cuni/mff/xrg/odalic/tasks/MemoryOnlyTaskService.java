@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
+import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 
@@ -110,12 +111,10 @@ public final class MemoryOnlyTaskService implements TaskService {
    */
   @Override
   public void create(final Task task) {
+    Preconditions.checkNotNull(task);
     Preconditions.checkArgument(verifyTaskExistenceById(task.getId()) == null);
 
     replace(task);
-    
-    final Configuration configuration = task.getConfiguration();
-    fileService.subscribe(configuration.getInput(), task);
   }
 
   /*
@@ -124,8 +123,20 @@ public final class MemoryOnlyTaskService implements TaskService {
    * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#replace(cz.cuni.mff.xrg.odalic.tasks.Task)
    */
   @Override
-  public void replace(Task task) {
-    tasks.put(task.getId(), task);
+  public void replace(final Task task) {
+    Preconditions.checkNotNull(task);
+    
+    final Task previous = tasks.put(task.getId(), task);
+    if (previous != null) {
+      final Configuration previousConfiguration = previous.getConfiguration();
+      final File previousInput = previousConfiguration.getInput();
+      
+      fileService.unsubscribe(previousInput, previous);
+    }
+    
+    final Configuration configuration = task.getConfiguration();
+    final File input = configuration.getInput();
+    fileService.subscribe(input, task);
   }
 
   @Override

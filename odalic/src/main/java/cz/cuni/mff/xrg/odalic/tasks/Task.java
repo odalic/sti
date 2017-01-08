@@ -53,6 +53,7 @@ public final class Task implements Serializable {
     this.description = description;
     this.created = created;
     this.configuration = configuration;
+    this.inputSnapshot = null; // Invalidate.
   }
 
   /**
