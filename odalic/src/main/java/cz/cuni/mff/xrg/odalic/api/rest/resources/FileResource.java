@@ -49,9 +49,9 @@ import cz.cuni.mff.xrg.odalic.files.formats.Format;
 public final class FileResource {
 
   public static final String TEXT_CSV_MEDIA_TYPE = "text/csv";
-  
+
   private static final Logger LOGGER = LoggerFactory.getLogger(FileResource.class);
-  
+
   private final FileService fileService;
 
   @Context
@@ -126,9 +126,8 @@ public final class FileResource {
     }
 
     final Format usedFormat = getFormatOrDefault(fileInput);
-    
-    final File file =
-        new File(id, "", fileInput.getLocation(), usedFormat, false);
+
+    final File file = new File(id, "", fileInput.getLocation(), usedFormat, false);
 
     if (!fileService.existsFileWithId(id)) {
       fileService.create(file);
@@ -198,6 +197,8 @@ public final class FileResource {
       fileService.deleteById(id);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("The file does not exist!", e);
+    } catch (final IllegalStateException e) {
+      throw new WebApplicationException(e.getMessage(), e, Response.Status.CONFLICT);
     }
 
     return Message.of("File definition deleted.").toResponse(Response.Status.OK, uriInfo);
@@ -212,13 +213,13 @@ public final class FileResource {
       data = fileService.getDataById(id);
     } catch (final IllegalArgumentException e) {
       LOGGER.error(e.getMessage(), e);
-      
+
       return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     return Response.ok(data).build();
   }
-  
+
   @GET
   @Path("{id}/data")
   @Produces(TEXT_CSV_MEDIA_TYPE)
