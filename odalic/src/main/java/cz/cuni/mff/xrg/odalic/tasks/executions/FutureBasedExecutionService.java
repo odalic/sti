@@ -13,6 +13,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
@@ -52,6 +54,8 @@ import uk.ac.shef.dcs.sti.core.model.Table;
  */
 public final class FutureBasedExecutionService implements ExecutionService {
 
+  private static final Logger logger = LoggerFactory.getLogger(FutureBasedExecutionService.class);
+  
   private final TaskService taskService;
   private final FileService fileService;
   private final FormatService formatService;
@@ -114,23 +118,27 @@ public final class FutureBasedExecutionService implements ExecutionService {
     task.setInputSnapshot(input);
     
     final Callable<Result> execution = () -> {
-      //TODO: DRY access to the input.
-      
-      final Table table = inputToTableAdapter.toTable(input);
-
-      final Map<String, SemanticTableInterpreter> interpreters =
-          semanticTableInterpreterFactory.getInterpreters();
-
-      Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
-      for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters.entrySet()) {
-        final Constraints constraints = feedbackToConstraintsAdapter.toConstraints(
-            configuration.getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
-        final TAnnotation annotationResult = interpreterEntry.getValue().start(table, constraints);
-        results.put(new KnowledgeBase(interpreterEntry.getKey()), annotationResult);
+      try {
+        final Table table = inputToTableAdapter.toTable(input);
+  
+        final Map<String, SemanticTableInterpreter> interpreters =
+            semanticTableInterpreterFactory.getInterpreters();
+  
+        Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
+        for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters.entrySet()) {
+          final Constraints constraints = feedbackToConstraintsAdapter.toConstraints(
+              configuration.getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
+          final TAnnotation annotationResult = interpreterEntry.getValue().start(table, constraints);
+          results.put(new KnowledgeBase(interpreterEntry.getKey()), annotationResult);
+        }
+        final Result result = annotationResultAdapter.toResult(results);
+  
+        return result;
+      } catch (final Exception e) {
+        logger.error("Error during task execution!", e);
+        
+        throw e;
       }
-      final Result result = annotationResultAdapter.toResult(results);
-
-      return result;
     };
 
     final Future<Result> future = executorService.submit(execution);
