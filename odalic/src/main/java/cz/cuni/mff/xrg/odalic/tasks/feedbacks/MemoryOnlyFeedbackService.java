@@ -7,12 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
-import cz.cuni.mff.xrg.odalic.files.File;
-import cz.cuni.mff.xrg.odalic.files.FileService;
-import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.files.formats.FormatService;
-import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.Input;
+import cz.cuni.mff.xrg.odalic.tasks.Task;
+import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 
@@ -24,24 +21,17 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
  */
 public final class MemoryOnlyFeedbackService implements FeedbackService {
 
+  private TaskService taskService;
   private final ConfigurationService configurationService;
-  private final FileService fileService;
-  private final FormatService formatService;
-  private final CsvInputParser inputParser;
 
   @Autowired
   public MemoryOnlyFeedbackService(final ConfigurationService configurationService,
-      final FileService fileService, final FormatService formatService,
-      final CsvInputParser inputParser) {
+      final TaskService taskService) {
     Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(formatService);
-    Preconditions.checkNotNull(inputParser);
+    Preconditions.checkNotNull(taskService);
 
     this.configurationService = configurationService;
-    this.fileService = fileService;
-    this.formatService = formatService;
-    this.inputParser = inputParser;
+    this.taskService = taskService;
   }
 
   @Override
@@ -65,14 +55,8 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
    */
   @Override
   public Input getInputForTaskId(String taskId) throws IllegalArgumentException, IOException {
-    //TODO: DRY access to the input.
-    final Configuration configuration = configurationService.getForTaskId(taskId);
-    final File file = configuration.getInput();
-    final String fileId = file.getId();
+    final Task task = taskService.getById(taskId);
 
-    final String data = fileService.getDataById(fileId);
-    final Format format = formatService.getForFileId(fileId);
-
-    return inputParser.parse(data, fileId, format, configuration.getRowsLimit()).getInput();
+    return task.getInputSnapshot();
   }
 }
