@@ -94,7 +94,7 @@ public final class Format {
     charset = StandardCharsets.UTF_8;
     delimiter = ';';
     emptyLinesIgnored = true;
-    quoteCharacter = null;
+    quoteCharacter = '"';
     escapeCharacter = null;
     commentMarker = null;
     lineSeparator = System.lineSeparator();
