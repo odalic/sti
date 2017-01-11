@@ -34,6 +34,7 @@ public class KBDefinition {
   private static final String STRUCTURE_PROPERTY_NAME = "kb.structure";
   private static final String LANGUAGE_SUFFIX = "kb.languageSuffix";
   private static final String USE_BIF_CONTAINS = "kb.useBifContains";
+  private static final String TREAT_URL_AS_LABEL = "kb.treatUrlAsLabel";
 
   private static final String PREDICATE_NAME_PROPERTY_NAME = "kb.predicate.name";
   private static final String PREDICATE_LABEL_PROPERTY_NAME = "kb.predicate.label";
