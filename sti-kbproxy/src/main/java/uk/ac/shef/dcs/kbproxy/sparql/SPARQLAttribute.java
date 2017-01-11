@@ -18,8 +18,7 @@ public class SPARQLAttribute extends Attribute {
 
     @Override
     public boolean isAlias(KBDefinition definition) {
-        return KBProxyUtils.contains(definition.getPredicateLabel(), getRelationURI()) ||
-                KBProxyUtils.contains(definition.getPredicateName(), getRelationURI());
+        return KBProxyUtils.contains(definition.getPredicateLabel(), getRelationURI());
     }
 
     @Override

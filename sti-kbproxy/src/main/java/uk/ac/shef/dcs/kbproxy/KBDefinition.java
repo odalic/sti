@@ -34,6 +34,7 @@ public class KBDefinition {
   private static final String STRUCTURE_PROPERTY_NAME = "kb.structure";
   private static final String LANGUAGE_SUFFIX = "kb.languageSuffix";
   private static final String USE_BIF_CONTAINS = "kb.useBifContains";
+  private static final String TREAT_URL_AS_LABEL = "kb.treatUrlAsLabel";
 
   private static final String PREDICATE_NAME_PROPERTY_NAME = "kb.predicate.name";
   private static final String PREDICATE_LABEL_PROPERTY_NAME = "kb.predicate.label";
@@ -72,6 +73,7 @@ public class KBDefinition {
 
   private String languageSuffix;
   private boolean useBifContains;
+  private boolean treatUrlAsLabel;
 
   private String cacheTemplatePath;
 
@@ -156,6 +158,14 @@ public class KBDefinition {
 
   private void setUseBifContains(boolean useBifContains) {
     this.useBifContains = useBifContains;
+  }
+
+  public boolean getTreatUrlAsLabel() {
+    return treatUrlAsLabel;
+  }
+
+  private void setTreatUrlAsLabel(boolean treatUrlAsLabel) {
+    this.treatUrlAsLabel = treatUrlAsLabel;
   }
 
   public Set<String> getPredicateName() {
@@ -336,6 +346,11 @@ public class KBDefinition {
     // Vistuoso specific settings
     if (kbProperties.containsKey(USE_BIF_CONTAINS)) {
       setUseBifContains(Boolean.parseBoolean(kbProperties.getProperty(USE_BIF_CONTAINS)));
+    }
+
+    // Label specific settings
+    if (kbProperties.containsKey(TREAT_URL_AS_LABEL)) {
+      setTreatUrlAsLabel(Boolean.parseBoolean(kbProperties.getProperty(TREAT_URL_AS_LABEL)));
     }
 
     // Loading structure
