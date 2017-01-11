@@ -73,7 +73,6 @@ public class KBDefinition {
 
   private String languageSuffix;
   private boolean useBifContains;
-  private boolean treatUrlAsLabel;
 
   private String cacheTemplatePath;
 
@@ -158,14 +157,6 @@ public class KBDefinition {
 
   private void setUseBifContains(boolean useBifContains) {
     this.useBifContains = useBifContains;
-  }
-
-  public boolean getTreatUrlAsLabel() {
-    return treatUrlAsLabel;
-  }
-
-  private void setTreatUrlAsLabel(boolean treatUrlAsLabel) {
-    this.treatUrlAsLabel = treatUrlAsLabel;
   }
 
   public Set<String> getPredicateName() {
@@ -346,11 +337,6 @@ public class KBDefinition {
     // Vistuoso specific settings
     if (kbProperties.containsKey(USE_BIF_CONTAINS)) {
       setUseBifContains(Boolean.parseBoolean(kbProperties.getProperty(USE_BIF_CONTAINS)));
-    }
-
-    // Label specific settings
-    if (kbProperties.containsKey(TREAT_URL_AS_LABEL)) {
-      setTreatUrlAsLabel(Boolean.parseBoolean(kbProperties.getProperty(TREAT_URL_AS_LABEL)));
     }
 
     // Loading structure
