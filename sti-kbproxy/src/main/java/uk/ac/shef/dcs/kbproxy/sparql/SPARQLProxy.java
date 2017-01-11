@@ -783,6 +783,9 @@ public class SPARQLProxy extends KBProxy {
     return builder;
   }
 
+  /**
+   * Strips the searched value of all special characters and creates a proper search expression from the individual words.
+   **/
   private String createFulltextExpression(String content) {
     StringBuilder result = new StringBuilder("'");
 
