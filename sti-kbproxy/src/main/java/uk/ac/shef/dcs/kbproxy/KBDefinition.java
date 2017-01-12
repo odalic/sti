@@ -18,8 +18,14 @@ import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
  * Created by Jan
  */
 public class KBDefinition {
-  //region Consts
 
+  public enum SEARCH_CLASS_TYPE_MODE_VALUE {
+    DIRECT,
+    INDIRECT
+  }
+
+
+  //region Consts
   private static final String PATH_SEPARATOR = "\\|";
   private static final String URL_SEPARATOR = " ";
 
@@ -33,6 +39,7 @@ public class KBDefinition {
 
   private static final String STRUCTURE_PROPERTY_NAME = "kb.structure";
   private static final String LANGUAGE_SUFFIX = "kb.languageSuffix";
+  private static final String SEARCH_CLASS_TYPE_MODE = "kb.search.class.type.mode";
   private static final String USE_BIF_CONTAINS = "kb.useBifContains";
 
   private static final String PREDICATE_NAME_PROPERTY_NAME = "kb.predicate.name";
@@ -71,6 +78,7 @@ public class KBDefinition {
   private String stopListFile;
 
   private String languageSuffix;
+  private SEARCH_CLASS_TYPE_MODE_VALUE searchClassTypeMode;
   private boolean useBifContains;
 
   private String cacheTemplatePath;
@@ -141,6 +149,15 @@ public class KBDefinition {
   private void setLanguageSuffix(String languageSuffix) {
     this.languageSuffix = languageSuffix;
   }
+
+  public SEARCH_CLASS_TYPE_MODE_VALUE getSearchClassTypeMode() {
+    return searchClassTypeMode;
+  }
+
+  public void setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE searchClassTypeMode) {
+    this.searchClassTypeMode = searchClassTypeMode;
+  }
+
 
   public String getCacheTemplatePath() {
     return cacheTemplatePath;
@@ -331,6 +348,21 @@ public class KBDefinition {
     // Language preferences
     if (kbProperties.containsKey(LANGUAGE_SUFFIX)) {
       setLanguageSuffix(kbProperties.getProperty(LANGUAGE_SUFFIX));
+    }
+
+    if (kbProperties.containsKey(SEARCH_CLASS_TYPE_MODE)) {
+      setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE.valueOf(kbProperties.getProperty(SEARCH_CLASS_TYPE_MODE).toUpperCase()));
+      //check the value is correct
+      if (!getSearchClassTypeMode().equals(SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT) && !getSearchClassTypeMode().equals(SEARCH_CLASS_TYPE_MODE_VALUE.DIRECT)) {
+        log.warn("Incorect value for kb.search.class.type.mode: {}", getSearchClassTypeMode());
+        setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
+        log.info("Using default value for kb.search.class.type.mode: ", SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT.toString());
+      }
+    }
+    else {
+      //set default choice
+      log.warn("Option kb.search.class.type.mode not available in KB config file, setting to default value: indirect");
+      setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
     }
 
     // Vistuoso specific settings

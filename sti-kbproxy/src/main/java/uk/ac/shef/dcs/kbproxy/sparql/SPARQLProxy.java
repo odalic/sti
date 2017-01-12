@@ -1,7 +1,6 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
 import javafx.util.Pair;
-
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -16,7 +15,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.simmetrics.StringMetric;
 import org.simmetrics.metrics.Levenshtein;
-
 import uk.ac.shef.dcs.kbproxy.KBDefinition;
 import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
@@ -799,12 +797,25 @@ public class SPARQLProxy extends KBProxy {
 
   private SelectBuilder addClassRestriction(SelectBuilder builder) {
     if (kbDefinition.getStructureClass().size() > 0) {
-      builder = builder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, SPARQL_VARIABLE_CLASS);
-      builder = addUnion(
-              builder,
-              kbDefinition.getStructureClass(),
-              (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_CLASS, SPARQL_PREDICATE_TYPE, createSPARQLResource(value)),
-              SPARQL_VARIABLE_CLASS);
+
+      if (kbDefinition.getSearchClassTypeMode().equals(KBDefinition.SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT)) {
+        //as proposed by Jan
+        builder = builder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, SPARQL_VARIABLE_CLASS);
+        builder = addUnion(
+                builder,
+                kbDefinition.getStructureClass(),
+                (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_CLASS, SPARQL_PREDICATE_TYPE, createSPARQLResource(value)),
+                SPARQL_VARIABLE_CLASS);
+      }
+      else {
+        //kbDefinition.getSearchClassTypeMode().equals(SEARCH_CLASS_TYPE_MODE_VALUE.DIRECT)
+        builder = addUnion(
+                builder,
+                kbDefinition.getStructureClass(),
+                (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, createSPARQLResource(value)),
+                SPARQL_VARIABLE_SUBJECT);
+
+      }
     }
 
     return builder;
