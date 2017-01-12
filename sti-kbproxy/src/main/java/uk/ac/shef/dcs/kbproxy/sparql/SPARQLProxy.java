@@ -42,7 +42,7 @@ public class SPARQLProxy extends KBProxy {
   private static final String SPARQL_PREDICATE_TYPE = createSPARQLResource(RDF.type.getURI());
   private static final String SPARQL_PREDICATE_BIF_CONTAINS = "<bif:contains>";
 
-  private static final String SPARQL_FILTER_REGEX = "regex (str(?o), %1$s, \"i\")";
+  private static final String SPARQL_FILTER_REGEX = "regex (str(?object), %1$s, \"i\")";
 
   private static final String SPARQL_STRING_LITERAL = "\"%1$s\"";
   private static final String SPARQL_RESOURCE = "<%1$s>";
