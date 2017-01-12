@@ -407,7 +407,7 @@ public class SPARQLProxy extends KBProxy {
   private List<Entity> findByFulltext(String queryCache, QueryGetter queryGetter) throws SolrServerException, ClassNotFoundException, IOException, KBProxyException, ParseException {
     List<Entity> result = (List<Entity>) cacheEntity.retrieve(queryCache);
 
-    if (result != null) {
+    if (result != null && !result.isEmpty()) {
       return  result;
     }
 
