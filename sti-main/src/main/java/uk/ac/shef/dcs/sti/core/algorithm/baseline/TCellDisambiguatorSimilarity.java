@@ -1,9 +1,11 @@
 package uk.ac.shef.dcs.sti.core.algorithm.baseline;
 
 import javafx.util.Pair;
-import org.apache.log4j.Logger;
-import uk.ac.shef.dcs.kbsearch.KBSearch;
-import uk.ac.shef.dcs.kbsearch.model.Entity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import uk.ac.shef.dcs.kbproxy.KBProxy;
+import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.model.Table;
 
 import java.util.*;
@@ -13,10 +15,10 @@ import java.util.*;
  */
 public class TCellDisambiguatorSimilarity extends TCellDisambiguatorNameMatch {
 
-    private static final Logger LOG = Logger.getLogger(TCellDisambiguatorSimilarity.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(TCellDisambiguatorSimilarity.class.getName());
     private BaselineSimilarityEntityScorer entityScorer;
 
-    public TCellDisambiguatorSimilarity(KBSearch candidateFinder,
+    public TCellDisambiguatorSimilarity(KBProxy candidateFinder,
                                         BaselineSimilarityEntityScorer entityScorer) {
         super(candidateFinder);
         this.entityScorer = entityScorer;

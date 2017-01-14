@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
+import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
@@ -18,15 +19,17 @@ public interface ExecutionService {
    * 
    * @param id task ID
    * @throws IllegalStateException if the task has already been submitted for execution
+   * @throws IOException when there is a I/O during input parsing
    */
-  void submitForTaskId(String id) throws IllegalStateException;
+  void submitForTaskId(String id) throws IllegalStateException, IOException;
   
   /**
    * Attempts to cancel execution of the task.
    * 
    * @param id task ID
+   * @param IllegalStateException if the task has already finished
    */
-  void cancelForTaskId(String id);
+  void cancelForTaskId(String id) throws IllegalStateException;
   
   /**
    * Indicates whether the task is done.
@@ -50,11 +53,12 @@ public interface ExecutionService {
    * 
    * @param id task ID
    * @return annotations for the task input
+   * @throws IllegalArgumentException when the task has not been scheduled
    * @throws InterruptedException if the execution was interrupted while waiting
    * @throws ExecutionException if the computation threw an exception
    * @throws CancellationException  if the computation was cancelled
    */
-  Result getResultForTaskId(String id) throws InterruptedException, ExecutionException, CancellationException;
+  Result getResultForTaskId(String id) throws IllegalArgumentException, InterruptedException, ExecutionException, CancellationException;
 
   /**
    * Indicates the state of scheduling.
@@ -63,4 +67,28 @@ public interface ExecutionService {
    * @return true, if the execution has been scheduled for the task, false otherwise
    */
   boolean hasBeenScheduledForTaskId(String id);
+  
+  /**
+   * Indicates whether the task has finished without a problem.
+   * 
+   * @param id task ID
+   * @return true if successful, false otherwise
+   */
+  boolean isSuccessForTasksId(String id);
+  
+  /**
+   * Indicates whether the task has finished with a non-fatal problem.
+   * 
+   * @param id task ID
+   * @return true if warned, false otherwise
+   */
+  boolean isWarnedForTasksId(String id);
+  
+  /**
+   * Indicates whether the task has failed.
+   * 
+   * @param id task ID
+   * @return true if failed, false otherwise
+   */
+  boolean hasFailedForTasksId(String id);
 }

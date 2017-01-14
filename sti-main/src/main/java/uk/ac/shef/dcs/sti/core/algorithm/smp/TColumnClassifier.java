@@ -1,13 +1,15 @@
 package uk.ac.shef.dcs.sti.core.algorithm.smp;
 
 import javafx.util.Pair;
-import org.apache.log4j.Logger;
-import uk.ac.shef.dcs.kbsearch.KBSearch;
-import uk.ac.shef.dcs.kbsearch.KBSearchException;
-import uk.ac.shef.dcs.kbsearch.model.Clazz;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import uk.ac.shef.dcs.kbproxy.KBProxy;
+import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.sti.core.model.TCellAnnotation;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
-import uk.ac.shef.dcs.kbsearch.model.Entity;
+import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.model.TColumnHeaderAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
@@ -19,21 +21,21 @@ import java.util.*;
  */
 public class TColumnClassifier {
 
-    private static final Logger LOG =Logger.getLogger(TColumnClassifier.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(TColumnClassifier.class.getName());
 
-    private KBSearch kbSearch;
+    private KBProxy kbSearch;
     private ClazzSpecificityCalculator csCalculator;
 
     public static final String SMP_SCORE_ENTITY_VOTE = "smp_score_entity_vote";
     public static final String SMP_SCORE_GRANULARITY = "smp_score_granularity";
 
-    public TColumnClassifier(KBSearch kbSearch,
+    public TColumnClassifier(KBProxy kbSearch,
                              ClazzSpecificityCalculator csCalculator) {
         this.kbSearch = kbSearch;
         this.csCalculator=csCalculator;
     }
 
-    public void classifyColumns(TAnnotation tableAnnotation, Table table, int col) throws KBSearchException {
+    public void classifyColumns(TAnnotation tableAnnotation, Table table, int col) throws KBProxyException {
         int totalNonEmpty = 0;
         //Firstly collect votes
         Map<String, Double> votes = new HashMap<>();

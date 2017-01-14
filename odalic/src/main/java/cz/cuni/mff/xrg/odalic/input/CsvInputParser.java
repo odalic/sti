@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
+
 /**
  * CSV input parser.
  * 
@@ -11,12 +13,12 @@ import java.io.Reader;
  *
  */
 public interface CsvInputParser {
-  Input parse(String csvContent, String identifier, CsvConfiguration configuration)
+  ParsingResult parse(String csvContent, String identifier, Format configuration, int rowsLimit)
       throws IOException;
 
-  Input parse(Reader csvReader, String identifier, CsvConfiguration configuration)
+  ParsingResult parse(Reader csvReader, String identifier, Format configuration, int rowsLimit)
       throws IOException;
 
-  Input parse(InputStream csvStream, String identifier, CsvConfiguration configuration)
+  ParsingResult parse(InputStream csvStream, String identifier, Format configuration, int rowsLimit)
       throws IOException;
 }

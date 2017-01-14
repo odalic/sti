@@ -109,10 +109,10 @@ public class DataTypeClassifier implements Serializable {
                 if (i >= 1800 && i < 2050) {
                     return DataType.DATE;
                 }
+                return DataType.NUMBER;
             } catch (NumberFormatException nfe) {
             }
 
-            return DataType.NUMBER;
         }
         /*  int countOrdinal=0;
    for(String tok: tokens){

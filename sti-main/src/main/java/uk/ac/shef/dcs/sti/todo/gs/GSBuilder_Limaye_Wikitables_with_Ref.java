@@ -3,11 +3,10 @@ package uk.ac.shef.dcs.sti.todo.gs;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.simmetrics.StringMetric;
-import org.simmetrics.metrics.Levenshtein;
 import org.simmetrics.metrics.StringMetrics;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import uk.ac.shef.dcs.kbsearch.freebase.FreebaseQueryProxy;
+import uk.ac.shef.dcs.kbproxy.freebase.FreebaseQueryProxy;
 import uk.ac.shef.dcs.sti.core.model.TCellAnnotation;
 import uk.ac.shef.dcs.sti.core.subjectcol.TColumnFeatureGenerator;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
@@ -23,7 +22,7 @@ import uk.ac.shef.dcs.sti.parser.table.creator.TableObjCreatorWikipediaGS;
 import uk.ac.shef.dcs.sti.parser.table.TableParserWikipedia;
 import uk.ac.shef.dcs.sti.util.FileUtils;
 import uk.ac.shef.dcs.websearch.WebSearchFactory;
-import uk.ac.shef.dcs.websearch.bing.v2.BingSearchResultParser;
+import uk.ac.shef.dcs.websearch.bing.v5.BingSearchResultParser;
 
 
 import javax.xml.parsers.ParserConfigurationException;

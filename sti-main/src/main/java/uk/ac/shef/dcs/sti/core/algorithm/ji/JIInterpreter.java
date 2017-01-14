@@ -8,11 +8,14 @@ import cc.mallet.grmm.types.FactorGraph;
 import cc.mallet.grmm.types.Variable;
 import javafx.util.Pair;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
-import uk.ac.shef.dcs.kbsearch.KBSearchException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 import uk.ac.shef.dcs.sti.core.algorithm.ji.factorgraph.FactorGraphBuilder;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.subjectcol.SubjectColumnDetector;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
 import uk.ac.shef.dcs.sti.core.model.*;
@@ -26,7 +29,7 @@ import java.util.List;
  */
 public class JIInterpreter extends SemanticTableInterpreter {
 
-    private static final Logger LOG = Logger.getLogger(JIInterpreter.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(JIInterpreter.class.getName());
     //main column finder is needed to generate data features of each column (e.g., data type in a column),
     //even though we do not use it to find the main column in SMP
     protected SubjectColumnDetector subjectColumnDetector;
@@ -63,6 +66,9 @@ public class JIInterpreter extends SemanticTableInterpreter {
         this.debugMode = debugMode;
     }
 
+    public TAnnotation start(Table table, Constraints constraints) throws STIException {
+      return start(table, true);
+    }
 
     public TAnnotation start(Table table, boolean relationLearning) throws STIException {
         TAnnotationJI tableAnnotations = new TAnnotationJI(table.getNumRows(), table.getNumCols());
@@ -189,7 +195,7 @@ public class JIInterpreter extends SemanticTableInterpreter {
 
     protected boolean generateEntityCandidates(Table table,
                                                TAnnotation tableAnnotations,
-                                               Collection<Integer> ignoreColumns) throws KBSearchException {
+                                               Collection<Integer> ignoreColumns) throws KBProxyException {
         boolean graphNonEmpty = false;
         for (int col = 0; col < table.getNumCols(); col++) {
             if (getMustdoColumns().contains(col)) {
@@ -213,7 +219,7 @@ public class JIInterpreter extends SemanticTableInterpreter {
     }
 
     protected void generateClazzCandidates(TAnnotationJI tableAnnotations, Table table,
-                                           Collection<Integer> ignoreColumnsLocal) throws KBSearchException, STIException {
+                                           Collection<Integer> ignoreColumnsLocal) throws KBProxyException, STIException {
         // ObjectMatrix1D ccFactors = new SparseObjectMatrix1D(table.getNumCols());
         for (int col = 0; col < table.getNumCols(); col++) {
             if (getMustdoColumns().contains(col)) {
@@ -231,7 +237,7 @@ public class JIInterpreter extends SemanticTableInterpreter {
 
     protected void generateRelationCandidates(TAnnotationJI tabAnnotations, Table table,
                                               boolean useSubjectColumn,
-                                              Collection<Integer> ignoreColumnsLocal) throws IOException, KBSearchException {
+                                              Collection<Integer> ignoreColumnsLocal) throws IOException, KBProxyException {
         relationGenerator.generateInitialColumnColumnRelations(tabAnnotations, table, useSubjectColumn, ignoreColumnsLocal);
     }
 

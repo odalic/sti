@@ -1,11 +1,14 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
 import javafx.util.Pair;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.scorer.RelationScorer;
 import uk.ac.shef.dcs.sti.core.subjectcol.TColumnFeature;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.*;
 
 import java.util.Collections;
@@ -17,7 +20,19 @@ import java.util.Set;
  * Created by - on 02/04/2016.
  */
 public class RELATIONENUMERATION {
-    private static final Logger LOG = Logger.getLogger(RELATIONENUMERATION.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(RELATIONENUMERATION.class.getName());
+
+    public void enumerate(List<Pair<Integer, Pair<Double, Boolean>>> subjectColCandidadteScores,
+        Set<Integer> ignoreCols,
+        TColumnColumnRelationEnumerator relationEnumerator,
+        TAnnotation tableAnnotations,
+        Table table,
+        List<Integer> annotatedColumns,
+        UPDATE update
+        ) throws STIException {
+      enumerate(subjectColCandidadteScores, ignoreCols, relationEnumerator,
+          tableAnnotations, table, annotatedColumns, update, new Constraints());
+    }
 
     public void enumerate(List<Pair<Integer, Pair<Double, Boolean>>> subjectColCandidadteScores,
                           Set<Integer> ignoreCols,
@@ -25,7 +40,8 @@ public class RELATIONENUMERATION {
                           TAnnotation tableAnnotations,
                           Table table,
                           List<Integer> annotatedColumns,
-                          UPDATE update
+                          UPDATE update,
+                          Constraints constraints
                           ) throws STIException {
         double winningSolutionScore = 0;
         int subjectCol;
@@ -37,7 +53,7 @@ public class RELATIONENUMERATION {
 
             LOG.info(">>\t\t Let subject column=" + subjectCol);
             int relatedColumns =
-                    relationEnumerator.runRelationEnumeration(tableAnnotations, table, subjectCol);
+                    relationEnumerator.runRelationEnumeration(tableAnnotations, table, subjectCol, constraints);
 
             boolean interpretable = false;
             if (relatedColumns > 0)

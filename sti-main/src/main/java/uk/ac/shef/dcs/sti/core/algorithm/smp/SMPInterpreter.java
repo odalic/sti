@@ -1,11 +1,13 @@
 package uk.ac.shef.dcs.sti.core.algorithm.smp;
 
-import cern.colt.matrix.ObjectMatrix2D;
 import javafx.util.Pair;
-import org.apache.log4j.Logger;
-import uk.ac.shef.dcs.kbsearch.KBSearchException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.subjectcol.SubjectColumnDetector;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
 import uk.ac.shef.dcs.sti.core.model.*;
@@ -20,7 +22,7 @@ public class SMPInterpreter extends SemanticTableInterpreter {
 
     //main column finder is needed to generate data features of each column (e.g., data type in a column),
     //even though we do not use it to find the main column in SMP
-    private static final Logger LOG = Logger.getLogger(SMPInterpreter.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(SMPInterpreter.class.getName());
     private SubjectColumnDetector subjectColumnDetector;
     private TCellEntityRanker neRanker;
     private TColumnClassifier columnClassifier;
@@ -46,6 +48,10 @@ public class SMPInterpreter extends SemanticTableInterpreter {
         this.columnClassifier = columnClassifier;
         this.neRanker = neRanker;
         this.messagePassingCalculator = messagePassingCalculator;
+    }
+
+    public TAnnotation start(Table table, Constraints constraints) throws STIException {
+      return start(table, true);
     }
 
     public TAnnotation start(Table table, boolean relationLearning) throws STIException {
@@ -116,7 +122,7 @@ public class SMPInterpreter extends SemanticTableInterpreter {
     protected static void columnClassification(TColumnClassifier columnClassifier,
                                                TAnnotation tabAnnotations, Table table,
                                                Collection<Integer> mustDoColumns,
-                                               Collection<Integer> ignoreColumns) throws KBSearchException {
+                                               Collection<Integer> ignoreColumns) throws KBProxyException {
         // ObjectMatrix1D ccFactors = new SparseObjectMatrix1D(table.getNumCols());
         for (int col = 0; col < table.getNumCols(); col++) {
             if (mustDoColumns.contains(col)) {

@@ -2,6 +2,7 @@ package cz.cuni.mff.xrg.odalic.tasks.configurations;
 
 import java.io.Serializable;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -22,38 +23,58 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 @XmlJavaTypeAdapter(ConfigurationAdapter.class)
 public final class Configuration implements Serializable {
 
-  private static final long serialVersionUID = -6359038623760039155L;
+  /**
+   * Maximum number of rows that can be processed.
+   */
+  public static final int MAXIMUM_ROWS_LIMIT = Integer.MAX_VALUE;
   
-  private final File input; 
+  private static final long serialVersionUID = -6359038623760039155L;
+
+  private final File input;
 
   private final Feedback feedback;
-  
+
   private final KnowledgeBase primaryBase;
+
+  private final int rowsLimit;
 
   /**
    * Creates configuration without any feedback, thus implying fully automatic processing.
    * 
-   * @param input input specification
+   * @param input
+   * @param primaryBase
+   * @param rowsLimit maximum number of rows to let the algorithm process
+   * 
+   * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number or zero
    */
-  public Configuration(File input, KnowledgeBase primaryBase) {
-    this(input, primaryBase, new Feedback());
+  public Configuration(final File input, final KnowledgeBase primaryBase,
+      @Nullable final Integer rowsLimit) {
+    this(input, primaryBase, new Feedback(), rowsLimit);
   }
-  
+
   /**
-   * Creates configuration with provided feedback, which serves as hint for the processing algorithm.
+   * Creates configuration with provided feedback, which serves as hint for the processing
+   * algorithm.
    * 
    * @param input input specification
    * @param primaryBase primary knowledge base
    * @param feedback constraints for the algorithm
+   * @param rowsLimit maximum number of rows to let the algorithm process
+   * 
+   * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number or zero
    */
-  public Configuration(File input, KnowledgeBase primaryBase, Feedback feedback) {
+  public Configuration(final File input, final KnowledgeBase primaryBase, final Feedback feedback,
+      @Nullable final Integer rowsLimit) {
     Preconditions.checkNotNull(input);
     Preconditions.checkNotNull(primaryBase);
     Preconditions.checkNotNull(feedback);
-    
+
+    Preconditions.checkArgument(rowsLimit == null || rowsLimit > 0);
+
     this.input = input;
     this.primaryBase = primaryBase;
     this.feedback = feedback;
+    this.rowsLimit = rowsLimit == null ? MAXIMUM_ROWS_LIMIT : rowsLimit;
   }
 
   /**
@@ -77,19 +98,32 @@ public final class Configuration implements Serializable {
     return primaryBase;
   }
 
-  /* (non-Javadoc)
+  /**
+   * @return the maximum number of rows for the algorithm to process
+   */
+  public int getRowsLimit() {
+    return rowsLimit;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((feedback == null) ? 0 : feedback.hashCode());
-    result = prime * result + ((input == null) ? 0 : input.hashCode());
+    result = prime * result + feedback.hashCode();
+    result = prime * result + input.hashCode();
+    result = prime * result + primaryBase.hashCode();
+    result = prime * result + rowsLimit;
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
@@ -104,28 +138,29 @@ public final class Configuration implements Serializable {
       return false;
     }
     Configuration other = (Configuration) obj;
-    if (feedback == null) {
-      if (other.feedback != null) {
-        return false;
-      }
-    } else if (!feedback.equals(other.feedback)) {
+    if (!feedback.equals(other.feedback)) {
       return false;
     }
-    if (input == null) {
-      if (other.input != null) {
-        return false;
-      }
-    } else if (!input.equals(other.input)) {
+    if (!input.equals(other.input)) {
+      return false;
+    }
+    if (!primaryBase.equals(other.primaryBase)) {
+      return false;
+    }
+    if (rowsLimit != other.rowsLimit) {
       return false;
     }
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "Configuration [input=" + input + ", feedback=" + feedback + "]";
+    return "Configuration [input=" + input + ", feedback=" + feedback + ", primaryBase="
+        + primaryBase + ", rowsLimit=" + rowsLimit + "]";
   }
 }

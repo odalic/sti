@@ -6,14 +6,18 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import javax.annotation.Nullable;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -21,13 +25,19 @@ import javax.ws.rs.core.UriInfo;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
+import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
+import cz.cuni.mff.xrg.odalic.api.rest.values.FileValueInput;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 
 /**
  * File resource definition.
@@ -40,7 +50,12 @@ public final class FileResource {
 
   public static final String TEXT_CSV_MEDIA_TYPE = "text/csv";
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileResource.class);
+
   private final FileService fileService;
+
+  @Context
+  private UriInfo uriInfo;
 
   @Autowired
   public FileResource(FileService fileService) {
@@ -51,51 +66,48 @@ public final class FileResource {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public List<File> getFiles() {
-    return fileService.getFiles();
+  public Response getFiles() {
+    final List<File> files = fileService.getFiles();
+
+    return Reply.data(Response.Status.OK, files, uriInfo).toResponse();
   }
 
   @GET
   @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFileById(@PathParam("id") String id) {
-    File file = fileService.getById(id);
-    return Response.status(Response.Status.OK).entity(file).build();
+    final File file;
+    try {
+      file = fileService.getById(id);
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException("The file does not exist!", e);
+    }
+
+    return Reply.data(Response.Status.OK, file, uriInfo).toResponse();
   }
 
   @PUT
   @Path("{id}")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response putFileById(@Context UriInfo uriInfo, @PathParam("id") String id,
-      @FormDataParam("input") InputStream fileInputStream, @FormDataParam("file") File file)
-      throws IOException {
-
-    if (!fileService.hasId(file, id)) {
-      return Response.status(Response.Status.NOT_ACCEPTABLE)
-          .entity("The ID in the payload is not the same as the ID of resource.").build();
+  public Response putFileById(@PathParam("id") String id,
+      @FormDataParam("input") InputStream fileInputStream) throws IOException {
+    if (fileInputStream == null) {
+      throw new BadRequestException("No input provided!");
     }
 
-    if (!file.getLocation().equals(cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id))) {
-      return Response.status(Response.Status.NOT_ACCEPTABLE)
-          .entity(
-              "The location you provided for the file is not equal to the default location for uploaded file.")
-          .build();
-    }
-
-    final URL location = file.getLocation();
+    final URL location = cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id);
+    final File file = new File(id, "", location, new Format(), true);
 
     if (!fileService.existsFileWithId(id)) {
       fileService.create(file, fileInputStream);
 
-      return Response.status(Response.Status.CREATED)
-          .entity("A new file has been created AT THE STANDARD LOCATION.")
-          .header("Location", location).build();
+      return Message.of("A new file has been created AT THE STANDARD LOCATION.")
+          .toResponse(Response.Status.CREATED, location, uriInfo);
     } else {
       fileService.replace(file);
-      return Response.status(Response.Status.OK)
-          .entity("The file you specified has been fully updated AT THE STANDARD LOCATION.")
-          .header("Location", location).build();
+      return Message.of("The file you specified has been fully updated AT THE STANDARD LOCATION.")
+          .toResponse(Response.Status.OK, location, uriInfo);
     }
   }
 
@@ -103,63 +115,115 @@ public final class FileResource {
   @Path("{id}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response putFileById(@PathParam("id") String id, File file) throws MalformedURLException {
-
-    if (!fileService.hasId(file, id)) {
-      return Response.status(Response.Status.NOT_ACCEPTABLE)
-          .entity("The ID in the payload is not the same as the ID of resource.").build();
+  public Response putFileById(@Context UriInfo uriInfo, @PathParam("id") String id,
+      FileValueInput fileInput) throws MalformedURLException {
+    if (fileInput == null) {
+      throw new BadRequestException("No file description provided!");
     }
 
-    final URL location = file.getLocation();
+    if (fileInput.getLocation() == null) {
+      throw new BadRequestException("No location provided!");
+    }
+
+    final Format usedFormat = getFormatOrDefault(fileInput);
+
+    final File file = new File(id, "", fileInput.getLocation(), usedFormat, false);
 
     if (!fileService.existsFileWithId(id)) {
       fileService.create(file);
-      return Response.status(Response.Status.CREATED)
-          .entity("A new file has been registered FOR THE LOCATION you specified")
-          .header("Location", location).build();
+
+      return Message.of("A new remote file has been registered.").toResponse(
+          Response.Status.CREATED,
+          cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id), uriInfo);
     } else {
       fileService.replace(file);
-      return Response.status(Response.Status.OK)
-          .entity(
-              "The file description you specified has been fully updated FOR THE LOCATION you specified.")
-          .header("Location", location).build();
+
+      return Message.of("The file description has been updated.").toResponse(Response.Status.OK,
+          cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id), uriInfo);
     }
+  }
+
+  private Format getFormatOrDefault(FileValueInput fileInput) {
+    final @Nullable Format format = fileInput.getFormat();
+    final Format usedFormat;
+    if (format == null) {
+      usedFormat = new Format();
+    } else {
+      usedFormat = format;
+    }
+    return usedFormat;
   }
 
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
   public Response postFile(@Context UriInfo uriInfo,
-      @FormDataParam("file") InputStream fileInputStream,
-      @FormDataParam("file") FormDataContentDisposition fileDetail) throws IOException {
+      @FormDataParam("input") InputStream fileInputStream,
+      @FormDataParam("input") FormDataContentDisposition fileDetail) throws IOException {
+    if (fileInputStream == null) {
+      throw new BadRequestException("No input provided!");
+    }
+
+    if (fileDetail == null) {
+      throw new BadRequestException("No input detail provided!");
+    }
 
     final String id = fileDetail.getFileName();
-    final File file = new File(id, "", cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id));
+    if (id == null) {
+      throw new BadRequestException("No file name provided!");
+    }
+
+    final File file =
+        new File(id, "", cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id),
+            new Format(), true);
 
     if (fileService.existsFileWithId(id)) {
-      return Response.status(Response.Status.NOT_ACCEPTABLE)
-          .entity("There already exists a file with the same name as you provided.").build();
+      throw new WebApplicationException(
+          "There already exists a file with the same name as you provided.",
+          Response.Status.CONFLICT);
     }
 
     fileService.create(file, fileInputStream);
-    return Response.status(Response.Status.CREATED)
-        .entity("A new file has been registered AT THE LOCATION DERIVED from the name of the one uploaded.")
-        .header("Location", file.getLocation()).build();
+    return Message
+        .of("A new file has been registered AT THE LOCATION DERIVED from the name of the one uploaded.")
+        .toResponse(Response.Status.CREATED, file.getLocation(), uriInfo);
   }
 
   @DELETE
   @Path("{id}")
+  @Produces(MediaType.APPLICATION_JSON)
   public Response deleteFileById(@PathParam("id") String id) {
-    fileService.deleteById(id);
-    return Response.status(Response.Status.NO_CONTENT).build();
+    try {
+      fileService.deleteById(id);
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException("The file does not exist!", e);
+    } catch (final IllegalStateException e) {
+      throw new WebApplicationException(e.getMessage(), e, Response.Status.CONFLICT);
+    }
+
+    return Message.of("File definition deleted.").toResponse(Response.Status.OK, uriInfo);
   }
 
   @GET
   @Path("{id}")
   @Produces(TEXT_CSV_MEDIA_TYPE)
   public Response getCsvDataById(@PathParam("id") String id) throws IOException {
-    String data = fileService.getDataById(id);
+    final String data;
+    try {
+      data = fileService.getDataById(id);
+    } catch (final IllegalArgumentException e) {
+      LOGGER.error(e.getMessage(), e);
+
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
 
     return Response.ok(data).build();
+  }
+
+  @GET
+  @Path("{id}/data")
+  @Produces(TEXT_CSV_MEDIA_TYPE)
+  public Response getCsvDataByIdAtData(@PathParam("id") String id) throws IOException {
+    return getCsvDataById(id);
   }
 }

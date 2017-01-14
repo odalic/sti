@@ -120,7 +120,17 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
           continue;
         }
         int subjectPosition = positionsForColumnNames.get(columnSubjectName);
-        subject = factory.createIRI(row.get(subjectPosition));
+        if (StringUtils.isEmpty(row.get(subjectPosition))) {
+          // value in column with that name does not exist (in current row), so we can not produce the triple
+          log.warn("Value in column named '{}' does not exist, no triple is produced", columnSubjectName);
+          continue;
+        }
+        try {
+          subject = factory.createIRI(row.get(subjectPosition));
+        } catch (NullPointerException | IllegalArgumentException e) {
+          log.error("No triple is produced because of " + e);
+          continue;
+        }
         
         // create the object(s)
         objects.clear();
@@ -133,6 +143,11 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
             continue;
           }
           int objectPosition = positionsForColumnNames.get(columnName);
+          if (StringUtils.isEmpty(row.get(objectPosition))) {
+            // value in column with that name does not exist (in current row), so we can not produce the triple
+            log.warn("Value in column named '{}' does not exist, no triple is produced", columnName);
+            continue;
+          }
           objects.add(factory.createLiteral(row.get(objectPosition)));
         }
         else if (tp instanceof ObjectListPropertyTriplePattern) {
@@ -146,14 +161,27 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
               continue;
             }
             int objectPosition = positionsForColumnNames.get(columnName);
+            if (StringUtils.isEmpty(row.get(objectPosition))) {
+              // value in column with that name does not exist (in current row), so we can not produce the triple
+              log.warn("Value in column named '{}' does not exist, no triple is produced", columnName);
+              continue;
+            }
             for (String item : row.get(objectPosition).split(oltp.getSeparator())) {
-              objects.add(factory.createIRI(item));
+              try {
+                objects.add(factory.createIRI(item));
+              } catch (NullPointerException | IllegalArgumentException e) {
+                log.error("No triple is produced because of " + e);
+              }
             }
           }
           else {
             // object pattern contains URIs:
             for (String item : oltp.getObjectPattern().split(oltp.getSeparator())) {
-              objects.add(factory.createIRI(item));
+              try {
+                objects.add(factory.createIRI(item));
+              } catch (NullPointerException | IllegalArgumentException e) {
+                log.error("No triple is produced because of " + e);
+              }
             }
           }
         }
@@ -168,11 +196,24 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
               continue;
             }
             int objectPosition = positionsForColumnNames.get(columnName);
-            objects.add(factory.createIRI(row.get(objectPosition)));
+            if (StringUtils.isEmpty(row.get(objectPosition))) {
+              // value in column with that name does not exist (in current row), so we can not produce the triple
+              log.warn("Value in column named '{}' does not exist, no triple is produced", columnName);
+              continue;
+            }
+            try {
+              objects.add(factory.createIRI(row.get(objectPosition)));
+            } catch (NullPointerException | IllegalArgumentException e) {
+              log.error("No triple is produced because of " + e);
+            }
           }
           else {
             // object pattern contains URI:
-            objects.add(factory.createIRI(otp.getObjectPattern()));
+            try {
+              objects.add(factory.createIRI(otp.getObjectPattern()));
+            } catch (NullPointerException | IllegalArgumentException e) {
+              log.error("No triple is produced because of " + e);
+            }
           }
         }
         else {

@@ -1,14 +1,14 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
+import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
-import cz.cuni.mff.xrg.odalic.feedbacks.ColumnIgnore;
+import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 
 
 /**
- * This factory class loosely encapsulates (notice the {@link #setColumnIgnoresForInterpreter(Set)} method) the process of interpreter creation.
+ * This factory class loosely encapsulates the process of interpreter creation.
  * 
  * @author Václav Brodec
  *
@@ -19,14 +19,8 @@ public interface SemanticTableInterpreterFactory {
    * Lazily initializes the interpreter.
    * 
    * @return the interpreter implementations
+   * @throws IOException when the initialization process fails to load its configuration 
+   * @throws STIException when the interpreters fail to initialize
    */
-  Map<String, SemanticTableInterpreter> getInterpreters();
-
-  /**
-   * Sets the ignored columns for the created interpreter.
-   * 
-   * @param columnIgnores positions of ignored columns
-   */
-  void setColumnIgnoresForInterpreter(Set<? extends ColumnIgnore> columnIgnores);
-
+  Map<String, SemanticTableInterpreter> getInterpreters() throws STIException, IOException;
 }

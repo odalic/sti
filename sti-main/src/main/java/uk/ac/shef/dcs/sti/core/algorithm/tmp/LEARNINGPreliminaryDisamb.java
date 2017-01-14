@@ -1,11 +1,14 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
 import javafx.util.Pair;
-import org.apache.log4j.Logger;
-import uk.ac.shef.dcs.kbsearch.KBSearch;
-import uk.ac.shef.dcs.kbsearch.KBSearchException;
-import uk.ac.shef.dcs.kbsearch.model.Entity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import uk.ac.shef.dcs.kbproxy.KBProxy;
+import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIException;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.*;
 
 import java.util.*;
@@ -15,12 +18,12 @@ import java.util.List;
  */
 public class LEARNINGPreliminaryDisamb {
 
-    private static final Logger LOG = Logger.getLogger(LEARNINGPreliminaryDisamb.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(LEARNINGPreliminaryDisamb.class.getName());
     private TCellDisambiguator disambiguator;
-    private KBSearch kbSearch;
+    private KBProxy kbSearch;
     private TColumnClassifier classifier;
 
-    public LEARNINGPreliminaryDisamb(KBSearch kbSearch,
+    public LEARNINGPreliminaryDisamb(KBProxy kbSearch,
                                      TCellDisambiguator disambiguator,
                                      TColumnClassifier classifier) {
         this.kbSearch = kbSearch;
@@ -34,7 +37,8 @@ public class LEARNINGPreliminaryDisamb {
             Table table,
             TAnnotation tableAnnotation,
             int column,
-            Integer... skipRows) throws KBSearchException, STIException {
+            Constraints constraints,
+            Integer... skipRows) throws KBProxyException, STIException {
 
         LOG.info("\t>> (LEARNING) Preliminary Disambiguation begins");
         List<TColumnHeaderAnnotation> winningColumnClazz = tableAnnotation.getWinningHeaderAnnotations(column);
@@ -74,7 +78,8 @@ public class LEARNINGPreliminaryDisamb {
                     constrainedDisambiguate(sample,
                             table,
                             winningColumnClazzIds,
-                            rows, column,ranking.size()
+                            rows, column, ranking.size(),
+                            constraints
                     );
 
             if (entity_and_scoreMap.size() > 0) {
@@ -132,10 +137,16 @@ public class LEARNINGPreliminaryDisamb {
                                                                             Set<String> winningColumnClazz,
                                                                             List<Integer> rowBlock,
                                                                             int column,
-                                                                            int totalRowBlocks) throws KBSearchException {
+                                                                            int totalRowBlocks,
+                                                                            Constraints constraints) throws KBProxyException {
         List<Pair<Entity, Map<String, Double>>> entity_and_scoreMap;
 
-        List<Entity> candidates = kbSearch.findEntityCandidatesOfTypes(tcc.getText(), winningColumnClazz.toArray(new String[0]));
+        List<Entity> candidates = constraints.getDisambChosenForCell(column, rowBlock.get(0));
+
+        if (candidates.isEmpty()) {
+          candidates = kbSearch.findEntityCandidatesOfTypes(tcc.getText(), winningColumnClazz.toArray(new String[0]));
+        }
+
         if (candidates != null && candidates.size() != 0) {
         } else
             candidates = kbSearch.findEntityCandidatesOfTypes(tcc.getText());

@@ -1,13 +1,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:tx="http://www.springframework.org/schema/tx"
-	xsi:schemaLocation="
-		http://www.springframework.org/schema/beans	
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd
-
-		http://www.springframework.org/schema/tx 
-		http://www.springframework.org/schema/tx/spring-tx.xsd
-
 		http://www.springframework.org/schema/context
 		http://www.springframework.org/schema/context/spring-context.xsd">
 
@@ -18,14 +12,16 @@
 		scope="prototype" />
 	<bean id="inputToTableAdapter" class="cz.cuni.mff.xrg.odalic.input.DefaultInputToTableAdapter"
 		scope="prototype" />
-	
-	<bean id="csvInputParser"
-		class="cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser"
+
+	<bean id="apacheCsvFormatAdapter" class="cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter"
+		scope="prototype" />
+
+	<bean id="csvInputParser" class="cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser"
 		scope="prototype" />
 	<bean id="annotationToResultAdapter"
 		class="cz.cuni.mff.xrg.odalic.tasks.results.DefaultAnnotationToResultAdapter"
 		scope="prototype" />
-	
+
 	<bean id="resultToAnnotatedTableAdapter"
 		class="cz.cuni.mff.xrg.odalic.outputs.annotatedtable.DefaultResultToAnnotatedTableAdapter"
 		scope="prototype" />
@@ -35,19 +31,25 @@
 	<bean id="csvExporter"
 		class="cz.cuni.mff.xrg.odalic.outputs.csvexport.DefaultCSVExporter"
 		scope="prototype" />
-		
+
 	<bean id="annotatedTableToRdfExportAdapter"
 		class="cz.cuni.mff.xrg.odalic.outputs.rdfexport.DefaultAnnotatedTableToRDFExportAdapter"
 		scope="prototype" />
 	<bean id="rdfExporter"
 		class="cz.cuni.mff.xrg.odalic.outputs.rdfexport.DefaultRDFExporter"
 		scope="prototype" />
-		
+
+	<bean id="knowledgeBaseProxyFactory"
+		class="cz.cuni.mff.xrg.odalic.tasks.executions.DefaultKnowledgeBaseProxyFactory" />
 	<bean id="semanticTableInterpreterFactory"
 		class="cz.cuni.mff.xrg.odalic.tasks.executions.TableMinerPlusFactory" />
+	<bean id="feedbackToConstraintsAdapter"
+		class="cz.cuni.mff.xrg.odalic.feedbacks.DefaultFeedbackToConstraintsAdapter" />
 
 	<!-- Services -->
 	<bean id="fileService" class="cz.cuni.mff.xrg.odalic.files.MemoryOnlyFileService" />
+	<bean id="formatService"
+		class="cz.cuni.mff.xrg.odalic.files.formats.MemoryOnlyFormatService" />
 	<bean id="configurationService"
 		class="cz.cuni.mff.xrg.odalic.tasks.configurations.MemoryOnlyConfigurationService" />
 	<bean id="executionService"
@@ -55,9 +57,14 @@
 	<bean id="feedbackService"
 		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.MemoryOnlyFeedbackService" />
 	<bean id="taskService" class="cz.cuni.mff.xrg.odalic.tasks.MemoryOnlyTaskService" />
-	<bean id="annotatedTableService" class="cz.cuni.mff.xrg.odalic.outputs.annotatedtable.ResultAdaptingAnnotatedTableService" />
-	<bean id="csvExportService" class="cz.cuni.mff.xrg.odalic.outputs.csvexport.ResultAdaptingCsvExportService" />
-	<bean id="rdfExportService" class="cz.cuni.mff.xrg.odalic.outputs.rdfexport.RioBackedRdfExportService" />
+	<bean id="annotatedTableService"
+		class="cz.cuni.mff.xrg.odalic.outputs.annotatedtable.ResultAdaptingAnnotatedTableService" />
+	<bean id="csvExportService"
+		class="cz.cuni.mff.xrg.odalic.outputs.csvexport.ResultAdaptingCsvExportService" />
+	<bean id="rdfExportService"
+		class="cz.cuni.mff.xrg.odalic.outputs.rdfexport.RioBackedRdfExportService" />
+	<bean id="entitiesService" class="cz.cuni.mff.xrg.odalic.entities.DefaultEntitiesService" />
+	<bean id="basesService" class="cz.cuni.mff.xrg.odalic.bases.DefaultBasesService" />
 
 	<!-- Resources -->
 	<bean id="configurationResource"
@@ -67,11 +74,19 @@
 	<bean id="feedbackResource"
 		class="cz.cuni.mff.xrg.odalic.api.rest.resources.FeedbackResource" />
 	<bean id="fileResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.FileResource" />
+	<bean id="formatResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.FormatResource" />
 	<bean id="resultResource"
 		class="cz.cuni.mff.xrg.odalic.api.rest.resources.ResultResource" />
 	<bean id="stateResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.StateResource" />
 	<bean id="taskResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.TaskResource" />
-	<bean id="annotatedTableResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.AnnotatedTableResource" />
-	<bean id="csvExportResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.CsvExportResource" />
-	<bean id="rdfExportResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.RdfExportResource" />
+	<bean id="annotatedTableResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.AnnotatedTableResource" />
+	<bean id="csvExportResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.CsvExportResource" />
+	<bean id="rdfExportResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.RdfExportResource" />
+	<bean id="entitiesResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.EntitiesResource" />
+	<bean id="basesResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.BasesResource" />
 </beans>

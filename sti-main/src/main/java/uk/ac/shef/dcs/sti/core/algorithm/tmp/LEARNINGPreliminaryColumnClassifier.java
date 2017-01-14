@@ -1,14 +1,20 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
 import javafx.util.Pair;
-import org.apache.log4j.Logger;
-import uk.ac.shef.dcs.kbsearch.KBSearch;
-import uk.ac.shef.dcs.kbsearch.KBSearchException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import uk.ac.shef.dcs.kbproxy.KBProxy;
+import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentCellRanker;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.stopping.StoppingCriteria;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.stopping.StoppingCriteriaInstantiator;
-import uk.ac.shef.dcs.kbsearch.model.Entity;
+import uk.ac.shef.dcs.sti.core.extension.annotations.EntityCandidate;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Classification;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
+import uk.ac.shef.dcs.kbproxy.model.Clazz;
+import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.model.*;
 
 import java.util.*;
@@ -21,18 +27,18 @@ import java.util.List;
 
 public class LEARNINGPreliminaryColumnClassifier {
     private TContentCellRanker selector;
-    private KBSearch kbSearch;
+    private KBProxy kbSearch;
     private TCellDisambiguator cellDisambiguator;
     private TColumnClassifier columnClassifier;
 
     private String stopperClassname;
     private String[] stopperParams;
-    private static final Logger LOG = Logger.getLogger(LEARNINGPreliminaryColumnClassifier.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(LEARNINGPreliminaryColumnClassifier.class.getName());
 
     public LEARNINGPreliminaryColumnClassifier(TContentCellRanker selector,
                                                String stoppingCriteriaClassname,
                                                String[] stoppingCriteriaParams,
-                                               KBSearch candidateFinder,
+                                               KBProxy candidateFinder,
                                                TCellDisambiguator cellDisambiguator,
                                                TColumnClassifier columnClassifier) {
         this.selector = selector;
@@ -51,9 +57,9 @@ public class LEARNINGPreliminaryColumnClassifier {
      * @param skipRows
      * @return pair: key is the index of the cell by which the classification stopped. value is the re-ordered
      * indexes of cells based on the sampler
-     * @throws KBSearchException
+     * @throws KBProxyException
      */
-    public Pair<Integer, List<List<Integer>>> runPreliminaryColumnClassifier(Table table, TAnnotation tableAnnotation, int column,Integer... skipRows) throws KBSearchException, ClassNotFoundException, STIException {
+    public Pair<Integer, List<List<Integer>>> runPreliminaryColumnClassifier(Table table, TAnnotation tableAnnotation, int column, Constraints constraints, Integer... skipRows) throws KBProxyException, ClassNotFoundException, STIException {
         StoppingCriteria stopper = StoppingCriteriaInstantiator.instantiate(stopperClassname, stopperParams);
 
         //1. gather list of strings from this column to be interpreted, rank them (for sampling)
@@ -63,10 +69,23 @@ public class LEARNINGPreliminaryColumnClassifier {
         List<TColumnHeaderAnnotation> headerClazzScores = new ArrayList<>();
 
         int countProcessed = 0, totalRows = 0;
+
+        // 3. (added): if the classification is suggested by the user, then set it and return
+        for (Classification classification : constraints.getClassifications()) {
+          if (classification.getPosition().getIndex() == column && !classification.getAnnotation().getChosen().isEmpty()) {
+            for (EntityCandidate suggestion : classification.getAnnotation().getChosen()) {
+              headerClazzScores.add(new TColumnHeaderAnnotation(table.getColumnHeader(column).getHeaderText(),
+                  new Clazz(suggestion.getEntity().getResource(), suggestion.getEntity().getLabel()), suggestion.getScore().getValue()));
+            }
+            tableAnnotation.setHeaderAnnotation(column, headerClazzScores.toArray(new TColumnHeaderAnnotation[headerClazzScores.size()]));
+            return new Pair<>(countProcessed, ranking);
+          }
+        }
+
         boolean stopped = false;
         Map<Object, Double> state = new HashMap<>();
 
-        LOG.info("\t>> (LEANRING) Preliminary Column Classification begins");
+        LOG.info("\t>> (LEARNING) Preliminary Column Classification begins");
         for (List<Integer> blockOfRows : ranking) {
             countProcessed++;
             totalRows += blockOfRows.size();
@@ -91,7 +110,12 @@ public class LEARNINGPreliminaryColumnClassifier {
             if (skip) {
                 entityScoresForBlock = toScoreMap(tableAnnotation, blockOfRows, column);
             } else {
-                List<Entity> candidates = kbSearch.findEntityCandidates(sample.getText());
+                List<Entity> candidates = constraints.getDisambChosenForCell(column, blockOfRows.get(0));
+
+                if (candidates.isEmpty()) {
+                  candidates = kbSearch.findEntityCandidates(sample.getText());
+                }
+
                 //do cold start disambiguation
                 entityScoresForBlock =
                         cellDisambiguator.coldstartDisambiguate(
