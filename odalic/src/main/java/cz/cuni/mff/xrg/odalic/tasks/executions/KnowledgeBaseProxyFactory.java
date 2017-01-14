@@ -1,9 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.sti.STIException;
-
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -15,5 +12,5 @@ public interface KnowledgeBaseProxyFactory {
    *
    * @return the KB search implementations
    */
-  Map<String, KBProxy> getKBProxies() throws STIException, IOException;
+  Map<String, KBProxy> getKBProxies();
 }

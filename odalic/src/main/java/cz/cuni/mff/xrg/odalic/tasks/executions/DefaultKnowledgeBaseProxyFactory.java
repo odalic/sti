@@ -36,22 +36,20 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
   private final String propertyFilePath;
   private Properties properties;
 
-  public DefaultKnowledgeBaseProxyFactory(String propertyFilePath) {
+  public DefaultKnowledgeBaseProxyFactory(String propertyFilePath) throws STIException, IOException {
     Preconditions.checkNotNull(propertyFilePath);
 
     this.propertyFilePath = propertyFilePath;
+    
+    initComponents();
   }
 
-  public DefaultKnowledgeBaseProxyFactory() {
+  public DefaultKnowledgeBaseProxyFactory() throws STIException, IOException {
     this(System.getProperty("cz.cuni.mff.xrg.odalic.sti"));
   }
 
   @Override
-  public Map<String, KBProxy> getKBProxies() throws STIException, IOException {
-    if (kbProxies == null) {
-      initComponents();
-    }
-
+  public Map<String, KBProxy> getKBProxies() {
     return kbProxies;
   }
 
