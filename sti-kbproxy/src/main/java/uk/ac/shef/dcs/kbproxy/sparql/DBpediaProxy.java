@@ -4,13 +4,8 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.RDFNode;
-
 import uk.ac.shef.dcs.kbproxy.KBDefinition;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
-import uk.ac.shef.dcs.kbproxy.model.Entity;
-import uk.ac.shef.dcs.util.StringUtils;
-
 import java.io.IOException;
 import java.util.*;
 

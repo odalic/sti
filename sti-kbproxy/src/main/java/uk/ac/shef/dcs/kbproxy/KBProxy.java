@@ -1,11 +1,7 @@
 package uk.ac.shef.dcs.kbproxy;
 
-import com.sun.jndi.toolkit.url.Uri;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
@@ -25,7 +21,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableSet;
 import java.util.stream.Collectors;
 
 /**
