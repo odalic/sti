@@ -132,10 +132,11 @@ public class CoreExecutionBatch {
     final Table table = new DefaultInputToTableAdapter().toTable(input);
 
     // TableMinerPlus initialization
-    final SemanticTableInterpreterFactory factory = new TableMinerPlusFactory(
-        new DefaultKnowledgeBaseProxyFactory(propertyFilePath), propertyFilePath);
-    Map<String, SemanticTableInterpreter> semanticTableInterpreters;
+    final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
+      final SemanticTableInterpreterFactory factory = new TableMinerPlusFactory(
+          new DefaultKnowledgeBaseProxyFactory(propertyFilePath), propertyFilePath);
+      
       semanticTableInterpreters = factory.getInterpreters();
     } catch (IOException e) {
       log.error("Error - TMP initialization process fails to load its configuration:", e);
