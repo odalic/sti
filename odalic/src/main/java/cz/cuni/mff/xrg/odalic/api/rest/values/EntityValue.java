@@ -24,11 +24,14 @@ public final class EntityValue implements Serializable {
 
   private String label;
 
+  private String prefixed;
+
   public EntityValue() {}
 
   public EntityValue(Entity adaptee) {
     this.resource = adaptee.getResource();
     this.label = adaptee.getLabel();
+    this.prefixed = adaptee.getPrefixed();
   }
 
   /**
@@ -45,7 +48,7 @@ public final class EntityValue implements Serializable {
    */
   public void setResource(String resource) {
     Preconditions.checkNotNull(resource);
-    
+
     this.resource = resource;
   }
 
@@ -63,15 +66,36 @@ public final class EntityValue implements Serializable {
    */
   public void setLabel(String label) {
     Preconditions.checkNotNull(label);
-    
+
     this.label = label;
   }
 
-  /* (non-Javadoc)
+  /**
+   * @return the prefixed form of the resource
+   */
+  @XmlElement
+  @Nullable
+  public String getPrefixed() {
+    return prefixed;
+  }
+
+  /**
+   * @param prefixed the prefixed form of the resource to set
+   */
+  public void setPrefixed(String prefixed) {
+    Preconditions.checkNotNull(prefixed);
+    
+    this.prefixed = prefixed;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "EntityValue [resource=" + resource + ", label=" + label + "]";
+    return "EntityValue [resource=" + resource + ", label=" + label + ", prefixed=" + prefixed
+        + "]";
   }
 }

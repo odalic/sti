@@ -21,13 +21,6 @@ public final class Prefix {
   private final String what;
   
   /**
-   * Creates an empty prefix. Both the {@link Prefix#getWith()} and {@link #getWhat()} are empty strings.
-   */
-  public static Prefix empty() {
-    return new Prefix("", "");
-  }
-  
-  /**
    * Creates a prefix.
    * 
    * @param with text to substitute with
@@ -41,15 +34,11 @@ public final class Prefix {
     Preconditions.checkNotNull(with, "The with cannot be null!");
     Preconditions.checkNotNull(what, "The what cannot be null!");
     
+    Preconditions.checkArgument(!with.isEmpty(), "The with cannot be an empty string!");
+    Preconditions.checkArgument(!what.isEmpty(), "The what cannot be an empty string!");
+    
     this.with = with;
     this.what = what;
-  }
-  
-  /**
-   * Empty prefix substituting empty string.
-   */
-  public Prefix() {
-    this("", "");
   }
 
   /**

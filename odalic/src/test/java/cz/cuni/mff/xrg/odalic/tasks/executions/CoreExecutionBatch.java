@@ -191,9 +191,9 @@ public class CoreExecutionBatch {
       // classifications example
       HashSet<EntityCandidate> candidatesClassification = new HashSet<>();
       candidatesClassification.add(
-          new EntityCandidate(Entity.fromResourceId("http://schema.org/Bookxyz", "Booooook"), new Score(1.0)));
+          new EntityCandidate(Entity.of("http://schema.org/Bookxyz", "Booooook"), new Score(1.0)));
       candidatesClassification
-          .add(new EntityCandidate(Entity.fromResourceId("http://schema.org/Book", "Book"), new Score(1.0)));
+          .add(new EntityCandidate(Entity.of("http://schema.org/Book", "Book"), new Score(1.0)));
       HashMap<KnowledgeBase, HashSet<EntityCandidate>> headerAnnotation = new HashMap<>();
       headerAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesClassification);
       HashSet<Classification> classifications = new HashSet<>();
@@ -203,10 +203,10 @@ public class CoreExecutionBatch {
       // disambiguations example
       HashSet<EntityCandidate> candidatesDisambiguation = new HashSet<>();
       candidatesDisambiguation.add(new EntityCandidate(
-          Entity.fromResourceId("http://dbpedia.org/resource/Gardens_of_the_Moonxyz", "Gars of Moooooon"),
+          Entity.of("http://dbpedia.org/resource/Gardens_of_the_Moonxyz", "Gars of Moooooon"),
           new Score(1.0)));
       candidatesDisambiguation.add(new EntityCandidate(
-          Entity.fromResourceId("http://dbpedia.org/resource/Gardens_of_the_Moon", "Gardens of the Moon"),
+          Entity.of("http://dbpedia.org/resource/Gardens_of_the_Moon", "Gardens of the Moon"),
           new Score(1.0)));
       HashMap<KnowledgeBase, HashSet<EntityCandidate>> cellAnnotation = new HashMap<>();
       cellAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesDisambiguation);
@@ -217,9 +217,9 @@ public class CoreExecutionBatch {
       // relations example
       HashSet<EntityCandidate> candidatesRelation = new HashSet<>();
       candidatesRelation.add(new EntityCandidate(
-          Entity.fromResourceId("http://dbpedia.org/property/authorxyz", ""), new Score(1.0)));
+          Entity.of("http://dbpedia.org/property/authorxyz", ""), new Score(1.0)));
       candidatesRelation.add(new EntityCandidate(
-          Entity.fromResourceId("http://dbpedia.org/property/author", ""), new Score(1.0)));
+          Entity.of("http://dbpedia.org/property/author", ""), new Score(1.0)));
       HashMap<KnowledgeBase, HashSet<EntityCandidate>> columnRelationAnnotation = new HashMap<>();
       columnRelationAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesRelation);
       HashSet<ColumnRelation> relations = new HashSet<>();
