@@ -1,6 +1,8 @@
 package cz.cuni.mff.xrg.odalic.tasks.annotations;
 
 import java.io.Serializable;
+
+import javax.annotation.Nullable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
@@ -17,14 +19,16 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
 @XmlJavaTypeAdapter(EntityAdapter.class)
 public final class Entity implements Comparable<Entity>, Serializable {
 
+  public static final String PREFIX_SEPARATOR = ":";
+  
   private static final long serialVersionUID = -3001706805535088480L;
 
   private final Prefix prefix;
-  
+
   private final String suffix;
-  
+
   private final String label;
-  
+
   /**
    * Creates new entity representation.
    * 
@@ -32,69 +36,76 @@ public final class Entity implements Comparable<Entity>, Serializable {
    * @param resource entity resource ID
    * @param label label
    */
-  public static Entity fromResourceId(final Prefix prefix, final String resourceId, final String label) {
-    Preconditions.checkNotNull(prefix);
+  public static Entity of(final @Nullable Prefix prefix, final String resourceId, final String label) {
     Preconditions.checkNotNull(resourceId);
     Preconditions.checkNotNull(label);
+
+    if (prefix == null) {
+      return of(resourceId, label);
+    }
     
-    final String prefixed = prefix.getWhat();
-    Preconditions.checkArgument(resourceId.startsWith(prefixed));
-    
-    final String suffix = resourceId.substring(prefixed.length());
-    
+    final String prefixedPart = prefix.getWhat();
+    Preconditions.checkArgument(resourceId.startsWith(prefixedPart));
+
+    final String suffix = resourceId.substring(prefixedPart.length());
+
     return new Entity(prefix, suffix, label);
   }
-  
+
   /**
    * Creates new entity representation (without prefix).
    * 
    * @param resource entity resource ID
    * @param label label
    */
-  public static Entity fromResourceId(final String resourceId, final String label) {
-    return fromResourceId(Prefix.empty(), resourceId, label);
-  }
-  
-  /**
-   * Creates new entity representation.
-   * 
-   * @param prefix resource ID prefix
-   * @param resource entity resource ID
-   * @param label label
-   */
-  public static Entity fromSuffix(final Prefix prefix, final String suffix, final String label) {
-    Preconditions.checkNotNull(prefix);
-    Preconditions.checkNotNull(suffix);
+  public static Entity of(final String resourceId, final String label) {
+    Preconditions.checkNotNull(resourceId);
     Preconditions.checkNotNull(label);
-    
-    return new Entity(prefix, suffix, label);
+
+    return new Entity(null, resourceId, label);
   }
-  
+
   private Entity(final Prefix prefix, final String suffix, String label) {
     this.prefix = prefix;
     this.suffix = suffix;
     this.label = label;
   }
-  
+
   /**
    * @return the resource ID prefix
    */
+  @Nullable
   public Prefix getPrefix() {
     return prefix;
   }
 
   /**
-   * @return the part of the resources ID that follows the {@link #getPrefixed()}.
+   * @return the part of the resources ID that follows the prefix, all of it if the prefix is {@code null}.
    */
   public String getSuffix() {
     return suffix;
   }
 
   /**
-   * @return the resource ID with the prefix dereferenced
+   * @return the resource ID with the prefix dereferenced if not {@code null}
    */
   public String getResource() {
+    if (prefix == null) {
+      return suffix;
+    }
+
     return prefix.getWhat() + suffix;
+  }
+
+  /**
+   * @return prefix{@value #PREFIX_SEPARATOR}suffix, if prefix not {@code null}, otherwise the same as {@link #getResource()}
+   */
+  public String getPrefixed() {
+    if (prefix == null) {
+      return suffix;
+    }
+
+    return prefix.getWith() + PREFIX_SEPARATOR + suffix;
   }
   
   /**
@@ -103,8 +114,10 @@ public final class Entity implements Comparable<Entity>, Serializable {
   public String getLabel() {
     return label;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -115,7 +128,9 @@ public final class Entity implements Comparable<Entity>, Serializable {
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
@@ -147,7 +162,9 @@ public final class Entity implements Comparable<Entity>, Serializable {
     return getResource().compareTo(o.getResource());
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override

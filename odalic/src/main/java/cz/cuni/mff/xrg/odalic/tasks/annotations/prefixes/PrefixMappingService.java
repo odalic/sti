@@ -16,7 +16,7 @@ public interface PrefixMappingService {
    * </p>
    * 
    * <p>
-   * When none is applicable, an {@link Prefix#empty() empty} prefix is provided.
+   * When none is applicable, returns {@code null}.
    * </p>
    * 
    * @param text text to look for the prefixed part in

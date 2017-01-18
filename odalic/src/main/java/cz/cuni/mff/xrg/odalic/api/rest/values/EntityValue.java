@@ -31,7 +31,7 @@ public final class EntityValue implements Serializable {
   public EntityValue(Entity adaptee) {
     this.resource = adaptee.getResource();
     this.label = adaptee.getLabel();
-    this.prefixed = adaptee.getPrefix().getWith() + ":" + adaptee.getSuffix();
+    this.prefixed = adaptee.getPrefixed();
   }
 
   /**
@@ -83,6 +83,8 @@ public final class EntityValue implements Serializable {
    * @param prefixed the prefixed form of the resource to set
    */
   public void setPrefixed(String prefixed) {
+    Preconditions.checkNotNull(prefixed);
+    
     this.prefixed = prefixed;
   }
 

@@ -116,7 +116,7 @@ public final class TurtleConfigurablePrefixMappingService implements PrefixMappi
   public Prefix getPrefix(final String uri) {
     final String prefix = urisToPrefixes.longestMatch(uri);
     if (prefix == null) {
-      return Prefix.empty();
+      return null;
     }
 
     return Prefix.create(prefix, prefixesToUris.get(prefix));

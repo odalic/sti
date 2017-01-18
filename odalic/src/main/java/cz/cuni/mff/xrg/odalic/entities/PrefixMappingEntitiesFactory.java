@@ -36,6 +36,6 @@ public final class PrefixMappingEntitiesFactory implements EntitiesFactory {
    */
   @Override
   public Entity create(final String resourceId, final String label) {
-    return Entity.fromResourceId(prefixMappingService.getPrefix(resourceId), resourceId, label);
+    return Entity.of(prefixMappingService.getPrefix(resourceId), resourceId, label);
   }
 }

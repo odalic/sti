@@ -15,6 +15,6 @@ public final class EntityAdapter extends XmlAdapter<EntityValue, Entity> {
 
   @Override
   public Entity unmarshal(EntityValue value) throws Exception {
-    return Entity.fromResourceId(value.getResource(), value.getLabel());
+    return Entity.of(value.getResource(), value.getLabel());
   }
 }
