@@ -13,6 +13,7 @@ import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import cz.cuni.mff.xrg.odalic.entities.PrefixMappingEntitiesFactory;
 import cz.cuni.mff.xrg.odalic.feedbacks.Ambiguity;
 import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnAmbiguity;
@@ -49,6 +51,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.results.DefaultAnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
@@ -70,9 +73,11 @@ public class CoreExecutionBatch {
    * 
    * @author Josef Janoušek
    * @author Jan Váňa
+   * @throws IOException 
+   * @throws FileNotFoundException 
    * 
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws FileNotFoundException, IOException {
 
     final String propertyFilePath = args[0];
     final String testInputFilePath = args[1];
@@ -111,7 +116,7 @@ public class CoreExecutionBatch {
         new KnowledgeBase("DBpedia"), createFeedback(true), Integer.MAX_VALUE));
   }
 
-  public static Result testCoreExecution(String propertyFilePath, Task task) {
+  public static Result testCoreExecution(String propertyFilePath, Task task) throws FileNotFoundException, IOException {
     final File file = task.getConfiguration().getInput();
 
     // Code for extraction from CSV
@@ -165,7 +170,7 @@ public class CoreExecutionBatch {
     }
 
     // Odalic Result creation
-    final Result odalicResult = new DefaultAnnotationToResultAdapter().toResult(results);
+    final Result odalicResult = new DefaultAnnotationToResultAdapter(new PrefixMappingEntitiesFactory(new TurtleConfigurablePrefixMappingService())).toResult(results);
     log.info("Odalic Result is: " + odalicResult);
 
     return odalicResult;
@@ -186,9 +191,9 @@ public class CoreExecutionBatch {
       // classifications example
       HashSet<EntityCandidate> candidatesClassification = new HashSet<>();
       candidatesClassification.add(
-          new EntityCandidate(new Entity("http://schema.org/Bookxyz", "Booooook"), new Score(1.0)));
+          new EntityCandidate(Entity.fromResourceId("http://schema.org/Bookxyz", "Booooook"), new Score(1.0)));
       candidatesClassification
-          .add(new EntityCandidate(new Entity("http://schema.org/Book", "Book"), new Score(1.0)));
+          .add(new EntityCandidate(Entity.fromResourceId("http://schema.org/Book", "Book"), new Score(1.0)));
       HashMap<KnowledgeBase, HashSet<EntityCandidate>> headerAnnotation = new HashMap<>();
       headerAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesClassification);
       HashSet<Classification> classifications = new HashSet<>();
@@ -198,10 +203,10 @@ public class CoreExecutionBatch {
       // disambiguations example
       HashSet<EntityCandidate> candidatesDisambiguation = new HashSet<>();
       candidatesDisambiguation.add(new EntityCandidate(
-          new Entity("http://dbpedia.org/resource/Gardens_of_the_Moonxyz", "Gars of Moooooon"),
+          Entity.fromResourceId("http://dbpedia.org/resource/Gardens_of_the_Moonxyz", "Gars of Moooooon"),
           new Score(1.0)));
       candidatesDisambiguation.add(new EntityCandidate(
-          new Entity("http://dbpedia.org/resource/Gardens_of_the_Moon", "Gardens of the Moon"),
+          Entity.fromResourceId("http://dbpedia.org/resource/Gardens_of_the_Moon", "Gardens of the Moon"),
           new Score(1.0)));
       HashMap<KnowledgeBase, HashSet<EntityCandidate>> cellAnnotation = new HashMap<>();
       cellAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesDisambiguation);
@@ -212,9 +217,9 @@ public class CoreExecutionBatch {
       // relations example
       HashSet<EntityCandidate> candidatesRelation = new HashSet<>();
       candidatesRelation.add(new EntityCandidate(
-          new Entity("http://dbpedia.org/property/authorxyz", ""), new Score(1.0)));
+          Entity.fromResourceId("http://dbpedia.org/property/authorxyz", ""), new Score(1.0)));
       candidatesRelation.add(new EntityCandidate(
-          new Entity("http://dbpedia.org/property/author", ""), new Score(1.0)));
+          Entity.fromResourceId("http://dbpedia.org/property/author", ""), new Score(1.0)));
       HashMap<KnowledgeBase, HashSet<EntityCandidate>> columnRelationAnnotation = new HashMap<>();
       columnRelationAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesRelation);
       HashSet<ColumnRelation> relations = new HashSet<>();
