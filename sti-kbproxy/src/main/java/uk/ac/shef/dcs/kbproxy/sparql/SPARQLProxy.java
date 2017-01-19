@@ -310,7 +310,11 @@ public class SPARQLProxy extends KBProxy {
       return findByFulltext(queryCache, () -> createFulltextQueryForResources(pattern, limit));
     }
     catch (Exception e){
-      throw new KBProxyException(e);
+      // If the search expression causes any error on the KB side, we only log
+      // the exception and return no results. The error is very likely due to
+      // fulltext search requirements defined by the KB.
+      log.error("Unexpected exception during resource search.", e);
+      return new ArrayList<>();
     }
   }
 
@@ -322,7 +326,11 @@ public class SPARQLProxy extends KBProxy {
       return findByFulltext(queryCache, () -> createFulltextQueryForClasses(pattern, limit));
     }
     catch (Exception e){
-      throw new KBProxyException(e);
+      // If the search expression causes any error on the KB side, we only log
+      // the exception and return no results. The error is very likely due to
+      // fulltext search requirements defined by the KB.
+      log.error("Unexpected exception during class search.", e);
+      return new ArrayList<>();
     }
   }
 
@@ -336,7 +344,11 @@ public class SPARQLProxy extends KBProxy {
       return findByFulltext(queryCache, () -> createFulltextQueryForPredicates(pattern, limit, domainString, rangeString));
     }
     catch (Exception e){
-      throw new KBProxyException(e);
+      // If the search expression causes any error on the KB side, we only log
+      // the exception and return no results. The error is very likely due to
+      // fulltext search requirements defined by the KB.
+      log.error("Unexpected exception during predicate search.", e);
+      return new ArrayList<>();
     }
   }
 
