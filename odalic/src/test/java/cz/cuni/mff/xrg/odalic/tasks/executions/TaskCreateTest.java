@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,11 +58,10 @@ public class TaskCreateTest {
   }
 
   @Parameters
-  public static Collection<Object[]> data() {
+  public static Collection<Object[]> data() throws URISyntaxException {
 
-    String directory = "d:\\Documents\\Odalic\\TestFiles";
-
-    return Arrays.asList(new Object[][] {{new File(directory, "Books-v2.csv"),
+    return Arrays.asList(new Object[][] {{new File(
+        TaskCreateTest.class.getClassLoader().getResource("book-input.csv").toURI()),
         new Format(StandardCharsets.UTF_8, ';', true, null, null, null), 10}});
   }
 

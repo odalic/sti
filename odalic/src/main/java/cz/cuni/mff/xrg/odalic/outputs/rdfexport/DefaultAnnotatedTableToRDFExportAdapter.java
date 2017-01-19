@@ -10,6 +10,7 @@ import cz.cuni.mff.xrg.odalic.outputs.rdfexport.tp.TriplePattern;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -61,6 +62,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
     // fetch the triplePatterns from annotated table
     log.debug("Preparing set of triple patterns to be applied to all rows");
     List<TriplePattern> triplePatterns = new ArrayList<>();
+    List<Statement> tripleStatements = new ArrayList<>();
     for (TableColumn column : annotatedTable.getTableSchema().getColumns()) {
       if (column.getSuppressOutput() != null && column.getSuppressOutput()) {
         // we do not create any triple for the suppressed column
@@ -76,7 +78,17 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
         // Currently we require aboutUrl to be defined for all columns. Nevertheless, based on the spec, this is not required and
         //  if aboutUrl is not defined on the column, it may be e.g. defined at the level of whole tableScheme.
         // Also aboutUrl may contain more complex patterns, e.g.: "aboutUrl": "http://example.org/tree/{on_street}/{GID}", but so far we expect that
-        //  it contains only "{columnName}"
+        //  it contains only "{columnName}" or complete IRI
+        continue;
+      }
+
+      if (!isColumnLink(column.getAboutUrl())) {
+        // aboutUrl is not a column link, so we create just one triple statement, not a triple pattern
+        try {
+          tripleStatements.add(createStatement(column.getAboutUrl(), column.getPropertyUrl(), column.getValueUrl()));
+        } catch (NullPointerException | IllegalArgumentException e) {
+          log.error("No triple statement is produced because of " + e);
+        }
         continue;
       }
 
@@ -103,6 +115,9 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
     
     // create a new Model to put statements in
     Model model = new LinkedHashModel();
+    
+    // add created triple statements
+    model.addAll(tripleStatements);
     
     // process the rows from extended input
     log.debug("Iterating over set of row and creating triples for each row");
@@ -202,7 +217,13 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
               continue;
             }
             try {
-              objects.add(factory.createIRI(row.get(objectPosition)));
+              if (notValidIRI(row.get(objectPosition))) {
+                log.info("Not a valid (absolute) IRI: " + row.get(objectPosition) + " , literal will be created.");
+                objects.add(factory.createLiteral(row.get(objectPosition)));
+              }
+              else {
+                objects.add(factory.createIRI(row.get(objectPosition)));
+              }
             } catch (NullPointerException | IllegalArgumentException e) {
               log.error("No triple is produced because of " + e);
             }
@@ -271,5 +292,21 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
    */
   private String getColumnName(String columnLink) {
     return columnLink.substring(1, columnLink.length()-1);
+  }
+  
+  private boolean notValidIRI(String iriString) {
+    return iriString.indexOf(':') < 0;
+  }
+  
+  private Statement createStatement(String subject, String predicate, String object) {
+    Value objectValue;
+    if (notValidIRI(object)) {
+      log.info("Not a valid (absolute) IRI: " + object + " , literal will be created.");
+      objectValue = factory.createLiteral(object);
+    }
+    else {
+      objectValue = factory.createIRI(object);
+    }
+    return factory.createStatement(factory.createIRI(subject), createPredicateIRI(predicate), objectValue);
   }
 }

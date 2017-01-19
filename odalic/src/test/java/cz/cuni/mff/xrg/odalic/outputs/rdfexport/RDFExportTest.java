@@ -38,8 +38,8 @@ public class RDFExportTest {
   @BeforeClass
   public static void beforeClass() throws URISyntaxException, IOException {
 
-    inputJsonFile = new File(RDFExportTest.class.getClassLoader().getResource("book.json").toURI());
-    inputFile = new File(RDFExportTest.class.getClassLoader().getResource("book.csv").toURI());
+    inputJsonFile = new File(RDFExportTest.class.getClassLoader().getResource("LIVEBIRTHS-5.json").toURI());
+    inputFile = new File(RDFExportTest.class.getClassLoader().getResource("LIVEBIRTHS-5.csv").toURI());
   }
 
   @Test
