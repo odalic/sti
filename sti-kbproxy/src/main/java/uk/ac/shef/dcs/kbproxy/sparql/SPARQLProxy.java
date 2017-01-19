@@ -516,7 +516,7 @@ public class SPARQLProxy extends KBProxy {
 
       boolean exists = ask(query);
       if (exists) {
-        throw new KBProxyException("The knowledge base " + kbDefinition.getName() + " already contains a resource with url: " + uriString);
+        throw new IllegalArgumentException("The knowledge base " + kbDefinition.getName() + " already contains a resource with url: " + uriString);
       }
 
       return uriString;
