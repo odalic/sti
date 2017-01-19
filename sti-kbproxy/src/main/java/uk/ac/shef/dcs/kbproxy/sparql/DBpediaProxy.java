@@ -38,32 +38,24 @@ public class DBpediaProxy extends SPARQLProxy {
   }
 
   @Override
-  protected List<String> queryForLabel(Query sparqlQuery, String resourceURI) throws KBProxyException {
-    List<String> baseOut = super.queryForLabel(sparqlQuery, resourceURI);
-    if (baseOut == null || baseOut.size() == 0) {
-      return baseOut;
-    }
-
-    String suffix = kbDefinition.getLanguageSuffix();
-    if (isNullOrEmpty(suffix)) {
-      return baseOut;
-    }
-
-    List<String> out = new ArrayList<>();
-    for(String label : baseOut) {
-      if (label.contains("@")) { //language tag in dbpedia literals
-        if (label.endsWith(suffix)) {
-          label = label.substring(0, label.length() - suffix.length()).trim();
-        }
-        else {
-          continue;
+  protected String applyCustomUriHeuristics(String resourceURI, String label) {
+    //This is an yago resource, which may have numbered ids as suffix
+    //e.g., City015467.
+    if (resourceURI.contains("yago")) {
+      int end = 0;
+      for (int i = 0; i < label.length(); i++) {
+        if (Character.isDigit(label.charAt(i))) {
+          end = i;
+          break;
         }
       }
 
-      out.add(label);
+      if (end > 0) {
+        label = label.substring(0, end);
+      }
     }
 
-    return out;
+    return label;
   }
 
   private OntModel loadModel(String ontURL) {
