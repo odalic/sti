@@ -4,8 +4,11 @@
 package cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes;
 
 import javax.annotation.concurrent.Immutable;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
+
+import cz.cuni.mff.xrg.odalic.api.rest.adapters.PrefixAdapter;
 
 /**
  * Resource ID prefix.
@@ -14,6 +17,7 @@ import com.google.common.base.Preconditions;
  *
  */
 @Immutable
+@XmlJavaTypeAdapter(PrefixAdapter.class)
 public final class Prefix {
 
   private final String with;
