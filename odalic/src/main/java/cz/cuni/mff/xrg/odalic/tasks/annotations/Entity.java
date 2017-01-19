@@ -25,7 +25,7 @@ public final class Entity implements Comparable<Entity>, Serializable {
 
   private final Prefix prefix;
 
-  private final String suffix;
+  private final String tail;
 
   private final String label;
 
@@ -67,7 +67,7 @@ public final class Entity implements Comparable<Entity>, Serializable {
 
   private Entity(final Prefix prefix, final String suffix, String label) {
     this.prefix = prefix;
-    this.suffix = suffix;
+    this.tail = suffix;
     this.label = label;
   }
 
@@ -80,32 +80,37 @@ public final class Entity implements Comparable<Entity>, Serializable {
   }
 
   /**
-   * @return the part of the resources ID that follows the prefix, all of it if the prefix is {@code null}.
+   * @return the part of the resources ID that follows the part substitued by prefix, {@code null} if the prefix is not defined
    */
-  public String getSuffix() {
-    return suffix;
+  @Nullable
+  public String getTail() {
+    if (prefix == null) {
+      return null;
+    }
+    
+    return tail;
   }
 
   /**
-   * @return the resource ID with the prefix dereferenced if not {@code null}
+   * @return the expanded resource ID
    */
   public String getResource() {
     if (prefix == null) {
-      return suffix;
+      return tail;
     }
 
-    return prefix.getWhat() + suffix;
+    return prefix.getWhat() + tail;
   }
 
   /**
-   * @return prefix{@value #PREFIX_SEPARATOR}suffix, if prefix not {@code null}, otherwise the same as {@link #getResource()}
+   * @return prefix{@value #PREFIX_SEPARATOR}tail, if prefix not {@code null}, otherwise the same as {@link #getResource()}
    */
   public String getPrefixed() {
     if (prefix == null) {
-      return suffix;
+      return tail;
     }
 
-    return prefix.getWith() + PREFIX_SEPARATOR + suffix;
+    return prefix.getWith() + PREFIX_SEPARATOR + tail;
   }
   
   /**
@@ -169,7 +174,7 @@ public final class Entity implements Comparable<Entity>, Serializable {
    */
   @Override
   public String toString() {
-    return "Entity [prefix=" + prefix + ", suffix=" + suffix + ", label=" + label
+    return "Entity [prefix=" + prefix + ", suffix=" + tail + ", label=" + label
         + ", getResource()=" + getResource() + "]";
   }
 }
