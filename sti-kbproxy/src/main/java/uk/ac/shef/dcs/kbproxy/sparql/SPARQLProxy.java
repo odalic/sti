@@ -304,10 +304,8 @@ public class SPARQLProxy extends KBProxy {
 
   @Override
   public List<Entity> findResourceByFulltext(String pattern, int limit) throws KBProxyException {
-    String queryCache = createSolrCacheQuery_fulltextSearchResources(pattern, limit);
-
     try {
-      return findByFulltext(queryCache, () -> createFulltextQueryForResources(pattern, limit));
+      return findByFulltext(() -> createFulltextQueryForResources(pattern, limit));
     }
     catch (Exception e){
       throw new KBProxyException(e);
@@ -316,10 +314,8 @@ public class SPARQLProxy extends KBProxy {
 
   @Override
   public List<Entity> findClassByFulltext(String pattern, int limit) throws KBProxyException {
-    String queryCache = createSolrCacheQuery_fulltextSearchClasses(pattern, limit);
-
     try {
-      return findByFulltext(queryCache, () -> createFulltextQueryForClasses(pattern, limit));
+      return findByFulltext(() -> createFulltextQueryForClasses(pattern, limit));
     }
     catch (Exception e){
       throw new KBProxyException(e);
@@ -330,10 +326,9 @@ public class SPARQLProxy extends KBProxy {
   public List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain, URI range) throws KBProxyException {
     String domainString = domain != null ? domain.toString() : null;
     String rangeString = range != null ? range.toString() : null;
-    String queryCache = createSolrCacheQuery_fulltextSearchPredicates(pattern, limit, domainString, rangeString);
 
     try {
-      return findByFulltext(queryCache, () -> createFulltextQueryForPredicates(pattern, limit, domainString, rangeString));
+      return findByFulltext(() -> createFulltextQueryForPredicates(pattern, limit, domainString, rangeString));
     }
     catch (Exception e){
       throw new KBProxyException(e);
@@ -409,21 +404,11 @@ public class SPARQLProxy extends KBProxy {
     return new Entity(url, label);
   }
 
-  @SuppressWarnings("unchecked")
-  private List<Entity> findByFulltext(String queryCache, QueryGetter queryGetter) throws SolrServerException, ClassNotFoundException, IOException, KBProxyException, ParseException {
-    List<Entity> result = (List<Entity>) cacheEntity.retrieve(queryCache);
-
-    if (result != null && !result.isEmpty()) {
-      return  result;
-    }
-
+  private List<Entity> findByFulltext(QueryGetter queryGetter) throws SolrServerException, ClassNotFoundException, IOException, KBProxyException, ParseException {
     Query query = queryGetter.getQuery();
     List<Pair<String, String>> queryResult = queryReturnTuples(query, "");
 
-    result = queryResult.stream().map(pair -> new Entity(pair.getKey(), pair.getValue())).collect(Collectors.toList());
-    cacheEntity.cache(queryCache, result, AUTO_COMMIT);
-
-    return result;
+    return queryResult.stream().map(pair -> new Entity(pair.getKey(), pair.getValue())).collect(Collectors.toList());
   }
 
 
