@@ -466,9 +466,8 @@ public class SPARQLProxy extends KBProxy {
     tripleDefinition.append(predicate);
 
     if (isLiteral){
-      tripleDefinition.append("> \"");
-      tripleDefinition.append(value);
-      tripleDefinition.append("\"");
+      tripleDefinition.append("> ");
+      tripleDefinition.append(createSPARQLLiteral(value, true));
     }
     else {
       tripleDefinition.append("> <");
@@ -482,9 +481,8 @@ public class SPARQLProxy extends KBProxy {
     tripleDefinition.append(url);
     tripleDefinition.append("> <");
     tripleDefinition.append(kbDefinition.getInsertLabel());
-    tripleDefinition.append("> \"");
-    tripleDefinition.append(escapeSPARQLLiteral(label));
-    tripleDefinition.append("\"");
+    tripleDefinition.append("> ");
+    tripleDefinition.append(createSPARQLLiteral(label, true));
 
     return tripleDefinition;
   }
