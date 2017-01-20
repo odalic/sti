@@ -119,6 +119,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final Callable<Result> execution = () -> {
       try {
         final Table table = inputToTableAdapter.toTable(input);
+        final boolean isStatistical = configuration.isStatistical();
   
         final Map<String, SemanticTableInterpreter> interpreters =
             semanticTableInterpreterFactory.getInterpreters();
@@ -134,7 +135,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
           final Constraints constraints = feedbackToConstraintsAdapter.toConstraints(feedback, base);
           final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
           
-          final TAnnotation annotationResult = interpreter.start(table, constraints);
+          final TAnnotation annotationResult = interpreter.start(table, isStatistical, constraints);
           
           results.put(base, annotationResult);
         }

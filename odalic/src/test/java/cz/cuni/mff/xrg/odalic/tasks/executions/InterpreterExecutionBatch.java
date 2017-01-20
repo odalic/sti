@@ -1,7 +1,5 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
@@ -27,11 +25,9 @@ public class InterpreterExecutionBatch {
    * @param args command line arguments
    * 
    * @author Josef Janoušek
-   * @throws IOException 
-   * @throws FileNotFoundException 
    * 
    */
-  public static void main(String[] args) throws FileNotFoundException, IOException {
+  public static void main(String[] args) {
 
     final String propertyFilePath = args[0];
     final String testInputFilePath = args[1];
@@ -53,7 +49,7 @@ public class InterpreterExecutionBatch {
     }
 
     // settings for export
-    final Input input = CoreExecutionBatch.getInput();
+    final Input input = task.getInputSnapshot();
     final Configuration config = task.getConfiguration();
     final String baseExportPath = FilenameUtils.getFullPath(testInputFilePath)
         + FilenameUtils.getBaseName(testInputFilePath) + "-export";
