@@ -6,6 +6,7 @@ package cz.cuni.mff.xrg.odalic.tasks.executions;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.feedbacks.FeedbackToConstraintsAdapter;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
@@ -105,6 +107,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
     Preconditions.checkState(resultFuture == null || resultFuture.isDone());
 
     final Configuration configuration = task.getConfiguration();
+    
     final File file = configuration.getInput();
     final String fileId = file.getId();
 
@@ -117,6 +120,9 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final Input input = parsingResult.getInput();
     task.setInputSnapshot(input);
     
+    final Feedback feedback = configuration.getFeedback();
+    final Set<KnowledgeBase> usedBases = configuration.getUsedBases();
+    
     final Callable<Result> execution = () -> {
       try {
         final Table table = inputToTableAdapter.toTable(input);
@@ -124,12 +130,20 @@ public final class FutureBasedExecutionService implements ExecutionService {
         final Map<String, SemanticTableInterpreter> interpreters =
             semanticTableInterpreterFactory.getInterpreters();
   
-        Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
+        final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
         for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters.entrySet()) {
-          final Constraints constraints = feedbackToConstraintsAdapter.toConstraints(
-              configuration.getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
-          final TAnnotation annotationResult = interpreterEntry.getValue().start(table, constraints);
-          results.put(new KnowledgeBase(interpreterEntry.getKey()), annotationResult);
+          final String baseName = interpreterEntry.getKey();
+          final KnowledgeBase base = new KnowledgeBase(baseName);
+          if (!usedBases.contains(base)) {
+            continue;
+          }
+          
+          final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
+          final Constraints constraints = feedbackToConstraintsAdapter.toConstraints(feedback, base);
+          
+          final TAnnotation annotationResult = interpreter.start(table, constraints);
+          
+          results.put(base, annotationResult);
         }
         final Result result = annotationResultAdapter.toResult(results);
   
