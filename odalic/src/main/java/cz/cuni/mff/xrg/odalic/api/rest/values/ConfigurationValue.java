@@ -35,6 +35,8 @@ public final class ConfigurationValue implements Serializable {
 
   private Integer rowsLimit;
 
+  private Boolean isStatistical;
+
   public ConfigurationValue() {}
 
   public ConfigurationValue(Configuration adaptee) {
@@ -44,6 +46,7 @@ public final class ConfigurationValue implements Serializable {
     primaryBase = adaptee.getPrimaryBase();
     rowsLimit =
         adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
+    isStatistical = adaptee.getIsStatistical();
   }
 
   /**
@@ -72,7 +75,6 @@ public final class ConfigurationValue implements Serializable {
   public Feedback getFeedback() {
     return feedback;
   }
-
 
   /**
    * @param feedback the feedback to set
@@ -119,7 +121,6 @@ public final class ConfigurationValue implements Serializable {
     this.primaryBase = primaryBase;
   }
 
-
   /**
    * @return the maximum number of rows to process, {@code null} if no such limit set
    */
@@ -137,6 +138,21 @@ public final class ConfigurationValue implements Serializable {
     this.rowsLimit = rowsLimit;
   }
 
+  /**
+   * @return true for processing statistical data
+   */
+  @Nullable
+  public Boolean getIsStatistical() {
+    return isStatistical;
+  }
+
+  /**
+   * @param isStatistical true for processing statistical data
+   */
+  public void setIsStatistical(final @Nullable Boolean isStatistical) {
+    this.isStatistical = isStatistical;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -145,6 +161,6 @@ public final class ConfigurationValue implements Serializable {
   @Override
   public String toString() {
     return "ConfigurationValue [input=" + input + ", feedback=" + feedback + ", usedBases=" + usedBases + ", primaryBase="
-        + primaryBase + ", rowsLimit=" + rowsLimit + "]";
+        + primaryBase + ", rowsLimit=" + rowsLimit + ", isStatistical=" + isStatistical + "]";
   }
 }

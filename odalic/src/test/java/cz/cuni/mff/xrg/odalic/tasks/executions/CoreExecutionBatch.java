@@ -113,7 +113,7 @@ public class CoreExecutionBatch {
     Task task = new Task("simple_task", "task description",
         new Configuration(files.get(fileId), ImmutableSet.of(new KnowledgeBase("DBpedia"),
             new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")),
-            new KnowledgeBase("DBpedia"), createFeedback(true), null));
+            new KnowledgeBase("DBpedia"), createFeedback(true), null, false));
     utilizingTasks.put(task.getConfiguration().getInput().getId(), task.getId());
 
     return task;

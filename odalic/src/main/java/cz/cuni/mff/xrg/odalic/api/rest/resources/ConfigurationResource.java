@@ -91,7 +91,8 @@ public final class ConfigurationResource {
     final Configuration configuration;
     try {
       configuration = new Configuration(input, usedBases, configurationValue.getPrimaryBase(),
-          configurationValue.getFeedback(), configurationValue.getRowsLimit());
+          configurationValue.getFeedback(), configurationValue.getRowsLimit(),
+          configurationValue.getIsStatistical());
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e);
     }

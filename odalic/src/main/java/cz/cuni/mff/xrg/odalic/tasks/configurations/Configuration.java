@@ -41,6 +41,9 @@ public final class Configuration implements Serializable {
   private final KnowledgeBase primaryBase;
 
   private final int rowsLimit;
+
+  private final boolean isStatistical;
+
   /**
    * Creates configuration with provided feedback, which serves as hint for the processing
    * algorithm.
@@ -51,12 +54,13 @@ public final class Configuration implements Serializable {
    * @param feedback constraints for the algorithm, when {@code null}, a default empty
    *        {@link Feedback} is used
    * @param rowsLimit maximum number of rows to let the algorithm process
+   * @param isStatistical true for processing statistical data
    * 
    * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number or zero
    */
   public Configuration(final File input, final Set<? extends KnowledgeBase> usedBases,
       final KnowledgeBase primaryBase, final @Nullable Feedback feedback,
-      @Nullable final Integer rowsLimit) {
+      @Nullable final Integer rowsLimit, @Nullable final Boolean isStatistical) {
     Preconditions.checkNotNull(input);
     Preconditions.checkNotNull(usedBases);
     Preconditions.checkNotNull(primaryBase);
@@ -69,6 +73,7 @@ public final class Configuration implements Serializable {
     this.primaryBase = primaryBase;
     this.feedback = feedback == null ? new Feedback() : feedback;
     this.rowsLimit = rowsLimit == null ? MAXIMUM_ROWS_LIMIT : rowsLimit;
+    this.isStatistical = isStatistical == null ? false : isStatistical;
   }
 
   /**
@@ -106,6 +111,13 @@ public final class Configuration implements Serializable {
     return rowsLimit;
   }
 
+  /**
+   * @return true for processing statistical data
+   */
+  public boolean getIsStatistical() {
+    return isStatistical;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -120,6 +132,7 @@ public final class Configuration implements Serializable {
     result = prime * result + usedBases.hashCode();
     result = prime * result + primaryBase.hashCode();
     result = prime * result + rowsLimit;
+    result = prime * result + (isStatistical ? 1231 : 1237);
     return result;
   }
 
@@ -155,6 +168,9 @@ public final class Configuration implements Serializable {
     if (rowsLimit != other.rowsLimit) {
       return false;
     }
+    if (isStatistical != other.isStatistical) {
+      return false;
+    }
     return true;
   }
 
@@ -166,6 +182,6 @@ public final class Configuration implements Serializable {
   @Override
   public String toString() {
     return "Configuration [input=" + input + ", feedback=" + feedback + ", usedBases=" + usedBases
-        + ", primaryBase=" + primaryBase + ", rowsLimit=" + rowsLimit + "]";
+        + ", primaryBase=" + primaryBase + ", rowsLimit=" + rowsLimit + ", isStatistical=" + isStatistical + "]";
   }
 }
