@@ -1,12 +1,14 @@
 package cz.cuni.mff.xrg.odalic.api.rest.values;
 
 import java.io.Serializable;
-
+import java.util.NavigableSet;
+import java.util.Set;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSortedSet;
 
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
@@ -27,6 +29,8 @@ public final class ConfigurationValue implements Serializable {
 
   private Feedback feedback;
 
+  private NavigableSet<KnowledgeBase> usedBases;
+  
   private KnowledgeBase primaryBase;
 
   private Integer rowsLimit;
@@ -36,6 +40,7 @@ public final class ConfigurationValue implements Serializable {
   public ConfigurationValue(Configuration adaptee) {
     input = adaptee.getInput().getId();
     feedback = adaptee.getFeedback();
+    setUsedBases(ImmutableSortedSet.copyOf(adaptee.getUsedBases()));
     primaryBase = adaptee.getPrimaryBase();
     rowsLimit =
         adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
@@ -76,6 +81,24 @@ public final class ConfigurationValue implements Serializable {
     Preconditions.checkNotNull(feedback);
 
     this.feedback = feedback;
+  }
+
+  /**
+   * @return the bases selected for the task
+   */
+  @XmlElement
+  @Nullable
+  public NavigableSet<KnowledgeBase> getUsedBases() {
+    return usedBases;
+  }
+
+  /**
+   * @param usedBases the bases selected for the task to set
+   */
+  public void setUsedBases(Set<? extends KnowledgeBase> usedBases) {
+    Preconditions.checkNotNull(usedBases);
+    
+    this.usedBases = ImmutableSortedSet.copyOf(usedBases);
   }
 
   /**
@@ -121,7 +144,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @Override
   public String toString() {
-    return "ConfigurationValue [input=" + input + ", feedback=" + feedback + ", primaryBase="
+    return "ConfigurationValue [input=" + input + ", feedback=" + feedback + ", usedBases=" + usedBases + ", primaryBase="
         + primaryBase + ", rowsLimit=" + rowsLimit + "]";
   }
 }

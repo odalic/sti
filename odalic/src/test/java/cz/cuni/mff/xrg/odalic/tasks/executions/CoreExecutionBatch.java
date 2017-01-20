@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -73,8 +74,8 @@ public class CoreExecutionBatch {
    * 
    * @author Josef Janoušek
    * @author Jan Váňa
-   * @throws IOException 
-   * @throws FileNotFoundException 
+   * @throws IOException
+   * @throws FileNotFoundException
    * 
    */
   public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -112,11 +113,13 @@ public class CoreExecutionBatch {
     files.get(fileId).setFormat(new Format(StandardCharsets.UTF_8, ';', true, null, null, null));
 
     // Task settings
-    return new Task("simple_task", "task description", new Configuration(files.get(fileId),
-        new KnowledgeBase("DBpedia"), createFeedback(true), Integer.MAX_VALUE));
+    return new Task("simple_task", "task description",
+        new Configuration(files.get(fileId), ImmutableSet.of(new KnowledgeBase("DBpedia")),
+            new KnowledgeBase("DBpedia"), createFeedback(true), Integer.MAX_VALUE));
   }
 
-  public static Result testCoreExecution(String propertyFilePath, Task task) throws FileNotFoundException, IOException {
+  public static Result testCoreExecution(String propertyFilePath, Task task)
+      throws FileNotFoundException, IOException {
     final File file = task.getConfiguration().getInput();
 
     // Code for extraction from CSV
@@ -141,7 +144,7 @@ public class CoreExecutionBatch {
     try {
       final SemanticTableInterpreterFactory factory = new TableMinerPlusFactory(
           new DefaultKnowledgeBaseProxyFactory(propertyFilePath), propertyFilePath);
-      
+
       semanticTableInterpreters = factory.getInterpreters();
     } catch (IOException e) {
       log.error("Error - TMP initialization process fails to load its configuration:", e);
@@ -170,7 +173,9 @@ public class CoreExecutionBatch {
     }
 
     // Odalic Result creation
-    final Result odalicResult = new DefaultAnnotationToResultAdapter(new PrefixMappingEntitiesFactory(new TurtleConfigurablePrefixMappingService())).toResult(results);
+    final Result odalicResult = new DefaultAnnotationToResultAdapter(
+        new PrefixMappingEntitiesFactory(new TurtleConfigurablePrefixMappingService()))
+            .toResult(results);
     log.info("Odalic Result is: " + odalicResult);
 
     return odalicResult;
@@ -218,8 +223,8 @@ public class CoreExecutionBatch {
       HashSet<EntityCandidate> candidatesRelation = new HashSet<>();
       candidatesRelation.add(new EntityCandidate(
           Entity.of("http://dbpedia.org/property/authorxyz", ""), new Score(1.0)));
-      candidatesRelation.add(new EntityCandidate(
-          Entity.of("http://dbpedia.org/property/author", ""), new Score(1.0)));
+      candidatesRelation.add(
+          new EntityCandidate(Entity.of("http://dbpedia.org/property/author", ""), new Score(1.0)));
       HashMap<KnowledgeBase, HashSet<EntityCandidate>> columnRelationAnnotation = new HashMap<>();
       columnRelationAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesRelation);
       HashSet<ColumnRelation> relations = new HashSet<>();

@@ -10,9 +10,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.sti.STIException;
-
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -36,7 +33,7 @@ public final class DefaultBasesService implements BasesService {
   }
 
   @Override
-  public NavigableSet<KnowledgeBase> getBases() throws STIException, IOException {
+  public NavigableSet<KnowledgeBase> getBases() {
     return build(getProxiesStream());
   }
 
@@ -51,7 +48,7 @@ public final class DefaultBasesService implements BasesService {
     return stream.map(proxy -> new KnowledgeBase(proxy.getName()));
   }
 
-  private Stream<KBProxy> getProxiesStream() throws STIException, IOException {
+  private Stream<KBProxy> getProxiesStream() {
     final Map<String, KBProxy> map = this.knowledgeBaseProxyFactory.getKBProxies();
     final Collection<KBProxy> proxies = map.values();
 
@@ -59,11 +56,11 @@ public final class DefaultBasesService implements BasesService {
   }
 
   @Override
-  public NavigableSet<KnowledgeBase> getInsertSupportingBases() throws STIException, IOException {
+  public NavigableSet<KnowledgeBase> getInsertSupportingBases() {
     return build(getInsertSupportingStream());
   }
 
-  private Stream<KBProxy> getInsertSupportingStream() throws STIException, IOException {
+  private Stream<KBProxy> getInsertSupportingStream() {
     return getProxiesStream().filter(proxy -> proxy.isInsertSupported());
   }
 }

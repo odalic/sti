@@ -6,6 +6,7 @@ package cz.cuni.mff.xrg.odalic.tasks.executions;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -19,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.feedbacks.FeedbackToConstraintsAdapter;
-import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.files.formats.FormatService;
@@ -100,21 +101,19 @@ public final class FutureBasedExecutionService implements ExecutionService {
   @Override
   public void submitForTaskId(String id) throws IllegalStateException, IOException {
     final Task task = taskService.getById(id);
-
-    final Future<Result> resultFuture = tasksToResults.get(task);
-    Preconditions.checkState(resultFuture == null || resultFuture.isDone());
+    
+    checkNotAlreadyScheduled(task);
 
     final Configuration configuration = task.getConfiguration();
-    final File file = configuration.getInput();
-    final String fileId = file.getId();
+    
+    final String fileId = configuration.getInput().getId();
+    final Feedback feedback = configuration.getFeedback();
+    final Set<KnowledgeBase> usedBases = configuration.getUsedBases();
+    final int rowsLimit = configuration.getRowsLimit();
 
-    final String data = fileService.getDataById(fileId);
-    final Format format = formatService.getForFileId(fileId);
-    
-    final ParsingResult parsingResult = csvInputParser.parse(data, fileId, format, configuration.getRowsLimit());
-    formatService.setForFileId(fileId, parsingResult.getFormat());
-    
+    final ParsingResult parsingResult = parse(fileId, rowsLimit);
     final Input input = parsingResult.getInput();
+    
     task.setInputSnapshot(input);
     
     final Callable<Result> execution = () -> {
@@ -123,17 +122,24 @@ public final class FutureBasedExecutionService implements ExecutionService {
   
         final Map<String, SemanticTableInterpreter> interpreters =
             semanticTableInterpreterFactory.getInterpreters();
-  
-        Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
+        
+        final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
+        
         for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters.entrySet()) {
-          final Constraints constraints = feedbackToConstraintsAdapter.toConstraints(
-              configuration.getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
-          final TAnnotation annotationResult = interpreterEntry.getValue().start(table, constraints);
-          results.put(new KnowledgeBase(interpreterEntry.getKey()), annotationResult);
+          final KnowledgeBase base = new KnowledgeBase(interpreterEntry.getKey());
+          if (!usedBases.contains(base)) {
+            continue;
+          }
+          
+          final Constraints constraints = feedbackToConstraintsAdapter.toConstraints(feedback, base);
+          final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
+          
+          final TAnnotation annotationResult = interpreter.start(table, constraints);
+          
+          results.put(base, annotationResult);
         }
-        final Result result = annotationResultAdapter.toResult(results);
-  
-        return result;
+        
+        return annotationResultAdapter.toResult(results);
       } catch (final Exception e) {
         logger.error("Error during task execution!", e);
         
@@ -143,6 +149,21 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
     final Future<Result> future = executorService.submit(execution);
     tasksToResults.put(task, future);
+  }
+
+  private ParsingResult parse(final String fileId, final int rowsLimit) throws IOException {
+    final String data = fileService.getDataById(fileId);
+    final Format format = formatService.getForFileId(fileId);
+    
+    final ParsingResult result = csvInputParser.parse(data, fileId, format, rowsLimit);
+    formatService.setForFileId(fileId, result.getFormat());
+    
+    return result;
+  }
+
+  private void checkNotAlreadyScheduled(final Task task) {
+    final Future<Result> resultFuture = tasksToResults.get(task);
+    Preconditions.checkState(resultFuture == null || resultFuture.isDone());
   }
 
   /*
