@@ -66,8 +66,8 @@ public class JIInterpreter extends SemanticTableInterpreter {
         this.debugMode = debugMode;
     }
 
-    public TAnnotation start(Table table, Constraints constraints) throws STIException {
-      return start(table, true);
+    public TAnnotation start(Table table, boolean isStatistical, Constraints constraints) throws STIException {
+      return start(table, !isStatistical);
     }
 
     public TAnnotation start(Table table, boolean relationLearning) throws STIException {

@@ -171,7 +171,8 @@ public class CoreExecutionBatch {
         Constraints constraints = new DefaultFeedbackToConstraintsAdapter().toConstraints(
             task.getConfiguration().getFeedback(), base);
 
-        TAnnotation annotationResult = interpreterEntry.getValue().start(table, constraints);
+        TAnnotation annotationResult = interpreterEntry.getValue().start(table,
+            task.getConfiguration().getIsStatistical(), constraints);
 
         results.put(base, annotationResult);
       }

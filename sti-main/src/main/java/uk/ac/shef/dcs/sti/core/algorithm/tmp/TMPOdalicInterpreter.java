@@ -43,10 +43,10 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
   }
   
   public TAnnotation start(Table table, boolean relationLearning) throws STIException {
-    return start(table, new Constraints());
+    return start(table, !relationLearning, new Constraints());
   }
   
-  public TAnnotation start(Table table, Constraints constraints) throws STIException {
+  public TAnnotation start(Table table, boolean statisticalData, Constraints constraints) throws STIException {
     Preconditions.checkNotNull(constraints);
     
     Set<Integer> ignoreCols = constraints.getColumnIgnores().stream()
@@ -96,22 +96,11 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       List<Integer> annotatedColumns = new ArrayList<>();
       LOG.info(">\t PHASE: LEARNING ...");
       for (int col = 0; col < table.getNumCols(); col++) {
-                if (isCompulsoryColumn(col)) {
-                    LOG.info("\t>> Column=(compulsory)" + col);
-                    annotatedColumns.add(col);
-                    learning.learn(table, tableAnnotations, col, constraints);
-                } else {
                     if (getIgnoreColumns().contains(col)) continue;
-                /*if (!table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType().equals(DataTypeClassifier.DataType.NAMED_ENTITY))
-                    continue;*/
-                /*if (table.getColumnHeader(col).getFeature().isAcronymColumn())
-                    continue;*/
                     annotatedColumns.add(col);
                     
-                    //if (tab_annotations.getRelationAnnotationsBetween(main_subject_column, col) == null) {
                     LOG.info("\t>> Column=" + col);
                     learning.learn(table, tableAnnotations, col, constraints);
-                }
       }
       
       if (update != null) {
