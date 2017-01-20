@@ -28,6 +28,7 @@ import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
+import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
 
 @Component
 @Path("/tasks/{id}/configuration")
@@ -36,20 +37,24 @@ public final class ConfigurationResource {
   private final ConfigurationService configurationService;
   private final FileService fileService;
   private final BasesService basesService;
+  private final ExecutionService executionService;
 
   @Context
   private UriInfo uriInfo;
 
   @Autowired
   public ConfigurationResource(final ConfigurationService configurationService,
-      final FileService fileService, final BasesService basesService) {
+      final FileService fileService, final BasesService basesService,
+      final ExecutionService executionService) {
     Preconditions.checkNotNull(configurationService);
     Preconditions.checkNotNull(fileService);
     Preconditions.checkNotNull(basesService);
+    Preconditions.checkNotNull(executionService);
 
     this.configurationService = configurationService;
     this.fileService = fileService;
     this.basesService = basesService;
+    this.executionService = executionService;
   }
 
   @PUT
@@ -92,6 +97,7 @@ public final class ConfigurationResource {
     }
 
     try {
+      executionService.unscheduleForTaskId(id);
       configurationService.setForTaskId(id, configuration);
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException("The configured task does not exist.", e);

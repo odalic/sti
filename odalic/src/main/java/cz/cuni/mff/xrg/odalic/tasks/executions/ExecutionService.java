@@ -23,6 +23,8 @@ public interface ExecutionService {
    */
   void submitForTaskId(String id) throws IllegalStateException, IOException;
   
+  void unscheduleForTaskId(String id);
+  
   /**
    * Attempts to cancel execution of the task.
    * 

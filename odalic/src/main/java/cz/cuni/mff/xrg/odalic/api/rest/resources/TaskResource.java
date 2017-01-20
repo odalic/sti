@@ -171,6 +171,7 @@ public final class TaskResource {
       return Message.of("A new task has been created AT THE LOCATION you specified")
           .toResponse(Response.Status.CREATED, location, uriInfo);
     } else {
+      executionService.unscheduleForTaskId(id);
       taskService.replace(task);
       return Message
           .of("The task you specified has been fully updated AT THE LOCATION you specified.")

@@ -165,6 +165,18 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final Future<Result> resultFuture = tasksToResults.get(task);
     Preconditions.checkState(resultFuture == null || resultFuture.isDone());
   }
+  
+
+  @Override
+  public void unscheduleForTaskId(String id) {
+    final Task task = taskService.getById(id);
+    final Future<Result> resultFuture = tasksToResults.remove(task);
+    if (resultFuture == null) {
+      return;
+    }
+
+    resultFuture.cancel(false);
+  }
 
   /*
    * (non-Javadoc)
@@ -190,7 +202,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
     Preconditions.checkArgument(resultFuture != null);
 
-    Preconditions.checkState(resultFuture.cancel(true));
+    Preconditions.checkState(resultFuture.cancel(false));
   }
 
   @Override
