@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public abstract class KBProxy {
 
   private static final String CACHE_VERSION_ID = "9274dff6-c606-4f5d-8bb5-d528c764e655";
-  private static final String CACHE_VERSION = "1.0.14";
+  private static final String CACHE_VERSION = "1.0.15";
 
   protected SolrCache cacheEntity;
   protected SolrCache cacheConcept;

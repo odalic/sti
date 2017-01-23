@@ -657,10 +657,19 @@ public class SPARQLProxy extends KBProxy {
 
   @SuppressWarnings("unchecked")
   private void adjustValueOfURLResource(Attribute attr) throws KBProxyException {
-    String value = attr.getValue();
-    if (value.startsWith("http")) {
-      String queryCache = createSolrCacheQuery_findLabelForResource(value);
+    // TODO: This is a mess, refactor in #256.
+    String valueLabel = getResourceLabel(attr.getValue());
+    String relationLabel = getResourceLabel(attr.getRelationURI());
 
+    attr.setValueURI(attr.getValue());
+    attr.setValue(valueLabel);
+    attr.setRelationLabel(relationLabel);
+  }
+
+  @SuppressWarnings("unchecked")
+  private String getResourceLabel(String uri) throws KBProxyException {
+    if (uri.startsWith("http")) {
+      String queryCache = createSolrCacheQuery_findLabelForResource(uri);
 
       List<String> result = null;
       if (!ALWAYS_CALL_REMOTE_SEARCH_API) {
@@ -676,8 +685,8 @@ public class SPARQLProxy extends KBProxy {
       if (result == null) {
         try {
           //1. try exact string
-          Query sparqlQuery = createGetLabelQuery(value);
-          result = queryForLabel(sparqlQuery, value);
+          Query sparqlQuery = createGetLabelQuery(uri);
+          result = queryForLabel(sparqlQuery, uri);
 
           cacheEntity.cache(queryCache, result, AUTO_COMMIT);
           log.debug("QUERY (entities, cache save)=" + queryCache + "|" + queryCache);
@@ -687,14 +696,11 @@ public class SPARQLProxy extends KBProxy {
       }
 
       if (result.size() > 0) {
-        attr.setValueURI(value);
-        attr.setValue(result.get(0));
-      } else {
-        attr.setValueURI(value);
+        return result.get(0);
       }
-    } else {
-      attr.setValueURI(value);
     }
+
+    return uri;
   }
 
   @Override
