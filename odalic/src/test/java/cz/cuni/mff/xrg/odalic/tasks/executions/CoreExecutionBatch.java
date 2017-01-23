@@ -1,6 +1,9 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -13,7 +16,6 @@ import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -37,7 +39,6 @@ import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.DefaultInputToTableAdapter;
-import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.input.ParsingResult;
 import cz.cuni.mff.xrg.odalic.positions.CellPosition;
@@ -62,8 +63,7 @@ public class CoreExecutionBatch {
 
   private static final Map<String, File> files = new HashMap<>();
   private static final Map<URL, byte[]> data = new HashMap<>();
-
-  private static Input input;
+  private static final Multimap<String, String> utilizingTasks = HashMultimap.create();
 
   /**
    * Expects sti.properties file path as the first and test input CSV file path as the second
@@ -73,11 +73,9 @@ public class CoreExecutionBatch {
    * 
    * @author Josef Janoušek
    * @author Jan Váňa
-   * @throws IOException 
-   * @throws FileNotFoundException 
    * 
    */
-  public static void main(String[] args) throws FileNotFoundException, IOException {
+  public static void main(String[] args) {
 
     final String propertyFilePath = args[0];
     final String testInputFilePath = args[1];
@@ -109,40 +107,48 @@ public class CoreExecutionBatch {
     }
 
     // Format settings
-    files.get(fileId).setFormat(new Format(StandardCharsets.UTF_8, ';', true, null, null, null));
+    files.get(fileId).setFormat(new Format(StandardCharsets.UTF_8, ';', true, '"', null, null));
 
     // Task settings
-    return new Task("simple_task", "task description", new Configuration(files.get(fileId),
-        new KnowledgeBase("DBpedia"), createFeedback(true), Integer.MAX_VALUE));
+    Task task = new Task("simple_task", "task description",
+        new Configuration(files.get(fileId), ImmutableSet.of(new KnowledgeBase("DBpedia"),
+            new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")),
+            new KnowledgeBase("DBpedia"), createFeedback(true), null, false));
+    utilizingTasks.put(task.getConfiguration().getInput().getId(), task.getId());
+
+    return task;
   }
 
-  public static Result testCoreExecution(String propertyFilePath, Task task) throws FileNotFoundException, IOException {
+  public static Result testCoreExecution(String propertyFilePath, Task task) {
+    System.setProperty("cz.cuni.mff.xrg.odalic.sti", propertyFilePath);
+
     final File file = task.getConfiguration().getInput();
 
     // Code for extraction from CSV
+    final ParsingResult parsingResult;
     try {
-      final ParsingResult parsingResult = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
+      parsingResult = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
           new DefaultApacheCsvFormatAdapter()).parse(
               new String(data.get(file.getLocation()), file.getFormat().getCharset()), file.getId(),
               file.getFormat(), task.getConfiguration().getRowsLimit());
-      file.setFormat(parsingResult.getFormat());
-      input = parsingResult.getInput();
       log.info("Input CSV file loaded.");
     } catch (IOException e) {
       log.error("Error - loading input CSV file:", e);
       return null;
     }
 
+    // Parsed format and input settings
+    file.setFormat(parsingResult.getFormat());
+    task.setInputSnapshot(parsingResult.getInput());
+
     // input Table creation
-    final Table table = new DefaultInputToTableAdapter().toTable(input);
+    final Table table = new DefaultInputToTableAdapter().toTable(parsingResult.getInput());
 
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
-      final SemanticTableInterpreterFactory factory = new TableMinerPlusFactory(
-          new DefaultKnowledgeBaseProxyFactory(propertyFilePath), propertyFilePath);
-      
-      semanticTableInterpreters = factory.getInterpreters();
+      semanticTableInterpreters = new TableMinerPlusFactory(
+          new DefaultKnowledgeBaseProxyFactory()).getInterpreters();
     } catch (IOException e) {
       log.error("Error - TMP initialization process fails to load its configuration:", e);
       return null;
@@ -157,33 +163,46 @@ public class CoreExecutionBatch {
     try {
       for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : semanticTableInterpreters
           .entrySet()) {
+        final KnowledgeBase base = new KnowledgeBase(interpreterEntry.getKey());
+        if (!task.getConfiguration().getUsedBases().contains(base)) {
+          continue;
+        }
+
         Constraints constraints = new DefaultFeedbackToConstraintsAdapter().toConstraints(
-            task.getConfiguration().getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
+            task.getConfiguration().getFeedback(), base);
 
-        TAnnotation annotationResult = interpreterEntry.getValue().start(table, constraints);
+        TAnnotation annotationResult = interpreterEntry.getValue().start(table,
+            task.getConfiguration().isStatistical(), constraints);
 
-        results.put(new KnowledgeBase(interpreterEntry.getKey()), annotationResult);
+        results.put(base, annotationResult);
       }
     } catch (STIException e) {
       log.error("Error - running TableMinerPlus algorithm:", e);
       return null;
     }
 
+    // PrefixMappingService
+    TurtleConfigurablePrefixMappingService pms;
+    try {
+      pms = new TurtleConfigurablePrefixMappingService();
+    } catch (IOException e) {
+      log.error("Error - prefix mapping service loading:", e);
+      return null;
+    }
+
     // Odalic Result creation
-    final Result odalicResult = new DefaultAnnotationToResultAdapter(new PrefixMappingEntitiesFactory(new TurtleConfigurablePrefixMappingService())).toResult(results);
+    final Result odalicResult = new DefaultAnnotationToResultAdapter(
+        new PrefixMappingEntitiesFactory(pms)).toResult(results);
     log.info("Odalic Result is: " + odalicResult);
 
     return odalicResult;
   }
 
-  public static Input getInput() {
-    return input;
-  }
-
   private static Feedback createFeedback(boolean emptyFeedback) {
-    Feedback feedback = new Feedback();
-
-    if (!emptyFeedback) {
+    if (emptyFeedback) {
+      return new Feedback();
+    }
+    else {
       // subject columns example
       HashMap<KnowledgeBase, ColumnPosition> subjectColumns = new HashMap<>();
       subjectColumns.put(new KnowledgeBase("DBpedia Clone"), new ColumnPosition(0));
@@ -218,8 +237,8 @@ public class CoreExecutionBatch {
       HashSet<EntityCandidate> candidatesRelation = new HashSet<>();
       candidatesRelation.add(new EntityCandidate(
           Entity.of("http://dbpedia.org/property/authorxyz", ""), new Score(1.0)));
-      candidatesRelation.add(new EntityCandidate(
-          Entity.of("http://dbpedia.org/property/author", ""), new Score(1.0)));
+      candidatesRelation.add(
+          new EntityCandidate(Entity.of("http://dbpedia.org/property/author", ""), new Score(1.0)));
       HashMap<KnowledgeBase, HashSet<EntityCandidate>> columnRelationAnnotation = new HashMap<>();
       columnRelationAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesRelation);
       HashSet<ColumnRelation> relations = new HashSet<>();
@@ -239,10 +258,8 @@ public class CoreExecutionBatch {
       ambiguities.add(new Ambiguity(new CellPosition(5, 5)));
 
       // construction example
-      feedback = new Feedback(subjectColumns, columnIgnores, columnAmbiguities, classifications,
+      return new Feedback(subjectColumns, columnIgnores, columnAmbiguities, classifications,
           relations, disambiguations, ambiguities);
     }
-
-    return feedback;
   }
 }

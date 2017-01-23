@@ -26,6 +26,8 @@ import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableSet;
+
 import cz.cuni.mff.xrg.odalic.api.rest.values.ConfigurationValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.TaskValue;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
@@ -62,7 +64,7 @@ public class TaskCreateTest {
 
     return Arrays.asList(new Object[][] {{new File(
         TaskCreateTest.class.getClassLoader().getResource("book-input.csv").toURI()),
-        new Format(StandardCharsets.UTF_8, ';', true, null, null, null), 10}});
+        new Format(StandardCharsets.UTF_8, ';', true, '"', null, null), 10}});
   }
 
   @BeforeClass
@@ -102,6 +104,8 @@ public class TaskCreateTest {
     ConfigurationValue configuration = new ConfigurationValue();
     configuration.setInput(file.getName());
     configuration.setFeedback(new Feedback());
+    configuration.setUsedBases(ImmutableSet.of(new KnowledgeBase("DBpedia"),
+        new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")));
     configuration.setPrimaryBase(new KnowledgeBase("DBpedia"));
     configuration.setRowsLimit(rowsLimit);
 

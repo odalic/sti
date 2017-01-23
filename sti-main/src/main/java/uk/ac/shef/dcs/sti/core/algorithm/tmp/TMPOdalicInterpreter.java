@@ -43,10 +43,10 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
   }
   
   public TAnnotation start(Table table, boolean relationLearning) throws STIException {
-    return start(table, new Constraints());
+    return start(table, !relationLearning, new Constraints());
   }
   
-  public TAnnotation start(Table table, Constraints constraints) throws STIException {
+  public TAnnotation start(Table table, boolean statistical, Constraints constraints) throws STIException {
     Preconditions.checkNotNull(constraints);
     
     Set<Integer> ignoreCols = constraints.getColumnIgnores().stream()
@@ -68,7 +68,7 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       TAnnotation tableAnnotations = new TAnnotation(table.getNumRows(), table.getNumCols());
       
       // 1. find the main subject column of this table
-      LOG.info(">\t PHASE: Detecting subject column ...");
+      LOG.info("\t> PHASE: Detecting subject column ...");
       List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnScores = subjectColumnDetector
           .compute(table, constraints.getSubjectColumnPosition(), ignoreColumnsArray);
       tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
@@ -94,39 +94,30 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
           constraints.getDisambiguations(), newAmbiguities);
       
       List<Integer> annotatedColumns = new ArrayList<>();
-      LOG.info(">\t PHASE: LEARNING ...");
+      LOG.info("\t> PHASE: LEARNING ...");
       for (int col = 0; col < table.getNumCols(); col++) {
-                if (isCompulsoryColumn(col)) {
-                    LOG.info("\t>> Column=(compulsory)" + col);
-                    annotatedColumns.add(col);
-                    learning.learn(table, tableAnnotations, col, constraints);
-                } else {
-                    if (getIgnoreColumns().contains(col)) continue;
-                /*if (!table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType().equals(DataTypeClassifier.DataType.NAMED_ENTITY))
-                    continue;*/
-                /*if (table.getColumnHeader(col).getFeature().isAcronymColumn())
-                    continue;*/
-                    annotatedColumns.add(col);
-                    
-                    //if (tab_annotations.getRelationAnnotationsBetween(main_subject_column, col) == null) {
-                    LOG.info("\t>> Column=" + col);
-                    learning.learn(table, tableAnnotations, col, constraints);
-                }
+        if (getIgnoreColumns().contains(col)) {
+          continue;
+        }
+        annotatedColumns.add(col);
+        
+        LOG.info("\t>> Column=" + col);
+        learning.learn(table, tableAnnotations, col, constraints);
       }
       
       if (update != null) {
-        LOG.info(">\t PHASE: UPDATE phase ...");
+        LOG.info("\t> PHASE: UPDATE phase ...");
         update.update(annotatedColumns, table, tableAnnotations, constraints);
       }
       
-      LOG.info("\t> PHASE: RELATION ENUMERATION ...");
-      new RELATIONENUMERATION().enumerate(subjectColumnScores, getIgnoreColumns(), relationEnumerator,
-          tableAnnotations, table, annotatedColumns, update, constraints);
-      
-                // 4. consolidation - for columns that have relation with main subject column, if the column is
-                // entity column, do column typing and disambiguation; otherwise, simply create header annotation
-                LOG.info("\t\t>> Annotate literal-columns in relation with main column");
-                literalColumnTagger.annotate(table, tableAnnotations, annotatedColumns.toArray(new Integer[0]));
+        LOG.info("\t> PHASE: RELATION ENUMERATION ...");
+        new RELATIONENUMERATION().enumerate(subjectColumnScores, getIgnoreColumns(), relationEnumerator,
+            tableAnnotations, table, annotatedColumns, update, constraints);
+        
+        // 4. consolidation - for columns that have relation with main subject column, if the column is
+        // entity column, do column typing and disambiguation; otherwise, simply create header annotation
+        LOG.info("\t\t>> Annotate literal-columns in relation with main column");
+        literalColumnTagger.annotate(table, tableAnnotations, annotatedColumns.toArray(new Integer[0]));
       
       return tableAnnotations;
     } catch (Exception e) {

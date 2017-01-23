@@ -31,7 +31,7 @@ public abstract class SemanticTableInterpreter {
             this.mustdoColumns.add(i);
     }
 
-    public abstract TAnnotation start(Table table, Constraints constraints)
+    public abstract TAnnotation start(Table table, boolean statistical, Constraints constraints)
             throws STIException;
 
     public abstract TAnnotation start(Table table, boolean relationLearning)
