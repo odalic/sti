@@ -40,6 +40,8 @@ public final class Constraints implements Serializable {
 
   private final Set<ColumnRelation> columnRelations;
 
+  private final Set<DataCubeComponent> dataCubeComponents;
+
 
   /**
    * Creates empty feedback.
@@ -52,6 +54,7 @@ public final class Constraints implements Serializable {
     this.columnRelations = ImmutableSet.of();
     this.disambiguations = ImmutableSet.of();
     this.ambiguities = ImmutableSet.of();
+    this.dataCubeComponents = ImmutableSet.of();
   }
 
   /**
@@ -61,16 +64,16 @@ public final class Constraints implements Serializable {
    * @param columnIgnores ignored columns
    * @param columnAmbiguities columns whose cells will not be disambiguated
    * @param classifications classification hints for columns
-   * @param cellRelations hints with relations between cells on the same rows
    * @param columnRelations hints with relation between columns
    * @param disambiguations custom disambiguations
    * @param ambiguities hints for cells to be left ambiguous
+   * @param dataCubeComponents dataCubeComponents hints for columns
    */
   public Constraints(@Nullable ColumnPosition subjectColumnPosition,
       Set<? extends ColumnIgnore> columnIgnores, Set<? extends ColumnAmbiguity> columnAmbiguities,
-      Set<? extends Classification> classifications,
-      Set<? extends ColumnRelation> columnRelations, Set<? extends Disambiguation> disambiguations,
-      Set<? extends Ambiguity> ambiguities) {
+      Set<? extends Classification> classifications, Set<? extends ColumnRelation> columnRelations,
+      Set<? extends Disambiguation> disambiguations, Set<? extends Ambiguity> ambiguities,
+      Set<? extends DataCubeComponent> dataCubeComponents) {
     Preconditions.checkNotNull(columnIgnores);
     Preconditions.checkNotNull(columnAmbiguities);
     Preconditions.checkNotNull(classifications);
@@ -85,6 +88,7 @@ public final class Constraints implements Serializable {
     this.columnRelations = ImmutableSet.copyOf(columnRelations);
     this.disambiguations = ImmutableSet.copyOf(disambiguations);
     this.ambiguities = ImmutableSet.copyOf(ambiguities);
+    this.dataCubeComponents = ImmutableSet.copyOf(dataCubeComponents);
   }
 
   /**
@@ -137,6 +141,13 @@ public final class Constraints implements Serializable {
     return ambiguities;
   }
 
+  /**
+   * @return the dataCubeComponents
+   */
+  public Set<DataCubeComponent> getDataCubeComponents() {
+    return dataCubeComponents;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -152,6 +163,7 @@ public final class Constraints implements Serializable {
     result = prime * result + ((columnIgnores == null) ? 0 : columnIgnores.hashCode());
     result = prime * result + ((columnRelations == null) ? 0 : columnRelations.hashCode());
     result = prime * result + ((disambiguations == null) ? 0 : disambiguations.hashCode());
+    result = prime * result + ((dataCubeComponents == null) ? 0 : dataCubeComponents.hashCode());
     result =
         prime * result + ((subjectColumnPosition == null) ? 0 : subjectColumnPosition.hashCode());
     return result;
@@ -216,6 +228,13 @@ public final class Constraints implements Serializable {
     } else if (!disambiguations.equals(other.disambiguations)) {
       return false;
     }
+    if (dataCubeComponents == null) {
+      if (other.dataCubeComponents != null) {
+        return false;
+      }
+    } else if (!dataCubeComponents.equals(other.dataCubeComponents)) {
+      return false;
+    }
     if (subjectColumnPosition == null) {
       if (other.subjectColumnPosition != null) {
         return false;
@@ -235,9 +254,9 @@ public final class Constraints implements Serializable {
   public String toString() {
     return "Constraints [subjectColumnPosition=" + subjectColumnPosition + ", columnIgnores="
         + columnIgnores + ", columnAmbiguities=" + columnAmbiguities + ", classifications="
-        + classifications + ", columnRelations="
-        + columnRelations + ", disambiguations=" + disambiguations + ", ambiguities=" + ambiguities
-        + "]";
+        + classifications + ", columnRelations=" + columnRelations + ", disambiguations="
+        + disambiguations + ", ambiguities=" + ambiguities + ", dataCubeComponents="
+        + dataCubeComponents + "]";
   }
 
   /**
