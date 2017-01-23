@@ -259,7 +259,7 @@ public class CoreExecutionBatch {
 
       // construction example
       return new Feedback(subjectColumns, columnIgnores, columnAmbiguities, classifications,
-          relations, disambiguations, ambiguities);
+          relations, disambiguations, ambiguities, ImmutableSet.of());
     }
   }
 }
