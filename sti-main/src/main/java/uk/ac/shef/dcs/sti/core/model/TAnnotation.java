@@ -260,7 +260,7 @@ public class TAnnotation {
     public TStatisticalAnnotation getStatisticalAnnotation(int col) {
         Object o = statisticalAnnotations.get(col);
         if (o == null)
-            return new TStatisticalAnnotation(TComponentType.NONE, "", "label", 0);
+            return null;
 
         return (TStatisticalAnnotation) o;
     }

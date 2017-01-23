@@ -357,12 +357,14 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
         component.put(knowledgeBase, componentType);
         predicate.put(knowledgeBase, predicateSet);
 
-        Entity entity = entitiesFactory.create(annotation.getPredicateURI(), annotation.getPredicateLabel());
-        Score likelihood = new Score(annotation.getScore());
+        if (annotation.getPredicateURI() != null && annotation.getPredicateLabel() != null) {
+          Entity entity = entitiesFactory.create(annotation.getPredicateURI(), annotation.getPredicateLabel());
+          Score likelihood = new Score(annotation.getScore());
 
-        EntityCandidate candidate = new EntityCandidate(entity, likelihood);
+          EntityCandidate candidate = new EntityCandidate(entity, likelihood);
 
-        predicateSet.add(candidate);
+          predicateSet.add(candidate);
+        }
       }
 
       StatisticalAnnotation statisticalAnnotation = new StatisticalAnnotation(component, predicate);
