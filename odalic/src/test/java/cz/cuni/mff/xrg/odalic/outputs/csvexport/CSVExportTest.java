@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.outputs.csvexport;
 
-import java.io.*;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.junit.BeforeClass;
@@ -15,6 +16,7 @@ import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.DefaultResultToAnnotatedTableAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
+import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
@@ -40,10 +42,10 @@ public class CSVExportTest {
   }
 
   public static Input testExportToCSVFile(Result result, Input input, Configuration config,
-      String filePath) {
+      String filePath, KnowledgeBaseProxyFactory kbf) {
 
     // Conversion from result to CSV extended input
-    Input extendedInput = new DefaultResultToCSVExportAdapter().toCSVExport(result, input, config);
+    Input extendedInput = new DefaultResultToCSVExportAdapter(kbf).toCSVExport(result, input, config);
 
     // Export CSV extended Input to CSV String
     String csv;
@@ -70,11 +72,11 @@ public class CSVExportTest {
   }
 
   public static AnnotatedTable testExportToAnnotatedTable(Result result, Input input,
-      Configuration config, String filePath) {
+      Configuration config, String filePath, KnowledgeBaseProxyFactory kbf) {
 
     // Conversion from result to annotated table
     AnnotatedTable annotatedTable =
-        new DefaultResultToAnnotatedTableAdapter().toAnnotatedTable(result, input, config);
+        new DefaultResultToAnnotatedTableAdapter(kbf).toAnnotatedTable(result, input, config);
 
     // Export Annotated Table to JSON String
     String json = new GsonBuilder().setPrettyPrinting().create().toJson(annotatedTable);

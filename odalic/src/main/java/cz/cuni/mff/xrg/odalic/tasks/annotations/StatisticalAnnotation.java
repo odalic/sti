@@ -93,7 +93,7 @@ public final class StatisticalAnnotation {
   }
 
   /**
-   * Computes hash code based on the candidates and the chosen.
+   * Computes hash code based on the component and the predicate.
    * 
    * @see java.lang.Object#hashCode()
    */

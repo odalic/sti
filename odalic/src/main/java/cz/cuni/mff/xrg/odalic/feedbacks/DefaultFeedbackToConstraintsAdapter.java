@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
 import cz.cuni.mff.xrg.odalic.positions.CellPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
@@ -19,6 +20,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 
 /**
@@ -40,7 +42,8 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
         convertClassifications(feedback.getClassifications(), base),
         convertRelations(feedback.getColumnRelations(), base),
         convertDisambiguations(feedback.getDisambiguations(), base),
-        convertAmbiguitites(feedback.getAmbiguities()));
+        convertAmbiguitites(feedback.getAmbiguities()),
+        convertDataCubeComponents(feedback.getDataCubeComponents(), base));
   }
 
   private uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition convertSubjectColumn(
@@ -90,6 +93,11 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
 
   private static Set<uk.ac.shef.dcs.sti.core.extension.constraints.ColumnRelation> convertRelations(
       Set<? extends ColumnRelation> set, KnowledgeBase base) {
+    return set.stream().map(e -> convert(e, base)).filter(e -> e != null).collect(Collectors.toSet());
+  }
+
+  private static Set<uk.ac.shef.dcs.sti.core.extension.constraints.DataCubeComponent> convertDataCubeComponents(
+      Set<? extends DataCubeComponent> set, KnowledgeBase base) {
     return set.stream().map(e -> convert(e, base)).filter(e -> e != null).collect(Collectors.toSet());
   }
 
@@ -156,6 +164,22 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
         convertCandidates(candidates), convertCandidates(chosen));
   }
 
+  private static uk.ac.shef.dcs.sti.core.extension.annotations.StatisticalAnnotation convert(
+      StatisticalAnnotation e, KnowledgeBase base) {
+    final ComponentTypeValue component = e.getComponent().get(base);
+    if (component == null) {
+      return null;
+    }
+    
+    final Set<EntityCandidate> predicate = e.getPredicate().get(base);
+    if (predicate == null) {
+      return null;
+    }
+    
+    return new uk.ac.shef.dcs.sti.core.extension.annotations.StatisticalAnnotation(
+        convert(component), convertCandidates(predicate));
+  }
+
   private static uk.ac.shef.dcs.sti.core.extension.constraints.Classification convert(
       Classification e, KnowledgeBase base) {
     final uk.ac.shef.dcs.sti.core.extension.annotations.HeaderAnnotation convertedAnnotation = convert(e.getAnnotation(), base);
@@ -189,6 +213,17 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
         convert(e.getPosition()), convertedAnnotation);
   }
 
+  private static uk.ac.shef.dcs.sti.core.extension.constraints.DataCubeComponent convert(
+      DataCubeComponent e, KnowledgeBase base) {
+    final uk.ac.shef.dcs.sti.core.extension.annotations.StatisticalAnnotation convertedAnnotation = convert(e.getAnnotation(), base);
+    if (convertedAnnotation == null) {
+      return null;
+    }
+    
+    return new uk.ac.shef.dcs.sti.core.extension.constraints.DataCubeComponent(
+        convert(e.getPosition()), convertedAnnotation);
+  }
+
   private static uk.ac.shef.dcs.sti.core.extension.positions.CellPosition convert(CellPosition e) {
     return new uk.ac.shef.dcs.sti.core.extension.positions.CellPosition(e.getRowIndex(),
         e.getColumnIndex());
@@ -219,5 +254,19 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
 
   private static uk.ac.shef.dcs.sti.core.extension.annotations.Score convert(final Score score) {
     return new uk.ac.shef.dcs.sti.core.extension.annotations.Score(score.getValue());
+  }
+
+  private static uk.ac.shef.dcs.sti.core.extension.annotations.ComponentTypeValue convert(
+      final ComponentTypeValue componentType) {
+    switch (componentType) {
+      case DIMENSION:
+        return uk.ac.shef.dcs.sti.core.extension.annotations.ComponentTypeValue.DIMENSION;
+      case MEASURE:
+        return uk.ac.shef.dcs.sti.core.extension.annotations.ComponentTypeValue.MEASURE;
+      case NONE:
+        return uk.ac.shef.dcs.sti.core.extension.annotations.ComponentTypeValue.NONE;
+      default:
+        return uk.ac.shef.dcs.sti.core.extension.annotations.ComponentTypeValue.NONE;
+    }
   }
 }

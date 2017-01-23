@@ -51,12 +51,14 @@ public class TaskCreateTest {
   private File file;
   private Format format;
   private int rowsLimit;
+  private boolean statistical;
 
-  public TaskCreateTest(File file, Format format, int rowsLimit) {
+  public TaskCreateTest(File file, Format format, int rowsLimit, boolean statistical) {
 
     this.file = file;
     this.format = format;
     this.rowsLimit = rowsLimit;
+    this.statistical = statistical;
   }
 
   @Parameters
@@ -64,7 +66,7 @@ public class TaskCreateTest {
 
     return Arrays.asList(new Object[][] {{new File(
         TaskCreateTest.class.getClassLoader().getResource("book-input.csv").toURI()),
-        new Format(StandardCharsets.UTF_8, ';', true, '"', null, null), 10}});
+        new Format(StandardCharsets.UTF_8, ';', true, '"', null, null), 10, false}});
   }
 
   @BeforeClass
@@ -108,6 +110,7 @@ public class TaskCreateTest {
         new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")));
     configuration.setPrimaryBase(new KnowledgeBase("DBpedia"));
     configuration.setRowsLimit(rowsLimit);
+    configuration.setStatistical(statistical);
 
     TaskValue task = new TaskValue();
     task.setId(file.getName() + "_task");

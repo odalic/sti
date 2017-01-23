@@ -1,17 +1,22 @@
 package cz.cuni.mff.xrg.odalic.outputs.csvexport;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
+import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
@@ -22,6 +27,15 @@ import cz.cuni.mff.xrg.odalic.tasks.results.Result;
  */
 public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter {
 
+  private final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory;
+  
+  @Autowired
+  public DefaultResultToCSVExportAdapter(final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory) {
+    Preconditions.checkNotNull(knowledgeBaseProxyFactory);
+    
+    this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
+  }
+  
   /**
    * The default toCSVExport implementation.
    * 
@@ -100,10 +114,24 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
       }
     }
     
+    if (configuration.isStatistical()) {
+      final URI kbUri = knowledgeBaseProxyFactory.getKBProxies().get(configuration.getPrimaryBase().getName())
+          .getKbDefinition().getInsertSchemaElementPrefix();
+      
+      builder.insertHeader(urlFormat(OBSERVATION), newPosition);
+      
+      for (int j = 0; j < input.rowsCount(); j++) {
+        builder.insertCell(String.format("%sobs%s_%s", kbUri, j + 1, input.identifier()), j, newPosition);
+      }
+      
+      newPosition++;
+    }
+    
     return builder.build();
   }
   
   private static final String SEPARATOR = " ";
+  private static final String OBSERVATION = "OBSERVATION";
   
   private String urlFormat(String text) {
     return String.format("%s_url", text);
