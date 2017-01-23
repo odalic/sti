@@ -102,7 +102,7 @@ public class TColumnColumnRelationEnumerator {
                 List<Pair<Attribute, Double>> matchedAttributes = e.getValue();
                 for (Pair<Attribute, Double> entry : matchedAttributes) {
                     String relationURI = entry.getKey().getRelationURI();
-                    String relationLabel = ""; //todo:currently we do not get the label!!!
+                    String relationLabel = entry.getKey().getRelationLabel();
                     List<Attribute> matchedValues = new ArrayList<>();
                     matchedValues.add(entry.getKey());
                     TCellCellRelationAnotation cellcellRelation =
