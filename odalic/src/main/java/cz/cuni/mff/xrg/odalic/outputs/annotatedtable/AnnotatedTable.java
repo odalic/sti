@@ -23,7 +23,7 @@ public class AnnotatedTable implements Serializable {
   
   private static final long serialVersionUID = 164936506495425123L;
   
-  private final String context = "http://www.w3.org/ns/csvw";
+  private final TableContext context;
   
   private final String url;
   
@@ -32,13 +32,16 @@ public class AnnotatedTable implements Serializable {
   /**
    * Creates new annotated table representation.
    * 
+   * @param context annotated table context
    * @param url name of corresponding CSV file
    * @param tableSchema annotated table schema
    */
-  public AnnotatedTable(String url, TableSchema tableSchema) {
+  public AnnotatedTable(TableContext context, String url, TableSchema tableSchema) {
+    Preconditions.checkNotNull(context);
     Preconditions.checkNotNull(url);
     Preconditions.checkNotNull(tableSchema);
     
+    this.context = context;
     this.url = url;
     this.tableSchema = tableSchema;
   }
@@ -46,7 +49,7 @@ public class AnnotatedTable implements Serializable {
   /**
    * @return the context
    */
-  public String getContext() {
+  public TableContext getContext() {
     return context;
   }
   
