@@ -9,7 +9,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.input.Input;
@@ -53,8 +58,7 @@ public class CSVExportTest {
       csv = new DefaultCSVExporter(new DefaultApacheCsvFormatAdapter()).export(extendedInput,
           config.getInput().getFormat());
     } catch (IOException e) {
-      log.error("Error - exporting extended Input to CSV:");
-      e.printStackTrace();
+      log.error("Error - exporting extended Input to CSV:", e);
       return null;
     }
     log.info("Resulting CSV is: " + csv);
@@ -65,8 +69,7 @@ public class CSVExportTest {
       log.info("CSV export saved to file " + filePath);
       return extendedInput;
     } catch (IOException e) {
-      log.error("Error - saving CSV export file:");
-      e.printStackTrace();
+      log.error("Error - saving CSV export file:", e);
       return null;
     }
   }
@@ -79,7 +82,16 @@ public class CSVExportTest {
         new DefaultResultToAnnotatedTableAdapter(kbf).toAnnotatedTable(result, input, config);
 
     // Export Annotated Table to JSON String
-    String json = new GsonBuilder().setPrettyPrinting().create().toJson(annotatedTable);
+    String json;
+    try {
+      json = new ObjectMapper().setAnnotationIntrospector(AnnotationIntrospector.pair(
+          new JacksonAnnotationIntrospector(), new JaxbAnnotationIntrospector(
+              TypeFactory.defaultInstance()))).writerWithDefaultPrettyPrinter()
+          .writeValueAsString(annotatedTable);
+    } catch (JsonProcessingException e) {
+      log.error("Error - exporting Annotated Table to JSON String:", e);
+      return null;
+    }
     log.info("Resulting JSON is: " + json);
 
     // Write JSON String to file
@@ -88,8 +100,7 @@ public class CSVExportTest {
       log.info("JSON export saved to file " + filePath);
       return annotatedTable;
     } catch (IOException e) {
-      log.error("Error - saving JSON export file:");
-      e.printStackTrace();
+      log.error("Error - saving JSON export file:", e);
       return null;
     }
   }

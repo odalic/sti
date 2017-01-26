@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,12 +117,12 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
     
     if (configuration.isStatistical()) {
       final URI kbUri = knowledgeBaseProxyFactory.getKBProxies().get(configuration.getPrimaryBase().getName())
-          .getKbDefinition().getInsertSchemaElementPrefix();
+          .getKbDefinition().getInsertDataElementPrefix();
       
       builder.insertHeader(urlFormat(OBSERVATION), newPosition);
       
       for (int j = 0; j < input.rowsCount(); j++) {
-        builder.insertCell(String.format("%sobs%s_%s", kbUri, j + 1, input.identifier()), j, newPosition);
+        builder.insertCell(String.format("%sobservation/%s", kbUri, UUID.randomUUID()), j, newPosition);
       }
       
       newPosition++;

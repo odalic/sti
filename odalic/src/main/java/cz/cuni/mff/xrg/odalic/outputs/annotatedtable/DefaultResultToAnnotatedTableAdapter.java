@@ -3,10 +3,17 @@ package cz.cuni.mff.xrg.odalic.outputs.annotatedtable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
@@ -18,6 +25,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
@@ -46,6 +54,11 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
    */
   @Override
   public AnnotatedTable toAnnotatedTable(Result result, Input input, Configuration configuration) {
+    
+    Map<String, String> prefixes = new HashMap<>();
+    prefixes.put(PREFIX_RDF.getWith(), PREFIX_RDF.getWhat());
+    prefixes.put(PREFIX_OWL.getWith(), PREFIX_OWL.getWhat());
+    prefixes.put(PREFIX_DCTERMS.getWith(), PREFIX_DCTERMS.getWhat());
     
     TableColumnBuilder builder = new TableColumnBuilder();
     List<TableColumn> columns = new ArrayList<TableColumn>();
@@ -104,23 +117,29 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
     }
     
     if (configuration.isStatistical()) {
+      prefixes.put(PREFIX_RDFS.getWith(), PREFIX_RDFS.getWhat());
+      prefixes.put(PREFIX_QB.getWith(), PREFIX_QB.getWhat());
+      prefixes.put(PREFIX_SDMX_MEASURE.getWith(), PREFIX_SDMX_MEASURE.getWhat());
+      
       final URI kbUri = knowledgeBaseProxyFactory.getKBProxies().get(configuration.getPrimaryBase().getName())
           .getKbDefinition().getInsertSchemaElementPrefix();
-      final String datasetUri = String.format("%sdataset_%s", kbUri, input.identifier());
-      final String dsdUri = String.format("%sdsd_%s", kbUri, input.identifier());
+      final String datasetUri = String.format("%sdataset/%s", kbUri, generateStringUUID());
+      final String dsdUri = String.format("%sdsd/%s", kbUri, generateStringUUID());
       
       // dataset definition
-      columns.add(createTripleColumn(builder, "dataset_type", datasetUri, RDF_TYPE, QB_DATASET));
+      columns.add(createTripleColumn(builder, typeFormat("dataset"), datasetUri, RDF_TYPE, QB_DATASET));
       columns.add(createTripleColumn(builder, "dataset_title", datasetUri, DCTERMS_TITLE, input.identifier()));
       columns.add(createTripleColumn(builder, "dataset_structure", datasetUri, QB_STRUCTURE, dsdUri));
       
       // data structure definition
-      columns.add(createTripleColumn(builder, "dsd_type", dsdUri, RDF_TYPE, QB_DATASTRUCTUREDEFINITION));
+      columns.add(createTripleColumn(builder, typeFormat("dsd"), dsdUri, RDF_TYPE, QB_DATASTRUCTUREDEFINITION));
       
       // observation definition
-      columns.add(createClassificationColumn(builder, OBSERVATION, QB_OBSERVATION));
+      columns.add(createDisambiguationColumn(builder, OBSERVATION));
+      columns.add(createClassificationColumn(builder, OBSERVATION, QB_OBSERVATION.getPrefixed()));
       columns.add(createPredColumn(builder, OBSERVATION + "_dataset", QB_DATASET_PRED, OBSERVATION, datasetUri));
       
+      String compUri;
       for (int i = 0; i < input.columnsCount(); i++) {
         Set<EntityCandidate> predicateSet = result.getStatisticalAnnotations().get(i).getPredicate()
             .get(configuration.getPrimaryBase());
@@ -137,15 +156,15 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
           switch (componentType) {
             case DIMENSION:
               // component definition
-              columns.add(createTripleColumn(builder, "dsd_component", dsdUri, QB_COMPONENT,
-                  compUri(kbUri, i, input.identifier())));
-              columns.add(createTripleColumn(builder, String.format("comp%s_kind", i + 1),
-                  compUri(kbUri, i, input.identifier()), QB_DIMENSION, predicateEntity.getResource()));
+              compUri = String.format("%sdimension/%s", kbUri, generateStringUUID());
+              columns.add(createTripleColumn(builder, "dsd_component", dsdUri, QB_COMPONENT, compUri));
+              columns.add(createTripleColumn(builder, "component_kind", compUri, QB_DIMENSION,
+                  predicateEntity.getResource()));
               
               // dimension definition
-              columns.add(createTripleColumn(builder, predicateEntity.getResource() + "_type",
+              columns.add(createTripleColumn(builder, typeFormat(predicateEntity.getResource()),
                   predicateEntity.getResource(), RDF_TYPE, RDF_PROPERTY));
-              columns.add(createTripleColumn(builder, predicateEntity.getResource() + "_type",
+              columns.add(createTripleColumn(builder, typeFormat(predicateEntity.getResource()),
                   predicateEntity.getResource(), RDF_TYPE, QB_DIMENSIONPROPERTY));
               columns.add(createTripleColumn(builder, predicateEntity.getResource() + "_label",
                   predicateEntity.getResource(), RDFS_LABEL, predicateEntity.getLabel()));
@@ -160,15 +179,15 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
               break;
             case MEASURE:
               // component definition
-              columns.add(createTripleColumn(builder, "dsd_component", dsdUri, QB_COMPONENT,
-                  compUri(kbUri, i, input.identifier())));
-              columns.add(createTripleColumn(builder, String.format("comp%s_kind", i + 1),
-                  compUri(kbUri, i, input.identifier()), QB_MEASURE, predicateEntity.getResource()));
+              compUri = String.format("%smeasure/%s", kbUri, generateStringUUID());
+              columns.add(createTripleColumn(builder, "dsd_component", dsdUri, QB_COMPONENT, compUri));
+              columns.add(createTripleColumn(builder, "component_kind", compUri, QB_MEASURE,
+                  predicateEntity.getResource()));
               
               // measure definition
-              columns.add(createTripleColumn(builder, predicateEntity.getResource() + "_type",
+              columns.add(createTripleColumn(builder, typeFormat(predicateEntity.getResource()),
                   predicateEntity.getResource(), RDF_TYPE, RDF_PROPERTY));
-              columns.add(createTripleColumn(builder, predicateEntity.getResource() + "_type",
+              columns.add(createTripleColumn(builder, typeFormat(predicateEntity.getResource()),
                   predicateEntity.getResource(), RDF_TYPE, QB_MEASUREPROPERTY));
               columns.add(createTripleColumn(builder, predicateEntity.getResource() + "_label",
                   predicateEntity.getResource(), RDFS_LABEL, predicateEntity.getLabel()));
@@ -190,29 +209,39 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
       }
     }
     
-    return new AnnotatedTable(input.identifier(), new TableSchema(columns));
+    return new AnnotatedTable(new TableContext(prefixes), input.identifier(), new TableSchema(columns));
   }
   
-  private static final String DCTERMS_TITLE = "dcterms:title";
-  private static final String RDF_TYPE = "rdf:type";
-  private static final String OWL_SAMEAS = "owl:sameAs";
+  private static final Prefix PREFIX_RDF = Prefix.create(RDF.PREFIX, RDF.NAMESPACE);
+  private static final Entity RDF_TYPE = Entity.of(PREFIX_RDF, RDF.TYPE.stringValue(), "");
+  private static final Entity RDF_PROPERTY = Entity.of(PREFIX_RDF, RDF.PROPERTY.stringValue(), "");
   
-  private static final String RDF_PROPERTY = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property";
-  private static final String RDFS_LABEL = "http://www.w3.org/2000/01/rdf-schema#label";
-  private static final String RDFS_SUBPROPERTYOF = "http://www.w3.org/2000/01/rdf-schema#subPropertyOf";
+  private static final Prefix PREFIX_OWL = Prefix.create(OWL.PREFIX, OWL.NAMESPACE);
+  private static final Entity OWL_SAMEAS = Entity.of(PREFIX_OWL, OWL.SAMEAS.stringValue(), "");
   
-  private static final String QB_DATASET = "http://purl.org/linked-data/cube#DataSet";
-  private static final String QB_STRUCTURE = "http://purl.org/linked-data/cube#structure";
-  private static final String QB_DATASTRUCTUREDEFINITION = "http://purl.org/linked-data/cube#DataStructureDefinition";
-  private static final String QB_OBSERVATION = "http://purl.org/linked-data/cube#Observation";
-  private static final String QB_DATASET_PRED = "http://purl.org/linked-data/cube#dataSet";
-  private static final String QB_COMPONENT = "http://purl.org/linked-data/cube#component";
-  private static final String QB_DIMENSION = "http://purl.org/linked-data/cube#dimension";
-  private static final String QB_MEASURE = "http://purl.org/linked-data/cube#measure";
-  private static final String QB_DIMENSIONPROPERTY = "http://purl.org/linked-data/cube#DimensionProperty";
-  private static final String QB_MEASUREPROPERTY = "http://purl.org/linked-data/cube#MeasureProperty";
-  private static final String QB_CONCEPT = "http://purl.org/linked-data/cube#concept";
-  private static final String SDMX_MEASURE_OBSVALUE = "http://purl.org/linked-data/sdmx/2009/measure#obsValue";
+  private static final Prefix PREFIX_DCTERMS = Prefix.create(DCTERMS.PREFIX, DCTERMS.NAMESPACE);
+  private static final Entity DCTERMS_TITLE = Entity.of(PREFIX_DCTERMS, DCTERMS.TITLE.stringValue(), "");
+  
+  private static final Prefix PREFIX_RDFS = Prefix.create(RDFS.PREFIX, RDFS.NAMESPACE);
+  private static final Entity RDFS_LABEL = Entity.of(PREFIX_RDFS, RDFS.LABEL.stringValue(), "");
+  private static final Entity RDFS_SUBPROPERTYOF = Entity.of(PREFIX_RDFS, RDFS.SUBPROPERTYOF.stringValue(), "");
+  
+  private static final String QB = "http://purl.org/linked-data/cube#";
+  private static final Prefix PREFIX_QB = Prefix.create("qb", QB);
+  private static final Entity QB_DATASET = Entity.of(PREFIX_QB, QB + "DataSet", "");
+  private static final Entity QB_STRUCTURE = Entity.of(PREFIX_QB, QB + "structure", "");
+  private static final Entity QB_DATASTRUCTUREDEFINITION = Entity.of(PREFIX_QB, QB + "DataStructureDefinition", "");
+  private static final Entity QB_OBSERVATION = Entity.of(PREFIX_QB, QB + "Observation", "");
+  private static final Entity QB_DATASET_PRED = Entity.of(PREFIX_QB, QB + "dataSet", "");
+  private static final Entity QB_COMPONENT = Entity.of(PREFIX_QB, QB + "component", "");
+  private static final Entity QB_DIMENSION = Entity.of(PREFIX_QB, QB + "dimension", "");
+  private static final Entity QB_MEASURE = Entity.of(PREFIX_QB, QB + "measure", "");
+  private static final Entity QB_DIMENSIONPROPERTY = Entity.of(PREFIX_QB, QB + "DimensionProperty", "");
+  private static final Entity QB_MEASUREPROPERTY = Entity.of(PREFIX_QB, QB + "MeasureProperty", "");
+  private static final Entity QB_CONCEPT = Entity.of(PREFIX_QB, QB + "concept", "");
+  
+  private static final Prefix PREFIX_SDMX_MEASURE = Prefix.create("sdmx-measure", "http://purl.org/linked-data/sdmx/2009/measure#");
+  private static final Entity SDMX_MEASURE_OBSVALUE = Entity.of(PREFIX_SDMX_MEASURE, PREFIX_SDMX_MEASURE.getWhat() + "obsValue", "");
   
   private static final String SEPARATOR = " ";
   private static final String STRING = "string";
@@ -225,7 +254,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
     builder.setTitles(Arrays.asList(columnName));
     builder.setDataType(STRING);
     builder.setAboutUrl(bracketFormat(urlFormat(columnName)));
-    builder.setPropertyUrl(DCTERMS_TITLE);
+    builder.setPropertyUrl(DCTERMS_TITLE.getPrefixed());
     return builder.build();
   }
   
@@ -242,7 +271,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
     builder.setName(typeFormat(columnName));
     builder.setVirtual(true);
     builder.setAboutUrl(bracketFormat(urlFormat(columnName)));
-    builder.setPropertyUrl(RDF_TYPE);
+    builder.setPropertyUrl(RDF_TYPE.getPrefixed());
     builder.setValueUrl(resource);
     return builder.build();
   }
@@ -261,7 +290,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
     builder.setName(alternativeUrlsFormat(columnName));
     builder.setAboutUrl(bracketFormat(urlFormat(columnName)));
     builder.setSeparator(SEPARATOR);
-    builder.setPropertyUrl(OWL_SAMEAS);
+    builder.setPropertyUrl(OWL_SAMEAS.getPrefixed());
     builder.setValueUrl(bracketFormat(alternativeUrlsFormat(columnName)));
     return builder.build();
   }
@@ -286,22 +315,25 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
     return builder.build();
   }
   
-  private TableColumn createPredColumn(TableColumnBuilder builder, String name, String predicate, String columnName, String resource) {
+  private TableColumn createPredColumn(TableColumnBuilder builder, String name, Entity predicate, String columnName, String resource) {
     builder.clear();
     builder.setName(name);
     builder.setVirtual(true);
     builder.setAboutUrl(bracketFormat(urlFormat(columnName)));
-    builder.setPropertyUrl(predicate);
+    builder.setPropertyUrl(predicate.getPrefixed());
     builder.setValueUrl(resource);
     return builder.build();
   }
   
-  private TableColumn createTripleColumn(TableColumnBuilder builder, String name, String subject, String predicate, String object) {
+  private TableColumn createTripleColumn(TableColumnBuilder builder, String name, String subject, Entity predicate, Entity object) {
+    return createTripleColumn(builder, name, subject, predicate, object.getPrefixed());
+  }
+  private TableColumn createTripleColumn(TableColumnBuilder builder, String name, String subject, Entity predicate, String object) {
     builder.clear();
     builder.setName(name);
     builder.setVirtual(true);
     builder.setAboutUrl(subject);
-    builder.setPropertyUrl(predicate);
+    builder.setPropertyUrl(predicate.getPrefixed());
     builder.setValueUrl(object);
     return builder.build();
   }
@@ -322,7 +354,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
     return String.format("{%s}", text);
   }
   
-  private String compUri(URI kbUri, int i, String identifier) {
-    return String.format("%scomp%s_%s", kbUri, i + 1, identifier);
+  private String generateStringUUID() {
+    return UUID.randomUUID().toString();
   }
 }

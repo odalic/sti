@@ -1,6 +1,5 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
@@ -14,7 +13,6 @@ import cz.cuni.mff.xrg.odalic.outputs.rdfexport.RDFExportTest;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
-import uk.ac.shef.dcs.sti.STIException;
 
 public class InterpreterExecutionBatch {
 
@@ -55,13 +53,7 @@ public class InterpreterExecutionBatch {
     final Configuration config = task.getConfiguration();
     final String baseExportPath = FilenameUtils.getFullPath(testInputFilePath)
         + FilenameUtils.getBaseName(testInputFilePath) + "-export";
-    final DefaultKnowledgeBaseProxyFactory kbf;
-    try {
-      kbf = new DefaultKnowledgeBaseProxyFactory();
-    } catch (IOException | STIException e) {
-      log.error("Error - KnowledgeBaseProxyFactory loading:", e);
-      return;
-    }
+    final KnowledgeBaseProxyFactory kbf = CoreExecutionBatch.getKnowledgeBaseProxyFactory();
 
     // JSON export
     AnnotatedTable annotatedTable = CSVExportTest.testExportToAnnotatedTable(odalicResult, input,

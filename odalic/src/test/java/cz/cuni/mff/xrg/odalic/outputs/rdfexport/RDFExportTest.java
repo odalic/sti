@@ -1,6 +1,9 @@
 package cz.cuni.mff.xrg.odalic.outputs.rdfexport;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.apache.commons.io.FilenameUtils;
@@ -12,7 +15,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
@@ -47,12 +54,13 @@ public class RDFExportTest {
 
     // Convert JSON file to Java Object AnnotatedTable
     AnnotatedTable annotatedTable;
-    try (Reader reader = new FileReader(inputJsonFile)) {
-      annotatedTable = new Gson().fromJson(reader, AnnotatedTable.class);
+    try (final FileInputStream inputFileStream = new FileInputStream(inputJsonFile)) {
+      annotatedTable = new ObjectMapper().setAnnotationIntrospector(AnnotationIntrospector.pair(
+          new JacksonAnnotationIntrospector(), new JaxbAnnotationIntrospector(
+              TypeFactory.defaultInstance()))).readValue(inputFileStream, AnnotatedTable.class);
       log.info("Input JSON file loaded.");
     } catch (IOException e) {
-      log.error("Error - loading input JSON file:");
-      e.printStackTrace();
+      log.error("Error - loading input JSON file:", e);
       return;
     }
 
@@ -66,8 +74,7 @@ public class RDFExportTest {
               inputFile.getName(), format, Integer.MAX_VALUE).getInput();
       log.info("Input CSV file loaded.");
     } catch (IOException e) {
-      log.error("Error - loading input CSV file:");
-      e.printStackTrace();
+      log.error("Error - loading input CSV file:", e);
       return;
     }
 
@@ -95,8 +102,7 @@ public class RDFExportTest {
       writer.write(rdf);
       log.info("RDF export saved to file " + filePath);
     } catch (IOException e) {
-      log.error("Error - saving RDF export file:");
-      e.printStackTrace();
+      log.error("Error - saving RDF export file:", e);
     }
   }
 }
