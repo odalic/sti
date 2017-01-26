@@ -2,6 +2,7 @@ package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
@@ -25,12 +26,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
 import cz.cuni.mff.xrg.odalic.entities.PrefixMappingEntitiesFactory;
 import cz.cuni.mff.xrg.odalic.feedbacks.Ambiguity;
 import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnAmbiguity;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnIgnore;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnRelation;
+import cz.cuni.mff.xrg.odalic.feedbacks.DataCubeComponent;
 import cz.cuni.mff.xrg.odalic.feedbacks.DefaultFeedbackToConstraintsAdapter;
 import cz.cuni.mff.xrg.odalic.feedbacks.Disambiguation;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
@@ -52,6 +55,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.results.DefaultAnnotationToResultAdapter;
@@ -64,6 +68,8 @@ public class CoreExecutionBatch {
   private static final Map<String, File> files = new HashMap<>();
   private static final Map<URL, byte[]> data = new HashMap<>();
   private static final Multimap<String, String> utilizingTasks = HashMultimap.create();
+
+  private static KnowledgeBaseProxyFactory kbf;
 
   /**
    * Expects sti.properties file path as the first and test input CSV file path as the second
@@ -107,13 +113,13 @@ public class CoreExecutionBatch {
     }
 
     // Format settings
-    files.get(fileId).setFormat(new Format(StandardCharsets.UTF_8, ';', true, '"', null, null));
+    files.get(fileId).setFormat(new Format(StandardCharsets.ISO_8859_1, ';', true, '"', null, null));
 
     // Task settings
     Task task = new Task("simple_task", "task description",
         new Configuration(files.get(fileId), ImmutableSet.of(new KnowledgeBase("DBpedia"),
             new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")),
-            new KnowledgeBase("DBpedia"), createFeedback(true), null, false));
+            new KnowledgeBase("DBpedia"), createFeedback(false), null, true));
     utilizingTasks.put(task.getConfiguration().getInput().getId(), task.getId());
 
     return task;
@@ -147,8 +153,8 @@ public class CoreExecutionBatch {
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
-      semanticTableInterpreters = new TableMinerPlusFactory(
-          new DefaultKnowledgeBaseProxyFactory()).getInterpreters();
+      kbf = new DefaultKnowledgeBaseProxyFactory();
+      semanticTableInterpreters = new TableMinerPlusFactory(kbf).getInterpreters();
     } catch (IOException e) {
       log.error("Error - TMP initialization process fails to load its configuration:", e);
       return null;
@@ -196,6 +202,10 @@ public class CoreExecutionBatch {
     log.info("Odalic Result is: " + odalicResult);
 
     return odalicResult;
+  }
+
+  public static KnowledgeBaseProxyFactory getKnowledgeBaseProxyFactory() {
+    return kbf;
   }
 
   private static Feedback createFeedback(boolean emptyFeedback) {
@@ -257,9 +267,39 @@ public class CoreExecutionBatch {
       HashSet<Ambiguity> ambiguities = new HashSet<>();
       ambiguities.add(new Ambiguity(new CellPosition(5, 5)));
 
+      // dataCubeComponents example
+      HashSet<DataCubeComponent> dataCubeComponents = new HashSet<>();
+      dataCubeComponents.add(createDCC(4, ComponentTypeValue.DIMENSION,
+          "http://odalic.eu/schema/districtName", "District name"));
+      dataCubeComponents.add(createDCC(6, ComponentTypeValue.DIMENSION,
+          "http://odalic.eu/schema/lauName", "Lau name"));
+      dataCubeComponents.add(createDCC(2, ComponentTypeValue.DIMENSION,
+          "http://odalic.eu/schema/nuts3", "NUTS 3"));
+      dataCubeComponents.add(createDCC(7, ComponentTypeValue.MEASURE,
+          "http://odalic.eu/schema/livebirths", "Livebirths"));
+      dataCubeComponents.add(createDCC(8, ComponentTypeValue.MEASURE,
+          "http://odalic.eu/schema/year", "Year"));
+
+      /**/
+      // statistical data feedback example
+      return new Feedback(ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(),
+          ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), dataCubeComponents);
+      /*/
+
       // construction example
       return new Feedback(subjectColumns, columnIgnores, columnAmbiguities, classifications,
           relations, disambiguations, ambiguities, ImmutableSet.of());
+      /**/
     }
+  }
+
+  private static DataCubeComponent createDCC(int col, ComponentTypeValue comp, String uri, String label) {
+    HashMap<KnowledgeBase, ComponentTypeValue> compMap = new HashMap<>();
+    compMap.put(new KnowledgeBase("DBpedia"), comp);
+    HashSet<EntityCandidate> predicateSet = new HashSet<>();
+    predicateSet.add(new EntityCandidate(Entity.of(uri, label), new Score(1.0)));
+    HashMap<KnowledgeBase, HashSet<EntityCandidate>> predicateMap = new HashMap<>();
+    predicateMap.put(new KnowledgeBase("DBpedia"), predicateSet);
+    return new DataCubeComponent(new ColumnPosition(col), new StatisticalAnnotation(compMap, predicateMap));
   }
 }
