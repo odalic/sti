@@ -36,9 +36,9 @@ public final class PropertyProposalValue implements Serializable {
 
   private Entity superProperty;
 
-  private Entity domain;
+  private String domain;
 
-  private Entity range;
+  private String range;
 
   public PropertyProposalValue() {
     this.alternativeLabels = ImmutableSortedSet.of();
@@ -114,14 +114,14 @@ public final class PropertyProposalValue implements Serializable {
    */
   @Nullable
   @XmlElement
-  public Entity getDomain() {
+  public String getDomain() {
     return domain;
   }
 
   /**
    * @param domain the domain to set
    */
-  public void setDomain(Entity domain) {
+  public void setDomain(String domain) {
     this.domain = domain;
   }
 
@@ -130,14 +130,14 @@ public final class PropertyProposalValue implements Serializable {
    */
   @Nullable
   @XmlElement
-  public Entity getRange() {
+  public String getRange() {
     return range;
   }
 
   /**
    * @param range the range to set
    */
-  public void setRange(Entity range) {
+  public void setRange(String range) {
     this.range = range;
   }
 
