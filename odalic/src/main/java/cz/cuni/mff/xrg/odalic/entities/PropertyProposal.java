@@ -40,12 +40,12 @@ public final class PropertyProposal {
 
   private final Entity superProperty;
 
-  private final Entity domain;
+  private final String domain;
 
-  private final Entity range;
+  private final String range;
 
   public PropertyProposal(final String label, final Set<? extends String> alternativeLabels,
-      final URI suffix, final Entity superProperty, final Entity domain, final Entity range) {
+      final URI suffix, final Entity superProperty, final String domain, final String range) {
     Preconditions.checkNotNull(label);
     Preconditions.checkArgument(suffix == null || !suffix.isAbsolute(),
         "The suffix must be a relative URI!");
@@ -90,14 +90,14 @@ public final class PropertyProposal {
   /**
    * @return the domain
    */
-  public Entity getDomain() {
+  public String getDomain() {
     return domain;
   }
 
   /**
    * @return the range
    */
-  public Entity getRange() {
+  public String getRange() {
     return range;
   }
 

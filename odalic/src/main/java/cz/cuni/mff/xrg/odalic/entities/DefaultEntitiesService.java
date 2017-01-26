@@ -56,7 +56,8 @@ public final class DefaultEntitiesService implements EntitiesService {
     List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
         kbProxy.findResourceByFulltext(query, limit);
 
-    return searchResult.stream().map(entity -> entitiesFactory.create(entity.getId(), entity.getLabel()))
+    return searchResult.stream()
+        .map(entity -> entitiesFactory.create(entity.getId(), entity.getLabel()))
         .collect(Collectors.toCollection(TreeSet::new));
   }
 
@@ -75,7 +76,8 @@ public final class DefaultEntitiesService implements EntitiesService {
     List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
         kbProxy.findClassByFulltext(query, limit);
 
-    return searchResult.stream().map(entity -> entitiesFactory.create(entity.getId(), entity.getLabel()))
+    return searchResult.stream()
+        .map(entity -> entitiesFactory.create(entity.getId(), entity.getLabel()))
         .collect(Collectors.toCollection(TreeSet::new));
   }
 
@@ -92,7 +94,8 @@ public final class DefaultEntitiesService implements EntitiesService {
     List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
         kbProxy.findPredicateByFulltext(query, limit, domain, range);
 
-    return searchResult.stream().map(entity -> entitiesFactory.create(entity.getId(), entity.getLabel()))
+    return searchResult.stream()
+        .map(entity -> entitiesFactory.create(entity.getId(), entity.getLabel()))
         .collect(Collectors.toCollection(TreeSet::new));
   }
 
@@ -121,12 +124,10 @@ public final class DefaultEntitiesService implements EntitiesService {
     KBProxy kbProxy = getKBProxy(base);
 
     String superPropertyUri = getEntityValue(proposal.getSuperProperty());
-    String rangeUri = getEntityValue(proposal.getRange());
-    String domainUri = getEntityValue(proposal.getDomain());
 
-    uk.ac.shef.dcs.kbproxy.model.Entity entity =
-        kbProxy.insertProperty(proposal.getSuffix(), proposal.getLabel(),
-            proposal.getAlternativeLabels(), superPropertyUri, rangeUri, domainUri);
+    uk.ac.shef.dcs.kbproxy.model.Entity entity = kbProxy.insertProperty(proposal.getSuffix(),
+        proposal.getLabel(), proposal.getAlternativeLabels(), superPropertyUri,
+        proposal.getDomain(), proposal.getRange());
 
     return entitiesFactory.create(entity.getId(), entity.getLabel());
   }
