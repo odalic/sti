@@ -2,11 +2,15 @@ package cz.cuni.mff.xrg.odalic.util;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Utility class for -- you guessed it -- working with URLs.
@@ -43,11 +47,33 @@ public final class URL {
       throw new AssertionError(e);
     }
   }
-  
+
+  /**
+   * Sets the query parameter and return the modified URL.
+   * 
+   * @param url URL
+   * @param key query parameter key
+   * @param value query parameter value
+   * @return modified URL
+   * @throws MalformedURLException
+   */
+  public static java.net.URL setQueryParameter(final java.net.URL url, final String key,
+      final String value) throws MalformedURLException {
+    Preconditions.checkNotNull(url);
+    Preconditions.checkNotNull(key);
+    Preconditions.checkNotNull(value);
+
+    try {
+      return UriBuilder.fromUri(url.toURI()).queryParam(key, value).build().toURL();
+    } catch (final URISyntaxException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
   /**
    * Extracts a stamp string from the URI information.
    * 
-   * @param uriInfo request URI information 
+   * @param uriInfo request URI information
    * @param queryParameterName stamp query parameter name
    * @return the stamp string, {@code null} when not provided
    */
