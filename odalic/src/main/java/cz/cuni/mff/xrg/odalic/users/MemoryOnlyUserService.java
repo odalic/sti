@@ -3,15 +3,12 @@
  */
 package cz.cuni.mff.xrg.odalic.users;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
 import javax.mail.Address;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -20,10 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTCreationException;
-import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.util.FixedSizeHashMap;
@@ -52,35 +45,60 @@ public final class MemoryOnlyUserService implements UserService {
   private static final String PASSWORD_SETTING_MESSAGE_FORMAT =
       "Please confirm the setting of a new password by following this link: %s\n";
 
+  private static final String SESSION_MAXIMUM_HOURS_PROPERTY_KEY = "cz.cuni.mff.xrg.odalic.users.session.maximum.hours";
+
   private static final Logger logger = LoggerFactory.getLogger(MemoryOnlyUserService.class);
 
+  private final RandomService randomService;
   private final PasswordHashingService passwordHashingService;
   private final MailService mailService;
+  private final TokenService tokenService;
 
+  private final long sessionMaximumHours;
+  
   private final Map<String, Credentials> codesToUnconfirmed;
-  private Map<String, User> codesToPasswordChanging;
+  private final Map<String, User> codesToPasswordChanging;
 
   private final Map<String, User> users;
 
   @Autowired
   public MemoryOnlyUserService(final PropertiesService propertiesService,
-      final PasswordHashingService passwordHashingService, final MailService mailService) {
+      final RandomService randomService, final PasswordHashingService passwordHashingService,
+      final MailService mailService, final TokenService tokenService) {
     Preconditions.checkNotNull(propertiesService);
+    Preconditions.checkNotNull(randomService);
     Preconditions.checkNotNull(passwordHashingService);
     Preconditions.checkNotNull(mailService);
+    Preconditions.checkNotNull(tokenService);
 
     final Properties properties = propertiesService.get();
 
+    this.randomService = randomService;
     this.passwordHashingService = passwordHashingService;
     this.mailService = mailService;
+    this.tokenService = tokenService;
 
     this.users = new HashMap<>();
 
-    final int maximumCodesKept =
-        Integer.parseInt(properties.getProperty(MAXIMUM_CODES_KEPT_PROPERTY_KEY));
+    final int maximumCodesKept;
+    try {
+      maximumCodesKept = Integer.parseInt(properties.getProperty(MAXIMUM_CODES_KEPT_PROPERTY_KEY));
+    } catch (final NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid maximum codes kept value!", e);
+    }
     this.codesToUnconfirmed = new FixedSizeHashMap<>(maximumCodesKept);
+    this.codesToPasswordChanging = new FixedSizeHashMap<>(maximumCodesKept);
+    
+    try {
+      this.sessionMaximumHours = Long.parseLong(properties.getProperty(SESSION_MAXIMUM_HOURS_PROPERTY_KEY));
+    } catch (final NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid maximum session duration value!", e);
+    }
   }
 
+  /* (non-Javadoc)
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#signUp(java.net.URL, java.lang.String, cz.cuni.mff.xrg.odalic.users.Credentials)
+   */
   @Override
   public void signUp(final java.net.URL confirmationUrl, final String codeQueryParameter,
       final Credentials credentials) throws MalformedURLException {
@@ -115,10 +133,12 @@ public final class MemoryOnlyUserService implements UserService {
   }
 
   private String generateCode() {
-    // TODO Auto-generated method stub
-    return null;
+    return this.randomService.getRandomString();
   }
 
+  /* (non-Javadoc)
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#create(cz.cuni.mff.xrg.odalic.users.Credentials, cz.cuni.mff.xrg.odalic.users.Role)
+   */
   @Override
   public void create(final Credentials credentials, final Role role) {
     Preconditions.checkNotNull(credentials);
@@ -131,6 +151,9 @@ public final class MemoryOnlyUserService implements UserService {
     this.users.put(email, new User(email, passwordHashed, role));
   }
 
+  /* (non-Javadoc)
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#authenticate(cz.cuni.mff.xrg.odalic.users.Credentials)
+   */
   @Override
   public User authenticate(final Credentials credentials) {
     Preconditions.checkNotNull(credentials);
@@ -151,9 +174,12 @@ public final class MemoryOnlyUserService implements UserService {
     return user;
   }
 
+  /* (non-Javadoc)
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#activateUser(java.lang.String)
+   */
   @Override
   public void activateUser(final String code) {
-    final Credentials credentials = this.codesToUnconfirmed.get(code);
+    final Credentials credentials = this.codesToUnconfirmed.remove(code);
     if (credentials == null) {
       logger.warn("Invalid confirmation code %s!", code);
       throw new IllegalArgumentException("Invalid confirmation code!");
@@ -162,29 +188,20 @@ public final class MemoryOnlyUserService implements UserService {
     create(credentials, Role.USER);
   }
 
+  /* (non-Javadoc)
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#issueToken(cz.cuni.mff.xrg.odalic.users.User)
+   */
   @Override
   public Token issueToken(User user) {
-    final String issuer = "odalic";
     final String subject = user.getEmail();
-    final Date expiration = Date.from(Instant.now().plus(Duration.ofDays(4)));
+    final Instant expiration = Instant.now().plus(Duration.ofHours(sessionMaximumHours));
     
-    try {
-      try {
-        String token = JWT.create()
-            .withIssuer(issuer)
-            .withExpiresAt(expiration)
-            .withSubject(subject)
-            .sign(Algorithm.HMAC256("sec"));
-      } catch (IllegalArgumentException | UnsupportedEncodingException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
-    } catch (final JWTCreationException e){
-        //Invalid Signing configuration / Couldn't convert Claims.
-    }
-    return null;
+    return this.tokenService.create(subject, expiration);
   }
 
+  /* (non-Javadoc)
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#requestPasswordChange(java.net.URL, java.lang.String, cz.cuni.mff.xrg.odalic.users.User, java.lang.String)
+   */
   @Override
   public void requestPasswordChange(final java.net.URL confirmationUrl,
       final String codeQueryParameter, User user, String password) throws MalformedURLException {
@@ -221,9 +238,12 @@ public final class MemoryOnlyUserService implements UserService {
     return String.format(PASSWORD_SETTING_MESSAGE_FORMAT, confirmationCodeUrl);
   }
 
+  /* (non-Javadoc)
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#confirmPasswordChange(java.lang.String)
+   */
   @Override
   public void confirmPasswordChange(final String code) {
-    final User user = this.codesToPasswordChanging.get(code);
+    final User user = this.codesToPasswordChanging.remove(code);
     if (user == null) {
       logger.warn("Invalid confirmation code %s!", code);
       throw new IllegalArgumentException("Invalid confirmation code!");
@@ -241,17 +261,27 @@ public final class MemoryOnlyUserService implements UserService {
     return passwordHashingService.check(password, passwordHash);
   }
 
+  /* (non-Javadoc)
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#validateToken(java.lang.String)
+   */
   @Override
   public User validateToken(String token) {
-    final JWT jwt;
-    try {
-      jwt = JWT.decode(token);
-    } catch (final JWTDecodeException e) {
-      throw new IllegalArgumentException(e);
+    this.tokenService.validate(token);
+    
+    final String subject = this.tokenService.getSubject(token);
+    final User user = this.users.get(subject);
+    
+    if (user == null) {
+      logger.warn("Unknown user for a subject %s derived from token %s!", subject, token);
+      throw new IllegalArgumentException("Authentication failed!");
     }
-    return null;
+    
+    return user;
   }
 
+  /* (non-Javadoc)
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#getUser(java.lang.String)
+   */
   @Override
   public User getUser(final String id) {
     Preconditions.checkNotNull(id);

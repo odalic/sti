@@ -73,8 +73,8 @@ public final class SignUpResource {
         .toResponse(Response.Status.OK, uriInfo);
   }
 
-  @GET
-  @Path(ACTIVATE_SUBRESOURCE)
+  @POST
+  @Path("active")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response activate(final @QueryParam(CODE_QUERY_PARAMETER) String code) {
