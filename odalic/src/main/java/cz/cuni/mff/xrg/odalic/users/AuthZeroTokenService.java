@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.Properties;
+import java.util.UUID;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
@@ -65,17 +66,43 @@ public class AuthZeroTokenService implements TokenService {
     this.verifier = initializeVerifier(secret, issuer);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.TokenService#create(java.lang.String, java.time.Instant)
-   */
+  private DecodedJWT validateAndDecode(final Token token) {
+    final DecodedJWT jwt = verifyAndDecode(token);
+    verifySubjectPresence(jwt);
+    verifyIdPresence(jwt);;
+
+    return jwt;
+  }
+
+  private void verifyIdPresence(final DecodedJWT jwt) {
+    Preconditions.checkArgument(jwt.getId() != null, "The ID is not present!");
+  }
+  
+  private void verifySubjectPresence(final DecodedJWT jwt) {
+    Preconditions.checkArgument(jwt.getSubject() != null, "The subject is not present!");
+  }
+
+  private DecodedJWT verifyAndDecode(final Token token) {
+    final DecodedJWT jwt;
+    try {
+      jwt = this.verifier.verify(token.getToken());
+    } catch (final JWTVerificationException e) {
+      throw new IllegalArgumentException(String.format("Token %s verification failed!", token), e);
+    }
+    return jwt;
+  }
+
   @Override
-  public Token create(final String subject, final Instant expiration) {
+  public Token create(final UUID id, final String subject, final Instant expiration) {
+    Preconditions.checkNotNull(id);
+    Preconditions.checkNotNull(subject);
+    Preconditions.checkNotNull(expiration);
+    
     final String token;
     try {
-      token = JWT.create().withIssuer(this.issuer).withExpiresAt(Date.from(expiration))
-          .withSubject(subject).sign(Algorithm.HMAC256(this.secret));
+      token = JWT.create().withJWTId(id.toString()).withIssuer(this.issuer)
+          .withExpiresAt(Date.from(expiration)).withSubject(subject)
+          .sign(Algorithm.HMAC256(this.secret));
     } catch (JWTCreationException e) {
       throw new IllegalArgumentException(e);
     } catch (final UnsupportedEncodingException e) {
@@ -85,42 +112,20 @@ public class AuthZeroTokenService implements TokenService {
     return new Token(token);
   }
 
-  /* (non-Javadoc)
-   * @see cz.cuni.mff.xrg.odalic.users.TokenService#validate(java.lang.String)
-   */
   @Override
-  public void validate(final String token) throws IllegalArgumentException {
-    validateAndDecode(token);
-  }
-
-  private DecodedJWT validateAndDecode(final String token) {
-    final DecodedJWT jwt = verifyAndDecode(token);
-    verifySubjectPresence(jwt);
-
-    return jwt;
-  }
-
-  /* (non-Javadoc)
-   * @see cz.cuni.mff.xrg.odalic.users.TokenService#getSubject(java.lang.String)
-   */
-  @Override
-  public String getSubject(final String token) {
+  public DecodedToken validate(final Token token) throws IllegalArgumentException {
     final DecodedJWT jwt = validateAndDecode(token);
-
-    return jwt.getSubject();
+    
+    return new DecodedToken(parseId(jwt), jwt.getIssuer(), jwt.getSubject(), jwt.getExpiresAt().toInstant());
   }
 
-  private void verifySubjectPresence(final DecodedJWT jwt) {
-    Preconditions.checkArgument(jwt.getSubject() != null, "The subject is not present!");
-  }
-
-  private DecodedJWT verifyAndDecode(final String token) {
-    final DecodedJWT jwt;
+  private UUID parseId(final DecodedJWT jwt) {
+    final UUID id;
     try {
-      jwt = this.verifier.verify(token);
-    } catch (final JWTVerificationException e) {
-      throw new IllegalArgumentException(String.format("Token %s verification failed!", token), e);
+      id = UUID.fromString(jwt.getId());
+    } catch (final IllegalArgumentException e) {
+      throw new IllegalArgumentException(e);
     }
-    return jwt;
+    return id;
   }
 }

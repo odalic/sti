@@ -1,24 +1,21 @@
 package cz.cuni.mff.xrg.odalic.users;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 public interface UserService {
-  void signUp(URL confirmationUrl, String codeQueryParameter, Credentials credentials) throws MalformedURLException;
+  void signUp(Credentials credentials);
   
   void create(Credentials credentials, Role role);
   
   User authenticate(Credentials credentials);
   
-  void activateUser(String code);
+  void activateUser(Token token);
 
-  void requestPasswordChange(URL confirmationUrl, String codeQueryParameter, User user, String password) throws MalformedURLException;
+  void requestPasswordChange(User user, String password);
   
-  void confirmPasswordChange(String code);
+  void confirmPasswordChange(Token token);
   
   Token issueToken(User user);
 
-  User validateToken(String token);
+  User validateToken(Token token);
 
   User getUser(String id);
 }

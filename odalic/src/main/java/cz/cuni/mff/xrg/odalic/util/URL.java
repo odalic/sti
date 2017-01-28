@@ -1,16 +1,14 @@
 package cz.cuni.mff.xrg.odalic.util;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import javax.annotation.Nullable;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import com.google.common.base.Preconditions;
+import com.google.common.escape.Escaper;
+import com.google.common.net.UrlEscapers;
 
 /**
  * Utility class for -- you guessed it -- working with URLs.
@@ -19,6 +17,8 @@ import com.google.common.base.Preconditions;
  *
  */
 public final class URL {
+
+  private static final Escaper urlPathSegmentEscaper = UrlEscapers.urlPathSegmentEscaper();
 
   /**
    * We want to keep this class uninstantiable, so no visible constructor is available.
@@ -36,16 +36,13 @@ public final class URL {
    * @throws MalformedURLException If a protocol handler for the URL could not be found, or if some
    *         other error occurred while constructing the URL
    * @throws IllegalStateException If called outside a scope of a request
-   * @throws IllegalArgumentException If the given string violates RFC 2396
+   * @throws IllegalArgumentException if the sub-resource cannot be properly escaped to become a
+   *         path segment in URL
    */
   public static java.net.URL getSubResourceAbsolutePath(UriInfo requestUriInfo, String subResource)
-      throws MalformedURLException, IllegalStateException {
-    try {
-      return requestUriInfo.getAbsolutePath()
-          .resolve(URLEncoder.encode(subResource, StandardCharsets.UTF_8.displayName())).toURL();
-    } catch (UnsupportedEncodingException e) {
-      throw new AssertionError(e);
-    }
+      throws MalformedURLException, IllegalStateException, IllegalArgumentException {
+    return requestUriInfo.getAbsolutePath().resolve(urlPathSegmentEscaper.escape(subResource))
+        .toURL();
   }
 
   /**

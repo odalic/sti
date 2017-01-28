@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.cuni.mff.xrg.odalic.api.rest.Secured;
+import cz.cuni.mff.xrg.odalic.users.Token;
 import cz.cuni.mff.xrg.odalic.users.User;
 import cz.cuni.mff.xrg.odalic.users.UserService;
 
@@ -46,7 +47,7 @@ public final class AuthenticationFilter implements ContainerRequestFilter {
 
         final User user;
         try {
-            user = userService.validateToken(token);
+            user = userService.validateToken(new Token(token));
         } catch (final Exception e) {
           requestContext.abortWith(
               Response.status(Response.Status.UNAUTHORIZED).build());
