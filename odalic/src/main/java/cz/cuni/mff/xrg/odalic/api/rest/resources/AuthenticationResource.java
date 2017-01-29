@@ -1,7 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -49,8 +49,8 @@ public final class AuthenticationResource {
     final User user;
     try {  
       user = userService.authenticate(credentials);
-    } catch (final IllegalArgumentException e) {
-      throw new NotAuthorizedException(e, (Object) null);
+    } catch (final Exception e) {
+      throw new BadRequestException(e);
     }
     
     final Token token = userService.issueToken(user);

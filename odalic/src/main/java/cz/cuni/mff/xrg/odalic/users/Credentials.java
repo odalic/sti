@@ -1,7 +1,11 @@
 package cz.cuni.mff.xrg.odalic.users;
 
 import javax.annotation.concurrent.Immutable;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import com.google.common.base.Preconditions;
+
+import cz.cuni.mff.xrg.odalic.api.rest.adapters.CredentialsAdapter;
 
 /**
  * User credentials.
@@ -9,6 +13,7 @@ import com.google.common.base.Preconditions;
  * @author Václav Brodec
  *
  */
+@XmlJavaTypeAdapter(CredentialsAdapter.class)
 @Immutable
 public final class Credentials {
 
@@ -85,6 +90,6 @@ public final class Credentials {
    */
   @Override
   public String toString() {
-    return "User [email=" + email + ", password=" + password + "]";
+    return "User [email=" + email + ", password=****]";
   }
 }

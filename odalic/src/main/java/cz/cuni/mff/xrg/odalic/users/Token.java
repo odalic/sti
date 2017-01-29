@@ -1,10 +1,13 @@
 package cz.cuni.mff.xrg.odalic.users;
 
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
+
+import cz.cuni.mff.xrg.odalic.api.rest.adapters.TokenAdapter;
 
 /**
  * Authorization and authentication token string container.
@@ -12,7 +15,8 @@ import com.google.common.base.Preconditions;
  * @author Václav Brodec
  *
  */
-@XmlRootElement(name = "token")
+@XmlJavaTypeAdapter(TokenAdapter.class)
+@Immutable
 public final class Token {
 
   private String token;

@@ -21,10 +21,8 @@ public final class TokenValue {
   
   public TokenValue() {}
   
-  public TokenValue(final String token) {
-    Preconditions.checkNotNull(token);
-    
-    this.token = token;
+  public TokenValue(final Token adaptee) {
+    this.token = adaptee.getToken();
   }
 
   /**

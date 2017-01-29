@@ -6,12 +6,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.users.Credentials;
+
 @XmlRootElement(name = "credentials")
 public final class CredentialsValue {
 
   private String email;
   
   private String password;
+  
+  public CredentialsValue(final Credentials adaptee) {
+    this.email = adaptee.getEmail();
+    this.password = adaptee.getPassword();
+  }
 
   /**
    * @return the email

@@ -12,7 +12,7 @@ import com.google.common.base.Preconditions;
  * @author Václav Brodec
  *
  */
-@XmlRootElement(name = "password-change-value")
+@XmlRootElement(name = "password-change")
 public final class PasswordChangeValue {
 
   private String oldPassword;
@@ -54,5 +54,13 @@ public final class PasswordChangeValue {
     Preconditions.checkNotNull(newPassword);
     
     this.newPassword = newPassword;
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "PasswordChangeValue [oldPassword=****, newPassword=****]";
   }
 }

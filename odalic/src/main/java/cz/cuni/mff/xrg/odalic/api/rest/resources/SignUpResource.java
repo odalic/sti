@@ -36,6 +36,9 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 @Path("/users")
 public final class SignUpResource {
 
+  private static final String CHALLENGE_FORMAT =
+      "Bearer realm=\"Odalic registration\", error=\"invalid_token\", error_description=\"%s\"";
+
   private final UserService userService;
 
   @Context
@@ -72,7 +75,7 @@ public final class SignUpResource {
     try {
       userService.activateUser(token);
     } catch (final IllegalArgumentException e) {
-      throw new NotAuthorizedException(e, (Object) null);
+      throw new NotAuthorizedException(e, String.format(CHALLENGE_FORMAT, e.getMessage()));
     }
 
     return Message.of("Successfully activated!").toResponse(Response.Status.OK, uriInfo);
@@ -88,7 +91,7 @@ public final class SignUpResource {
     try {
       user = userService.authenticate(new Credentials(id, passwordChangeValue.getOldPassword()));
     } catch (final IllegalArgumentException e) {
-      throw new NotAuthorizedException(e, (Object) null);
+      throw new BadRequestException(e);
     }
 
     try {
@@ -98,7 +101,7 @@ public final class SignUpResource {
     }
 
     return Message
-        .of("Password change request. Please confirm via the code sent to the provided e-mail.")
+        .of("Password change requested. Please confirm via the code sent to the provided e-mail.")
         .toResponse(Response.Status.OK, uriInfo);
   }
 
@@ -110,7 +113,7 @@ public final class SignUpResource {
     try {
       userService.confirmPasswordChange(token);
     } catch (final IllegalArgumentException e) {
-      throw new NotAuthorizedException(e, (Object) null);
+      throw new NotAuthorizedException(e, String.format(CHALLENGE_FORMAT, e.getMessage()));
     }
 
     return Message.of("Password reset!").toResponse(Response.Status.OK, uriInfo);
