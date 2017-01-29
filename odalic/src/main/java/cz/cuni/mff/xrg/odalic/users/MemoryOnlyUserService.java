@@ -60,6 +60,10 @@ public final class MemoryOnlyUserService implements UserService {
       "cz.cuni.mff.xrg.odalic.users.signup.url";
   private static final String PASSWORD_SETTING_CONFIRMATION_URL_FORMAT_PROPERTY_KEY =
       "cz.cuni.mff.xrg.odalic.users.reset.url";
+  private static final String ADMIN_EMAIL_PROPERTY_KEY = "cz.cuni.mff.xrg.odalic.users.admin.email";
+  private static final String ADMIN_INITIAL_PASSWORD_PROPERTY_KEY =
+      "cz.cuni.mff.xrg.odalic.users.admin.password";
+
 
   private static final Logger logger = LoggerFactory.getLogger(MemoryOnlyUserService.class);
 
@@ -110,50 +114,82 @@ public final class MemoryOnlyUserService implements UserService {
     this.tokenIdsToUnconfirmed = new FixedSizeHashMap<>(maximumCodesKept);
     this.tokenIdsToPasswordChanging = new FixedSizeHashMap<>(maximumCodesKept);
 
-    final String sessionMaximumHoursString = properties.getProperty(SESSION_MAXIMUM_HOURS_PROPERTY_KEY);
-    Preconditions.checkArgument(sessionMaximumHoursString != null, String.format("Missing key %s in the configuration!", SESSION_MAXIMUM_HOURS_PROPERTY_KEY));
-    try {      
-      this.sessionMaximumHours =
-          Long.parseLong(sessionMaximumHoursString);
+    final String sessionMaximumHoursString =
+        properties.getProperty(SESSION_MAXIMUM_HOURS_PROPERTY_KEY);
+    Preconditions.checkArgument(sessionMaximumHoursString != null,
+        String.format("Missing key %s in the configuration!", SESSION_MAXIMUM_HOURS_PROPERTY_KEY));
+    try {
+      this.sessionMaximumHours = Long.parseLong(sessionMaximumHoursString);
     } catch (final NumberFormatException e) {
       throw new IllegalArgumentException("Invalid maximum session duration value!", e);
     }
 
-    final String signUpConfirmationWindowMinutesString = properties.getProperty(SIGNUP_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY);
-    Preconditions.checkArgument(signUpConfirmationWindowMinutesString != null, String.format("Missing key %s in the configuration!", SIGNUP_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY));
+    final String signUpConfirmationWindowMinutesString =
+        properties.getProperty(SIGNUP_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY);
+    Preconditions.checkArgument(signUpConfirmationWindowMinutesString != null, String.format(
+        "Missing key %s in the configuration!", SIGNUP_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY));
     try {
-      this.signUpConfirmationWindowMinutes =
-          Long.parseLong(signUpConfirmationWindowMinutesString);
+      this.signUpConfirmationWindowMinutes = Long.parseLong(signUpConfirmationWindowMinutesString);
     } catch (final NumberFormatException e) {
       throw new IllegalArgumentException("Invalid sign-up confirmation windows duration value!", e);
     }
 
-    final String passwordSettingConfirmationWindowMinutesString = properties.getProperty(PASSWORD_SETTING_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY);
-    Preconditions.checkArgument(passwordSettingConfirmationWindowMinutesString != null, String.format("Missing key %s in the configuration!", PASSWORD_SETTING_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY));
+    final String passwordSettingConfirmationWindowMinutesString =
+        properties.getProperty(PASSWORD_SETTING_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY);
+    Preconditions.checkArgument(passwordSettingConfirmationWindowMinutesString != null,
+        String.format("Missing key %s in the configuration!",
+            PASSWORD_SETTING_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY));
     try {
-      this.passwordSettingConfirmationWindowMinutes = Long.parseLong(passwordSettingConfirmationWindowMinutesString);
+      this.passwordSettingConfirmationWindowMinutes =
+          Long.parseLong(passwordSettingConfirmationWindowMinutesString);
     } catch (final NumberFormatException e) {
       throw new IllegalArgumentException(
           "Invalid password setting confirmation windows duration value!", e);
     }
 
-    this.signUpConfirmationUrlFormat = properties.getProperty(SIGNUP_CONFIRMATION_URL_FORMAT_PROPERTY_KEY);
-    Preconditions.checkArgument(this.signUpConfirmationUrlFormat != null, String.format("Missing key %s in the configuration!", SIGNUP_CONFIRMATION_URL_FORMAT_PROPERTY_KEY));
+    this.signUpConfirmationUrlFormat =
+        properties.getProperty(SIGNUP_CONFIRMATION_URL_FORMAT_PROPERTY_KEY);
+    Preconditions.checkArgument(this.signUpConfirmationUrlFormat != null, String.format(
+        "Missing key %s in the configuration!", SIGNUP_CONFIRMATION_URL_FORMAT_PROPERTY_KEY));
     try {
       formatUrlWithToken(this.signUpConfirmationUrlFormat, new Token("dummy"));
     } catch (final IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid sign-up confirmation URL format set!");
     }
-    
-    this.passwordSettingConfirmationUrlFormat = properties.getProperty(PASSWORD_SETTING_CONFIRMATION_URL_FORMAT_PROPERTY_KEY);
-    Preconditions.checkArgument(this.passwordSettingConfirmationUrlFormat != null, String.format("Missing key %s in the configuration!", PASSWORD_SETTING_CONFIRMATION_URL_FORMAT_PROPERTY_KEY));
+
+    this.passwordSettingConfirmationUrlFormat =
+        properties.getProperty(PASSWORD_SETTING_CONFIRMATION_URL_FORMAT_PROPERTY_KEY);
+    Preconditions.checkArgument(this.passwordSettingConfirmationUrlFormat != null,
+        String.format("Missing key %s in the configuration!",
+            PASSWORD_SETTING_CONFIRMATION_URL_FORMAT_PROPERTY_KEY));
     try {
       formatUrlWithToken(this.passwordSettingConfirmationUrlFormat, new Token("dummy"));
     } catch (final IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid password setting confirmation URL format set!");
     }
-    
+
     this.userIdsToTokenIds = HashMultimap.create();
+
+    createAdminIfNotPresent(properties);
+  }
+
+  private void createAdminIfNotPresent(final Properties properties) {
+    final String adminEmail = properties.getProperty(ADMIN_EMAIL_PROPERTY_KEY);
+    Preconditions.checkArgument(adminEmail != null,
+        String.format("Missing key %s in the configuration!", ADMIN_EMAIL_PROPERTY_KEY));
+
+    final String adminInitialPassword = properties.getProperty(ADMIN_INITIAL_PASSWORD_PROPERTY_KEY);
+    Preconditions.checkArgument(adminInitialPassword != null,
+        String.format("Missing key %s in the configuration!", ADMIN_INITIAL_PASSWORD_PROPERTY_KEY));
+    Preconditions.checkArgument(!adminInitialPassword.isEmpty(),
+        "The initial admin password cannot be empty!");
+
+    if (this.userIdsToTokenIds.containsKey(adminEmail)) {
+      logger.info("The administrator account already present. Skipping its creation.");
+      return;
+    }
+
+    create(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
   }
 
 
