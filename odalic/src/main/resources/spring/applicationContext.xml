@@ -70,6 +70,8 @@
 	<bean id="basesService" class="cz.cuni.mff.xrg.odalic.bases.DefaultBasesService" />
 	<bean id="prefixMappingService"
 		class="cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService" />
+	<bean id="tokenService" class="cz.cuni.mff.xrg.odalic.users.AuthZeroTokenService" />
+	<bean id="userService" class="cz.cuni.mff.xrg.odalic.users.MemoryOnlyUserService" />
 
 	<!-- Resources -->
 	<bean id="configurationResource"
@@ -94,4 +96,5 @@
 	<bean id="entitiesResource"
 		class="cz.cuni.mff.xrg.odalic.api.rest.resources.EntitiesResource" />
 	<bean id="basesResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.BasesResource" />
+	<bean id="userResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.UserResource" />
 </beans>
