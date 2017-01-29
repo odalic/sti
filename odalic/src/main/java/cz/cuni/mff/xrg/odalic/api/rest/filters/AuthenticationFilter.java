@@ -5,6 +5,7 @@ package cz.cuni.mff.xrg.odalic.api.rest.filters;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Set;
 
 import javax.ws.rs.Priorities;
 import javax.annotation.Priority;
@@ -19,6 +20,8 @@ import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
@@ -41,6 +44,7 @@ public final class AuthenticationFilter implements ContainerRequestFilter {
       "Bearer realm=\"Odalic\", error=\"invalid_token\", error_description=\"%s\"";
   private static final String AUTHENTICATION_SCHEME = "Bearer";
   private static final String AUTHENTICATION_SCHEME_DELIMITER = " ";
+  private static final Set<String> SECURE_PROTOCOLS_NAMES = ImmutableSet.of("https");
 
   @Autowired
   private UserService userService;
@@ -70,10 +74,10 @@ public final class AuthenticationFilter implements ContainerRequestFilter {
     try {
       user = userService.validateToken(new Token(token));
     } catch (final Exception e) {
-      requestContext.abortWith(
-          Message.of(e.getMessage()).toResponseBuilder(Response.Status.UNAUTHORIZED, uriInfo)
-              .header(HttpHeaders.WWW_AUTHENTICATE, String.format(CHALLENGE_FORMAT, e.getMessage()))
-              .build());
+      requestContext.abortWith(Message.of("Authentication failed!", e.getMessage())
+          .toResponseBuilder(Response.Status.UNAUTHORIZED, uriInfo)
+          .header(HttpHeaders.WWW_AUTHENTICATE, String.format(CHALLENGE_FORMAT, e.getMessage()))
+          .build());
       return;
     }
 
@@ -99,7 +103,7 @@ public final class AuthenticationFilter implements ContainerRequestFilter {
       @Override
       public boolean isSecure() {
         try {
-          return uriInfo.getRequestUri().toURL().getProtocol().equals("https");
+          return SECURE_PROTOCOLS_NAMES.contains(uriInfo.getRequestUri().toURL().getProtocol());
         } catch (final Exception e) {
           return false;
         }
