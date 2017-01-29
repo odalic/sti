@@ -9,6 +9,8 @@ import java.time.Instant;
 import java.util.Properties;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -34,6 +36,7 @@ public class AuthZeroTokenService implements TokenService {
   private final String issuer;
   private final JWTVerifier verifier;
 
+  @Autowired
   public AuthZeroTokenService(final PropertiesService propertiesService) {
     Preconditions.checkNotNull(propertiesService);
 

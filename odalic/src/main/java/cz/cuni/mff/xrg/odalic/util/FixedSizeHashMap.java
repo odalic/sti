@@ -20,7 +20,7 @@ public final class FixedSizeHashMap<K, V> extends LinkedHashMap<K, V> {
   private void initialize(final int maximumSize) {
     Preconditions.checkArgument(maximumSize >= 1, "The maximum size must be at least one!");
     
-    initialize(maximumSize);
+    this.maximumSize = maximumSize;
   }
   
   public FixedSizeHashMap(final int maximumSize, final int initialCapacity) {
