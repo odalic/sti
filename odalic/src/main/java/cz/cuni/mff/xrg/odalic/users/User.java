@@ -1,10 +1,14 @@
 package cz.cuni.mff.xrg.odalic.users;
 
 import javax.annotation.concurrent.Immutable;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.api.rest.adapters.UserAdapter;
+
 @Immutable
+@XmlJavaTypeAdapter(UserAdapter.class)
 public final class User {
 
   private final String email;

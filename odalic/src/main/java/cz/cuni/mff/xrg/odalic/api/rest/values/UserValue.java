@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.users.Role;
+import cz.cuni.mff.xrg.odalic.users.User;
 
 @XmlRootElement(name = "user")
 public final class UserValue {
@@ -15,6 +16,13 @@ public final class UserValue {
   
   private Role role;
 
+  public UserValue() {}
+  
+  public UserValue(final User adaptee) {
+    this.email = adaptee.getEmail();
+    this.role = adaptee.getRole();
+  }
+  
   /**
    * @return the email
    */
