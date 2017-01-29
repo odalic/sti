@@ -4,6 +4,7 @@
 package cz.cuni.mff.xrg.odalic.api.rest.values.util;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.StateValue;
+import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
 
 /**
@@ -20,27 +21,42 @@ public class States {
    * Queries the execution service and derives the correct {@link StateValue}.
    * 
    * @param executionService task execution service
+   * @param task task
+   * @return state value
+   */
+  public static StateValue queryStateValue(ExecutionService executionService, Task task) {
+    final String userId = task.getOwner().getEmail();
+    final String taskId = task.getId();
+    
+    return queryStateValue(executionService, userId, taskId);
+  }
+  
+  /**
+   * Queries the execution service and derives the correct {@link StateValue}.
+   * 
+   * @param executionService task execution service
+   * @param userId user ID
    * @param taskId task ID
    * @return state value
    */
-  public static StateValue queryStateValue(ExecutionService executionService, String taskId) {
-    final boolean scheduled = executionService.hasBeenScheduledForTaskId(taskId);
+  public static StateValue queryStateValue(ExecutionService executionService, String userId, String taskId) {
+    final boolean scheduled = executionService.hasBeenScheduledForTaskId(userId, taskId);
     if (!scheduled) {
       return StateValue.READY;
     }
     
-    final boolean done = executionService.isDoneForTaskId(taskId);
-    final boolean canceled = executionService.isCanceledForTaskId(taskId);
+    final boolean done = executionService.isDoneForTaskId(userId, taskId);
+    final boolean canceled = executionService.isCanceledForTaskId(userId, taskId);
     
     if (done) {
       if (canceled) {
         return StateValue.READY;
       } else {
-        if (executionService.hasFailedForTasksId(taskId)) {
+        if (executionService.hasFailedForTasksId(userId, taskId)) {
           return StateValue.ERROR;
         }
         
-        if (executionService.isWarnedForTasksId(taskId)) {
+        if (executionService.isWarnedForTasksId(userId, taskId)) {
           return StateValue.WARNING;
         }
         

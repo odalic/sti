@@ -11,6 +11,7 @@ import com.google.common.base.Preconditions;
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.TaskAdapter;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
+import cz.cuni.mff.xrg.odalic.users.User;
 
 /**
  * Task represents the single unit of work done by the Odalic core. Its configuration is
@@ -23,6 +24,8 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 public final class Task implements Serializable {
 
   private static final long serialVersionUID = 1610346823333685091L;
+
+  private final User owner;
 
   private final String id;
 
@@ -37,18 +40,24 @@ public final class Task implements Serializable {
   /**
    * Creates the task instance.
    * 
+   * @param owner owner
    * @param id ID of the task
    * @param description the task description
    * @param created provided time of creation
    * @param configuration configuration of the task
    */
-  public Task(final String id, final String description, final Date created,
+  public Task(final User owner, final String id, final String description, final Date created,
       final Configuration configuration) {
+    Preconditions.checkNotNull(owner);
     Preconditions.checkNotNull(id);
     Preconditions.checkNotNull(description);
     Preconditions.checkNotNull(created);
     Preconditions.checkNotNull(configuration);
 
+    Preconditions.checkArgument(configuration.getInput().getOwner().equals(owner),
+        "The task owner must also own the processed file!");
+
+    this.owner = owner;
     this.id = id;
     this.description = description;
     this.created = created;
@@ -63,8 +72,9 @@ public final class Task implements Serializable {
    * @param description the task description
    * @param configuration configuration of the task
    */
-  public Task(String id, String description, Configuration configuration) {
-    this(id, description, new Date(), configuration);
+  public Task(final User owner, final String id, final String description,
+      final Configuration configuration) {
+    this(owner, id, description, new Date(), configuration);
   }
 
   /**
@@ -79,6 +89,8 @@ public final class Task implements Serializable {
    */
   public void setConfiguration(Configuration configuration) {
     Preconditions.checkNotNull(configuration);
+    Preconditions.checkArgument(configuration.getInput().getOwner().equals(owner),
+        "The task owner must also own the processed file!");
 
     this.configuration = configuration;
   }
@@ -98,8 +110,15 @@ public final class Task implements Serializable {
    */
   public void setInputSnapshot(final Input inputSnapshot) {
     Preconditions.checkNotNull(inputSnapshot);
-    
+
     this.inputSnapshot = inputSnapshot;
+  }
+
+  /**
+   * @return the owner
+   */
+  public User getOwner() {
+    return owner;
   }
 
   /**
@@ -132,7 +151,8 @@ public final class Task implements Serializable {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
+    result = prime * result + owner.hashCode();
+    result = prime * result + id.hashCode();
     return result;
   }
 
@@ -154,11 +174,10 @@ public final class Task implements Serializable {
       return false;
     }
     Task other = (Task) obj;
-    if (id == null) {
-      if (other.id != null) {
-        return false;
-      }
-    } else if (!id.equals(other.id)) {
+    if (!owner.equals(other.owner)) {
+      return false;
+    }
+    if (!id.equals(other.id)) {
       return false;
     }
     return true;
@@ -171,7 +190,7 @@ public final class Task implements Serializable {
    */
   @Override
   public String toString() {
-    return "Task [id=" + id + ", description=" + description + ", created=" + created
-        + ", configuration=" + configuration + ", inputSnapshot=" + inputSnapshot + "]";
+    return "Task [owner=" + owner + ", id=" + id + ", description=" + description + ", created="
+        + created + ", configuration=" + configuration + ", inputSnapshot=" + inputSnapshot + "]";
   }
 }

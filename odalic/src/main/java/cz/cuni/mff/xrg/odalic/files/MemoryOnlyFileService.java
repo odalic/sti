@@ -57,7 +57,7 @@ public final class MemoryOnlyFileService implements FileService {
    */
   @Override
   public void create(File file) {
-    Preconditions.checkArgument(!existsFileWithId(file.getId()));
+    Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
 
     replace(file);
   }
@@ -70,7 +70,7 @@ public final class MemoryOnlyFileService implements FileService {
    */
   @Override
   public void create(File file, InputStream fileInputStream) throws IOException {
-    Preconditions.checkArgument(!existsFileWithId(file.getId()));
+    Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
 
     replace(file, fileInputStream);
   }
@@ -81,12 +81,12 @@ public final class MemoryOnlyFileService implements FileService {
    * @see cz.cuni.mff.xrg.odalic.files.FileService#deleteById(java.lang.String)
    */
   @Override
-  public void deleteById(String id) {
-    Preconditions.checkNotNull(id);
+  public void deleteById(String userId, String fileId) {
+    Preconditions.checkNotNull(fileId);
 
-    checkUtilization(id);
+    checkUtilization(fileId);
 
-    final File file = this.files.remove(id);
+    final File file = this.files.remove(fileId);
     Preconditions.checkArgument(file != null);
 
     this.data.remove(file.getLocation());
@@ -107,10 +107,10 @@ public final class MemoryOnlyFileService implements FileService {
    * @see cz.cuni.mff.xrg.odalic.files.FileService#getById(java.lang.String)
    */
   @Override
-  public File getById(String id) {
-    Preconditions.checkNotNull(id);
+  public File getById(String userId, String fileId) {
+    Preconditions.checkNotNull(fileId);
 
-    final File file = this.files.get(id);
+    final File file = this.files.get(fileId);
     Preconditions.checkArgument(file != null, "File does not exists!");
 
     return file;
@@ -122,7 +122,7 @@ public final class MemoryOnlyFileService implements FileService {
    * @see cz.cuni.mff.xrg.odalic.files.FileService#getFiles()
    */
   @Override
-  public List<File> getFiles() {
+  public List<File> getFiles(String userId) {
     return ImmutableList.copyOf(this.files.values());
   }
 
@@ -162,33 +162,15 @@ public final class MemoryOnlyFileService implements FileService {
    * @see cz.cuni.mff.xrg.odalic.files.FileService#existsFileWithId(java.lang.String)
    */
   @Override
-  public boolean existsFileWithId(String id) {
-    Preconditions.checkNotNull(id);
+  public boolean existsFileWithId(String userId, String fileId) {
+    Preconditions.checkNotNull(fileId);
 
-    return this.files.containsKey(id);
+    return this.files.containsKey(fileId);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#hasId(cz.cuni.mff.xrg.odalic.files.File,
-   * java.lang.String)
-   */
   @Override
-  public boolean hasId(File file, String id) {
-    Preconditions.checkNotNull(id);
-
-    return file.getId().equals(id);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#getDataById(java.lang.String)
-   */
-  @Override
-  public String getDataById(String id) throws IOException {
-    final File file = getById(id);
+  public String getDataById(String userId, String fileId) throws IOException {
+    final File file = getById(userId, fileId);
 
     final byte[] data = this.data.get(file.getLocation());
     final Charset encoding = file.getFormat().getCharset();

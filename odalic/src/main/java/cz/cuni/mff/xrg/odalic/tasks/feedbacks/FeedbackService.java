@@ -13,17 +13,19 @@ import cz.cuni.mff.xrg.odalic.input.Input;
  */
 public interface FeedbackService {
 
-  Feedback getForTaskId(String taskId);
+  Feedback getForTaskId(String userId, String taskId);
 
-  void setForTaskId(String taskId, Feedback feedback);
+  void setForTaskId(String userId, String taskId, Feedback feedback);
 
   /**
    * Get the task input to base the feedback on.
    * 
-   * @param id task ID
+   * @param userId user ID
+   * @param taskId task ID
+   * 
    * @return input used as the basis of feedback
    * @throws IllegalArgumentException when no input for the task exists
    * @throws IOException when I/O exception occurs when reading underlying data
    */
-  Input getInputForTaskId(String id) throws IllegalArgumentException, IOException;
+  Input getInputForTaskId(String userId, String taskId) throws IllegalArgumentException, IOException;
 }

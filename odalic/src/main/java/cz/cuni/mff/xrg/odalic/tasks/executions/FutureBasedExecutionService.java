@@ -65,6 +65,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
   private final CsvInputParser csvInputParser;
   private final InputToTableAdapter inputToTableAdapter;
   private final ExecutorService executorService = Executors.newFixedThreadPool(1);
+  
   private final Map<Task, Future<Result>> tasksToResults = new HashMap<>();
 
   @Autowired
@@ -98,8 +99,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
    * @see cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService#submitForTaskId(java.lang.String)
    */
   @Override
-  public void submitForTaskId(String id) throws IllegalStateException, IOException {
-    final Task task = taskService.getById(id);
+  public void submitForTaskId(String userId, String taskId) throws IllegalStateException, IOException {
+    final Task task = taskService.getById(userId, taskId);
 
     final Future<Result> resultFuture = tasksToResults.get(task);
     Preconditions.checkState(resultFuture == null || resultFuture.isDone());
@@ -108,11 +109,11 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final File file = configuration.getInput();
     final String fileId = file.getId();
 
-    final String data = fileService.getDataById(fileId);
-    final Format format = formatService.getForFileId(fileId);
+    final String data = fileService.getDataById(userId, fileId);
+    final Format format = formatService.getForFileId(userId, fileId);
     
     final ParsingResult parsingResult = csvInputParser.parse(data, fileId, format, configuration.getRowsLimit());
-    formatService.setForFileId(fileId, parsingResult.getFormat());
+    formatService.setForFileId(userId, fileId, parsingResult.getFormat());
     
     final Input input = parsingResult.getInput();
     task.setInputSnapshot(input);
@@ -145,16 +146,10 @@ public final class FutureBasedExecutionService implements ExecutionService {
     tasksToResults.put(task, future);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService#getResultForTaskId(java.lang.String)
-   */
   @Override
-  public Result getResultForTaskId(String id)
+  public Result getResultForTaskId(String userId, String taskId)
       throws InterruptedException, ExecutionException, CancellationException {
-    final Task task = taskService.getById(id);
+    final Task task = taskService.getById(userId, taskId);
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -163,8 +158,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public void cancelForTaskId(String id) {
-    final Task task = taskService.getById(id);
+  public void cancelForTaskId(String userId, String taskId) {
+    final Task task = taskService.getById(userId, taskId);
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -173,8 +168,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public boolean isDoneForTaskId(String id) {
-    final Task task = taskService.getById(id);
+  public boolean isDoneForTaskId(String userId, String taskId) {
+    final Task task = taskService.getById(userId, taskId);
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -183,8 +178,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public boolean isCanceledForTaskId(String id) {
-    final Task task = taskService.getById(id);
+  public boolean isCanceledForTaskId(String userId, String taskId) {
+    final Task task = taskService.getById(userId, taskId);
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -193,25 +188,25 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public boolean hasBeenScheduledForTaskId(String id) {
-    final Task task = taskService.getById(id);
+  public boolean hasBeenScheduledForTaskId(String userId, String taskId) {
+    final Task task = taskService.getById(userId, taskId);
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     return resultFuture != null;
   }
 
   @Override
-  public boolean isSuccessForTasksId(String id) {
-    if (!isDoneForTaskId(id)) {
+  public boolean isSuccessForTasksId(String userId, String taskId) {
+    if (!isDoneForTaskId(userId, taskId)) {
       return false;
     }
 
-    if (isCanceledForTaskId(id)) {
+    if (isCanceledForTaskId(userId, taskId)) {
       return false;
     }
 
     try {
-      final Result result = getResultForTaskId(id);
+      final Result result = getResultForTaskId(userId, taskId);
 
       return result.getWarnings().isEmpty();
     } catch (final InterruptedException | ExecutionException e) {
@@ -220,17 +215,17 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public boolean isWarnedForTasksId(String id) {
-    if (!isDoneForTaskId(id)) {
+  public boolean isWarnedForTasksId(String userId, String taskId) {
+    if (!isDoneForTaskId(userId, taskId)) {
       return false;
     }
 
-    if (isCanceledForTaskId(id)) {
+    if (isCanceledForTaskId(userId, taskId)) {
       return false;
     }
 
     try {
-      final Result result = getResultForTaskId(id);
+      final Result result = getResultForTaskId(userId, taskId);
 
       return !result.getWarnings().isEmpty();
     } catch (final InterruptedException | ExecutionException e) {
@@ -239,17 +234,17 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public boolean hasFailedForTasksId(String id) {
-    if (!isDoneForTaskId(id)) {
+  public boolean hasFailedForTasksId(String userId, String taskId) {
+    if (!isDoneForTaskId(userId, taskId)) {
       return false;
     }
 
-    if (isCanceledForTaskId(id)) {
+    if (isCanceledForTaskId(userId, taskId)) {
       return false;
     }
 
     try {
-      getResultForTaskId(id);
+      getResultForTaskId(userId, taskId);
 
       return false;
     } catch (final InterruptedException | ExecutionException e) {

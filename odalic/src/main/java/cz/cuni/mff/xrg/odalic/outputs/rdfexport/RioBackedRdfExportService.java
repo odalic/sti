@@ -52,24 +52,24 @@ public class RioBackedRdfExportService implements RdfExportService {
    * @see cz.cuni.mff.xrg.odalic.outputs.rdfexport.RdfExportService#exportToTurtle(java.lang.String)
    */
   @Override
-  public String exportToTurtle(String id)
+  public String exportToTurtle(String userId, String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
-    return export(id, RDFFormat.TURTLE);
+    return export(userId, taskId, RDFFormat.TURTLE);
   }
 
   /* (non-Javadoc)
    * @see cz.cuni.mff.xrg.odalic.outputs.rdfexport.RdfExportService#exportToJsonLd(java.lang.String)
    */
   @Override
-  public String exportToJsonLd(String id)
+  public String exportToJsonLd(String userId, String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
-    return export(id, RDFFormat.JSONLD);
+    return export(userId, taskId, RDFFormat.JSONLD);
   }
 
-  private String export(String id, final RDFFormat rdfFormat)
+  private String export(String userId, String taskId, final RDFFormat rdfFormat)
       throws InterruptedException, ExecutionException, IOException {
-    final AnnotatedTable annotatedTable = annotatedTableService.getAnnotatedTableForTaskId(id);
-    final Input extendedInput = csvExportService.getExtendedInputForTaskId(id);
+    final AnnotatedTable annotatedTable = annotatedTableService.getAnnotatedTableForTaskId(userId, taskId);
+    final Input extendedInput = csvExportService.getExtendedInputForTaskId(userId, taskId);
     
     final Model rdfModel = annotatedTableToRdfExportAdapter.toRDFExport(annotatedTable, extendedInput);
     

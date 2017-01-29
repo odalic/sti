@@ -52,7 +52,7 @@ public final class MemoryOnlyTaskService implements TaskService {
    * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getTasks()
    */
   @Override
-  public Set<Task> getTasks() {
+  public Set<Task> getTasks(String userId) {
     return ImmutableSet.copyOf(tasks.values());
   }
 
@@ -62,10 +62,10 @@ public final class MemoryOnlyTaskService implements TaskService {
    * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getById(java.lang.String)
    */
   @Override
-  public Task getById(String id) {
-    Preconditions.checkNotNull(id);
+  public Task getById(String userId, String taskId) {
+    Preconditions.checkNotNull(taskId);
 
-    Task task = tasks.get(id);
+    Task task = tasks.get(taskId);
     Preconditions.checkArgument(task != null);
 
     return task;
@@ -77,10 +77,10 @@ public final class MemoryOnlyTaskService implements TaskService {
    * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#deleteById(java.lang.String)
    */
   @Override
-  public void deleteById(String id) {
-    Preconditions.checkNotNull(id);
+  public void deleteById(String userId, String taskId) {
+    Preconditions.checkNotNull(taskId);
 
-    final Task task = tasks.remove(id);
+    final Task task = tasks.remove(taskId);
     Preconditions.checkArgument(task != null);
     
     final Configuration configuration = task.getConfiguration();
@@ -94,11 +94,11 @@ public final class MemoryOnlyTaskService implements TaskService {
    */
   @Override
   @Nullable
-  public Task verifyTaskExistenceById(String id) {
-    Preconditions.checkNotNull(id);
+  public Task verifyTaskExistenceById(String userId, String taskId) {
+    Preconditions.checkNotNull(taskId);
 
-    if (tasks.containsKey(id)) {
-      return tasks.get(id);
+    if (tasks.containsKey(taskId)) {
+      return tasks.get(taskId);
     } else {
       return null;
     }
@@ -112,7 +112,7 @@ public final class MemoryOnlyTaskService implements TaskService {
   @Override
   public void create(final Task task) {
     Preconditions.checkNotNull(task);
-    Preconditions.checkArgument(verifyTaskExistenceById(task.getId()) == null);
+    Preconditions.checkArgument(verifyTaskExistenceById(task.getOwner().getEmail(), task.getId()) == null);
 
     replace(task);
   }
@@ -140,13 +140,13 @@ public final class MemoryOnlyTaskService implements TaskService {
   }
 
   @Override
-  public NavigableSet<Task> getTasksSortedByIdInAscendingOrder() {
+  public NavigableSet<Task> getTasksSortedByIdInAscendingOrder(String userId) {
     return ImmutableSortedSet.copyOf(
         (Task first, Task second) -> first.getId().compareTo(second.getId()), tasks.values());
   }
 
   @Override
-  public NavigableSet<Task> getTasksSortedByCreatedInDescendingOrder() {
+  public NavigableSet<Task> getTasksSortedByCreatedInDescendingOrder(String userId) {
     return ImmutableSortedSet.copyOf(
         (Task first, Task second) -> -1 * first.getCreated().compareTo(second.getCreated()),
         tasks.values());

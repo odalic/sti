@@ -13,27 +13,29 @@ import java.util.concurrent.ExecutionException;
 public interface RdfExportService {
   /**
    * Serializes the task result.
+   * @param userId user ID
+   * @param taskId task ID
    * 
-   * @param id task ID
    * @return serialized RDF
    * @throws InterruptedException if the execution was interrupted while waiting
    * @throws ExecutionException if the computation threw an exception
    * @throws CancellationException if the computation was cancelled
    * @throws IOException if an I/O exception occurs when creating the output content
    */
-  String exportToTurtle(String id)
+  String exportToTurtle(String userId, String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException;
   
   /**
    * Serializes the task result.
+   * @param userId user ID
+   * @param taskId task ID
    * 
-   * @param id task ID
    * @return serialized RDF
    * @throws InterruptedException if the execution was interrupted while waiting
    * @throws ExecutionException if the computation threw an exception
    * @throws CancellationException if the computation was cancelled
    * @throws IOException if an I/O exception occurs when creating the output content
    */
-  String exportToJsonLd(String id)
+  String exportToJsonLd(String userId, String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException;
 }

@@ -55,6 +55,8 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefi
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.results.DefaultAnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
+import cz.cuni.mff.xrg.odalic.users.Role;
+import cz.cuni.mff.xrg.odalic.users.User;
 import cz.cuni.mff.xrg.odalic.util.configuration.DefaultPropertiesService;
 
 public class CoreExecutionBatch {
@@ -96,11 +98,13 @@ public class CoreExecutionBatch {
   }
 
   public static Task testCoreSettings(Path path) {
+    final User user = new User("test@odalic.eu", "hased-password", Role.USER);
+    
     final String fileId = path.getFileName().toString();
 
     // File settings
     try {
-      final File file = new File(fileId, "", path.toUri().toURL(), new Format(), true);
+      final File file = new File(user, fileId, path.toUri().toURL(), new Format(), true);
       files.put(file.getId(), file);
       data.put(file.getLocation(),
           IOUtils.toByteArray(new FileInputStream(file.getLocation().getFile())));
@@ -113,7 +117,7 @@ public class CoreExecutionBatch {
     files.get(fileId).setFormat(new Format(StandardCharsets.UTF_8, ';', true, null, null, null));
 
     // Task settings
-    return new Task("simple_task", "task description", new Configuration(files.get(fileId),
+    return new Task(user, "simple_task", "task description", new Configuration(files.get(fileId),
         new KnowledgeBase("DBpedia"), createFeedback(true), Integer.MAX_VALUE));
   }
 

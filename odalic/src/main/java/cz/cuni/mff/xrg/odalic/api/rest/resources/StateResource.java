@@ -8,6 +8,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,13 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
+import cz.cuni.mff.xrg.odalic.api.rest.util.Security;
 import cz.cuni.mff.xrg.odalic.api.rest.values.StateValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.util.States;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
+import cz.cuni.mff.xrg.odalic.users.Role;
 
 /**
  * State resource definition.
@@ -27,10 +31,12 @@ import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
  *
  */
 @Component
-@Path("/tasks/{id}/state")
 public final class StateResource {
 
   private final ExecutionService executionService;
+  
+  @Context
+  private SecurityContext securityContext;
 
   @Context
   private UriInfo uriInfo;
@@ -43,11 +49,15 @@ public final class StateResource {
   }
 
   @GET
+  @Path("/users/{userId}/tasks/{id}/state")
+  @Secured({Role.ADMINISTRATOR, Role.USER})
   @Produces({MediaType.APPLICATION_JSON})
-  public Response getStateForTaskId(@PathParam("id") String id) {
+  public Response getStateForTaskId(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId) {
+    Security.checkAuthorization(securityContext, userId);
+    
     final StateValue state;
     try {
-      state = States.queryStateValue(executionService, id);
+      state = States.queryStateValue(executionService, userId, taskId);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("The task does not exist!", e);
     }

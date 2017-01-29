@@ -11,17 +11,17 @@ import java.util.Set;
  */
 public interface TaskService {
 
-  Set<Task> getTasks();
+  Set<Task> getTasks(String userId);
   
-  NavigableSet<Task> getTasksSortedByIdInAscendingOrder();
+  NavigableSet<Task> getTasksSortedByIdInAscendingOrder(String userId);
   
-  NavigableSet<Task> getTasksSortedByCreatedInDescendingOrder();
+  NavigableSet<Task> getTasksSortedByCreatedInDescendingOrder(String userId);
 
-  Task getById(String id);
+  Task getById(String userId, String taskId);
 
-  void deleteById(String id);
+  void deleteById(String userId, String taskId);
 
-  Task verifyTaskExistenceById(String id);
+  Task verifyTaskExistenceById(String userId, String taskId);
 
   void create(Task task);
 

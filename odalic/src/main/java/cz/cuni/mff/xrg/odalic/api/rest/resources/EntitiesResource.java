@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
 import cz.cuni.mff.xrg.odalic.entities.ClassProposal;
 import cz.cuni.mff.xrg.odalic.entities.EntitiesService;
@@ -22,6 +23,7 @@ import cz.cuni.mff.xrg.odalic.entities.PropertyProposal;
 import cz.cuni.mff.xrg.odalic.entities.ResourceProposal;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.users.Role;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.sti.STIException;
 
@@ -33,6 +35,7 @@ import uk.ac.shef.dcs.sti.STIException;
  */
 @Component
 @Path("{base}/entities")
+@Secured({Role.ADMINISTRATOR, Role.USER})
 public final class EntitiesResource {
 
   private final EntitiesService entitiesService;
