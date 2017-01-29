@@ -15,7 +15,7 @@ public final class ScryptPasswordHashingService implements PasswordHashingServic
   public static final int SCRYPT_R_PARAMTER = 8;
   public static final int SCRYPT_P_PARAMETER = 1;
 
-  private ScryptPasswordHashingService() {}
+  public ScryptPasswordHashingService() {}
 
   /*
    * (non-Javadoc)
