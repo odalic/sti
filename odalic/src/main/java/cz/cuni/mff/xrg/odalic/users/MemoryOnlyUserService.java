@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 
 import cz.cuni.mff.xrg.odalic.util.FixedSizeHashMap;
@@ -449,5 +451,10 @@ public final class MemoryOnlyUserService implements UserService {
     Preconditions.checkArgument(user != null);
 
     return user;
+  }
+
+  @Override
+  public NavigableSet<User> getUsers() {
+    return ImmutableSortedSet.copyOf(this.userIdsToUsers.values());
   }
 }

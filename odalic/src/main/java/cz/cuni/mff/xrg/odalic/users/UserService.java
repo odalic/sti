@@ -1,5 +1,7 @@
 package cz.cuni.mff.xrg.odalic.users;
 
+import java.util.NavigableSet;
+
 public interface UserService {
   void signUp(Credentials credentials);
   
@@ -18,4 +20,6 @@ public interface UserService {
   User validateToken(Token token);
 
   User getUser(String id);
+
+  NavigableSet<User> getUsers();
 }

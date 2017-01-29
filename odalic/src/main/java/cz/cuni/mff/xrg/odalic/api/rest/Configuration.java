@@ -55,6 +55,7 @@ public final class Configuration extends ResourceConfig {
     register(FormatResource.class);
     register(SignUpResource.class);
     register(AuthenticationResource.class);
+    register(UserResource.class);
 
     // Filters registration
     register(RequestContextFilter.class);
