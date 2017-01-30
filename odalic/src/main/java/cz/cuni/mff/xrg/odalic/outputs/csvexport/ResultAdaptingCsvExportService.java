@@ -73,20 +73,20 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
    * String)
    */
   @Override
-  public String getExtendedCsvForTaskId(String id)
+  public String getExtendedCsvForTaskId(String userId, String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
-    final Input output = getExtendedInputForTaskId(id);
-    final Format originalFormat = getOriginalFormat(id);
+    final Input output = getExtendedInputForTaskId(userId, taskId);
+    final Format originalFormat = getOriginalFormat(userId, taskId);
 
     final String data = csvExporter.export(output, originalFormat);
 
     return data;
   }
 
-  private Format getOriginalFormat(String taskId) {
-    final Configuration configuration = configurationService.getForTaskId(taskId);
+  private Format getOriginalFormat(String userId, String taskId) {
+    final Configuration configuration = configurationService.getForTaskId(userId, taskId);
     final File file = configuration.getInput();
-    final Format format = formatService.getForFileId(file.getId());
+    final Format format = formatService.getForFileId(userId, file.getId());
     return format;
   }
 
@@ -98,11 +98,11 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
    * String)
    */
   @Override
-  public Input getExtendedInputForTaskId(String id)
+  public Input getExtendedInputForTaskId(String userId, String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
-    final Result result = executionService.getResultForTaskId(id);
-    final Input input = feedbackService.getInputForTaskId(id);
-    final Configuration configuration = configurationService.getForTaskId(id);
+    final Result result = executionService.getResultForTaskId(userId, taskId);
+    final Input input = feedbackService.getInputForTaskId(userId, taskId);
+    final Configuration configuration = configurationService.getForTaskId(userId, taskId);
 
     final Input output = resultToCsvExportAdapter.toCSVExport(result, input, configuration);
 

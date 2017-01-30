@@ -1,5 +1,7 @@
 package cz.cuni.mff.xrg.odalic.tasks.configurations;
 
+import javax.ws.rs.BadRequestException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
@@ -24,8 +26,8 @@ public final class MemoryOnlyConfigurationService implements ConfigurationServic
    * cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService#getForTaskId(java.lang.String)
    */
   @Override
-  public Configuration getForTaskId(String taskId) {
-    final Task task = taskService.getById(taskId);
+  public Configuration getForTaskId(String userId, String taskId) {
+    final Task task = taskService.getById(userId, taskId);
 
     return task.getConfiguration();
   }
@@ -35,11 +37,14 @@ public final class MemoryOnlyConfigurationService implements ConfigurationServic
    * @param configuration
    */
   @Override
-  public void setForTaskId(final String taskId, final Configuration configuration) {
-    final Task task = taskService.getById(taskId);
+  public void setForTaskId(String userId, final String taskId, final Configuration configuration) {
+    final Task task = taskService.getById(userId, taskId);
 
-    taskService
-        .replace(new Task(task.getId(), task.getDescription(), task.getCreated(), configuration));
+    try {
+      taskService.replace(new Task(task.getOwner(), task.getId(), task.getDescription(), task.getCreated(), configuration));
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e);
+    }
   }
 
   @Autowired

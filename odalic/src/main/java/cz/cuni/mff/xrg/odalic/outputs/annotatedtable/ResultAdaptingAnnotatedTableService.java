@@ -53,19 +53,15 @@ public final class ResultAdaptingAnnotatedTableService implements AnnotatedTable
     this.resultToAnnotatedTableAdapter = resultToAnnotatedTableAdapter;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTableService#getAnnotatedTableForTaskId(
-   * java.lang.String)
+  /* (non-Javadoc)
+   * @see cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTableService#getAnnotatedTableForTaskId(java.lang.String, java.lang.String)
    */
   @Override
-  public AnnotatedTable getAnnotatedTableForTaskId(String id)
+  public AnnotatedTable getAnnotatedTableForTaskId(final String userId, final String taskId)
       throws IllegalArgumentException, CancellationException, InterruptedException, ExecutionException, IOException {
-    final Result result = executionService.getResultForTaskId(id);
-    final Input input = feedbackService.getInputForTaskId(id);
-    final Configuration configuration = configurationService.getForTaskId(id);
+    final Result result = executionService.getResultForTaskId(userId, taskId);
+    final Input input = feedbackService.getInputForTaskId(userId, taskId);
+    final Configuration configuration = configurationService.getForTaskId(userId, taskId);
 
     return resultToAnnotatedTableAdapter.toAnnotatedTable(result, input, configuration);
   }

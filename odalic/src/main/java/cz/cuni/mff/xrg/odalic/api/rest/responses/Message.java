@@ -127,4 +127,13 @@ public final class Message {
 
     return toResponseBuilder(statusType, uriInfo).header(LOCATION_HEADER_NAME, location).build();
   }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "Message [text=" + text + ", additionalResources=" + additionalResources
+        + ", debugContent=" + debugContent + "]";
+  }
 }

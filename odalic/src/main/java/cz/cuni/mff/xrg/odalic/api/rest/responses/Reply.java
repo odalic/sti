@@ -36,7 +36,7 @@ import cz.cuni.mff.xrg.odalic.util.URL;
  * @author Václav Brodec
  *
  */
-@XmlRootElement
+@XmlRootElement(name = "reply")
 public final class Reply {
 
   /**
@@ -45,19 +45,12 @@ public final class Reply {
    */
   public static final String STAMP_QUERY_PARAMETER_NAME = "stamp";
 
-  @XmlElement
-  @JsonSerialize(using = StatusTypeJsonSerializer.class)
-  @JsonDeserialize(using = StatusTypeJsonDeserializer.class)
   private final StatusType status;
 
-  @XmlElement
   private final ReplyType type;
 
-  @XmlElement
   private final Object payload;
 
-  @XmlElement
-  @Nullable
   private final String stamp;
 
   @XmlTransient
@@ -102,6 +95,9 @@ public final class Reply {
   /**
    * @return the status
    */
+  @XmlElement
+  @JsonSerialize(using = StatusTypeJsonSerializer.class)
+  @JsonDeserialize(using = StatusTypeJsonDeserializer.class)
   public StatusType getStatus() {
     return status;
   }
@@ -109,6 +105,7 @@ public final class Reply {
   /**
    * @return the type
    */
+  @XmlElement
   public ReplyType getType() {
     return type;
   }
@@ -116,6 +113,7 @@ public final class Reply {
   /**
    * @return the payload
    */
+  @XmlElement
   public Object getPayload() {
     return payload;
   }
@@ -123,6 +121,7 @@ public final class Reply {
   /**
    * @return the stamp
    */
+  @XmlElement
   @Nullable
   public Object getStamp() {
     return stamp;

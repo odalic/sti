@@ -11,16 +11,19 @@ public interface FormatService {
   /**
    * Gets the file format.
    * 
+   * @param userId user ID
    * @param fileId file ID
+   * 
    * @return CSV file format
    */
-  Format getForFileId(String fileId);
+  Format getForFileId(String userId, String fileId);
 
   /**
    * Sets the file format.
    * 
+   * @param userId user ID
    * @param fileId file ID
    * @param format CSV file format
    */
-  void setForFileId(String fileId, Format format);
+  void setForFileId(String userId, String fileId, Format format);
 }

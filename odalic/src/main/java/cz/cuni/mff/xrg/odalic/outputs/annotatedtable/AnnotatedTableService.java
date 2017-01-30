@@ -16,13 +16,14 @@ public interface AnnotatedTableService {
   /**
    * Get the result of the task in the form of {@link AnnotatedTable}. 
    * 
-   * @param id task ID
+   * @param userId user ID 
+   * @param taskId task ID
    * @return annotations
    * @throws InterruptedException if the execution was interrupted while waiting
    * @throws ExecutionException if the computation threw an exception
    * @throws CancellationException  if the computation was cancelled
    * @throws IOException if an I/O exception occurs when reading underlying data
    */
-  AnnotatedTable getAnnotatedTableForTaskId(String id)
+  AnnotatedTable getAnnotatedTableForTaskId(String userId, String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException;
 }

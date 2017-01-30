@@ -56,7 +56,7 @@ import uk.ac.shef.dcs.sti.core.model.Table;
 public final class FutureBasedExecutionService implements ExecutionService {
 
   private static final Logger logger = LoggerFactory.getLogger(FutureBasedExecutionService.class);
-  
+
   private final TaskService taskService;
   private final FileService fileService;
   private final FormatService formatService;
@@ -66,6 +66,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
   private final CsvInputParser csvInputParser;
   private final InputToTableAdapter inputToTableAdapter;
   private final ExecutorService executorService = Executors.newFixedThreadPool(1);
+
   private final Map<Task, Future<Result>> tasksToResults = new HashMap<>();
 
   @Autowired
@@ -99,51 +100,54 @@ public final class FutureBasedExecutionService implements ExecutionService {
    * @see cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService#submitForTaskId(java.lang.String)
    */
   @Override
-  public void submitForTaskId(String id) throws IllegalStateException, IOException {
-    final Task task = taskService.getById(id);
-    
+  public void submitForTaskId(String userId, String taskId)
+      throws IllegalStateException, IOException {
+    final Task task = taskService.getById(userId, taskId);
+
     checkNotAlreadyScheduled(task);
 
     final Configuration configuration = task.getConfiguration();
-    
+
     final String fileId = configuration.getInput().getId();
     final Feedback feedback = configuration.getFeedback();
     final Set<KnowledgeBase> usedBases = configuration.getUsedBases();
     final int rowsLimit = configuration.getRowsLimit();
 
-    final ParsingResult parsingResult = parse(fileId, rowsLimit);
+    final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
     final Input input = parsingResult.getInput();
-    
+
     task.setInputSnapshot(input);
-    
+
     final Callable<Result> execution = () -> {
       try {
         final Table table = inputToTableAdapter.toTable(input);
         final boolean isStatistical = configuration.isStatistical();
-  
+
         final Map<String, SemanticTableInterpreter> interpreters =
             semanticTableInterpreterFactory.getInterpreters();
-        
+
         final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
-        
-        for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters.entrySet()) {
+
+        for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters
+            .entrySet()) {
           final KnowledgeBase base = new KnowledgeBase(interpreterEntry.getKey());
           if (!usedBases.contains(base)) {
             continue;
           }
-          
-          final Constraints constraints = feedbackToConstraintsAdapter.toConstraints(feedback, base);
+
+          final Constraints constraints =
+              feedbackToConstraintsAdapter.toConstraints(feedback, base);
           final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
-          
+
           final TAnnotation annotationResult = interpreter.start(table, isStatistical, constraints);
-          
+
           results.put(base, annotationResult);
         }
-        
+
         return annotationResultAdapter.toResult(results);
       } catch (final Exception e) {
         logger.error("Error during task execution!", e);
-        
+
         throw e;
       }
     };
@@ -152,13 +156,14 @@ public final class FutureBasedExecutionService implements ExecutionService {
     tasksToResults.put(task, future);
   }
 
-  private ParsingResult parse(final String fileId, final int rowsLimit) throws IOException {
-    final String data = fileService.getDataById(fileId);
-    final Format format = formatService.getForFileId(fileId);
-    
+  private ParsingResult parse(final String userId, final String fileId, final int rowsLimit)
+      throws IOException {
+    final String data = fileService.getDataById(userId, fileId);
+    final Format format = formatService.getForFileId(userId, fileId);
+
     final ParsingResult result = csvInputParser.parse(data, fileId, format, rowsLimit);
-    formatService.setForFileId(fileId, result.getFormat());
-    
+    formatService.setForFileId(userId, fileId, result.getFormat());
+
     return result;
   }
 
@@ -166,11 +171,11 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final Future<Result> resultFuture = tasksToResults.get(task);
     Preconditions.checkState(resultFuture == null || resultFuture.isDone());
   }
-  
+
 
   @Override
-  public void unscheduleForTaskId(String id) {
-    final Task task = taskService.getById(id);
+  public void unscheduleForTaskId(String userId, String fileId) {
+    final Task task = taskService.getById(userId, fileId);
     final Future<Result> resultFuture = tasksToResults.remove(task);
     if (resultFuture == null) {
       return;
@@ -179,16 +184,10 @@ public final class FutureBasedExecutionService implements ExecutionService {
     resultFuture.cancel(false);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService#getResultForTaskId(java.lang.String)
-   */
   @Override
-  public Result getResultForTaskId(String id)
+  public Result getResultForTaskId(String userId, String taskId)
       throws InterruptedException, ExecutionException, CancellationException {
-    final Task task = taskService.getById(id);
+    final Task task = taskService.getById(userId, taskId);
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -197,8 +196,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public void cancelForTaskId(String id) {
-    final Task task = taskService.getById(id);
+  public void cancelForTaskId(String userId, String taskId) {
+    final Task task = taskService.getById(userId, taskId);
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -207,8 +206,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public boolean isDoneForTaskId(String id) {
-    final Task task = taskService.getById(id);
+  public boolean isDoneForTaskId(String userId, String taskId) {
+    final Task task = taskService.getById(userId, taskId);
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -217,8 +216,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public boolean isCanceledForTaskId(String id) {
-    final Task task = taskService.getById(id);
+  public boolean isCanceledForTaskId(String userId, String taskId) {
+    final Task task = taskService.getById(userId, taskId);
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -227,25 +226,25 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public boolean hasBeenScheduledForTaskId(String id) {
-    final Task task = taskService.getById(id);
+  public boolean hasBeenScheduledForTaskId(String userId, String taskId) {
+    final Task task = taskService.getById(userId, taskId);
     final Future<Result> resultFuture = tasksToResults.get(task);
 
     return resultFuture != null;
   }
 
   @Override
-  public boolean isSuccessForTasksId(String id) {
-    if (!isDoneForTaskId(id)) {
+  public boolean isSuccessForTasksId(String userId, String taskId) {
+    if (!isDoneForTaskId(userId, taskId)) {
       return false;
     }
 
-    if (isCanceledForTaskId(id)) {
+    if (isCanceledForTaskId(userId, taskId)) {
       return false;
     }
 
     try {
-      final Result result = getResultForTaskId(id);
+      final Result result = getResultForTaskId(userId, taskId);
 
       return result.getWarnings().isEmpty();
     } catch (final InterruptedException | ExecutionException e) {
@@ -254,17 +253,17 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public boolean isWarnedForTasksId(String id) {
-    if (!isDoneForTaskId(id)) {
+  public boolean isWarnedForTasksId(String userId, String taskId) {
+    if (!isDoneForTaskId(userId, taskId)) {
       return false;
     }
 
-    if (isCanceledForTaskId(id)) {
+    if (isCanceledForTaskId(userId, taskId)) {
       return false;
     }
 
     try {
-      final Result result = getResultForTaskId(id);
+      final Result result = getResultForTaskId(userId, taskId);
 
       return !result.getWarnings().isEmpty();
     } catch (final InterruptedException | ExecutionException e) {
@@ -273,17 +272,17 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   @Override
-  public boolean hasFailedForTasksId(String id) {
-    if (!isDoneForTaskId(id)) {
+  public boolean hasFailedForTasksId(String userId, String taskId) {
+    if (!isDoneForTaskId(userId, taskId)) {
       return false;
     }
 
-    if (isCanceledForTaskId(id)) {
+    if (isCanceledForTaskId(userId, taskId)) {
       return false;
     }
 
     try {
-      getResultForTaskId(id);
+      getResultForTaskId(userId, taskId);
 
       return false;
     } catch (final InterruptedException | ExecutionException e) {

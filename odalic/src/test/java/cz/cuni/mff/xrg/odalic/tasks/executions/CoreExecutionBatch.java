@@ -60,6 +60,9 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefi
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.results.DefaultAnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
+import cz.cuni.mff.xrg.odalic.users.Role;
+import cz.cuni.mff.xrg.odalic.users.User;
+import cz.cuni.mff.xrg.odalic.util.configuration.DefaultPropertiesService;
 
 public class CoreExecutionBatch {
 
@@ -99,11 +102,13 @@ public class CoreExecutionBatch {
   }
 
   public static Task testCoreSettings(Path path) {
+    final User user = new User("test@odalic.eu", "hased-password", Role.USER);
+    
     final String fileId = path.getFileName().toString();
 
     // File settings
     try {
-      final File file = new File(fileId, "", path.toUri().toURL(), new Format(), true);
+      final File file = new File(user, fileId, path.toUri().toURL(), new Format(), true);
       files.put(file.getId(), file);
       data.put(file.getLocation(),
           IOUtils.toByteArray(new FileInputStream(file.getLocation().getFile())));
@@ -116,7 +121,7 @@ public class CoreExecutionBatch {
     files.get(fileId).setFormat(new Format(StandardCharsets.ISO_8859_1, ';', true, '"', null, null));
 
     // Task settings
-    Task task = new Task("simple_task", "task description",
+    Task task = new Task(user, "simple_task", "task description",
         new Configuration(files.get(fileId), ImmutableSet.of(new KnowledgeBase("DBpedia"),
             new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")),
             new KnowledgeBase("DBpedia"), createFeedback(false), null, true));
@@ -190,7 +195,7 @@ public class CoreExecutionBatch {
     // PrefixMappingService
     TurtleConfigurablePrefixMappingService pms;
     try {
-      pms = new TurtleConfigurablePrefixMappingService();
+      pms = new TurtleConfigurablePrefixMappingService(new DefaultPropertiesService());
     } catch (IOException e) {
       log.error("Error - prefix mapping service loading:", e);
       return null;

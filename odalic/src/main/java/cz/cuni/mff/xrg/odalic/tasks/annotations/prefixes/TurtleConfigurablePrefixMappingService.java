@@ -12,9 +12,12 @@ import java.util.Properties;
 import org.apache.jena.atlas.lib.Trie;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
+import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
 import uk.ac.shef.dcs.util.StringUtils;
 
 /**
@@ -28,7 +31,6 @@ public final class TurtleConfigurablePrefixMappingService implements PrefixMappi
 
   private static final String BASE_PATH_CONFIGURATION_KEY = "sti.home";
   private static final String MAPPING_LANGUAGE = "TURTLE";
-  private static final String CONFIGURATION_PATH_SYSTEM_PROPERTY_KEY = "cz.cuni.mff.xrg.odalic.sti";
   private static final String PREFIX_MAPPING_PATH_CONFIGURATION_KEY =
       "cz.cuni.mff.xrg.odalic.prefixes";
 
@@ -42,22 +44,14 @@ public final class TurtleConfigurablePrefixMappingService implements PrefixMappi
    * @throws FileNotFoundException when the mapping describing the mapping could not be loaded
    * 
    */
-  public TurtleConfigurablePrefixMappingService() throws FileNotFoundException, IOException {
-    this(readFromConfiguration());
+  @Autowired
+  public TurtleConfigurablePrefixMappingService(final PropertiesService configurationService) throws FileNotFoundException, IOException {
+    this(readFromConfiguration(configurationService));
   }
 
-  private static Map<String, String> readFromConfiguration()
+  private static Map<String, String> readFromConfiguration(final PropertiesService configurationService)
       throws IOException, FileNotFoundException {
-    final String configurationPath = System.getProperty(CONFIGURATION_PATH_SYSTEM_PROPERTY_KEY);
-    if (configurationPath == null) {
-      throw new IllegalArgumentException(String.format("System property %s not provided!",
-          CONFIGURATION_PATH_SYSTEM_PROPERTY_KEY));
-    }
-
-    final Properties properties = new Properties();
-    try (final FileInputStream configurationStream = new FileInputStream(configurationPath)) {
-      properties.load(new FileInputStream(configurationPath));
-    }
+    final Properties properties = configurationService.get();
 
     final String basePath = properties.getProperty(BASE_PATH_CONFIGURATION_KEY);
     if (basePath == null) {

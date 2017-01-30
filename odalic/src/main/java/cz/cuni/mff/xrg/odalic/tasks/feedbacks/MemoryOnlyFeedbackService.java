@@ -35,16 +35,16 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
   }
 
   @Override
-  public Feedback getForTaskId(String taskId) {
-    final Configuration configuration = configurationService.getForTaskId(taskId);
+  public Feedback getForTaskId(String userId, String taskId) {
+    final Configuration configuration = configurationService.getForTaskId(userId, taskId);
 
     return configuration.getFeedback();
   }
 
   @Override
-  public void setForTaskId(String taskId, Feedback feedback) {
-    final Configuration oldConfiguration = configurationService.getForTaskId(taskId);
-    configurationService.setForTaskId(taskId,
+  public void setForTaskId(String userId, String taskId, Feedback feedback) {
+    final Configuration oldConfiguration = configurationService.getForTaskId(userId, taskId);
+    configurationService.setForTaskId(userId, taskId,
         new Configuration(oldConfiguration.getInput(), oldConfiguration.getUsedBases(),
             oldConfiguration.getPrimaryBase(), feedback, oldConfiguration.getRowsLimit(),
             oldConfiguration.isStatistical()));
@@ -56,8 +56,9 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
    * @see cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService#getInputForTaskId(java.lang.String)
    */
   @Override
-  public Input getInputForTaskId(String taskId) throws IllegalArgumentException, IOException {
-    final Task task = taskService.getById(taskId);
+  public Input getInputForTaskId(String userId, String taskId)
+      throws IllegalArgumentException, IOException {
+    final Task task = taskService.getById(userId, taskId);
 
     return task.getInputSnapshot();
   }

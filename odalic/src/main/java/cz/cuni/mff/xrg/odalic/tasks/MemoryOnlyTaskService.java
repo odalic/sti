@@ -1,7 +1,5 @@
 package cz.cuni.mff.xrg.odalic.tasks;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
 
@@ -11,7 +9,9 @@ import org.apache.jena.ext.com.google.common.collect.ImmutableSortedSet;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Table;
 
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
@@ -28,9 +28,13 @@ public final class MemoryOnlyTaskService implements TaskService {
 
   private final FileService fileService;
 
-  private final Map<String, Task> tasks;
+  /**
+   * Table of tasks where rows are indexed by user IDs and the columns by task IDs.
+   */
+  private final Table<String, String, Task> tasks;
 
-  private MemoryOnlyTaskService(final FileService fileService, final Map<String, Task> tasks) {
+  private MemoryOnlyTaskService(final FileService fileService,
+      final Table<String, String, Task> tasks) {
     Preconditions.checkNotNull(fileService);
     Preconditions.checkNotNull(tasks);
 
@@ -43,7 +47,7 @@ public final class MemoryOnlyTaskService implements TaskService {
    */
   @Autowired
   public MemoryOnlyTaskService(final FileService fileService) {
-    this(fileService, new HashMap<>());
+    this(fileService, HashBasedTable.create());
   }
 
   /*
@@ -52,8 +56,8 @@ public final class MemoryOnlyTaskService implements TaskService {
    * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getTasks()
    */
   @Override
-  public Set<Task> getTasks() {
-    return ImmutableSet.copyOf(tasks.values());
+  public Set<Task> getTasks(String userId) {
+    return ImmutableSet.copyOf(tasks.row(userId).values());
   }
 
   /*
@@ -62,10 +66,11 @@ public final class MemoryOnlyTaskService implements TaskService {
    * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getById(java.lang.String)
    */
   @Override
-  public Task getById(String id) {
-    Preconditions.checkNotNull(id);
+  public Task getById(String userId, String taskId) {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(taskId);
 
-    Task task = tasks.get(id);
+    final Task task = tasks.get(userId, taskId);
     Preconditions.checkArgument(task != null);
 
     return task;
@@ -77,12 +82,13 @@ public final class MemoryOnlyTaskService implements TaskService {
    * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#deleteById(java.lang.String)
    */
   @Override
-  public void deleteById(String id) {
-    Preconditions.checkNotNull(id);
+  public void deleteById(String userId, String taskId) {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(taskId);
 
-    final Task task = tasks.remove(id);
+    final Task task = tasks.remove(userId, taskId);
     Preconditions.checkArgument(task != null);
-    
+
     final Configuration configuration = task.getConfiguration();
     fileService.unsubscribe(configuration.getInput(), task);
   }
@@ -94,11 +100,12 @@ public final class MemoryOnlyTaskService implements TaskService {
    */
   @Override
   @Nullable
-  public Task verifyTaskExistenceById(String id) {
-    Preconditions.checkNotNull(id);
+  public Task verifyTaskExistenceById(String userId, String taskId) {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(taskId);
 
-    if (tasks.containsKey(id)) {
-      return tasks.get(id);
+    if (tasks.contains(userId, taskId)) {
+      return tasks.get(userId, taskId);
     } else {
       return null;
     }
@@ -112,7 +119,8 @@ public final class MemoryOnlyTaskService implements TaskService {
   @Override
   public void create(final Task task) {
     Preconditions.checkNotNull(task);
-    Preconditions.checkArgument(verifyTaskExistenceById(task.getId()) == null);
+    Preconditions
+        .checkArgument(verifyTaskExistenceById(task.getOwner().getEmail(), task.getId()) == null);
 
     replace(task);
   }
@@ -125,28 +133,28 @@ public final class MemoryOnlyTaskService implements TaskService {
   @Override
   public void replace(final Task task) {
     Preconditions.checkNotNull(task);
-    
-    final Task previous = tasks.put(task.getId(), task);
+
+    final Task previous = tasks.put(task.getOwner().getEmail(), task.getId(), task);
     if (previous != null) {
       final Configuration previousConfiguration = previous.getConfiguration();
       final File previousInput = previousConfiguration.getInput();
-      
+
       fileService.unsubscribe(previousInput, previous);
     }
-    
+
     final Configuration configuration = task.getConfiguration();
     final File input = configuration.getInput();
     fileService.subscribe(input, task);
   }
 
   @Override
-  public NavigableSet<Task> getTasksSortedByIdInAscendingOrder() {
+  public NavigableSet<Task> getTasksSortedByIdInAscendingOrder(String userId) {
     return ImmutableSortedSet.copyOf(
         (Task first, Task second) -> first.getId().compareTo(second.getId()), tasks.values());
   }
 
   @Override
-  public NavigableSet<Task> getTasksSortedByCreatedInDescendingOrder() {
+  public NavigableSet<Task> getTasksSortedByCreatedInDescendingOrder(String userId) {
     return ImmutableSortedSet.copyOf(
         (Task first, Task second) -> -1 * first.getCreated().compareTo(second.getCreated()),
         tasks.values());

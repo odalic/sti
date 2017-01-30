@@ -31,14 +31,17 @@ public interface FileService {
   void create(File file, InputStream fileInputStream) throws IOException;
 
   /**
-   * @param id file ID
+   * Deletes the file.
+   * 
+   * @param userId user ID
+   * @param fileId file ID
    * @throws IllegalStateException when some {@link Task} utilizes the file
    */
-  void deleteById(String id);
+  void deleteById(String userId, String fileId);
 
-  File getById(String id);
+  File getById(String userId, String fileId);
 
-  List<File> getFiles();
+  List<File> getFiles(String userId);
 
   /**
    * Replaces file description.
@@ -56,18 +59,18 @@ public interface FileService {
    */
   void replace(File file, InputStream fileInputStream) throws IOException;
 
-  boolean existsFileWithId(String id);
-
-  boolean hasId(File file, String id);
+  boolean existsFileWithId(String userId, String fileId);
 
   /**
    * Reads content of the file.
    * 
-   * @param id file ID
+   * @param userId user ID
+   * @param fileId file ID
+   * 
    * @return textual content of the file
    * @throws IOException if an I/O error occurs
    */
-  String getDataById(String id) throws IOException;
+  String getDataById(String userId, String fileId) throws IOException;
 
   /**
    * Subscribe the task for utilizing the file.

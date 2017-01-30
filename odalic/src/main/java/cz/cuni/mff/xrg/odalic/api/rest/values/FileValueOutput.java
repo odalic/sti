@@ -16,6 +16,7 @@ import com.google.common.base.Preconditions;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonSerializer;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
+import cz.cuni.mff.xrg.odalic.users.User;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonDeserializer;
 
 /**
@@ -29,27 +30,45 @@ public final class FileValueOutput implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
+  private User owner;
+
   private String id;
 
   private Date uploaded;
 
-  private String owner;
-  
   private URL location;
-  
+
   private Format format;
-  
+
   private boolean cached;
 
   public FileValueOutput() {}
-  
+
   public FileValueOutput(File adaptee) {
+    owner = adaptee.getOwner();
     id = adaptee.getId();
     uploaded = adaptee.getUploaded();
-    owner = adaptee.getOwner();
     location = adaptee.getLocation();
     format = adaptee.getFormat();
     cached = adaptee.isCached();
+  }
+
+  /**
+   * @return the owner
+   */
+  @XmlElement
+  @Nullable
+  public User getOwner() {
+    return owner;
+  }
+
+  /**
+   * @param owner the owner to set
+   */
+  public void setOwner(User owner) {
+    Preconditions.checkNotNull(owner);
+
+    this.owner = owner;
   }
 
   /**
@@ -66,7 +85,7 @@ public final class FileValueOutput implements Serializable {
    */
   public void setId(String id) {
     Preconditions.checkNotNull(id);
-    
+
     this.id = id;
   }
 
@@ -86,26 +105,8 @@ public final class FileValueOutput implements Serializable {
    */
   public void setUploaded(Date uploaded) {
     Preconditions.checkNotNull(uploaded);
-    
+
     this.uploaded = uploaded;
-  }
-
-  /**
-   * @return the owner
-   */
-  @XmlElement
-  @Nullable
-  public String getOwner() {
-    return owner;
-  }
-
-  /**
-   * @param owner the owner to set
-   */
-  public void setOwner(String owner) {
-    Preconditions.checkNotNull(owner);
-    
-    this.owner = owner;
   }
 
   /**
@@ -122,10 +123,10 @@ public final class FileValueOutput implements Serializable {
    */
   public void setLocation(URL location) {
     Preconditions.checkNotNull(location);
-    
+
     this.location = location;
   }
-  
+
   /**
    * @return the format
    */
@@ -140,7 +141,7 @@ public final class FileValueOutput implements Serializable {
    */
   public void setFormat(Format format) {
     Preconditions.checkNotNull(format);
-    
+
     this.format = format;
   }
 
@@ -155,16 +156,18 @@ public final class FileValueOutput implements Serializable {
   /**
    * @param cached cached
    */
-  public void setCached(boolean cached) {    
+  public void setCached(boolean cached) {
     this.cached = cached;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "FileValueOutput [id=" + id + ", uploaded=" + uploaded + ", owner=" + owner
+    return "FileValueOutput [owner=" + owner + ", id=" + id + ", uploaded=" + uploaded
         + ", location=" + location + ", format=" + format + ", cached=" + cached + "]";
   }
 }

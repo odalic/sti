@@ -8,7 +8,7 @@ package cz.cuni.mff.xrg.odalic.tasks.configurations;
  */
 public interface ConfigurationService {
 
-  Configuration getForTaskId(String taskId);
+  Configuration getForTaskId(String userId, String taskId);
 
-  void setForTaskId(String taskId, Configuration execution);
+  void setForTaskId(String userId, String taskId, Configuration execution);
 }
