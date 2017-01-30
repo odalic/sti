@@ -6,7 +6,6 @@ import java.util.NavigableSet;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -42,9 +41,6 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 @Path("/")
 public final class UsersResource {
 
-  private static final String CHALLENGE_FORMAT =
-      "Bearer realm=\"Odalic registration\", error=\"invalid_token\", error_description=\"%s\"";
-
   private final UserService userService;
 
   @Context
@@ -65,7 +61,7 @@ public final class UsersResource {
     try {
       userService.signUp(credentials);
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException(e);
+      throw new BadRequestException(e.getMessage(), e);
     }
 
     return Message
@@ -81,7 +77,7 @@ public final class UsersResource {
     try {
       userService.activateUser(token);
     } catch (final IllegalArgumentException e) {
-      throw new NotAuthorizedException(e, String.format(CHALLENGE_FORMAT, e.getMessage()));
+      throw new BadRequestException(e.getMessage(), e);
     }
 
     return Message.of("Successfully activated!").toResponse(Response.Status.OK, uriInfo);
@@ -96,7 +92,7 @@ public final class UsersResource {
     try {  
       user = userService.authenticate(credentials);
     } catch (final Exception e) {
-      throw new BadRequestException(e);
+      throw new BadRequestException(e.getMessage(), e);
     }
     
     final Token token = userService.issueToken(user);
@@ -123,7 +119,7 @@ public final class UsersResource {
     try {
       user = this.userService.getUser(id);
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException(e);
+      throw new BadRequestException(e.getMessage(), e);
     }
     
     return Reply.data(Status.OK, user, uriInfo).toResponse();
@@ -139,13 +135,13 @@ public final class UsersResource {
     try {
       user = userService.authenticate(new Credentials(id, passwordChangeValue.getOldPassword()));
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException(e);
+      throw new BadRequestException(e.getMessage(), e);
     }
 
     try {
       userService.requestPasswordChange(user, passwordChangeValue.getNewPassword());
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException(e);
+      throw new BadRequestException(e.getMessage(), e);
     }
 
     return Message
@@ -161,7 +157,7 @@ public final class UsersResource {
     try {
       userService.confirmPasswordChange(token);
     } catch (final IllegalArgumentException e) {
-      throw new NotAuthorizedException(e, String.format(CHALLENGE_FORMAT, e.getMessage()));
+      throw new BadRequestException(e.getMessage(), e);
     }
 
     return Message.of("Password reset!").toResponse(Response.Status.OK, uriInfo);

@@ -14,7 +14,6 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
@@ -42,7 +41,9 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 @Component
 public final class AuthenticationFilter implements ContainerRequestFilter {
 
-  private static final String CHALLENGE_FORMAT =
+  private static final String INVALID_REQUEST_CHALLENGE_FORMAT =
+      "Bearer realm=\"Odalic\", error=\"invalid_request\", error_description=\"%s\"";
+  private static final String INVALID_TOKEN_CHALLENGE_FORMAT =
       "Bearer realm=\"Odalic\", error=\"invalid_token\", error_description=\"%s\"";
   private static final String AUTHENTICATION_SCHEME = "Bearer";
   private static final String AUTHENTICATION_SCHEME_DELIMITER = " ";
@@ -59,14 +60,18 @@ public final class AuthenticationFilter implements ContainerRequestFilter {
     final String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
     if (authorizationHeader == null) {
       requestContext.abortWith(Message.of("Authorization header must be provided!")
-          .toResponse(Status.BAD_REQUEST, uriInfo));
+          .toResponseBuilder(Response.Status.UNAUTHORIZED, uriInfo)
+          .header(HttpHeaders.WWW_AUTHENTICATE, String.format(INVALID_REQUEST_CHALLENGE_FORMAT, "Authorization header must be provided!"))
+          .build());
       return;
     }
 
     if (!authorizationHeader.startsWith(AUTHENTICATION_SCHEME + AUTHENTICATION_SCHEME_DELIMITER)) {
       requestContext.abortWith(
           Message.of("Authorization header must specify the supported authentication scheme!")
-              .toResponse(Status.BAD_REQUEST, uriInfo));
+          .toResponseBuilder(Response.Status.UNAUTHORIZED, uriInfo)
+          .header(HttpHeaders.WWW_AUTHENTICATE, String.format(INVALID_REQUEST_CHALLENGE_FORMAT, "Authorization header must specify the supported authentication scheme!"))
+          .build());
       return;
     }
 
@@ -78,7 +83,7 @@ public final class AuthenticationFilter implements ContainerRequestFilter {
     } catch (final Exception e) {
       requestContext.abortWith(Message.of("Authentication failed!", e.getMessage())
           .toResponseBuilder(Response.Status.UNAUTHORIZED, uriInfo)
-          .header(HttpHeaders.WWW_AUTHENTICATE, String.format(CHALLENGE_FORMAT, e.getMessage()))
+          .header(HttpHeaders.WWW_AUTHENTICATE, String.format(INVALID_TOKEN_CHALLENGE_FORMAT, e.getMessage()))
           .build());
       return;
     }
