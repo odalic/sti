@@ -50,12 +50,13 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  * @author Václav Brodec
  */
 @Component
+@Path("/")
 @Secured({Role.ADMINISTRATOR, Role.USER})
-public final class FileResource {
+public final class FilesResource {
 
   public static final String TEXT_CSV_MEDIA_TYPE = "text/csv";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FileResource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FilesResource.class);
 
   private final FileService fileService;
   private final UserService userService;
@@ -68,7 +69,7 @@ public final class FileResource {
 
 
   @Autowired
-  public FileResource(final UserService userService, final FileService fileService) {
+  public FilesResource(final UserService userService, final FileService fileService) {
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(fileService);
 
@@ -77,7 +78,7 @@ public final class FileResource {
   }
 
   @GET
-  @Path("/users/{userId}/files")
+  @Path("users/{userId}/files")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFiles(final @PathParam("userId") String userId) {
     Security.checkAuthorization(securityContext, userId);
@@ -88,14 +89,14 @@ public final class FileResource {
   }
 
   @GET
-  @Path("/files")
+  @Path("files")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFiles() {
     return getFiles(securityContext.getUserPrincipal().getName());
   }
 
   @GET
-  @Path("/users/{userId}/files/{fileId}")
+  @Path("users/{userId}/files/{fileId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFileById(final @PathParam("userId") String userId,
       final @PathParam("fileId") String fileId) {
@@ -112,14 +113,14 @@ public final class FileResource {
   }
 
   @GET
-  @Path("/files/{fileId}")
+  @Path("files/{fileId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFileById(final @PathParam("fileId") String fileId) {
     return getFileById(securityContext.getUserPrincipal().getName(), fileId);
   }
 
   @PUT
-  @Path("/users/{userId}/files/{fileId}")
+  @Path("users/{userId}/files/{fileId}")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putFileById(final @PathParam("userId") String userId,
@@ -148,7 +149,7 @@ public final class FileResource {
   }
 
   @PUT
-  @Path("/files/{fileId}")
+  @Path("files/{fileId}")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putFileById(@PathParam("fileId") String fileId,
@@ -157,7 +158,7 @@ public final class FileResource {
   }
 
   @PUT
-  @Path("/users/{userId}/files/{fileId}")
+  @Path("users/{userId}/files/{fileId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putFileById(final @PathParam("userId") String userId,
@@ -193,7 +194,7 @@ public final class FileResource {
   }
 
   @PUT
-  @Path("/files/{fileId}")
+  @Path("files/{fileId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putFileById(final @PathParam("fileId") String fileId,
@@ -213,7 +214,7 @@ public final class FileResource {
   }
 
   @POST
-  @Path("/users/{userId}/files")
+  @Path("users/{userId}/files")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
   public Response postFile(final @PathParam("userId") String userId,
@@ -251,7 +252,7 @@ public final class FileResource {
   }
 
   @POST
-  @Path("/files")
+  @Path("files")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
   public Response postFile(final @FormDataParam("input") InputStream fileInputStream,
@@ -260,7 +261,7 @@ public final class FileResource {
   }
 
   @DELETE
-  @Path("/users/{userId}/files/{fileId}")
+  @Path("users/{userId}/files/{fileId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteFileById(final @PathParam("userId") String userId, final @PathParam("fileid") String fileId) {
     Security.checkAuthorization(securityContext, userId);
@@ -277,14 +278,14 @@ public final class FileResource {
   }
   
   @DELETE
-  @Path("/files/{fileId}")
+  @Path("files/{fileId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteFileById(final @PathParam("fileid") String fileId) {
     return deleteFileById(securityContext.getUserPrincipal().getName(), fileId);
   }
 
   @GET
-  @Path("/users/{userId}/files/{fileId}")
+  @Path("users/{userId}/files/{fileId}")
   @Produces(TEXT_CSV_MEDIA_TYPE)
   public Response getCsvDataById(final @PathParam("userId") String userId, final @PathParam("fileId") String fileId) throws IOException {
     Security.checkAuthorization(securityContext, userId);
@@ -302,7 +303,7 @@ public final class FileResource {
   }
   
   @GET
-  @Path("/files/{fileId}")
+  @Path("files/{fileId}")
   @Produces(TEXT_CSV_MEDIA_TYPE)
   public Response getCsvDataById(final @PathParam("fileId") String fileId) throws IOException {
     return getCsvDataById(securityContext.getUserPrincipal().getName(), fileId);

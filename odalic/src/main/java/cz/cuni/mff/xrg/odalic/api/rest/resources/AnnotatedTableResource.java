@@ -33,6 +33,7 @@ import cz.cuni.mff.xrg.odalic.users.Role;
  * @see AnnotatedTable format of the annotations
  */
 @Component
+@Path("/")
 public final class AnnotatedTableResource {
 
   private final AnnotatedTableService annotatedTableService;
@@ -48,7 +49,7 @@ public final class AnnotatedTableResource {
   }
 
   @GET
-  @Path("/users/{userId}/tasks/{taskId}/result/annotated-table")
+  @Path("users/{userId}/tasks/{taskId}/result/annotated-table")
   @Produces(MediaType.APPLICATION_JSON)
   @Secured({Role.ADMINISTRATOR, Role.USER})
   public Response getAnnotatedTable(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId)
@@ -69,7 +70,7 @@ public final class AnnotatedTableResource {
   }
   
   @GET
-  @Path("/tasks/{taskId}/result/annotated-table")
+  @Path("tasks/{taskId}/result/annotated-table")
   @Produces(MediaType.APPLICATION_JSON)
   @Secured({Role.ADMINISTRATOR, Role.USER})
   public Response getAnnotatedTable(final @PathParam("taskId") String taskId)

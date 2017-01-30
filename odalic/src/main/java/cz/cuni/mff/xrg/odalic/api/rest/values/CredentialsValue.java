@@ -15,6 +15,8 @@ public final class CredentialsValue {
   
   private String password;
   
+  public CredentialsValue() {}
+  
   public CredentialsValue(final Credentials adaptee) {
     this.email = adaptee.getEmail();
     this.password = adaptee.getPassword();

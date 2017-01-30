@@ -13,8 +13,8 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.CredentialsAdapter;
  * @author Václav Brodec
  *
  */
-@XmlJavaTypeAdapter(CredentialsAdapter.class)
 @Immutable
+@XmlJavaTypeAdapter(CredentialsAdapter.class)
 public final class Credentials {
 
   private final String email;

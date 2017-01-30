@@ -15,6 +15,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.ext.Provider;
 import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  *
  */
 @Secured
+@Provider
 @Priority(Priorities.AUTHORIZATION)
 @Component
 public class AuthorizationFilter implements ContainerRequestFilter {

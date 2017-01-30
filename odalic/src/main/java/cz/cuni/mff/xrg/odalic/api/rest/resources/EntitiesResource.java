@@ -34,7 +34,7 @@ import uk.ac.shef.dcs.sti.STIException;
  *
  */
 @Component
-@Path("{base}/entities")
+@Path("/bases/{base}/entities/")
 @Secured({Role.ADMINISTRATOR, Role.USER})
 public final class EntitiesResource {
 

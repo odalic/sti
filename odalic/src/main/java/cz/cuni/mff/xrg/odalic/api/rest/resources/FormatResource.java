@@ -33,6 +33,7 @@ import cz.cuni.mff.xrg.odalic.files.formats.FormatService;
 import cz.cuni.mff.xrg.odalic.users.Role;
 
 @Component
+@Path("/")
 @Secured({Role.ADMINISTRATOR, Role.USER})
 public final class FormatResource {
 
@@ -52,7 +53,7 @@ public final class FormatResource {
   }
 
   @PUT
-  @Path("/users/{userId}/files/{fileId}/format")
+  @Path("users/{userId}/files/{fileId}/format")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putFormatForFileId(final @PathParam("userId") String userId, final @PathParam("fileId") String fileId, final FormatValue formatValue) {
@@ -86,7 +87,7 @@ public final class FormatResource {
   }
   
   @PUT
-  @Path("/files/{fileId}/format")
+  @Path("files/{fileId}/format")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putFormatForFileId(final @PathParam("fileId") String fileId, final FormatValue formatValue) {
@@ -94,7 +95,7 @@ public final class FormatResource {
   }
 
   @GET
-  @Path("/users/{userId}/files/{fileId}/format")
+  @Path("users/{userId}/files/{fileId}/format")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFormatForFileId(final @PathParam("userId") String userId, final @PathParam("fileId") String fileId) {
     Security.checkAuthorization(securityContext, userId);
@@ -110,7 +111,7 @@ public final class FormatResource {
   }
   
   @GET
-  @Path("/files/{fileId}/format")
+  @Path("files/{fileId}/format")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFormatForFileId(final @PathParam("fileId") String fileId) {
     return getFormatForFileId(securityContext.getUserPrincipal().getName(), fileId);

@@ -31,6 +31,7 @@ import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
 import cz.cuni.mff.xrg.odalic.users.Role;
 
 @Component
+@Path("/")
 @Secured({Role.ADMINISTRATOR, Role.USER})
 public final class FeedbackResource {
 
@@ -51,7 +52,7 @@ public final class FeedbackResource {
   }
 
   @PUT
-  @Path("/users/{userId}/tasks/{taskId}/configuration/feedback")
+  @Path("users/{userId}/tasks/{taskId}/configuration/feedback")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putFeedbackForTaskId(final @PathParam("userId") String userId,
@@ -72,7 +73,7 @@ public final class FeedbackResource {
   }
 
   @PUT
-  @Path("/tasks/{taskId}/configuration/feedback")
+  @Path("tasks/{taskId}/configuration/feedback")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putFeedbackForTaskId(final @PathParam("taskId") String id, Feedback feedback) {
@@ -80,7 +81,7 @@ public final class FeedbackResource {
   }
 
   @GET
-  @Path("/users/{userId}/tasks/{taskId}/configuration/feedback")
+  @Path("users/{userId}/tasks/{taskId}/configuration/feedback")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFeedbackForTaskId(final @PathParam("userId") String userId,
       @PathParam("taskId") String taskId) {
@@ -97,14 +98,14 @@ public final class FeedbackResource {
   }
 
   @GET
-  @Path("/tasks/{taskId}/configuration/feedback")
+  @Path("tasks/{taskId}/configuration/feedback")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFeedbackForTaskId(final @PathParam("taskId") String taskId) {
     return getFeedbackForTaskId(securityContext.getUserPrincipal().getName(), taskId);
   }
 
   @GET
-  @Path("/users/{userId}/tasks/{taskId}/configuration/feedback/input")
+  @Path("users/{userId}/tasks/{taskId}/configuration/feedback/input")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getJsonDataById(final @PathParam("userId") String userId,
       final @PathParam("taskId") String taskId) throws IOException {
@@ -123,7 +124,7 @@ public final class FeedbackResource {
   }
 
   @GET
-  @Path("/tasks/{taskId}/configuration/feedback/input")
+  @Path("tasks/{taskId}/configuration/feedback/input")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getJsonDataById(final @PathParam("taskId") String taskId) throws IOException {
     return getJsonDataById(securityContext.getUserPrincipal().getName(), taskId);

@@ -50,13 +50,14 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  * @author Václav Brodec
  */
 @Component
+@Path("/")
 @Secured({Role.ADMINISTRATOR, Role.USER})
-public final class TaskResource {
+public final class TasksResource {
 
+  private final UserService userService;
   private final TaskService taskService;
   private final FileService fileService;
   private final ExecutionService executionService;
-  private final UserService userService;
 
   @Context
   private SecurityContext securityContext;
@@ -65,7 +66,7 @@ public final class TaskResource {
   private UriInfo uriInfo;
 
   @Autowired
-  public TaskResource(final UserService userService, final TaskService taskService,
+  public TasksResource(final UserService userService, final TaskService taskService,
       final FileService fileService, final ExecutionService executionService) {
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(taskService);
@@ -79,7 +80,7 @@ public final class TaskResource {
   }
 
   @GET
-  @Path("/users/{userId}/tasks")
+  @Path("users/{userId}/tasks")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getTasks(final @PathParam("userId") String userId,
       final @QueryParam("states") Boolean states, final @QueryParam("orderedBy") String orderedBy) {
@@ -114,7 +115,7 @@ public final class TaskResource {
   }
 
   @GET
-  @Path("/tasks")
+  @Path("tasks")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getTasks(final @QueryParam("states") Boolean states,
       final @QueryParam("orderedBy") String orderedBy) {
@@ -122,7 +123,7 @@ public final class TaskResource {
   }
 
   @GET
-  @Path("/users/{userId}/tasks/{taskId}")
+  @Path("users/{userId}/tasks/{taskId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getTaskById(final @PathParam("userId") String userId,
       final @PathParam("taskId") String taskId) {
@@ -139,14 +140,14 @@ public final class TaskResource {
   }
 
   @GET
-  @Path("/tasks/{taskId}")
+  @Path("tasks/{taskId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getTaskById(final @PathParam("taskId") String taskId) {
     return getTaskById(securityContext.getUserPrincipal().getName(), taskId);
   }
 
   @PUT
-  @Path("/users/{userId}/tasks/{taskId}")
+  @Path("users/{userId}/tasks/{taskId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putTaskWithId(final @PathParam("userId") String userId,
@@ -209,7 +210,7 @@ public final class TaskResource {
   }
 
   @PUT
-  @Path("/tasks/{taskId}")
+  @Path("tasks/{taskId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putTaskWithId(final @PathParam("taskId") String taskId, final TaskValue taskValue)
@@ -218,7 +219,7 @@ public final class TaskResource {
   }
 
   @DELETE
-  @Path("/users/{userId}/tasks/{taskId}")
+  @Path("users/{userId}/tasks/{taskId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteTaskById(final @PathParam("userId") String userId,
       final @PathParam("taskId") String taskId) {
@@ -234,7 +235,7 @@ public final class TaskResource {
   }
 
   @DELETE
-  @Path("/tasks/{taskId}")
+  @Path("tasks/{taskId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteTaskById(final @PathParam("taskId") String taskId) {
     return deleteTaskById(securityContext.getUserPrincipal().getName(), taskId);

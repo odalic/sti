@@ -32,6 +32,7 @@ import cz.cuni.mff.xrg.odalic.users.Role;
  *
  */
 @Component
+@Path("/")
 public final class CsvExportResource {
 
   public static final String TEXT_CSV_MEDIA_TYPE = "text/csv";
@@ -49,7 +50,7 @@ public final class CsvExportResource {
   }
 
   @GET
-  @Path("/users/{userId}/tasks/{taskId}/result/csv-export")
+  @Path("users/{userId}/tasks/{taskId}/result/csv-export")
   @Produces(TEXT_CSV_MEDIA_TYPE)
   @Secured({Role.ADMINISTRATOR, Role.USER})
   public Response getCsvExport(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId) throws InterruptedException, IOException {
@@ -69,7 +70,7 @@ public final class CsvExportResource {
   }
   
   @GET
-  @Path("/tasks/{taskId}/result/csv-export")
+  @Path("tasks/{taskId}/result/csv-export")
   @Produces(TEXT_CSV_MEDIA_TYPE)
   @Secured({Role.ADMINISTRATOR, Role.USER})
   public Response getCsvExport(final @PathParam("taskId") String taskId) throws InterruptedException, IOException {

@@ -31,6 +31,7 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.users.Role;
 
 @Component
+@Path("/")
 @Secured({Role.ADMINISTRATOR, Role.USER})
 public final class ConfigurationResource {
 
@@ -53,7 +54,7 @@ public final class ConfigurationResource {
   }
 
   @PUT
-  @Path("/users/{userId}/tasks/{taskId}/configuration")
+  @Path("users/{userId}/tasks/{taskId}/configuration")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putConfigurationForTaskId(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId,
@@ -101,7 +102,7 @@ public final class ConfigurationResource {
   }
   
   @PUT
-  @Path("/tasks/{taskId}/configuration")
+  @Path("tasks/{taskId}/configuration")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putConfigurationForTaskId(final @PathParam("taskId") String taskId,
@@ -110,7 +111,7 @@ public final class ConfigurationResource {
   }
 
   @GET
-  @Path("/users/{userId}/tasks/{taskId}/configuration")
+  @Path("users/{userId}/tasks/{taskId}/configuration")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getConfigurationForTaskId(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId) {
     Security.checkAuthorization(this.securityContext, userId);
@@ -126,7 +127,7 @@ public final class ConfigurationResource {
   }
   
   @GET
-  @Path("/tasks/{taskId}/configuration")
+  @Path("tasks/{taskId}/configuration")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getConfigurationForTaskId(final @PathParam("taskId") String taskId) {
     return getConfigurationForTaskId(securityContext.getUserPrincipal().getName(), taskId);

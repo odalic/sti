@@ -40,8 +40,8 @@ public final class Configuration extends ResourceConfig {
     register(JacksonJaxbJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
     
     // Resources registration
-    register(FileResource.class);
-    register(TaskResource.class);
+    register(FilesResource.class);
+    register(TasksResource.class);
     register(ConfigurationResource.class);
     register(FeedbackResource.class);
     register(ExecutionResource.class);
@@ -53,9 +53,7 @@ public final class Configuration extends ResourceConfig {
     register(EntitiesResource.class);
     register(BasesResource.class);
     register(FormatResource.class);
-    register(SignUpResource.class);
-    register(AuthenticationResource.class);
-    register(UserResource.class);
+    register(UsersResource.class);
 
     // Filters registration
     register(RequestContextFilter.class);

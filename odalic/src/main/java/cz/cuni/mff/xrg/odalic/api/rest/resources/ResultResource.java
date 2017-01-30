@@ -33,6 +33,7 @@ import cz.cuni.mff.xrg.odalic.users.Role;
  *
  */
 @Component
+@Path("/")
 public final class ResultResource {
 
   private final ExecutionService executionService;
@@ -52,7 +53,7 @@ public final class ResultResource {
 
   @GET
   @Secured({Role.ADMINISTRATOR, Role.USER})
-  @Path("/users/{userId}/tasks/{taskId}/result")
+  @Path("users/{userId}/tasks/{taskId}/result")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getResult(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId) throws InterruptedException, ExecutionException {
     Security.checkAuthorization(securityContext, userId);
@@ -71,7 +72,7 @@ public final class ResultResource {
   
   @GET
   @Secured({Role.ADMINISTRATOR, Role.USER})
-  @Path("/tasks/{taskId}/result")
+  @Path("tasks/{taskId}/result")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getResult(final @PathParam("taskId") String taskId) throws InterruptedException, ExecutionException {
     return getResult(securityContext.getUserPrincipal().getName(), taskId);

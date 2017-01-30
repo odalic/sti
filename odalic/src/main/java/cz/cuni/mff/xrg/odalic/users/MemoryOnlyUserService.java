@@ -283,13 +283,13 @@ public final class MemoryOnlyUserService implements UserService {
 
     final User user = this.userIdsToUsers.get(credentials.getEmail());
     if (user == null) {
-      logger.warn("No user found for %s!", credentials);
+      logger.warn("No user found for {}!", credentials);
       throw new IllegalArgumentException(
           String.format("Authorization failed for %s.", credentials.getEmail()));
     }
 
     if (!check(credentials.getPassword(), user.getPasswordHash())) {
-      logger.warn("Invalid password for %s!", credentials);
+      logger.warn("Invalid password for {}!", credentials);
       throw new IllegalArgumentException(
           String.format("Authorization failed for %s.", credentials.getEmail()));
     }
@@ -314,7 +314,7 @@ public final class MemoryOnlyUserService implements UserService {
   private Credentials matchCredentials(final DecodedToken decodedToken) {
     final Credentials credentials = this.tokenIdsToUnconfirmed.remove(decodedToken.getId());
     if (credentials == null) {
-      logger.warn("Unknown sign-up confirmation token %s!", decodedToken);
+      logger.warn("Unknown sign-up confirmation token {}!", decodedToken);
       throw new IllegalArgumentException("Invalid confirmation code!");
     }
     return credentials;
@@ -416,7 +416,7 @@ public final class MemoryOnlyUserService implements UserService {
   private User matchPasswordChangingUser(final DecodedToken decodedToken) {
     final User user = this.tokenIdsToPasswordChanging.remove(decodedToken.getId());
     if (user == null) {
-      logger.warn("Invalid password setting confirmation token %s!", decodedToken);
+      logger.warn("Invalid password setting confirmation token {}!", decodedToken);
       throw new IllegalArgumentException("Invalid confirmation code!");
     }
     return user;
@@ -446,7 +446,7 @@ public final class MemoryOnlyUserService implements UserService {
     final String userId = decodedToken.getSubject();
     final User user = this.userIdsToUsers.get(userId);
     if (user == null) {
-      logger.warn("Unknown user for token %s!", decodedToken);
+      logger.warn("Unknown user for token {}!", decodedToken);
       throw new IllegalArgumentException("Authentication failed!");
     }
 
@@ -468,7 +468,7 @@ public final class MemoryOnlyUserService implements UserService {
 
   private void checkFreshness(final DecodedToken decodedToken, final String userId) {
     if (!this.userIdsToTokenIds.containsEntry(userId, decodedToken.getId())) {
-      logger.warn("Obsolete token %s!", decodedToken);
+      logger.warn("Obsolete token {}!", decodedToken);
       throw new IllegalArgumentException("Authentication failed!");
     }
   }

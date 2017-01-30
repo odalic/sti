@@ -7,15 +7,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.io.IOUtils;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 
@@ -27,16 +27,27 @@ import cz.cuni.mff.xrg.odalic.tasks.Task;
  */
 public final class MemoryOnlyFileService implements FileService {
 
-  private final Map<String, File> files;
+  /**
+   * Table of files where the rows are indexed by user IDs and the columns by file IDs.
+   */
+  private final Table<String, String, File> files;
 
-  private final Map<URL, byte[]> data;
+  /**
+   * Table of file content where the rows are indexed by user IDs and the columns by file URLs.
+   */
+  private final Table<String, URL, byte[]> data;
 
-  private final Multimap<String, String> utilizingTasks;
+  /**
+   * Table of task IDs (that belong to tasks that utilize the file indexed by the same row and
+   * column) where the rows are indexed by user IDs and the columns by file IDs.
+   */
+  private final Table<String, String, Set<String>> utilizingTasks;
 
-  private MemoryOnlyFileService(Map<String, File> files, Map<URL, byte[]> data,
-      Multimap<String, String> utilizingTasks) {
+  private MemoryOnlyFileService(Table<String, String, File> files, Table<String, URL, byte[]> data,
+      Table<String, String, Set<String>> utilizingTasks) {
     Preconditions.checkNotNull(files);
     Preconditions.checkNotNull(data);
+    Preconditions.checkNotNull(utilizingTasks);
 
     this.files = files;
     this.data = data;
@@ -47,7 +58,7 @@ public final class MemoryOnlyFileService implements FileService {
    * Creates the file service with no registered files and data.
    */
   public MemoryOnlyFileService() {
-    this(new HashMap<>(), new HashMap<>(), HashMultimap.create());
+    this(HashBasedTable.create(), HashBasedTable.create(), HashBasedTable.create());
   }
 
   /*
@@ -82,21 +93,25 @@ public final class MemoryOnlyFileService implements FileService {
    */
   @Override
   public void deleteById(String userId, String fileId) {
+    Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(fileId);
 
-    checkUtilization(fileId);
+    checkUtilization(userId, fileId);
 
-    final File file = this.files.remove(fileId);
+    final File file = this.files.remove(userId, fileId);
     Preconditions.checkArgument(file != null);
 
-    this.data.remove(file.getLocation());
+    this.data.remove(userId, file.getLocation());
   }
 
-  private void checkUtilization(final String fileId) throws IllegalStateException {
-    final Collection<String> utilizingTaskIds = utilizingTasks.get(fileId);
-    
+  private void checkUtilization(final String userId, final String fileId)
+      throws IllegalStateException {
+    final Set<String> utilizingTaskIds = utilizingTasks.get(userId, fileId);
+    if (utilizingTaskIds == null) {
+      return;
+    }
+
     final String jointUtilizingTasksIds = String.join(", ", utilizingTaskIds);
-    
     Preconditions.checkState(utilizingTaskIds.isEmpty(),
         String.format("Some tasks (%s) still refer to this file!", jointUtilizingTasksIds));
   }
@@ -108,9 +123,10 @@ public final class MemoryOnlyFileService implements FileService {
    */
   @Override
   public File getById(String userId, String fileId) {
+    Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(fileId);
 
-    final File file = this.files.get(fileId);
+    final File file = this.files.get(userId, fileId);
     Preconditions.checkArgument(file != null, "File does not exists!");
 
     return file;
@@ -123,7 +139,7 @@ public final class MemoryOnlyFileService implements FileService {
    */
   @Override
   public List<File> getFiles(String userId) {
-    return ImmutableList.copyOf(this.files.values());
+    return ImmutableList.copyOf(this.files.row(userId).values());
   }
 
   /*
@@ -133,12 +149,15 @@ public final class MemoryOnlyFileService implements FileService {
    */
   @Override
   public void replace(File file) {
-    final File previous = this.files.get(file.getId());
+    final String userId = file.getOwner().getEmail();
+    final String fileId = file.getId();
+    
+    final File previous = this.files.get(userId, fileId);
     if (previous != null && !previous.getLocation().equals(file.getLocation())) {
-      this.data.remove(previous.getLocation());
+      this.data.remove(userId, previous.getLocation());
     }
 
-    this.files.put(file.getId(), file);
+    this.files.put(userId, fileId, file);
   }
 
 
@@ -151,9 +170,12 @@ public final class MemoryOnlyFileService implements FileService {
   @Override
   public void replace(File file, InputStream fileInputStream) throws IOException {
     Preconditions.checkArgument(file.isCached());
+    
+    final String userId = file.getOwner().getEmail();
+    final String fileId = file.getId();
 
-    this.files.put(file.getId(), file);
-    this.data.put(file.getLocation(), IOUtils.toByteArray(fileInputStream));
+    this.files.put(userId, fileId, file);
+    this.data.put(userId, file.getLocation(), IOUtils.toByteArray(fileInputStream));
   }
 
   /*
@@ -163,16 +185,17 @@ public final class MemoryOnlyFileService implements FileService {
    */
   @Override
   public boolean existsFileWithId(String userId, String fileId) {
+    Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(fileId);
 
-    return this.files.containsKey(fileId);
+    return this.files.contains(userId, fileId);
   }
 
   @Override
   public String getDataById(String userId, String fileId) throws IOException {
     final File file = getById(userId, fileId);
 
-    final byte[] data = this.data.get(file.getLocation());
+    final byte[] data = this.data.get(userId, file.getLocation());
     final Charset encoding = file.getFormat().getCharset();
 
     if (data == null) {
@@ -184,21 +207,46 @@ public final class MemoryOnlyFileService implements FileService {
 
   @Override
   public void subscribe(final File file, final Task task) {
+    final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
 
-    Preconditions.checkArgument(files.get(fileId).equals(file), "The file is not registered!");
+    Preconditions.checkArgument(files.get(userId, fileId).equals(file),
+        "The file is not registered!");
 
-    final boolean inserted = utilizingTasks.put(fileId, task.getId());
+    final Set<String> tasks = utilizingTasks.get(userId, fileId);
+
+    final boolean inserted;
+    if (tasks == null) {
+      utilizingTasks.put(userId, fileId, Sets.newHashSet(task.getId()));
+      inserted = true;
+    } else {
+      inserted = tasks.add(task.getId());
+    }
+
     Preconditions.checkArgument(inserted, "The task has already been subcscribed to the file!");
   }
 
   @Override
   public void unsubscribe(final File file, final Task task) {
+    final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
 
-    Preconditions.checkArgument(files.get(fileId).equals(file), "The file is not registered!");
+    Preconditions.checkArgument(files.get(userId, fileId).equals(file),
+        "The file is not registered!");
 
-    final boolean removed = utilizingTasks.remove(fileId, task.getId());
+    final Set<String> tasks = utilizingTasks.get(userId, fileId);
+
+    final boolean removed;
+    if (tasks == null) {
+      removed = false;
+    } else {
+      removed = tasks.remove(task.getId());
+
+      if (tasks.isEmpty()) {
+        utilizingTasks.remove(userId, fileId);
+      }
+    }
+
     Preconditions.checkArgument(removed, "The task is not subcscribed to the file!");
   }
 }

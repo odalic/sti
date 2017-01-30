@@ -27,7 +27,7 @@ import uk.ac.shef.dcs.sti.STIException;
  *
  */
 @Component
-@Path("bases")
+@Path("/bases/")
 public final class BasesResource {
 
   private final BasesService basesService;

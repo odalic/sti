@@ -30,6 +30,7 @@ import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
 import cz.cuni.mff.xrg.odalic.users.Role;
 
 @Component
+@Path("/")
 @Secured({Role.ADMINISTRATOR, Role.USER})
 public final class ExecutionResource {
 
@@ -49,7 +50,7 @@ public final class ExecutionResource {
   }
 
   @PUT
-  @Path("/users/{userId}/tasks/{taskId}/execution")
+  @Path("users/{userId}/tasks/{taskId}/execution")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putExecutionForTaskId(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId, final ExecutionValue execution) throws IOException {
@@ -71,7 +72,7 @@ public final class ExecutionResource {
   }
   
   @PUT
-  @Path("/tasks/{taskId}/execution")
+  @Path("tasks/{taskId}/execution")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putExecutionForTaskId(final @PathParam("taskId") String taskId, final ExecutionValue execution) throws IOException {
@@ -79,7 +80,7 @@ public final class ExecutionResource {
   }
   
   @DELETE
-  @Path("/users/{userId}/tasks/{taskId}/execution")
+  @Path("users/{userId}/tasks/{taskId}/execution")
   @Produces({MediaType.APPLICATION_JSON})
   public Response deleteExecutionForTaskId(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId) {
     Security.checkAuthorization(this.securityContext, userId);
@@ -96,7 +97,7 @@ public final class ExecutionResource {
   }
   
   @DELETE
-  @Path("/tasks/{taskId}/execution")
+  @Path("tasks/{taskId}/execution")
   @Produces({MediaType.APPLICATION_JSON})
   public Response deleteExecutionForTaskId(final @PathParam("taskId") String taskId) {
     return deleteExecutionForTaskId(securityContext.getUserPrincipal().getName(), taskId);

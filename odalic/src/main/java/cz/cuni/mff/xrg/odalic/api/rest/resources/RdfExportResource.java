@@ -29,6 +29,7 @@ import cz.cuni.mff.xrg.odalic.outputs.rdfexport.RdfExportService;
  *
  */
 @Component
+@Path("/")
 public final class RdfExportResource {
 
   public static final String TURTLE_MIME_TYPE = "text/turtle";
@@ -49,7 +50,7 @@ public final class RdfExportResource {
   }
 
   @GET
-  @Path("/users/{userId}/tasks/{taskId}/result/rdf-export")
+  @Path("users/{userId}/tasks/{taskId}/result/rdf-export")
   @Produces(TURTLE_MIME_TYPE)
   public Response getTurtleExport(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
@@ -74,7 +75,7 @@ public final class RdfExportResource {
   }
   
   @GET
-  @Path("/tasks/{taskId}/result/rdf-export")
+  @Path("tasks/{taskId}/result/rdf-export")
   @Produces(TURTLE_MIME_TYPE)
   public Response getTurtleExport(final @PathParam("taskId") String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
@@ -82,7 +83,7 @@ public final class RdfExportResource {
   }
 
   @GET
-  @Path("/users/{userId}/tasks/{taskId}/result/rdf-export")
+  @Path("users/{userId}/tasks/{taskId}/result/rdf-export")
   @Produces(JSON_LD_MIME_TYPE)
   public Response getJsonLdExport(final @PathParam("userId") String userId, final @PathParam("id") String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
@@ -105,7 +106,7 @@ public final class RdfExportResource {
   }
   
   @GET
-  @Path("/tasks/{taskId}/result/rdf-export")
+  @Path("tasks/{taskId}/result/rdf-export")
   @Produces(JSON_LD_MIME_TYPE)
   public Response getJsonLdExport(final @PathParam("taskId") String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {

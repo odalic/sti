@@ -111,11 +111,11 @@ public final class SmtpMailService implements MailService {
   @Override
   public void send(final String subject, final String text, final Address[] to,
       final Address... cc) {
-    logger.info("Message added to the queue. Subject: %s, text: %s, to: %s, cc: %s.", subject, text,
+    logger.info("Message added to the queue. Subject: {}, text: {}, to: {}, cc: {}.", subject, text,
         Arrays.toString(to), Arrays.toString(cc));
 
     executor.execute(() -> {
-      logger.info("Message processing started. Subject: %s, text: %s, to: %s, cc: %s.", subject,
+      logger.info("Message processing started. Subject: {}, text: {}, to: {}, cc: {}.", subject,
           text, Arrays.toString(to), Arrays.toString(cc));
 
       final Session session =
@@ -127,7 +127,7 @@ public final class SmtpMailService implements MailService {
 
           });
 
-      logger.info("Message processing session created for %s.", username);
+      logger.info("Message processing session created for {}.", username);
 
       final Message message = new MimeMessage(session);
       try {
@@ -141,13 +141,13 @@ public final class SmtpMailService implements MailService {
         message.setSubject(subject);
         message.setText(text);
 
-        logger.info("Sending message %s...", message);
+        logger.info("Sending message {}...", message);
 
         Transport.send(message);
 
-        logger.info("Message %s sent.", message);
+        logger.info("Message {} sent.", message);
       } catch (final Exception e) {
-        logger.error(String.format("Sending of message %s failed!", message), e);
+        logger.error(String.format("Sending of message {} failed!", message), e);
       }
     });
   }

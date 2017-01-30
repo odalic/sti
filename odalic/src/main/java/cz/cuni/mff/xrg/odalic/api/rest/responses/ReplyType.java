@@ -24,5 +24,5 @@ public enum ReplyType {
   /**
    * Reply contains no actual data, only a message.
    */
-  @XmlEnumValue("ERROR") MESSAGE
+  @XmlEnumValue("MESSAGE") MESSAGE
 }
