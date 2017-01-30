@@ -144,6 +144,14 @@ public abstract class KBProxy {
   public abstract List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws KBProxyException;
 
   /**
+   * Loads the entity from the knowledge base.
+   * @param uri The entity uri.
+   * @return The entity or null if no such uri was found in the knowledge base.
+   * @throws KBProxyException
+   */
+  public abstract Entity loadEntity(String uri) throws KBProxyException;
+
+  /**
    * Get attributes of the entity candidate
    * (all predicates and object values of the triples where the candidate entity is the subject).
    *
@@ -278,6 +286,10 @@ public abstract class KBProxy {
     }
 
     return builder.toString();
+  }
+
+  protected String createSolrCacheQuery_loadResource(String uri) {
+    return "LOAD_RESOURCE_" + uri;
   }
 
   protected String createSolrCacheQuery_findAttributesOfResource(String resource) {

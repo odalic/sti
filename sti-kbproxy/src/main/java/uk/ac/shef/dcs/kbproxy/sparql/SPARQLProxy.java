@@ -368,6 +368,50 @@ public class SPARQLProxy extends KBProxy {
   }
 
   @Override
+  public Entity loadEntity(String uri) throws KBProxyException {
+    //prepare cache
+    String queryCache = createSolrCacheQuery_loadResource(uri);
+
+    Entity result = null;
+    if (!ALWAYS_CALL_REMOTE_SEARCH_API) {
+      //if cache is not disabled, try to examine the cache first
+      try {
+        result = (Entity) cacheEntity.retrieve(queryCache);
+        if (result != null) {
+          log.debug("QUERY (entities, cache load)=" + queryCache + "|" + queryCache);
+        }
+      } catch (Exception e) {
+        log.error(e.getLocalizedMessage(), e);
+      }
+    }
+
+    if (result == null) {
+      try {
+        //there is nothing suitable in the cache or the cache is disabled
+        AskBuilder builder = new AskBuilder().addWhere(createSPARQLResource(uri), SPARQL_PREDICATE_TYPE, "?Type");
+        boolean askResult = ask(builder.build());
+
+        if (!askResult) {
+          return null;
+        }
+
+        String label = getResourceLabel(uri);
+        result = new Entity(uri, label);
+        loadEntityAttributes(result);
+
+        //write the entity to the cache
+        cacheEntity.cache(queryCache, result, AUTO_COMMIT);
+        log.debug("QUERY (entities, cache save)=" + queryCache + "|" + queryCache);
+      } catch (Exception e) {
+        throw new KBProxyException(e);
+      }
+    }
+
+    filterEntityTypes(result);
+    return result;
+  }
+
+  @Override
   public boolean isInsertSupported() {
     return kbDefinition.isInsertSupported();
   }
@@ -516,7 +560,7 @@ public class SPARQLProxy extends KBProxy {
         uriString = combineURI(baseURI, uri.toString());
       }
 
-      AskBuilder builder = new AskBuilder().addWhere("<" + uriString + ">", SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
+      AskBuilder builder = new AskBuilder().addWhere(createSPARQLResource(uriString), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
       Query query = builder.build();
 
       boolean exists = ask(query);
@@ -606,15 +650,7 @@ public class SPARQLProxy extends KBProxy {
           if (label == null)
             label = content;
           Entity ec = new Entity(candidate.getKey(), label);
-          List<Attribute> attributes = findAttributesOfEntities(ec);
-          ec.setAttributes(attributes);
-          for (Attribute attr : attributes) {
-            adjustValueOfURLResource(attr);
-            if (KBProxyUtils.contains(kbDefinition.getPredicateType(), attr.getRelationURI()) &&
-                !ec.hasType(attr.getValueURI())) {
-              ec.addType(new Clazz(attr.getValueURI(), attr.getValue()));
-            }
-          }
+          loadEntityAttributes(ec);
           result.add(ec);
         }
 
@@ -627,17 +663,32 @@ public class SPARQLProxy extends KBProxy {
     }
 
     //filter entity's clazz, and attributes
-    String id = "|";
     for (Entity ec : result) {
-      id = id + ec.getId() + ",";
-      //ec.setTypes(FreebaseSearchResultFilter.filterClazz(ec.getTypes()));
-      List<Clazz> filteredTypes = resultFilter.filterClazz(ec.getTypes());
-      ec.clearTypes();
-      for (Clazz ft : filteredTypes)
-        ec.addType(ft);
+      filterEntityTypes(ec);
     }
 
     return result;
+  }
+
+  private void loadEntityAttributes(Entity ec) throws KBProxyException {
+    List<Attribute> attributes = findAttributesOfEntities(ec);
+    ec.setAttributes(attributes);
+    for (Attribute attr : attributes) {
+      adjustValueOfURLResource(attr);
+      if (KBProxyUtils.contains(kbDefinition.getPredicateType(), attr.getRelationURI()) &&
+          !ec.hasType(attr.getValueURI())) {
+        ec.addType(new Clazz(attr.getValueURI(), attr.getValue()));
+      }
+    }
+  }
+
+  private void filterEntityTypes(Entity entity) {
+    List<Clazz> filteredTypes = resultFilter.filterClazz(entity.getTypes());
+
+    entity.clearTypes();
+    for (Clazz ft : filteredTypes) {
+      entity.addType(ft);
+    }
   }
 
   @SuppressWarnings("unchecked")
