@@ -1,12 +1,14 @@
 package cz.cuni.mff.xrg.odalic.api.rest.values;
 
 import java.io.Serializable;
-
+import java.util.NavigableSet;
+import java.util.Set;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSortedSet;
 
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
@@ -27,18 +29,24 @@ public final class ConfigurationValue implements Serializable {
 
   private Feedback feedback;
 
+  private NavigableSet<KnowledgeBase> usedBases;
+  
   private KnowledgeBase primaryBase;
 
   private Integer rowsLimit;
+
+  private Boolean statistical;
 
   public ConfigurationValue() {}
 
   public ConfigurationValue(Configuration adaptee) {
     input = adaptee.getInput().getId();
     feedback = adaptee.getFeedback();
+    setUsedBases(ImmutableSortedSet.copyOf(adaptee.getUsedBases()));
     primaryBase = adaptee.getPrimaryBase();
     rowsLimit =
         adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
+    statistical = adaptee.isStatistical();
   }
 
   /**
@@ -68,7 +76,6 @@ public final class ConfigurationValue implements Serializable {
     return feedback;
   }
 
-
   /**
    * @param feedback the feedback to set
    */
@@ -76,6 +83,24 @@ public final class ConfigurationValue implements Serializable {
     Preconditions.checkNotNull(feedback);
 
     this.feedback = feedback;
+  }
+
+  /**
+   * @return the bases selected for the task
+   */
+  @XmlElement
+  @Nullable
+  public NavigableSet<KnowledgeBase> getUsedBases() {
+    return usedBases;
+  }
+
+  /**
+   * @param usedBases the bases selected for the task to set
+   */
+  public void setUsedBases(Set<? extends KnowledgeBase> usedBases) {
+    Preconditions.checkNotNull(usedBases);
+    
+    this.usedBases = ImmutableSortedSet.copyOf(usedBases);
   }
 
   /**
@@ -96,7 +121,6 @@ public final class ConfigurationValue implements Serializable {
     this.primaryBase = primaryBase;
   }
 
-
   /**
    * @return the maximum number of rows to process, {@code null} if no such limit set
    */
@@ -114,6 +138,21 @@ public final class ConfigurationValue implements Serializable {
     this.rowsLimit = rowsLimit;
   }
 
+  /**
+   * @return true for processing of statistical data
+   */
+  @Nullable
+  public Boolean isStatistical() {
+    return statistical;
+  }
+
+  /**
+   * @param statistical true for processing of statistical data
+   */
+  public void setStatistical(final @Nullable Boolean statistical) {
+    this.statistical = statistical;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -121,7 +160,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @Override
   public String toString() {
-    return "ConfigurationValue [input=" + input + ", feedback=" + feedback + ", primaryBase="
-        + primaryBase + ", rowsLimit=" + rowsLimit + "]";
+    return "ConfigurationValue [input=" + input + ", feedback=" + feedback + ", usedBases=" + usedBases + ", primaryBase="
+        + primaryBase + ", rowsLimit=" + rowsLimit + ", statistical=" + statistical + "]";
   }
 }

@@ -9,7 +9,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.UserAdapter;
 
 @Immutable
 @XmlJavaTypeAdapter(UserAdapter.class)
-public final class User {
+public final class User implements Comparable<User> {
 
   private final String email;
 
@@ -97,6 +97,27 @@ public final class User {
       return false;
     }
     return true;
+  }
+
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Comparable#compareTo(java.lang.Object)
+   */
+  @Override
+  public int compareTo(final User other) {
+    final int emailComparison = this.email.compareTo(other.email);
+    if (emailComparison != 0) {
+      return emailComparison;
+    }
+
+    final int passwordHashComparison = this.passwordHash.compareTo(other.passwordHash);
+    if (passwordHashComparison != 0) {
+      return passwordHashComparison;
+    }
+
+    return this.role.compareTo(other.role);
   }
 
   /*

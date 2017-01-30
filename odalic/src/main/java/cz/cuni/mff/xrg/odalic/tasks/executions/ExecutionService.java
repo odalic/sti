@@ -26,6 +26,14 @@ public interface ExecutionService {
   void submitForTaskId(String userId, String taskId) throws IllegalStateException, IOException;
   
   /**
+   * Removes the task from the scheduled tasks.
+   * 
+   * @param userId user ID
+   * @param taskId task ID
+   */
+  void unscheduleForTaskId(String userId, String taskId);
+  
+  /**
    * Attempts to cancel execution of the task.
    * 
    * @param userId user ID

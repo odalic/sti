@@ -15,6 +15,6 @@ public final class AnnotatedTableAdapter extends XmlAdapter<AnnotatedTableValue,
 
   @Override
   public AnnotatedTable unmarshal(AnnotatedTableValue value) throws Exception {
-    return new AnnotatedTable(value.getUrl(), value.getTableSchema());
+    return new AnnotatedTable(value.getContext(), value.getUrl(), value.getTableSchema());
   }
 }

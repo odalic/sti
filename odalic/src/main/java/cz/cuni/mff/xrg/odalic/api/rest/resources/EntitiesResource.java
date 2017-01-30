@@ -121,7 +121,7 @@ public final class EntitiesResource {
     try {
       createdClass = this.entitiesService.propose(new KnowledgeBase(base), proposal);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException(e);
+      throw new WebApplicationException("The class already exists!", e, Response.Status.CONFLICT);
     }
 
     return Reply.data(Response.Status.OK, createdClass, uriInfo).toResponse();
@@ -135,7 +135,7 @@ public final class EntitiesResource {
     try {
       createdEntity = this.entitiesService.propose(new KnowledgeBase(base), proposal);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException(e);
+      throw new WebApplicationException("The resource already exists!", e, Response.Status.CONFLICT);
     }
 
     return Reply.data(Response.Status.OK, createdEntity, uriInfo).toResponse();
@@ -149,7 +149,7 @@ public final class EntitiesResource {
     try {
       createdProperty = this.entitiesService.propose(new KnowledgeBase(base), proposal);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException(e);
+      throw new WebApplicationException("The property already exists!", e, Response.Status.CONFLICT);
     }
 
     return Reply.data(Response.Status.OK, createdProperty, uriInfo).toResponse();

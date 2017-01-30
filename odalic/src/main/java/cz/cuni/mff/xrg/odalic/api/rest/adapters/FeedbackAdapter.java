@@ -31,6 +31,7 @@ public final class FeedbackAdapter extends XmlAdapter<FeedbackValue, Feedback> {
         value.getClassifications() == null ? ImmutableSet.of() : value.getClassifications(),
         value.getColumnRelations() == null ? ImmutableSet.of() : value.getColumnRelations(),
         value.getDisambiguations() == null ? ImmutableSet.of() : value.getDisambiguations(),
-        value.getAmbiguities() == null ? ImmutableSet.of() : value.getAmbiguities());
+        value.getAmbiguities() == null ? ImmutableSet.of() : value.getAmbiguities(),
+        value.getDataCubeComponents() == null ? ImmutableSet.of() : value.getDataCubeComponents());
   }
 }

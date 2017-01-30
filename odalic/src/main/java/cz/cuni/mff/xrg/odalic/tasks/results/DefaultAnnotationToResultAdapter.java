@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks.results;
 
+import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
 import cz.cuni.mff.xrg.odalic.entities.EntitiesFactory;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
@@ -10,6 +11,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.util.Arrays;
 import cz.cuni.mff.xrg.odalic.util.Lists;
 import cz.cuni.mff.xrg.odalic.util.Maps;
@@ -19,6 +21,7 @@ import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TCellAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TColumnColumnRelationAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TColumnHeaderAnnotation;
+import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +44,7 @@ import com.google.common.collect.ImmutableMap;
  * 
  * @author Jan Váňa
  * @author Václav Brodec
+ * @author Josef Janoušek
  *
  */
 @Immutable
@@ -86,13 +90,15 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
         convertCellAnnotations(firstKnowledgeBase, firstTableAnnotation);
     final Map<ColumnRelationPosition, ColumnRelationAnnotation> mergedColumnRelations =
         convertColumnRelations(firstKnowledgeBase, firstTableAnnotation);
+    final List<StatisticalAnnotation> mergedStatisticalAnnotations =
+        convertStatisticalAnnotations(firstKnowledgeBase, firstTableAnnotation);
 
     // Process the rest.
     processTheRest(entrySetIterator, mergedHeaderAnnotations, mergedCellAnnotations,
-        mergedColumnRelations);
+        mergedColumnRelations, mergedStatisticalAnnotations);
 
     return new Result(subjectColumnPositions, mergedHeaderAnnotations, mergedCellAnnotations,
-        mergedColumnRelations, ImmutableList.of()); // TODO: Implement warnings.
+        mergedColumnRelations, mergedStatisticalAnnotations, ImmutableList.of()); // TODO: Implement warnings.
   }
 
   private static Map<KnowledgeBase, ColumnPosition> extractSubjectColumnPositions(
@@ -123,7 +129,8 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
       final Iterator<? extends Map.Entry<? extends KnowledgeBase, ? extends TAnnotation>> entrySetIterator,
       final List<HeaderAnnotation> mergedHeaderAnnotations,
       final CellAnnotation[][] mergedCellAnnotations,
-      final Map<ColumnRelationPosition, ColumnRelationAnnotation> mergedColumnRelations) {
+      final Map<ColumnRelationPosition, ColumnRelationAnnotation> mergedColumnRelations,
+      final List<StatisticalAnnotation> mergedStatisticalAnnotations) {
     while (entrySetIterator.hasNext()) {
       final Map.Entry<? extends KnowledgeBase, ? extends TAnnotation> entry =
           entrySetIterator.next();
@@ -134,6 +141,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
       mergeHeaders(mergedHeaderAnnotations, knowledgeBase, tableAnnotation);
       mergeCells(mergedCellAnnotations, knowledgeBase, tableAnnotation);
       mergeColumnRelations(mergedColumnRelations, knowledgeBase, tableAnnotation);
+      mergeStatisticalAnnotations(mergedStatisticalAnnotations, knowledgeBase, tableAnnotation);
     }
   }
 
@@ -163,6 +171,14 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     final List<HeaderAnnotation> headerAnnotations =
         convertColumnAnnotations(knowledgeBase, tableAnnotation);
     Lists.zipWith(mergedHeaderAnnotations, headerAnnotations,
+        (first, second) -> first.merge(second));
+  }
+
+  private void mergeStatisticalAnnotations(final List<StatisticalAnnotation> mergedStatisticalAnnotations,
+      final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
+    final List<StatisticalAnnotation> statisticalAnnotations =
+        convertStatisticalAnnotations(knowledgeBase, tableAnnotation);
+    Lists.zipWith(mergedStatisticalAnnotations, statisticalAnnotations,
         (first, second) -> first.merge(second));
   }
 
@@ -306,5 +322,55 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     }
 
     return headerAnnotations;
+  }
+
+  private List<StatisticalAnnotation> convertStatisticalAnnotations(KnowledgeBase knowledgeBase,
+      TAnnotation original) {
+    int columnCount = original.getCols();
+    List<StatisticalAnnotation> statisticalAnnotations = new ArrayList<>(columnCount);
+
+    for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
+      TStatisticalAnnotation annotation = original.getStatisticalAnnotation(columnIndex);
+
+      HashMap<KnowledgeBase, ComponentTypeValue> component = new HashMap<>();
+      HashMap<KnowledgeBase, Set<EntityCandidate>> predicate = new HashMap<>();
+
+      if (annotation != null) {
+        ComponentTypeValue componentType;
+        Set<EntityCandidate> predicateSet = new HashSet<>();
+
+        switch (annotation.getComponent()) {
+          case DIMENSION:
+            componentType = ComponentTypeValue.DIMENSION;
+            break;
+          case MEASURE:
+            componentType = ComponentTypeValue.MEASURE;
+            break;
+          case NONE:
+            componentType = ComponentTypeValue.NONE;
+            break;
+          default:
+            componentType = ComponentTypeValue.NONE;
+            break;
+        }
+
+        component.put(knowledgeBase, componentType);
+        predicate.put(knowledgeBase, predicateSet);
+
+        if (annotation.getPredicateURI() != null && annotation.getPredicateLabel() != null) {
+          Entity entity = entitiesFactory.create(annotation.getPredicateURI(), annotation.getPredicateLabel());
+          Score likelihood = new Score(annotation.getScore());
+
+          EntityCandidate candidate = new EntityCandidate(entity, likelihood);
+
+          predicateSet.add(candidate);
+        }
+      }
+
+      StatisticalAnnotation statisticalAnnotation = new StatisticalAnnotation(component, predicate);
+      statisticalAnnotations.add(statisticalAnnotation);
+    }
+
+    return statisticalAnnotations;
   }
 }

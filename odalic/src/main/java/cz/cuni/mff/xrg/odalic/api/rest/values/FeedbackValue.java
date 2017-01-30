@@ -20,6 +20,7 @@ import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnAmbiguity;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnIgnore;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnRelation;
+import cz.cuni.mff.xrg.odalic.feedbacks.DataCubeComponent;
 import cz.cuni.mff.xrg.odalic.feedbacks.Disambiguation;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
@@ -50,6 +51,8 @@ public final class FeedbackValue implements Serializable {
 
   private Set<Ambiguity> ambiguities;
 
+  private Set<DataCubeComponent> dataCubeComponents;
+
   public FeedbackValue() {
     subjectColumnPositions = ImmutableMap.of();
     columnIgnores = ImmutableSet.of();
@@ -58,6 +61,7 @@ public final class FeedbackValue implements Serializable {
     columnRelations = ImmutableSet.of();
     disambiguations = ImmutableSet.of();
     ambiguities = ImmutableSet.of();
+    dataCubeComponents = ImmutableSet.of();
   }
 
   public FeedbackValue(Feedback adaptee) {
@@ -68,6 +72,7 @@ public final class FeedbackValue implements Serializable {
     columnRelations = adaptee.getColumnRelations();
     disambiguations = adaptee.getDisambiguations();
     ambiguities = adaptee.getAmbiguities();
+    dataCubeComponents = adaptee.getDataCubeComponents();
   }
 
   /**
@@ -191,6 +196,23 @@ public final class FeedbackValue implements Serializable {
     this.ambiguities = ImmutableSet.copyOf(ambiguities);
   }
 
+  /**
+   * @return the dataCubeComponents
+   */
+  @XmlElement
+  public Set<DataCubeComponent> getDataCubeComponents() {
+    return dataCubeComponents;
+  }
+
+  /**
+   * @param dataCubeComponents the dataCubeComponents to set
+   */
+  public void setDataCubeComponents(Set<? extends DataCubeComponent> dataCubeComponents) {
+    Preconditions.checkNotNull(dataCubeComponents);
+
+    this.dataCubeComponents = ImmutableSet.copyOf(dataCubeComponents);
+  }
+
   /* (non-Javadoc)
    * @see java.lang.Object#toString()
    */
@@ -199,6 +221,7 @@ public final class FeedbackValue implements Serializable {
     return "FeedbackValue [subjectColumnPositions=" + subjectColumnPositions + ", columnIgnores="
         + columnIgnores + ", columnAmbiguities=" + columnAmbiguities + ", classifications="
         + classifications + ", columnRelations=" + columnRelations + ", disambiguations="
-        + disambiguations + ", ambiguities=" + ambiguities + "]";
+        + disambiguations + ", ambiguities=" + ambiguities + ", dataCubeComponents="
+        + dataCubeComponents + "]";
   }
 }

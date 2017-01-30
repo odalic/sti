@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +26,8 @@ import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableSet;
+
 import cz.cuni.mff.xrg.odalic.api.rest.values.ConfigurationValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.TaskValue;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
@@ -48,21 +51,22 @@ public class TaskCreateTest {
   private File file;
   private Format format;
   private int rowsLimit;
+  private boolean statistical;
 
-  public TaskCreateTest(File file, Format format, int rowsLimit) {
+  public TaskCreateTest(File file, Format format, int rowsLimit, boolean statistical) {
 
     this.file = file;
     this.format = format;
     this.rowsLimit = rowsLimit;
+    this.statistical = statistical;
   }
 
   @Parameters
-  public static Collection<Object[]> data() {
+  public static Collection<Object[]> data() throws URISyntaxException {
 
-    String directory = "d:\\Documents\\Odalic\\TestFiles";
-
-    return Arrays.asList(new Object[][] {{new File(directory, "Books-v2.csv"),
-        new Format(StandardCharsets.UTF_8, ';', true, null, null, null), 10}});
+    return Arrays.asList(new Object[][] {{new File(
+        TaskCreateTest.class.getClassLoader().getResource("book-input.csv").toURI()),
+        new Format(StandardCharsets.UTF_8, ';', true, '"', null, null), 10, false}});
   }
 
   @BeforeClass
@@ -102,8 +106,11 @@ public class TaskCreateTest {
     ConfigurationValue configuration = new ConfigurationValue();
     configuration.setInput(file.getName());
     configuration.setFeedback(new Feedback());
+    configuration.setUsedBases(ImmutableSet.of(new KnowledgeBase("DBpedia"),
+        new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")));
     configuration.setPrimaryBase(new KnowledgeBase("DBpedia"));
     configuration.setRowsLimit(rowsLimit);
+    configuration.setStatistical(statistical);
 
     TaskValue task = new TaskValue();
     task.setId(file.getName() + "_task");

@@ -6,6 +6,7 @@ package cz.cuni.mff.xrg.odalic.tasks.executions;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -19,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.feedbacks.FeedbackToConstraintsAdapter;
-import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.files.formats.FormatService;
@@ -55,7 +56,7 @@ import uk.ac.shef.dcs.sti.core.model.Table;
 public final class FutureBasedExecutionService implements ExecutionService {
 
   private static final Logger logger = LoggerFactory.getLogger(FutureBasedExecutionService.class);
-  
+
   private final TaskService taskService;
   private final FileService fileService;
   private final FormatService formatService;
@@ -65,7 +66,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
   private final CsvInputParser csvInputParser;
   private final InputToTableAdapter inputToTableAdapter;
   private final ExecutorService executorService = Executors.newFixedThreadPool(1);
-  
+
   private final Map<Task, Future<Result>> tasksToResults = new HashMap<>();
 
   @Autowired
@@ -99,51 +100,88 @@ public final class FutureBasedExecutionService implements ExecutionService {
    * @see cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService#submitForTaskId(java.lang.String)
    */
   @Override
-  public void submitForTaskId(String userId, String taskId) throws IllegalStateException, IOException {
+  public void submitForTaskId(String userId, String taskId)
+      throws IllegalStateException, IOException {
     final Task task = taskService.getById(userId, taskId);
 
-    final Future<Result> resultFuture = tasksToResults.get(task);
-    Preconditions.checkState(resultFuture == null || resultFuture.isDone());
+    checkNotAlreadyScheduled(task);
 
     final Configuration configuration = task.getConfiguration();
-    final File file = configuration.getInput();
-    final String fileId = file.getId();
 
-    final String data = fileService.getDataById(userId, fileId);
-    final Format format = formatService.getForFileId(userId, fileId);
-    
-    final ParsingResult parsingResult = csvInputParser.parse(data, fileId, format, configuration.getRowsLimit());
-    formatService.setForFileId(userId, fileId, parsingResult.getFormat());
-    
+    final String fileId = configuration.getInput().getId();
+    final Feedback feedback = configuration.getFeedback();
+    final Set<KnowledgeBase> usedBases = configuration.getUsedBases();
+    final int rowsLimit = configuration.getRowsLimit();
+
+    final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
     final Input input = parsingResult.getInput();
+
     task.setInputSnapshot(input);
-    
+
     final Callable<Result> execution = () -> {
       try {
         final Table table = inputToTableAdapter.toTable(input);
-  
+        final boolean isStatistical = configuration.isStatistical();
+
         final Map<String, SemanticTableInterpreter> interpreters =
             semanticTableInterpreterFactory.getInterpreters();
-  
-        Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
-        for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters.entrySet()) {
-          final Constraints constraints = feedbackToConstraintsAdapter.toConstraints(
-              configuration.getFeedback(), new KnowledgeBase(interpreterEntry.getKey()));
-          final TAnnotation annotationResult = interpreterEntry.getValue().start(table, constraints);
-          results.put(new KnowledgeBase(interpreterEntry.getKey()), annotationResult);
+
+        final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
+
+        for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters
+            .entrySet()) {
+          final KnowledgeBase base = new KnowledgeBase(interpreterEntry.getKey());
+          if (!usedBases.contains(base)) {
+            continue;
+          }
+
+          final Constraints constraints =
+              feedbackToConstraintsAdapter.toConstraints(feedback, base);
+          final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
+
+          final TAnnotation annotationResult = interpreter.start(table, isStatistical, constraints);
+
+          results.put(base, annotationResult);
         }
-        final Result result = annotationResultAdapter.toResult(results);
-  
-        return result;
+
+        return annotationResultAdapter.toResult(results);
       } catch (final Exception e) {
         logger.error("Error during task execution!", e);
-        
+
         throw e;
       }
     };
 
     final Future<Result> future = executorService.submit(execution);
     tasksToResults.put(task, future);
+  }
+
+  private ParsingResult parse(final String userId, final String fileId, final int rowsLimit)
+      throws IOException {
+    final String data = fileService.getDataById(userId, fileId);
+    final Format format = formatService.getForFileId(userId, fileId);
+
+    final ParsingResult result = csvInputParser.parse(data, fileId, format, rowsLimit);
+    formatService.setForFileId(userId, fileId, result.getFormat());
+
+    return result;
+  }
+
+  private void checkNotAlreadyScheduled(final Task task) {
+    final Future<Result> resultFuture = tasksToResults.get(task);
+    Preconditions.checkState(resultFuture == null || resultFuture.isDone());
+  }
+
+
+  @Override
+  public void unscheduleForTaskId(String userId, String fileId) {
+    final Task task = taskService.getById(userId, fileId);
+    final Future<Result> resultFuture = tasksToResults.remove(task);
+    if (resultFuture == null) {
+      return;
+    }
+
+    resultFuture.cancel(false);
   }
 
   @Override
@@ -164,7 +202,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
     Preconditions.checkArgument(resultFuture != null);
 
-    Preconditions.checkState(resultFuture.cancel(true));
+    Preconditions.checkState(resultFuture.cancel(false));
   }
 
   @Override

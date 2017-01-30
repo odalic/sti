@@ -147,7 +147,7 @@ public class CandidateRelationGenerator {
                                            Resource sbjEntity,
                                            List<Resource> matchedObjCellCandidates) {
         tableAnnotation.addCellCellRelation(new TCellCellRelationAnotation(
-                new RelationColumns(subjectColumn, objectColumn), row, attribute.getRelationURI(), attribute.getRelationURI(),
+                new RelationColumns(subjectColumn, objectColumn), row, attribute.getRelationURI(), attribute.getRelationLabel(),
                 new ArrayList<>(), score
         ));
         //subject entity, its concepts and relation

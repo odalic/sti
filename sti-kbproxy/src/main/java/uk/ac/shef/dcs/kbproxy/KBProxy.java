@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public abstract class KBProxy {
 
   private static final String CACHE_VERSION_ID = "9274dff6-c606-4f5d-8bb5-d528c764e655";
-  private static final String CACHE_VERSION = "1.0.13";
+  private static final String CACHE_VERSION = "1.0.15";
 
   protected SolrCache cacheEntity;
   protected SolrCache cacheConcept;
@@ -268,18 +268,6 @@ public abstract class KBProxy {
      then cache the results in solr. Again you should call these methods to create a query string, which should be
      passed as the id of the record to be added to solr
      */
-  protected String createSolrCacheQuery_fulltextSearchResources(String pattern, int limit) {
-    return "FULLTEXT_RESOURCE_" + limit + "_" + pattern;
-  }
-
-  protected String createSolrCacheQuery_fulltextSearchClasses(String pattern, int limit) {
-    return "FULLTEXT_CLASS_" + limit + "_" + pattern;
-  }
-
-  protected String createSolrCacheQuery_fulltextSearchPredicates(String pattern, int limit, String domain, String range) {
-    return "FULLTEXT_PREDICATE_" + limit + "_" + pattern + "_" + domain + "_" + range;
-  }
-
   protected String createSolrCacheQuery_findResources(String content, String... types) {
     StringBuilder builder = new StringBuilder("FIND_RESOURCE_");
     builder.append(content);

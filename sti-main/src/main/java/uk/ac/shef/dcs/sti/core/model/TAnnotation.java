@@ -5,6 +5,7 @@ import cern.colt.matrix.ObjectMatrix2D;
 import cern.colt.matrix.impl.SparseObjectMatrix1D;
 import cern.colt.matrix.impl.SparseObjectMatrix2D;
 import uk.ac.shef.dcs.sti.STIException;
+import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation.TComponentType;
 
 import java.util.*;
 
@@ -21,6 +22,7 @@ public class TAnnotation {
             cellcellRelations; //first key being the sub-obj column; second key is the row index
     private Map<RelationColumns, java.util.List<TColumnColumnRelationAnnotation>>
             columncolumnRelations;
+    private ObjectMatrix1D statisticalAnnotations; //each object in the matrix is a TStatisticalAnnotation
 
     public TAnnotation(int rows, int cols) {
         this.rows = rows;
@@ -29,6 +31,7 @@ public class TAnnotation {
         contentAnnotations = new SparseObjectMatrix2D(rows, cols);
         cellcellRelations = new HashMap<>();
         columncolumnRelations = new HashMap<>();
+        statisticalAnnotations = new SparseObjectMatrix1D(cols);
     }
 
     public int getRows() {
@@ -92,6 +95,15 @@ public class TAnnotation {
         target.columncolumnRelations = new HashMap<>(
                 source.getColumncolumnRelations()
         );
+
+        for (int col = 0; col < source.getCols(); col++) {
+            TStatisticalAnnotation annotation = source.getStatisticalAnnotation(col);
+            if (annotation == null)
+                continue;
+            TStatisticalAnnotation copy = new TStatisticalAnnotation(annotation.getComponent(),
+                annotation.getPredicateURI(), annotation.getPredicateLabel(), annotation.getScore());
+            target.setStatisticalAnnotation(col, copy);
+        }
     }
 
     public void setHeaderAnnotation(int headerCol, TColumnHeaderAnnotation[] annotations) {
@@ -239,5 +251,17 @@ public class TAnnotation {
 
     public void setRows(int rows) {
         this.rows = rows;
+    }
+
+    public void setStatisticalAnnotation(int col, TStatisticalAnnotation annotation) {
+        statisticalAnnotations.set(col, annotation);
+    }
+
+    public TStatisticalAnnotation getStatisticalAnnotation(int col) {
+        Object o = statisticalAnnotations.get(col);
+        if (o == null)
+            return null;
+
+        return (TStatisticalAnnotation) o;
     }
 }

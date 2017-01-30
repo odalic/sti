@@ -215,6 +215,10 @@ public class SPARQLProxy extends KBProxy {
    * @return
    */
   protected List<String> queryReturnSingleValues(Query query) {
+    return  queryReturnSingleValues(query, SPARQL_VARIABLE_SUBJECT);
+  }
+
+  protected List<String> queryReturnSingleValues(Query query, String columnName) {
     log.info("SPARQL query: \n" + query.toString());
 
     QueryExecution qExec = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), query);
@@ -222,62 +226,68 @@ public class SPARQLProxy extends KBProxy {
     List<String> out = new ArrayList<>();
     ResultSet rs = qExec.execSelect();
     while (rs.hasNext()) {
-
       QuerySolution qs = rs.next();
-      RDFNode subject = qs.get(SPARQL_VARIABLE_SUBJECT);
-      out.add(subject.toString());
+      RDFNode columnNode = qs.get(columnName);
+      out.add(columnNode.toString());
     }
     return out;
   }
 
   protected List<String> queryForLabel(Query sparqlQuery, String resourceURI) throws KBProxyException {
-    try {
-      log.info("Sparql query: " + sparqlQuery.toString());
+    // Query all labels of the resource.
+    List<String> labels = queryReturnSingleValues(sparqlQuery, SPARQL_VARIABLE_OBJECT);
+    labels = labels.stream().filter(item -> !isNullOrEmpty(item)).collect(Collectors.toList());
 
-      QueryExecution qExec = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), sparqlQuery);
+    // The resource has no statement with label property, apply simple heuristics to parse the
+    // resource URI.
+    if (labels.size() == 0) {
+      // URI like https://www.w3.org/1999/02/22-rdf-syntax-ns#type
+      int trimPosition = resourceURI.lastIndexOf("#");
 
-      List<String> out = new ArrayList<>();
-      ResultSet resultSet = qExec.execSelect();
-
-      resultSet.forEachRemaining(solution -> {
-        RDFNode labelNode = solution.get(SPARQL_VARIABLE_OBJECT);
-        if (labelNode == null) return;
-
-        String label = labelNode.toString();
-
-        if (label != null) {
-          out.add(label);
-        }
-      });
-
-      if (out.size() == 0) { //the resource has no statement with prop "rdfs:label", apply heuristics to parse the
-        //resource uri
-        int trim = resourceURI.lastIndexOf("#");
-        if (trim == -1)
-          trim = resourceURI.lastIndexOf("/");
-        if (trim != -1) {
-          String stringValue = resourceURI.substring(trim + 1).replaceAll("[^a-zA-Z0-9]", "").trim();
-          if (resourceURI.contains("yago")) { //this is an yago resource, which may have numbered ids as suffix
-            //e.g., City015467
-            int end = 0;
-            for (int i = 0; i < stringValue.length(); i++) {
-              if (Character.isDigit(stringValue.charAt(i))) {
-                end = i;
-                break;
-              }
-            }
-            if (end > 0)
-              stringValue = stringValue.substring(0, end);
-          }
-          stringValue = StringUtils.splitCamelCase(stringValue);
-          out.add(stringValue);
-        }
+      // URI like http://dbpedia.org/property/name
+      if (trimPosition == -1) {
+        trimPosition = resourceURI.lastIndexOf("/");
       }
 
-      return out;
-    } catch (QueryParseException ex) {
-      throw new KBProxyException("Invalid query: " + sparqlQuery.toString(), ex);
+      if (trimPosition != -1) {
+        // Remove anything that is not a character or digit
+        // TODO: For a future improvement, take into account the "_" character.
+        String stringValue = resourceURI.substring(trimPosition + 1).replaceAll("[^a-zA-Z0-9]", "").trim();
+
+        // Derived KBs can have custom URI conventions.
+        stringValue = applyCustomUriHeuristics(resourceURI, stringValue);
+        stringValue = StringUtils.splitCamelCase(stringValue);
+
+        labels.add(stringValue);
+      }
     }
+
+    // Remove any language tags
+    String suffix = kbDefinition.getLanguageSuffix();
+    if (!isNullOrEmpty(suffix)) {
+      List<String> filteredLabels = new ArrayList<>();
+
+      for(String label : labels) {
+        if (label.contains("@")) {
+          if (label.endsWith(suffix)) {
+            label = label.substring(0, label.length() - suffix.length()).trim();
+          }
+          else {
+            continue;
+          }
+        }
+
+        filteredLabels.add(label);
+      }
+
+      labels = filteredLabels;
+    }
+
+    return labels;
+  }
+
+  protected String applyCustomUriHeuristics(String resourceURI, String label) {
+    return label;
   }
 
   /**
@@ -304,25 +314,29 @@ public class SPARQLProxy extends KBProxy {
 
   @Override
   public List<Entity> findResourceByFulltext(String pattern, int limit) throws KBProxyException {
-    String queryCache = createSolrCacheQuery_fulltextSearchResources(pattern, limit);
-
     try {
-      return findByFulltext(queryCache, () -> createFulltextQueryForResources(pattern, limit));
+      return findByFulltext(() -> createFulltextQueryForResources(pattern, limit));
     }
     catch (Exception e){
-      throw new KBProxyException(e);
+      // If the search expression causes any error on the KB side, we only log
+      // the exception and return no results. The error is very likely due to
+      // fulltext search requirements defined by the KB.
+      log.error("Unexpected exception during resource search.", e);
+      return new ArrayList<>();
     }
   }
 
   @Override
   public List<Entity> findClassByFulltext(String pattern, int limit) throws KBProxyException {
-    String queryCache = createSolrCacheQuery_fulltextSearchClasses(pattern, limit);
-
     try {
-      return findByFulltext(queryCache, () -> createFulltextQueryForClasses(pattern, limit));
+      return findByFulltext(() -> createFulltextQueryForClasses(pattern, limit));
     }
     catch (Exception e){
-      throw new KBProxyException(e);
+      // If the search expression causes any error on the KB side, we only log
+      // the exception and return no results. The error is very likely due to
+      // fulltext search requirements defined by the KB.
+      log.error("Unexpected exception during class search.", e);
+      return new ArrayList<>();
     }
   }
 
@@ -330,13 +344,16 @@ public class SPARQLProxy extends KBProxy {
   public List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain, URI range) throws KBProxyException {
     String domainString = domain != null ? domain.toString() : null;
     String rangeString = range != null ? range.toString() : null;
-    String queryCache = createSolrCacheQuery_fulltextSearchPredicates(pattern, limit, domainString, rangeString);
 
     try {
-      return findByFulltext(queryCache, () -> createFulltextQueryForPredicates(pattern, limit, domainString, rangeString));
+      return findByFulltext(() -> createFulltextQueryForPredicates(pattern, limit, domainString, rangeString));
     }
     catch (Exception e){
-      throw new KBProxyException(e);
+      // If the search expression causes any error on the KB side, we only log
+      // the exception and return no results. The error is very likely due to
+      // fulltext search requirements defined by the KB.
+      log.error("Unexpected exception during predicate search.", e);
+      return new ArrayList<>();
     }
   }
 
@@ -409,21 +426,11 @@ public class SPARQLProxy extends KBProxy {
     return new Entity(url, label);
   }
 
-  @SuppressWarnings("unchecked")
-  private List<Entity> findByFulltext(String queryCache, QueryGetter queryGetter) throws SolrServerException, ClassNotFoundException, IOException, KBProxyException, ParseException {
-    List<Entity> result = (List<Entity>) cacheEntity.retrieve(queryCache);
-
-    if (result != null && !result.isEmpty()) {
-      return  result;
-    }
-
+  private List<Entity> findByFulltext(QueryGetter queryGetter) throws SolrServerException, ClassNotFoundException, IOException, KBProxyException, ParseException {
     Query query = queryGetter.getQuery();
     List<Pair<String, String>> queryResult = queryReturnTuples(query, "");
 
-    result = queryResult.stream().map(pair -> new Entity(pair.getKey(), pair.getValue())).collect(Collectors.toList());
-    cacheEntity.cache(queryCache, result, AUTO_COMMIT);
-
-    return result;
+    return queryResult.stream().map(pair -> new Entity(pair.getKey(), pair.getValue())).collect(Collectors.toList());
   }
 
 
@@ -466,9 +473,8 @@ public class SPARQLProxy extends KBProxy {
     tripleDefinition.append(predicate);
 
     if (isLiteral){
-      tripleDefinition.append("> \"");
-      tripleDefinition.append(value);
-      tripleDefinition.append("\"");
+      tripleDefinition.append("> ");
+      tripleDefinition.append(createSPARQLLiteral(value, true));
     }
     else {
       tripleDefinition.append("> <");
@@ -482,9 +488,8 @@ public class SPARQLProxy extends KBProxy {
     tripleDefinition.append(url);
     tripleDefinition.append("> <");
     tripleDefinition.append(kbDefinition.getInsertLabel());
-    tripleDefinition.append("> \"");
-    tripleDefinition.append(escapeSPARQLLiteral(label));
-    tripleDefinition.append("\"");
+    tripleDefinition.append("> ");
+    tripleDefinition.append(createSPARQLLiteral(label, true));
 
     return tripleDefinition;
   }
@@ -516,7 +521,7 @@ public class SPARQLProxy extends KBProxy {
 
       boolean exists = ask(query);
       if (exists) {
-        throw new KBProxyException("The knowledge base " + kbDefinition.getName() + " already contains a resource with url: " + uriString);
+        throw new IllegalArgumentException("The knowledge base " + kbDefinition.getName() + " already contains a resource with url: " + uriString);
       }
 
       return uriString;
@@ -637,10 +642,19 @@ public class SPARQLProxy extends KBProxy {
 
   @SuppressWarnings("unchecked")
   private void adjustValueOfURLResource(Attribute attr) throws KBProxyException {
-    String value = attr.getValue();
-    if (value.startsWith("http")) {
-      String queryCache = createSolrCacheQuery_findLabelForResource(value);
+    // TODO: This is a mess, refactor in #256.
+    String valueLabel = getResourceLabel(attr.getValue());
+    String relationLabel = getResourceLabel(attr.getRelationURI());
 
+    attr.setValueURI(attr.getValue());
+    attr.setValue(valueLabel);
+    attr.setRelationLabel(relationLabel);
+  }
+
+  @SuppressWarnings("unchecked")
+  private String getResourceLabel(String uri) throws KBProxyException {
+    if (uri.startsWith("http")) {
+      String queryCache = createSolrCacheQuery_findLabelForResource(uri);
 
       List<String> result = null;
       if (!ALWAYS_CALL_REMOTE_SEARCH_API) {
@@ -656,8 +670,8 @@ public class SPARQLProxy extends KBProxy {
       if (result == null) {
         try {
           //1. try exact string
-          Query sparqlQuery = createGetLabelQuery(value);
-          result = queryForLabel(sparqlQuery, value);
+          Query sparqlQuery = createGetLabelQuery(uri);
+          result = queryForLabel(sparqlQuery, uri);
 
           cacheEntity.cache(queryCache, result, AUTO_COMMIT);
           log.debug("QUERY (entities, cache save)=" + queryCache + "|" + queryCache);
@@ -667,14 +681,11 @@ public class SPARQLProxy extends KBProxy {
       }
 
       if (result.size() > 0) {
-        attr.setValueURI(value);
-        attr.setValue(result.get(0));
-      } else {
-        attr.setValueURI(value);
+        return result.get(0);
       }
-    } else {
-      attr.setValueURI(value);
     }
+
+    return uri;
   }
 
   @Override

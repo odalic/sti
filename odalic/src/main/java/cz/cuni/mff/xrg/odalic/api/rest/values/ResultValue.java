@@ -27,6 +27,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
@@ -47,7 +48,9 @@ public final class ResultValue implements Serializable {
   private CellAnnotation[][] cellAnnotations;
 
   private Map<ColumnPosition, Map<ColumnPosition, ColumnRelationAnnotation>> columnRelationAnnotations;
-  
+
+  private List<StatisticalAnnotation> statisticalAnnotations;
+
   private List<String> warnings;
 
   public ResultValue() {
@@ -55,6 +58,7 @@ public final class ResultValue implements Serializable {
     headerAnnotations = ImmutableList.of();
     cellAnnotations = new CellAnnotation[0][0];;
     columnRelationAnnotations = ImmutableMap.of();
+    statisticalAnnotations = ImmutableList.of();
     warnings = ImmutableList.of();
   }
 
@@ -62,6 +66,7 @@ public final class ResultValue implements Serializable {
     subjectColumnPositions = adaptee.getSubjectColumnPositions();
     headerAnnotations = adaptee.getHeaderAnnotations();
     cellAnnotations = adaptee.getCellAnnotations();
+    statisticalAnnotations = adaptee.getStatisticalAnnotations();
     warnings = adaptee.getWarnings();
 
     initializeColumnRelationAnnotations(adaptee);
@@ -166,7 +171,24 @@ public final class ResultValue implements Serializable {
     }
     this.columnRelationAnnotations = columnRelationAnnotationsBuilder.build();
   }
-  
+
+  /**
+   * @return the statistical annotations
+   */
+  @XmlElement
+  public List<StatisticalAnnotation> getStatisticalAnnotations() {
+    return statisticalAnnotations;
+  }
+
+  /**
+   * @param statisticalAnnotations the statistical annotations to set
+   */
+  public void setStatisticalAnnotations(List<StatisticalAnnotation> statisticalAnnotations) {
+    Preconditions.checkNotNull(statisticalAnnotations);
+
+    this.statisticalAnnotations = ImmutableList.copyOf(statisticalAnnotations);
+  }
+
   /**
    * @return the warnings
    */
@@ -193,6 +215,7 @@ public final class ResultValue implements Serializable {
   public String toString() {
     return "ResultValue [subjectColumnPositions=" + subjectColumnPositions + ", headerAnnotations="
         + headerAnnotations + ", cellAnnotations=" + Arrays.toString(cellAnnotations)
-        + ", columnRelationAnnotations=" + columnRelationAnnotations + ", warnings=" +  warnings + "]";
+        + ", columnRelationAnnotations=" + columnRelationAnnotations
+        + ", statisticalAnnotations=" + statisticalAnnotations + ", warnings=" +  warnings + "]";
   }
 }

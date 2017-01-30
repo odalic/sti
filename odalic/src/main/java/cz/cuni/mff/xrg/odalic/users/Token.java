@@ -48,6 +48,36 @@ public final class Token {
   }
 
   /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    return prime * token.hashCode();
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(final Object object) {
+    if (this == object) {
+      return true;
+    }
+    if (object == null) {
+      return false;
+    }
+    if (getClass() != object.getClass()) {
+      return false;
+    }
+    final Token other = (Token) object;
+    if (!token.equals(other.token)) {
+      return false;
+    }
+    return true;
+  }
+
+  /* (non-Javadoc)
    * @see java.lang.Object#toString()
    */
   @Override

@@ -10,13 +10,11 @@ import cz.cuni.mff.xrg.odalic.outputs.rdfexport.tp.TriplePattern;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,12 +33,12 @@ import java.util.Map;
 public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableToRDFExportAdapter {
 
   private static final Logger log = LoggerFactory.getLogger(DefaultAnnotatedTableToRDFExportAdapter.class);
-
-  private static final String DCTERMS_TITLE = "dcterms:title";
-  private static final String RDF_TYPE = "rdf:type";
-  private static final String OWL_SAMEAS = "owl:sameAs";
+  
+  private static final String PREFIX_SEPARATOR = ":";
   
   private ValueFactory factory = SimpleValueFactory.getInstance();
+  
+  private Map<String, String> prefixes;
   
   /**
    * The default toRDFExport implementation.
@@ -50,6 +48,9 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
   @Override
   public Model toRDFExport(AnnotatedTable annotatedTable, Input extendedInput) {
 
+    // map for prefixes
+    prefixes = annotatedTable.getContext().getMapping();
+    
     // map for accessing column positions by column names in input
     Map<String, Integer> positionsForColumnNames = new HashMap<>();
     int i = 0;
@@ -61,6 +62,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
     // fetch the triplePatterns from annotated table
     log.debug("Preparing set of triple patterns to be applied to all rows");
     List<TriplePattern> triplePatterns = new ArrayList<>();
+    List<Statement> tripleStatements = new ArrayList<>();
     for (TableColumn column : annotatedTable.getTableSchema().getColumns()) {
       if (column.getSuppressOutput() != null && column.getSuppressOutput()) {
         // we do not create any triple for the suppressed column
@@ -76,25 +78,36 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
         // Currently we require aboutUrl to be defined for all columns. Nevertheless, based on the spec, this is not required and
         //  if aboutUrl is not defined on the column, it may be e.g. defined at the level of whole tableScheme.
         // Also aboutUrl may contain more complex patterns, e.g.: "aboutUrl": "http://example.org/tree/{on_street}/{GID}", but so far we expect that
-        //  it contains only "{columnName}"
+        //  it contains only "{columnName}" or complete IRI
+        continue;
+      }
+
+      if (!isColumnLink(column.getAboutUrl())) {
+        // aboutUrl is not a column link, so we create just one triple statement, not a triple pattern
+        try {
+          tripleStatements.add(factory.createStatement(createIRI(column.getAboutUrl()),
+              createIRI(column.getPropertyUrl()), createIRIorLiteral(column.getValueUrl())));
+        } catch (NullPointerException | IllegalArgumentException e) {
+          log.error("No triple statement is produced because of " + e);
+        }
         continue;
       }
 
       TriplePattern tp;
       if (column.getValueUrl() == null) {
         // if valueUrl is null, than we now that we should generate triple with data property (object is literal)
-        tp = new DataPropertyTriplePattern(column.getAboutUrl(), createPredicateIRI(column.getPropertyUrl()), column.getName());
+        tp = new DataPropertyTriplePattern(column.getAboutUrl(), createIRI(column.getPropertyUrl()), column.getName());
 
       }
       else {
         // it is object property
         // so far we suppose that valueUrl contains either the URL itself or pattern in the form {columnName}, meaning that URL is taken from that column.
         if (StringUtils.isEmpty(column.getSeparator())) {
-          tp = new ObjectPropertyTriplePattern(column.getAboutUrl(), createPredicateIRI(column.getPropertyUrl()), column.getValueUrl());
+          tp = new ObjectPropertyTriplePattern(column.getAboutUrl(), createIRI(column.getPropertyUrl()), column.getValueUrl());
         }
         else {
           // if separator is not empty, valueUrl contains list of values
-          tp = new ObjectListPropertyTriplePattern(column.getAboutUrl(), createPredicateIRI(column.getPropertyUrl()), column.getValueUrl(), column.getSeparator());
+          tp = new ObjectListPropertyTriplePattern(column.getAboutUrl(), createIRI(column.getPropertyUrl()), column.getValueUrl(), column.getSeparator());
         }
       }
       triplePatterns.add(tp);
@@ -103,6 +116,14 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
     
     // create a new Model to put statements in
     Model model = new LinkedHashModel();
+    
+    // set prefixes
+    for (Map.Entry<String, String> prefixEntry : prefixes.entrySet()) {
+      model.setNamespace(prefixEntry.getKey(), prefixEntry.getValue());
+    }
+    
+    // add created triple statements
+    model.addAll(tripleStatements);
     
     // process the rows from extended input
     log.debug("Iterating over set of row and creating triples for each row");
@@ -126,7 +147,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
           continue;
         }
         try {
-          subject = factory.createIRI(row.get(subjectPosition));
+          subject = createIRI(row.get(subjectPosition));
         } catch (NullPointerException | IllegalArgumentException e) {
           log.error("No triple is produced because of " + e);
           continue;
@@ -168,7 +189,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
             }
             for (String item : row.get(objectPosition).split(oltp.getSeparator())) {
               try {
-                objects.add(factory.createIRI(item));
+                objects.add(createIRI(item));
               } catch (NullPointerException | IllegalArgumentException e) {
                 log.error("No triple is produced because of " + e);
               }
@@ -178,7 +199,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
             // object pattern contains URIs:
             for (String item : oltp.getObjectPattern().split(oltp.getSeparator())) {
               try {
-                objects.add(factory.createIRI(item));
+                objects.add(createIRI(item));
               } catch (NullPointerException | IllegalArgumentException e) {
                 log.error("No triple is produced because of " + e);
               }
@@ -202,7 +223,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
               continue;
             }
             try {
-              objects.add(factory.createIRI(row.get(objectPosition)));
+              objects.add(createIRIorLiteral(row.get(objectPosition)));
             } catch (NullPointerException | IllegalArgumentException e) {
               log.error("No triple is produced because of " + e);
             }
@@ -210,7 +231,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
           else {
             // object pattern contains URI:
             try {
-              objects.add(factory.createIRI(otp.getObjectPattern()));
+              objects.add(createIRI(otp.getObjectPattern()));
             } catch (NullPointerException | IllegalArgumentException e) {
               log.error("No triple is produced because of " + e);
             }
@@ -228,28 +249,6 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
     }
     
     return model;
-  }
-  
-  /**
-   * creates IRI from given predicate constant (dcterms:title or rdf:type) or URL String
-   * 
-   * @param predicateString
-   * @return
-   */
-  private IRI createPredicateIRI(String predicateString) {
-
-    //TODO (in the future) Parsing of the predicates must be done differently - it should construct the predicate URL from the JSON, not from some predefined list.
-    //  It is not a good practise to change the code here when new predicate is added
-    switch (predicateString) {
-      case DCTERMS_TITLE:
-        return DCTERMS.TITLE;
-      case RDF_TYPE:
-        return RDF.TYPE;
-      case OWL_SAMEAS:
-        return OWL.SAMEAS;
-      default:
-        return factory.createIRI(predicateString);
-    }
   }
   
   /**
@@ -271,5 +270,53 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
    */
   private String getColumnName(String columnLink) {
     return columnLink.substring(1, columnLink.length()-1);
+  }
+  
+  /**
+   * Checks validity of IRI from the supplied string-representation.
+   * 
+   * @param iriString
+   *        A string-representation of the IRI.
+   * @return true If the supplied string does not resolve to a legal IRI
+   *         (i.e. if it does not contain a colon).
+   */
+  private boolean notValidIRI(String iriString) {
+    return iriString.indexOf(PREFIX_SEPARATOR) < 0;
+  }
+  
+  /**
+   * Creates a new IRI from the supplied string-representation.
+   * 
+   * @param iriString
+   *        A string-representation of the IRI.
+   * @return An object representing the IRI.
+   * @throws IlllegalArgumentException
+   *         If the supplied string does not resolve to a legal IRI
+   *         (i.e. if it does not contain a colon).
+   */
+  private IRI createIRI(String iriString) {
+    if (notValidIRI(iriString)) {
+      throw new IllegalArgumentException("Not a valid (absolute) IRI: " + iriString);
+    }
+    
+    String[] array = iriString.split(PREFIX_SEPARATOR);
+    if (array.length == 2 && !array[1].startsWith("//") &&
+        prefixes.containsKey(array[0])) {
+      // IRI expansion
+      return factory.createIRI(prefixes.get(array[0]), array[1]);
+    }
+    else {
+      return factory.createIRI(iriString);
+    }
+  }
+  
+  private Value createIRIorLiteral(String object) {
+    if (notValidIRI(object)) {
+      log.info("Not a valid (absolute) IRI: " + object + " , literal will be created.");
+      return factory.createLiteral(object);
+    }
+    else {
+      return createIRI(object);
+    }
   }
 }
