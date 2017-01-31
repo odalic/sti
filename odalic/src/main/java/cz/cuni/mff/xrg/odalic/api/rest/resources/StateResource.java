@@ -50,7 +50,7 @@ public final class StateResource {
   }
 
   @GET
-  @Path("users/{userId}/tasks/{id}/state")
+  @Path("users/{userId}/tasks/{taskId}/state")
   @Secured({Role.ADMINISTRATOR, Role.USER})
   @Produces({MediaType.APPLICATION_JSON})
   public Response getStateForTaskId(final @PathParam("userId") String userId,
@@ -68,7 +68,7 @@ public final class StateResource {
   }
 
   @GET
-  @Path("tasks/{id}/state")
+  @Path("tasks/{taskId}/state")
   @Secured({Role.ADMINISTRATOR, Role.USER})
   @Produces({MediaType.APPLICATION_JSON})
   public Response getStateForTaskId(final @PathParam("taskId") String taskId) {

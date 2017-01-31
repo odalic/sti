@@ -111,13 +111,13 @@ public final class UsersResource {
   }
   
   @GET
-  @Path("users/{id}")
+  @Path("users/{userId}")
   @Secured({Role.ADMINISTRATOR, Role.USER})
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getUser(final @PathParam("id") String id) {
+  public Response getUser(final @PathParam("userId") String userId) {
     final User user;
     try {
-      user = this.userService.getUser(id);
+      user = this.userService.getUser(userId);
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }
@@ -126,14 +126,14 @@ public final class UsersResource {
   }
 
   @PUT
-  @Path("users/{id}/password")
+  @Path("users/{userId}/password")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response changePassword(final @PathParam("id") String id,
+  public Response changePassword(final @PathParam("userId") String userId,
       final PasswordChangeValue passwordChangeValue) throws MalformedURLException {
     final User user;
     try {
-      user = userService.authenticate(new Credentials(id, passwordChangeValue.getOldPassword()));
+      user = userService.authenticate(new Credentials(userId, passwordChangeValue.getOldPassword()));
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }

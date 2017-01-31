@@ -89,7 +89,7 @@ public final class FeedbackResource {
 
     final Feedback feedbackForTaskId;
     try {
-      feedbackForTaskId = feedbackService.getForTaskId(taskId, userId);
+      feedbackForTaskId = feedbackService.getForTaskId(userId, taskId);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("The task does not exist!", e);
     }

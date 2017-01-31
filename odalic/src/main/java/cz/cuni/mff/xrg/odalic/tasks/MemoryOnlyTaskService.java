@@ -150,13 +150,14 @@ public final class MemoryOnlyTaskService implements TaskService {
   @Override
   public NavigableSet<Task> getTasksSortedByIdInAscendingOrder(String userId) {
     return ImmutableSortedSet.copyOf(
-        (Task first, Task second) -> first.getId().compareTo(second.getId()), tasks.values());
+        (Task first, Task second) -> first.getId().compareTo(second.getId()),
+        tasks.row(userId).values());
   }
 
   @Override
   public NavigableSet<Task> getTasksSortedByCreatedInDescendingOrder(String userId) {
     return ImmutableSortedSet.copyOf(
         (Task first, Task second) -> -1 * first.getCreated().compareTo(second.getCreated()),
-        tasks.values());
+        tasks.row(userId).values());
   }
 }
