@@ -1,5 +1,7 @@
 package cz.cuni.mff.xrg.odalic.users;
 
+import java.io.Serializable;
+
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -7,9 +9,17 @@ import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.UserAdapter;
 
+/**
+ * Application user.
+ * 
+ * @author Václav Brodec
+ *
+ */
 @Immutable
 @XmlJavaTypeAdapter(UserAdapter.class)
-public final class User implements Comparable<User> {
+public final class User implements Serializable, Comparable<User> {
+
+  private static final long serialVersionUID = -174412970524757408L;
 
   private final String email;
 
