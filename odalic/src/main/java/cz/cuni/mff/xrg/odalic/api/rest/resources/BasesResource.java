@@ -1,6 +1,5 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
-import java.io.IOException;
 import java.util.NavigableSet;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -18,7 +17,6 @@ import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
 import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.users.Role;
-import uk.ac.shef.dcs.sti.STIException;
 
 /**
  * Knowledge bases resource definition.
@@ -46,7 +44,7 @@ public final class BasesResource {
   @Produces({MediaType.APPLICATION_JSON})
   @Secured({Role.ADMINISTRATOR, Role.USER})
   public Response getBases(
-      @QueryParam(value = "modifiable") @DefaultValue("false") boolean modifiable) throws STIException, IOException {
+      @QueryParam(value = "modifiable") @DefaultValue("false") boolean modifiable) {
     final NavigableSet<KnowledgeBase> bases;
     if (modifiable) {
       bases = basesService.getInsertSupportingBases();

@@ -19,8 +19,10 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.util.Security;
 import cz.cuni.mff.xrg.odalic.outputs.rdfexport.RdfExportService;
+import cz.cuni.mff.xrg.odalic.users.Role;
 
 /**
  * Definition of the resource providing the result as serialized RDF data.
@@ -30,6 +32,7 @@ import cz.cuni.mff.xrg.odalic.outputs.rdfexport.RdfExportService;
  */
 @Component
 @Path("/")
+@Secured({Role.ADMINISTRATOR, Role.USER})
 public final class RdfExportResource {
 
   public static final String TURTLE_MIME_TYPE = "text/turtle";
