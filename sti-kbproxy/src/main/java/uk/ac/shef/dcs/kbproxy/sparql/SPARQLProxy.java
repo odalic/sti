@@ -110,16 +110,17 @@ public class SPARQLProxy extends KBProxy {
    *
    * @param content string to search
    * @param limit maximum number of items to return
+   * @param restrictClassTypes true if types of resources should be classes
    * @param types restricts the result types
    * @return SPARQL select query
    * @throws ParseException Invalid regex expression
    * @throws KBProxyException Invalid KB definition
    */
-  protected Query createFulltextQueryForResources(String content, Integer limit, String... types) throws ParseException, KBProxyException {
+  protected Query createFulltextQueryForResources(String content, Integer limit, boolean restrictClassTypes, String... types) throws ParseException, KBProxyException {
     SelectBuilder builder = createFulltextQueryBuilder(content, limit, types);
 
     // Class restriction
-    builder = addClassRestriction(builder);
+    builder = addClassRestriction(builder, restrictClassTypes);
 
     return builder.build();
   }
@@ -153,7 +154,7 @@ public class SPARQLProxy extends KBProxy {
     builder = addTypeRestriction(builder, Arrays.asList(types));
 
     // Class restriction
-    builder = addClassRestriction(builder);
+    builder = addClassRestriction(builder, true);
 
     return builder.build();
   }
@@ -315,7 +316,8 @@ public class SPARQLProxy extends KBProxy {
   @Override
   public List<Entity> findResourceByFulltext(String pattern, int limit) throws KBProxyException {
     try {
-      return findByFulltext(() -> createFulltextQueryForResources(pattern, limit));
+      // Proposed resources can have types, that are not classes.
+      return findByFulltext(() -> createFulltextQueryForResources(pattern, limit, false));
     }
     catch (Exception e){
       // If the search expression causes any error on the KB side, we only log
@@ -591,7 +593,7 @@ public class SPARQLProxy extends KBProxy {
         //the same for type/non-type restrictions ??
         if (resourceAndType.size() == 0 && fuzzyKeywords) {
           log.debug("(query by regex. This can take a long time)");
-          sparqlQuery = createFulltextQueryForResources(content, null, types);
+          sparqlQuery = createFulltextQueryForResources(content, null, true,  types);
           queryResult = queryReturnTuples(sparqlQuery, content);
         }
 
@@ -843,13 +845,13 @@ public class SPARQLProxy extends KBProxy {
             SPARQL_VARIABLE_SUBJECT);
   }
 
-  private SelectBuilder addClassRestriction(SelectBuilder builder) {
+  private SelectBuilder addClassRestriction(SelectBuilder builder, boolean restrictClassTypes) {
 
       if (kbDefinition.getSearchClassTypeMode().equals(KBDefinition.SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT)) {
         //as proposed by Jan
         builder = builder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, SPARQL_VARIABLE_CLASS);
         // If there are no class types defined, then we at least demand the subject is an instance of some class.
-        if (kbDefinition.getStructureClass().size() > 0) {
+        if (restrictClassTypes && kbDefinition.getStructureClass().size() > 0) {
           builder = addUnion(
                   builder,
                   kbDefinition.getStructureClass(),
@@ -858,7 +860,7 @@ public class SPARQLProxy extends KBProxy {
         }
       }
       else {
-        if (kbDefinition.getStructureClass().size() > 0) {
+        if (restrictClassTypes && kbDefinition.getStructureClass().size() > 0) {
           //kbDefinition.getSearchClassTypeMode().equals(SEARCH_CLASS_TYPE_MODE_VALUE.DIRECT)
           builder = addUnion(
                   builder,
