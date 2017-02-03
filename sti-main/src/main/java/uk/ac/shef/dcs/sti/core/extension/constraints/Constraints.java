@@ -8,9 +8,15 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
+import uk.ac.shef.dcs.kbproxy.KBProxy;
+import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 
@@ -42,6 +48,7 @@ public final class Constraints implements Serializable {
 
   private final Set<DataCubeComponent> dataCubeComponents;
 
+  private static final Logger LOG = LoggerFactory.getLogger(Constraints.class.getName());
 
   /**
    * Creates empty feedback.
@@ -266,12 +273,12 @@ public final class Constraints implements Serializable {
    * 
    * @return entities chosen for disambiguation of given cell
    */
-  public List<Entity> getDisambChosenForCell(int columnIndex, int rowIndex) {
+  public List<Entity> getDisambChosenForCell(int columnIndex, int rowIndex, KBProxy kbProxy) {
     List<Entity> entities = new ArrayList<>();
     getDisambiguations().stream().filter(e -> e.getPosition().getColumnIndex() == columnIndex &&
         e.getPosition().getRowIndex() == rowIndex && !e.getAnnotation().getChosen().isEmpty())
-      .forEach(e -> e.getAnnotation().getChosen()
-          .forEach(ec -> entities.add(new Entity(ec.getEntity().getResource(), ec.getEntity().getLabel()))));
+      .forEach(e -> e.getAnnotation().getChosen().forEach(ec -> entities.add(
+          findOrCreateEntity(ec.getEntity().getResource(), ec.getEntity().getLabel(), kbProxy))));
     return entities;
   }
 
@@ -313,5 +320,18 @@ public final class Constraints implements Serializable {
         .forEach(e -> skipRows.add(e.getPosition().getRowIndex()));
     }
     return skipRows;
+  }
+
+  private Entity findOrCreateEntity(String resource, String label, KBProxy kbProxy) {
+    Entity entity = null;
+    try {
+      entity = kbProxy.loadEntity(resource);
+    } catch (KBProxyException e) {
+      LOG.error(e.getLocalizedMessage(), e);
+    }
+    if (entity == null) {
+      entity = new Entity(resource, label);
+    }
+    return entity;
   }
 }

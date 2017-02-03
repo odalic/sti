@@ -260,7 +260,7 @@ public class UPDATE {
                                                                  Constraints constraints) throws KBProxyException {
         List<Pair<Entity, Map<String, Double>>> entity_and_scoreMap;
 
-        List<Entity> candidates = constraints.getDisambChosenForCell(table_cell_col, rowBlock.get(0));
+        List<Entity> candidates = constraints.getDisambChosenForCell(table_cell_col, rowBlock.get(0), kbSearch);
 
         if (candidates.isEmpty()) {
           candidates = kbSearch.findEntityCandidatesOfTypes(tcc.getText(), constrainedClazz.toArray(new String[0]));
