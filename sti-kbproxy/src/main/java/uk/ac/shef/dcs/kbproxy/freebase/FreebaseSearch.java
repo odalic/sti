@@ -59,6 +59,11 @@ public class FreebaseSearch extends KBProxy {
   }
 
   @Override
+  public Entity loadEntity(String uri) throws KBProxyException {
+    throw new KBProxyException("Not supported in Freebase.");
+  }
+
+  @Override
   public List<Attribute> findAttributesOfEntities(Entity ec) throws KBProxyException {
     return find_attributes(ec.getId(), cacheEntity);
   }

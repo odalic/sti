@@ -110,7 +110,7 @@ public class LEARNINGPreliminaryColumnClassifier {
             if (skip) {
                 entityScoresForBlock = toScoreMap(tableAnnotation, blockOfRows, column);
             } else {
-                List<Entity> candidates = constraints.getDisambChosenForCell(column, blockOfRows.get(0));
+                List<Entity> candidates = constraints.getDisambChosenForCell(column, blockOfRows.get(0), kbSearch);
 
                 if (candidates.isEmpty()) {
                   candidates = kbSearch.findEntityCandidates(sample.getText());

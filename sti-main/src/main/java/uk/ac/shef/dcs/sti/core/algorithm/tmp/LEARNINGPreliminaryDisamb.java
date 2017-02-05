@@ -141,7 +141,7 @@ public class LEARNINGPreliminaryDisamb {
                                                                             Constraints constraints) throws KBProxyException {
         List<Pair<Entity, Map<String, Double>>> entity_and_scoreMap;
 
-        List<Entity> candidates = constraints.getDisambChosenForCell(column, rowBlock.get(0));
+        List<Entity> candidates = constraints.getDisambChosenForCell(column, rowBlock.get(0), kbSearch);
 
         if (candidates.isEmpty()) {
           candidates = kbSearch.findEntityCandidatesOfTypes(tcc.getText(), winningColumnClazz.toArray(new String[0]));
