@@ -11,6 +11,8 @@ public class KnowledgeBaseEntityCandidateSetEntry {
   
   private EntityCandidateSetWrapper set;
   
+  public KnowledgeBaseEntityCandidateSetEntry() {}
+  
   public KnowledgeBaseEntityCandidateSetEntry(final KnowledgeBaseValue base, EntityCandidateSetWrapper set) {
     Preconditions.checkNotNull(base);
     Preconditions.checkNotNull(set);

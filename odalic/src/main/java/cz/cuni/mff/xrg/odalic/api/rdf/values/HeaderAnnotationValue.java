@@ -1,9 +1,9 @@
 package cz.cuni.mff.xrg.odalic.api.rdf.values;
 
-import java.util.Map;
+import java.util.Set;
 import com.complexible.pinto.annotations.RdfProperty;
 import com.complexible.pinto.annotations.RdfsClass;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rdf.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
@@ -19,13 +19,13 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 @RdfsClass("http://odalic.eu/internal/HeaderAnnotation")
 public final class HeaderAnnotationValue {
 
-  private Map<KnowledgeBaseValue, EntityCandidateNavigableSetWrapper> candidates;
+  private Set<KnowledgeBaseEntityCandidateNavigableSetEntry> candidates;
 
-  private Map<KnowledgeBaseValue, EntityCandidateSetWrapper> chosen;
+  private Set<KnowledgeBaseEntityCandidateSetEntry> chosen;
 
   public HeaderAnnotationValue() {
-    candidates = ImmutableMap.of();
-    chosen = ImmutableMap.of();
+    candidates = ImmutableSet.of();
+    chosen = ImmutableSet.of();
   }
 
   /**
@@ -40,7 +40,7 @@ public final class HeaderAnnotationValue {
    * @return the candidates
    */
   @RdfProperty("http://odalic.eu/internal/HeaderAnnotation/Candidates")
-  public Map<KnowledgeBaseValue, EntityCandidateNavigableSetWrapper> getCandidates() {
+  public Set<KnowledgeBaseEntityCandidateNavigableSetEntry> getCandidates() {
     return candidates;
   }
 
@@ -48,7 +48,7 @@ public final class HeaderAnnotationValue {
    * @param candidates the candidates to set
    */
   public void setCandidates(
-      Map<? extends KnowledgeBaseValue, ? extends EntityCandidateNavigableSetWrapper> candidates) {
+      Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
     this.candidates = Annotations.copyNavigableValues(candidates);
   }
 
@@ -56,7 +56,7 @@ public final class HeaderAnnotationValue {
    * @return the chosen
    */
   @RdfProperty("http://odalic.eu/internal/HeaderAnnotation/Chosen")
-  public Map<KnowledgeBaseValue, EntityCandidateSetWrapper> getChosen() {
+  public Set<KnowledgeBaseEntityCandidateSetEntry> getChosen() {
     return chosen;
   }
 
@@ -64,7 +64,7 @@ public final class HeaderAnnotationValue {
    * @param chosen the chosen to set
    */
   public void setChosen(
-      Map<? extends KnowledgeBaseValue, ? extends EntityCandidateSetWrapper> chosen) {
+      Set<? extends KnowledgeBaseEntityCandidateSetEntry> chosen) {
     this.chosen = Annotations.copyValues(chosen);
   }
 

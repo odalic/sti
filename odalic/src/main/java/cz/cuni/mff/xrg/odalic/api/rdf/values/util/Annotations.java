@@ -14,6 +14,8 @@ import com.google.common.collect.ImmutableSortedSet;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.EntityCandidateNavigableSetWrapper;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.EntityCandidateSetWrapper;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.EntityCandidateValue;
+import cz.cuni.mff.xrg.odalic.api.rdf.values.KnowledgeBaseEntityCandidateNavigableSetEntry;
+import cz.cuni.mff.xrg.odalic.api.rdf.values.KnowledgeBaseEntityCandidateSetEntry;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.KnowledgeBaseValue;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
@@ -29,10 +31,10 @@ public final class Annotations {
 
   private Annotations() {}
 
-  public static Map<KnowledgeBaseValue, EntityCandidateNavigableSetWrapper> toNavigableValues(
+  public static Set<KnowledgeBaseEntityCandidateNavigableSetEntry> toNavigableValues(
       final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidate>> candidates) {
-    final ImmutableMap.Builder<KnowledgeBaseValue, EntityCandidateNavigableSetWrapper> candidatesBuilder =
-        ImmutableMap.builder();
+    final ImmutableSet.Builder<KnowledgeBaseEntityCandidateNavigableSetEntry> candidatesBuilder =
+        ImmutableSet.builder();
     for (final Map.Entry<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidate>> entry : candidates
         .entrySet()) {
       final KnowledgeBase base = entry.getKey();
@@ -40,58 +42,43 @@ public final class Annotations {
 
       final Stream<EntityCandidateValue> stream =
           baseCandidates.stream().map(e -> new EntityCandidateValue(e));
-      candidatesBuilder.put(new KnowledgeBaseValue(base), new EntityCandidateNavigableSetWrapper(ImmutableSortedSet.copyOf(stream.iterator())));
+      candidatesBuilder.add(new KnowledgeBaseEntityCandidateNavigableSetEntry(new KnowledgeBaseValue(base), new EntityCandidateNavigableSetWrapper(ImmutableSortedSet.copyOf(stream.iterator()))));
     }
     return candidatesBuilder.build();
   }
 
-  public static Map<KnowledgeBaseValue, EntityCandidateSetWrapper> toValues(
+  public static Set<KnowledgeBaseEntityCandidateSetEntry> toValues(
       final Map<KnowledgeBase, Set<EntityCandidate>> chosen) {
-    final ImmutableMap.Builder<KnowledgeBaseValue, EntityCandidateSetWrapper> chosenBuilder =
-        ImmutableMap.builder();
+    final ImmutableSet.Builder<KnowledgeBaseEntityCandidateSetEntry> chosenBuilder =
+        ImmutableSet.builder();
     for (final Map.Entry<KnowledgeBase, Set<EntityCandidate>> entry : chosen.entrySet()) {
       final KnowledgeBase base = entry.getKey();
       final Set<EntityCandidate> baseChosen = entry.getValue();
 
       final Stream<EntityCandidateValue> stream =
           baseChosen.stream().map(e -> new EntityCandidateValue(e));
-      chosenBuilder.put(new KnowledgeBaseValue(base), new EntityCandidateSetWrapper(ImmutableSet.copyOf(stream.iterator())));
+      chosenBuilder.add(new KnowledgeBaseEntityCandidateSetEntry(new KnowledgeBaseValue(base), new EntityCandidateSetWrapper(ImmutableSet.copyOf(stream.iterator()))));
     }
     return chosenBuilder.build();
   }
 
-  public static Map<KnowledgeBaseValue, EntityCandidateNavigableSetWrapper> copyNavigableValues(
-      Map<? extends KnowledgeBaseValue, ? extends EntityCandidateNavigableSetWrapper> candidates) {
-    final ImmutableMap.Builder<KnowledgeBaseValue, EntityCandidateNavigableSetWrapper> candidatesBuilder =
-        ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBaseValue, ? extends EntityCandidateNavigableSetWrapper> candidateEntry : candidates
-        .entrySet()) {
-      candidatesBuilder.put(candidateEntry.getKey(), candidateEntry.getValue());
-    }
-
-    return candidatesBuilder.build();
+  public static Set<KnowledgeBaseEntityCandidateNavigableSetEntry> copyNavigableValues(
+      Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
+    return ImmutableSet.copyOf(candidates);
   }
 
-  public static Map<KnowledgeBaseValue, EntityCandidateSetWrapper> copyValues(
-      Map<? extends KnowledgeBaseValue, ? extends EntityCandidateSetWrapper> chosen) {
-    final ImmutableMap.Builder<KnowledgeBaseValue, EntityCandidateSetWrapper> chosenBuilder =
-        ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBaseValue, ? extends EntityCandidateSetWrapper> chosenEntry : chosen
-        .entrySet()) {
-      chosenBuilder.put(chosenEntry.getKey(), chosenEntry.getValue());
-    }
-
-    return chosenBuilder.build();
+  public static Set<KnowledgeBaseEntityCandidateSetEntry> copyValues(
+      Set<? extends KnowledgeBaseEntityCandidateSetEntry> chosen) {
+    return ImmutableSet.copyOf(chosen);
   }
 
   public static Map<KnowledgeBase, Set<EntityCandidate>> toNavigableDomain(
-      final Map<KnowledgeBaseValue, EntityCandidateNavigableSetWrapper> candidates) {
+      final Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
     final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> chosenBuilder =
         ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBaseValue, ? extends EntityCandidateNavigableSetWrapper> entry : candidates
-        .entrySet()) {
-      final KnowledgeBase base = entry.getKey().toKnowledgeBase();
-      final Set<EntityCandidateValue> values = entry.getValue().getValue();
+    for (final KnowledgeBaseEntityCandidateNavigableSetEntry entry : candidates) {
+      final KnowledgeBase base = entry.getBase().toKnowledgeBase();
+      final Set<EntityCandidateValue> values = entry.getSet().getValue();
 
       chosenBuilder.put(base, ImmutableSet.copyOf(
           values.stream().map(e -> new EntityCandidate(e.getEntity().toEntity(), e.getScore().toScore())).iterator()));
@@ -101,13 +88,12 @@ public final class Annotations {
   }
 
   public static Map<KnowledgeBase, Set<EntityCandidate>> toDomain(
-      final Map<? extends KnowledgeBaseValue, ? extends EntityCandidateSetWrapper> candidateValues) {
+      final Set<? extends KnowledgeBaseEntityCandidateSetEntry> candidateValues) {
     final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> candidatesBuilder =
         ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBaseValue, ? extends EntityCandidateSetWrapper> entry : candidateValues
-        .entrySet()) {
-      final KnowledgeBase base = entry.getKey().toKnowledgeBase();
-      final Set<EntityCandidateValue> values = entry.getValue().getValue();
+    for (final KnowledgeBaseEntityCandidateSetEntry entry : candidateValues) {
+      final KnowledgeBase base = entry.getBase().toKnowledgeBase();
+      final Set<EntityCandidateValue> values = entry.getSet().getValue();
 
       candidatesBuilder.put(base, ImmutableSet.copyOf(
           values.stream().map(e -> new EntityCandidate(e.getEntity().toEntity(), e.getScore().toScore())).iterator()));

@@ -1,7 +1,6 @@
 package cz.cuni.mff.xrg.odalic.api.rdf.values;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 
 import com.complexible.pinto.annotations.RdfProperty;
@@ -11,6 +10,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
+import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Domain class {@link Feedback} adapted for RDF serialization.
@@ -23,7 +24,7 @@ public final class FeedbackValue implements Serializable {
 
   private static final long serialVersionUID = -7968455903789693405L;
 
-  private Map<KnowledgeBaseValue, ColumnPositionValue> subjectColumnPositions;
+  private Set<KnowledgeBaseColumnPositionEntry> subjectColumnPositions;
 
   private Set<ColumnIgnoreValue> columnIgnores;
 
@@ -40,7 +41,7 @@ public final class FeedbackValue implements Serializable {
   private Set<DataCubeComponentValue> dataCubeComponents;
 
   public FeedbackValue() {
-    subjectColumnPositions = ImmutableMap.of();
+    subjectColumnPositions = ImmutableSet.of();
     columnIgnores = ImmutableSet.of();
     columnAmbiguities = ImmutableSet.of();
     classifications = ImmutableSet.of();
@@ -51,9 +52,10 @@ public final class FeedbackValue implements Serializable {
   }
 
   public FeedbackValue(Feedback adaptee) {
-    subjectColumnPositions =
-        adaptee.getSubjectColumnPositions().entrySet().stream().collect(ImmutableMap.toImmutableMap(
-            e -> new KnowledgeBaseValue(e.getKey()), e -> new ColumnPositionValue(e.getValue())));
+    subjectColumnPositions = adaptee.getSubjectColumnPositions().entrySet().stream()
+        .map(e -> new KnowledgeBaseColumnPositionEntry(new KnowledgeBaseValue(e.getKey()),
+            new ColumnPositionValue(e.getValue())))
+        .collect(ImmutableSet.toImmutableSet());
     columnIgnores = adaptee.getColumnIgnores().stream().map(ColumnIgnoreValue::new)
         .collect(ImmutableSet.toImmutableSet());
     columnAmbiguities = adaptee.getColumnAmbiguities().stream().map(ColumnAmbiguityValue::new)
@@ -74,7 +76,7 @@ public final class FeedbackValue implements Serializable {
    * @return the subject column positions
    */
   @RdfProperty("http://odalic.eu/internal/Feedback/SubjectColumnPositions")
-  public Map<KnowledgeBaseValue, ColumnPositionValue> getSubjectColumnPositions() {
+  public Set<KnowledgeBaseColumnPositionEntry> getSubjectColumnPositions() {
     return subjectColumnPositions;
   }
 
@@ -82,10 +84,10 @@ public final class FeedbackValue implements Serializable {
    * @param subjectColumnPositions the subject column positions to set
    */
   public void setSubjectColumnPositions(
-      Map<? extends KnowledgeBaseValue, ? extends ColumnPositionValue> subjectColumnPositions) {
+      Set<? extends KnowledgeBaseColumnPositionEntry> subjectColumnPositions) {
     Preconditions.checkNotNull(subjectColumnPositions);
 
-    this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
+    this.subjectColumnPositions = ImmutableSet.copyOf(subjectColumnPositions);
   }
 
   /**
@@ -208,10 +210,14 @@ public final class FeedbackValue implements Serializable {
   }
 
   public Feedback toFeedback() {
-    return new Feedback(
-        subjectColumnPositions.entrySet().stream()
-            .collect(ImmutableMap.toImmutableMap(e -> e.getKey().toKnowledgeBase(),
-                e -> e.getValue().toColumnPosition())),
+    final ImmutableMap.Builder<KnowledgeBase, ColumnPosition> subjectColumnPositionsMapBuilder =
+        ImmutableMap.builder();
+    for (final KnowledgeBaseColumnPositionEntry entry : subjectColumnPositions) {
+      subjectColumnPositionsMapBuilder.put(entry.getBase().toKnowledgeBase(),
+          entry.getValue().toColumnPosition());
+    }
+
+    return new Feedback(subjectColumnPositionsMapBuilder.build(),
         columnIgnores.stream().map(ColumnIgnoreValue::toColumnIgnore)
             .collect(ImmutableSet.toImmutableSet()),
         columnAmbiguities.stream().map(ColumnAmbiguityValue::toColumnAmbiguity)
