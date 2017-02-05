@@ -1,5 +1,7 @@
 package cz.cuni.mff.xrg.odalic.tasks.annotations;
 
+import java.io.Serializable;
+
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -8,14 +10,16 @@ import com.google.common.base.Preconditions;
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.KnowledgeBaseAdapter;
 
 /**
- * Knowledge base identifier. May turn into full-fledged domain entity class in future version.
+ * Knowledge base identifier.
  * 
  * @author Václav Brodec
  *
  */
 @Immutable
 @XmlJavaTypeAdapter(KnowledgeBaseAdapter.class)
-public final class KnowledgeBase implements Comparable<KnowledgeBase> {
+public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBase> {
+
+  private static final long serialVersionUID = 2241360833757117714L;
 
   private final String name;
 
@@ -84,7 +88,7 @@ public final class KnowledgeBase implements Comparable<KnowledgeBase> {
   public int compareTo(KnowledgeBase other) {
     return name.compareTo(other.name);
   }
-  
+
   /*
    * (non-Javadoc)
    * 

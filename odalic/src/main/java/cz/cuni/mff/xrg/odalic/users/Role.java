@@ -6,7 +6,6 @@ package cz.cuni.mff.xrg.odalic.users;
  * @author Václav Brodec
  *
  */
-
 public enum Role {
   USER, ADMINISTRATOR;
 }

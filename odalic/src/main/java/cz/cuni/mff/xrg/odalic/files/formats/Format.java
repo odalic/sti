@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.files.formats;
 
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -19,15 +20,16 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.FormatAdapter;
  */
 @Immutable
 @XmlJavaTypeAdapter(value = FormatAdapter.class)
-public final class Format {
+public final class Format implements Serializable {
 
+  private static final long serialVersionUID = -1910540987387436314L;
+  
   private final Charset charset;
   private final char delimiter;
   private final boolean emptyLinesIgnored;
   private final Character quoteCharacter;
   private final Character escapeCharacter;
   private final Character commentMarker;
-
   private final String lineSeparator;
 
 

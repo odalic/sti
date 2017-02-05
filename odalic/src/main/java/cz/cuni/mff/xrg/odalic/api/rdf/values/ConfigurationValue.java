@@ -1,36 +1,35 @@
-package cz.cuni.mff.xrg.odalic.api.rest.values;
+package cz.cuni.mff.xrg.odalic.api.rdf.values;
 
 import java.io.Serializable;
-import java.util.NavigableSet;
-import java.util.Set;
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import com.complexible.pinto.annotations.RdfProperty;
+import com.complexible.pinto.annotations.RdfsClass;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSortedSet;
-
-import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import com.google.common.collect.ImmutableList;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 
 /**
- * Domain class {@link Configuration} adapted for REST API.
+ * Domain class {@link Configuration} adapted for RDF serialization.
  * 
  * @author Václav Brodec
  *
  */
 @XmlRootElement(name = "configuration")
+@RdfsClass("http://odalic.eu/internal/Configuration")
 public final class ConfigurationValue implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
   private String input;
 
-  private Feedback feedback;
+  private FeedbackValue feedback;
 
-  private NavigableSet<KnowledgeBase> usedBases;
-  
-  private KnowledgeBase primaryBase;
+  private List<KnowledgeBaseValue> usedBases;
+
+  private KnowledgeBaseValue primaryBase;
 
   private Integer rowsLimit;
 
@@ -40,9 +39,9 @@ public final class ConfigurationValue implements Serializable {
 
   public ConfigurationValue(Configuration adaptee) {
     input = adaptee.getInput().getId();
-    feedback = adaptee.getFeedback();
-    usedBases = ImmutableSortedSet.copyOf(adaptee.getUsedBases());
-    primaryBase = adaptee.getPrimaryBase();
+    feedback = adaptee.getFeedback() == null ? null : new FeedbackValue(adaptee.getFeedback());
+    usedBases = adaptee.getUsedBases().stream().map(KnowledgeBaseValue::new).collect(ImmutableList.toImmutableList());
+    primaryBase = new KnowledgeBaseValue(adaptee.getPrimaryBase());
     rowsLimit =
         adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
     statistical = adaptee.isStatistical();
@@ -53,6 +52,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
+  @RdfProperty("http://odalic.eu/internal/Configuration/Input")
   public String getInput() {
     return input;
   }
@@ -71,14 +71,15 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  public Feedback getFeedback() {
+  @RdfProperty("http://odalic.eu/internal/Configuration/Feedback")
+  public FeedbackValue getFeedback() {
     return feedback;
   }
 
   /**
    * @param feedback the feedback to set
    */
-  public void setFeedback(Feedback feedback) {
+  public void setFeedback(FeedbackValue feedback) {
     Preconditions.checkNotNull(feedback);
 
     this.feedback = feedback;
@@ -89,17 +90,18 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  public NavigableSet<KnowledgeBase> getUsedBases() {
+  @RdfProperty("http://odalic.eu/internal/Configuration/UsedBase")
+  public List<KnowledgeBaseValue> getUsedBases() {
     return usedBases;
   }
 
   /**
    * @param usedBases the bases selected for the task to set
    */
-  public void setUsedBases(Set<? extends KnowledgeBase> usedBases) {
+  public void setUsedBases(List<? extends KnowledgeBaseValue> usedBases) {
     Preconditions.checkNotNull(usedBases);
-    
-    this.usedBases = ImmutableSortedSet.copyOf(usedBases);
+
+    this.usedBases = ImmutableList.copyOf(usedBases);
   }
 
   /**
@@ -107,14 +109,15 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  public KnowledgeBase getPrimaryBase() {
+  @RdfProperty("http://odalic.eu/internal/Configuration/PrimaryBase")
+  public KnowledgeBaseValue getPrimaryBase() {
     return primaryBase;
   }
 
   /**
    * @param primaryBase the primary knowledge base to set
    */
-  public void setPrimaryBase(KnowledgeBase primaryBase) {
+  public void setPrimaryBase(KnowledgeBaseValue primaryBase) {
     Preconditions.checkNotNull(primaryBase);
 
     this.primaryBase = primaryBase;
@@ -125,6 +128,8 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
+  @RdfProperty(value = "http://odalic.eu/internal/Configuration/RowsLimit",
+      datatype = "http://www.w3.org/2001/XMLSchema#positiveInteger")
   public Integer getRowsLimit() {
     return rowsLimit;
   }
@@ -143,6 +148,8 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
+  @RdfProperty(value = "http://odalic.eu/internal/Configuration/Statistical",
+      datatype = "http://www.w3.org/2001/XMLSchema#boolean")
   public Boolean isStatistical() {
     return statistical;
   }
@@ -161,7 +168,8 @@ public final class ConfigurationValue implements Serializable {
    */
   @Override
   public String toString() {
-    return "ConfigurationValue [input=" + input + ", feedback=" + feedback + ", usedBases=" + usedBases + ", primaryBase="
-        + primaryBase + ", rowsLimit=" + rowsLimit + ", statistical=" + statistical + "]";
+    return "ConfigurationValue [input=" + input + ", feedback=" + feedback + ", usedBases="
+        + usedBases + ", primaryBase=" + primaryBase + ", rowsLimit=" + rowsLimit + ", statistical="
+        + statistical + "]";
   }
 }

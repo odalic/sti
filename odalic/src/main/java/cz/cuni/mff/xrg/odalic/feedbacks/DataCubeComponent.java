@@ -1,7 +1,6 @@
 package cz.cuni.mff.xrg.odalic.feedbacks;
 
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
@@ -21,10 +20,8 @@ public final class DataCubeComponent implements Serializable {
 
   private static final long serialVersionUID = 6053349406668481968L;
 
-  @XmlElement
   private final ColumnPosition position;
 
-  @XmlElement
   private final StatisticalAnnotation annotation;
 
   /**
