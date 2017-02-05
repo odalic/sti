@@ -1,5 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.NavigableSet;
@@ -21,12 +23,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Response.Status;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
-
+import cz.cuni.mff.xrg.odalic.api.rdf.TaskRdfSerializationService;
 import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
@@ -56,11 +59,14 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 @Secured({Role.ADMINISTRATOR, Role.USER})
 public final class TasksResource {
 
+  private static final String TURTLE_MIME_TYPE = "text/turtle";
+
   private final UserService userService;
   private final TaskService taskService;
   private final FileService fileService;
   private final ExecutionService executionService;
   private final BasesService basesService;
+  private final TaskRdfSerializationService taskSerializationService;
 
   @Context
   private SecurityContext securityContext;
@@ -71,18 +77,20 @@ public final class TasksResource {
   @Autowired
   public TasksResource(final UserService userService, final TaskService taskService,
       final FileService fileService, final ExecutionService executionService,
-      final BasesService basesService) {
+      final BasesService basesService, final TaskRdfSerializationService taskSerializationService) {
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(taskService);
     Preconditions.checkNotNull(fileService);
     Preconditions.checkNotNull(executionService);
     Preconditions.checkNotNull(basesService);
+    Preconditions.checkNotNull(taskSerializationService);
 
     this.userService = userService;
     this.taskService = taskService;
     this.fileService = fileService;
     this.executionService = executionService;
     this.basesService = basesService;
+    this.taskSerializationService = taskSerializationService;
   }
 
   @GET
@@ -254,5 +262,76 @@ public final class TasksResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteTaskById(final @PathParam("taskId") String taskId) {
     return deleteTaskById(securityContext.getUserPrincipal().getName(), taskId);
+  }
+
+  @PUT
+  @Path("users/{userId}/tasks/{taskId}")
+  @Consumes(TURTLE_MIME_TYPE)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response importTaskId(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId, final InputStream body) throws IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    if (body == null) {
+      throw new BadRequestException("The body cannot be null!");
+    }
+
+    final Task task;
+    try {
+      task = taskSerializationService.deserialize(body, userId, taskId, uriInfo.getBaseUri());
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
+
+    final Task taskById = taskService.verifyTaskExistenceById(userId, taskId);
+
+    final URL location =
+        cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, taskId);
+
+    if (taskById == null) {
+      taskService.create(task);
+      return Message.of("A task has been imported AT THE LOCATION you specified")
+          .toResponse(Response.Status.CREATED, location, uriInfo);
+    } else {
+      executionService.unscheduleForTaskId(userId, taskId);
+      taskService.replace(task);
+      return Message
+          .of("The task you specified has been fully updated from the import AT THE LOCATION you specified.")
+          .toResponse(Response.Status.OK, location, uriInfo);
+    }
+  }
+
+  @PUT
+  @Path("tasks/{taskId}")
+  @Consumes(TURTLE_MIME_TYPE)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response importTaskId(final @PathParam("taskId") String taskId, final InputStream body) throws IOException {
+    return importTaskId(securityContext.getUserPrincipal().getName(), taskId, body);
+  }
+
+  @GET
+  @Path("users/{userId}/tasks/{taskId}")
+  @Produces(TURTLE_MIME_TYPE)
+  public Response exportTaskId(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId) {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final Task task;
+    try {
+      task = this.taskService.getById(userId, taskId);
+    } catch (final IllegalArgumentException e) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+
+    final String exportedTask = taskSerializationService.serialize(task, uriInfo.getBaseUri());
+    
+    return Response.ok(exportedTask).build();
+  }
+
+  @GET
+  @Path("tasks/{taskId}/")
+  @Produces(TURTLE_MIME_TYPE)
+  public Response exportTaskId(final @PathParam("taskId") String taskId) {
+    return exportTaskId(securityContext.getUserPrincipal().getName(), taskId);
   }
 }

@@ -88,7 +88,7 @@ public final class FeedbackValue implements Serializable {
   /**
    * @param subjectColumnPositions the subject column positions to set
    */
-  public void setSubjectColumnPosition(Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions) {
+  public void setSubjectColumnPositions(Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions) {
     Preconditions.checkNotNull(subjectColumnPositions);
     
     this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);

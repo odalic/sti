@@ -10,7 +10,7 @@ import com.google.common.base.Preconditions;
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.KnowledgeBaseAdapter;
 
 /**
- * Knowledge base identifier. May turn into full-fledged domain entity class in future version.
+ * Knowledge base identifier.
  * 
  * @author Václav Brodec
  *

@@ -34,7 +34,7 @@ public final class TaskValue implements Serializable {
   private Date created;
 
   private ConfigurationValue configuration;
-
+  
   public TaskValue() {}
 
   public TaskValue(Task adaptee) {

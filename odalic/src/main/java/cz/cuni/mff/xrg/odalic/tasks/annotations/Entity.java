@@ -65,7 +65,10 @@ public final class Entity implements Comparable<Entity>, Serializable {
     return new Entity(null, resourceId, label);
   }
 
-  private Entity(final Prefix prefix, final String suffix, String label) {
+  public Entity(final Prefix prefix, final String suffix, String label) {
+    Preconditions.checkNotNull(suffix);
+    Preconditions.checkNotNull(label);
+    
     this.prefix = prefix;
     this.tail = suffix;
     this.label = label;

@@ -39,6 +39,8 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 @Secured({Role.ADMINISTRATOR, Role.USER})
 public final class ConfigurationResource {
 
+  public static final String TURTLE_MIME_TYPE = "text/turtle";
+  
   private final ConfigurationService configurationService;
   private final FileService fileService;
   private final BasesService basesService;
