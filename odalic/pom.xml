@@ -266,6 +266,19 @@
 			<artifactId>pinto</artifactId>
 			<version>2.0</version>
 		</dependency>
+		
+		<!-- MapDB -->
+		<dependency>
+    		<groupId>org.mapdb</groupId>
+    		<artifactId>mapdb</artifactId>
+    		<version>3.0.3</version>
+    		<exclusions>
+    			<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 	<build>
