@@ -263,7 +263,7 @@ public final class FilesResource {
   @DELETE
   @Path("users/{userId}/files/{fileId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response deleteFileById(final @PathParam("userId") String userId, final @PathParam("fileid") String fileId) {
+  public Response deleteFileById(final @PathParam("userId") String userId, final @PathParam("fileId") String fileId) {
     Security.checkAuthorization(securityContext, userId);
     
     try {
@@ -280,7 +280,7 @@ public final class FilesResource {
   @DELETE
   @Path("files/{fileId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response deleteFileById(final @PathParam("fileid") String fileId) {
+  public Response deleteFileById(final @PathParam("fileId") String fileId) {
     return deleteFileById(securityContext.getUserPrincipal().getName(), fileId);
   }
 
