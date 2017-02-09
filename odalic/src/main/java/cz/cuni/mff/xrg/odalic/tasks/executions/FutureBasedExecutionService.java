@@ -24,7 +24,6 @@ import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.feedbacks.FeedbackToConstraintsAdapter;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.files.formats.FormatService;
 import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.InputToTableAdapter;
@@ -59,7 +58,6 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
   private final TaskService taskService;
   private final FileService fileService;
-  private final FormatService formatService;
   private final AnnotationToResultAdapter annotationResultAdapter;
   private final SemanticTableInterpreterFactory semanticTableInterpreterFactory;
   private final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter;
@@ -71,13 +69,12 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
   @Autowired
   public FutureBasedExecutionService(final TaskService taskService, final FileService fileService,
-      final FormatService formatService, final AnnotationToResultAdapter annotationToResultAdapter,
+      final AnnotationToResultAdapter annotationToResultAdapter,
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
       final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter) {
     Preconditions.checkNotNull(taskService);
     Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(formatService);
     Preconditions.checkNotNull(annotationToResultAdapter);
     Preconditions.checkNotNull(semanticTableInterpreterFactory);
     Preconditions.checkNotNull(feedbackToConstraintsAdapter);
@@ -86,7 +83,6 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
     this.taskService = taskService;
     this.fileService = fileService;
-    this.formatService = formatService;
     this.annotationResultAdapter = annotationToResultAdapter;
     this.semanticTableInterpreterFactory = semanticTableInterpreterFactory;
     this.feedbackToConstraintsAdapter = feedbackToConstraintsAdapter;
@@ -159,10 +155,10 @@ public final class FutureBasedExecutionService implements ExecutionService {
   private ParsingResult parse(final String userId, final String fileId, final int rowsLimit)
       throws IOException {
     final String data = fileService.getDataById(userId, fileId);
-    final Format format = formatService.getForFileId(userId, fileId);
+    final Format format = fileService.getFormatForFileId(userId, fileId);
 
     final ParsingResult result = csvInputParser.parse(data, fileId, format, rowsLimit);
-    formatService.setForFileId(userId, fileId, result.getFormat());
+    fileService.setFormatForFileId(userId, fileId, result.getFormat());
 
     return result;
   }

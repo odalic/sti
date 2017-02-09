@@ -108,7 +108,7 @@ public class CoreExecutionBatch {
 
     // File settings
     try {
-      final File file = new File(user, fileId, path.toUri().toURL(), new Format(), true);
+      final File file = new File(user, fileId, path.toUri().toURL(), new Format(StandardCharsets.ISO_8859_1, ';', true, '"', null, null), true);
       files.put(file.getId(), file);
       data.put(file.getLocation(),
           IOUtils.toByteArray(new FileInputStream(file.getLocation().getFile())));
@@ -116,9 +116,6 @@ public class CoreExecutionBatch {
       log.error("Error - File settings:", e);
       return null;
     }
-
-    // Format settings
-    files.get(fileId).setFormat(new Format(StandardCharsets.ISO_8859_1, ';', true, '"', null, null));
 
     // Task settings
     Task task = new Task(user, "simple_task", "task description",
@@ -133,7 +130,7 @@ public class CoreExecutionBatch {
   public static Result testCoreExecution(String propertyFilePath, Task task) {
     System.setProperty("cz.cuni.mff.xrg.odalic.sti", propertyFilePath);
 
-    final File file = task.getConfiguration().getInput();
+    File file = task.getConfiguration().getInput();
 
     // Code for extraction from CSV
     final ParsingResult parsingResult;
@@ -149,7 +146,7 @@ public class CoreExecutionBatch {
     }
 
     // Parsed format and input settings
-    file.setFormat(parsingResult.getFormat());
+    file = new File(file.getOwner(), file.getId(), file.getUploaded(), file.getLocation(), parsingResult.getFormat(), file.isCached());
     task.setInputSnapshot(parsingResult.getInput());
 
     // input Table creation

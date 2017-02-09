@@ -8,16 +8,20 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.NavigableMap;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.mapdb.DB;
+import org.mapdb.Fun;
+import org.mapdb.Fun.Tuple2;
+
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
-
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
+import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
  * This {@link FileService} implementation provides no persistence.
@@ -25,40 +29,38 @@ import cz.cuni.mff.xrg.odalic.tasks.Task;
  * @author Václav Brodec
  *
  */
-public final class MemoryOnlyFileService implements FileService {
+public final class DbFileService implements FileService {
 
   /**
    * Table of files where the rows are indexed by user IDs and the columns by file IDs.
    */
-  private final Table<String, String, File> files;
+  private final NavigableMap<Tuple2<String, String>, File> files;
 
   /**
    * Table of file content where the rows are indexed by user IDs and the columns by file URLs.
    */
-  private final Table<String, URL, byte[]> data;
+  private final NavigableMap<Tuple2<String, URL>, byte[]> data;
 
   /**
    * Table of task IDs (that belong to tasks that utilize the file indexed by the same row and
    * column) where the rows are indexed by user IDs and the columns by file IDs.
    */
-  private final Table<String, String, Set<String>> utilizingTasks;
+  private final NavigableMap<Tuple2<String, String>, Set<String>> utilizingTasks;
 
-  private MemoryOnlyFileService(Table<String, String, File> files, Table<String, URL, byte[]> data,
-      Table<String, String, Set<String>> utilizingTasks) {
-    Preconditions.checkNotNull(files);
-    Preconditions.checkNotNull(data);
-    Preconditions.checkNotNull(utilizingTasks);
-
-    this.files = files;
-    this.data = data;
-    this.utilizingTasks = utilizingTasks;
-  }
+  /**
+   * Open transaction.
+   */
+  private final DB db;
 
   /**
    * Creates the file service with no registered files and data.
    */
-  public MemoryOnlyFileService() {
-    this(HashBasedTable.create(), HashBasedTable.create(), HashBasedTable.create());
+  public DbFileService(final DbService dbService) {
+    this.db = dbService.get();
+
+    this.files = db.createTreeMap("files").makeOrGet();
+    this.data = db.createTreeMap("data").makeOrGet();
+    this.utilizingTasks = db.createTreeMap("utilizingTasks").makeOrGet();
   }
 
   /*
@@ -98,15 +100,17 @@ public final class MemoryOnlyFileService implements FileService {
 
     checkUtilization(userId, fileId);
 
-    final File file = this.files.remove(userId, fileId);
+    final File file = this.files.remove(new Tuple2<>(userId, fileId));
     Preconditions.checkArgument(file != null);
 
     this.data.remove(userId, file.getLocation());
+    
+    db.commit();
   }
 
   private void checkUtilization(final String userId, final String fileId)
       throws IllegalStateException {
-    final Set<String> utilizingTaskIds = utilizingTasks.get(userId, fileId);
+    final Set<String> utilizingTaskIds = utilizingTasks.get(new Tuple2<>(userId, fileId));
     if (utilizingTaskIds == null) {
       return;
     }
@@ -126,7 +130,7 @@ public final class MemoryOnlyFileService implements FileService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(fileId);
 
-    final File file = this.files.get(userId, fileId);
+    final File file = this.files.get(new Tuple2<>(userId, fileId));
     Preconditions.checkArgument(file != null, "File does not exists!");
 
     return file;
@@ -139,7 +143,8 @@ public final class MemoryOnlyFileService implements FileService {
    */
   @Override
   public List<File> getFiles(String userId) {
-    return ImmutableList.copyOf(this.files.row(userId).values());
+    return ImmutableList.copyOf(
+        this.files.subMap(new Tuple2<>(userId, null), new Tuple2<>(userId, Fun.HI())).values());
   }
 
   /*
@@ -151,13 +156,17 @@ public final class MemoryOnlyFileService implements FileService {
   public void replace(File file) {
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
-    
-    final File previous = this.files.get(userId, fileId);
+
+    final Tuple2<String, String> userFileid = new Tuple2<>(userId, fileId);
+
+    final File previous = this.files.get(userFileid);
     if (previous != null && !previous.getLocation().equals(file.getLocation())) {
       this.data.remove(userId, previous.getLocation());
     }
 
-    this.files.put(userId, fileId, file);
+    this.files.put(userFileid, file);
+    
+    db.commit();
   }
 
 
@@ -170,12 +179,14 @@ public final class MemoryOnlyFileService implements FileService {
   @Override
   public void replace(File file, InputStream fileInputStream) throws IOException {
     Preconditions.checkArgument(file.isCached());
-    
+
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
 
-    this.files.put(userId, fileId, file);
-    this.data.put(userId, file.getLocation(), IOUtils.toByteArray(fileInputStream));
+    this.files.put(new Tuple2<>(userId, fileId), file);
+    this.data.put(new Tuple2<>(userId, file.getLocation()), IOUtils.toByteArray(fileInputStream));
+    
+    db.commit();
   }
 
   /*
@@ -188,14 +199,14 @@ public final class MemoryOnlyFileService implements FileService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(fileId);
 
-    return this.files.contains(userId, fileId);
+    return this.files.containsKey(new Tuple2<>(userId, fileId));
   }
 
   @Override
   public String getDataById(String userId, String fileId) throws IOException {
     final File file = getById(userId, fileId);
 
-    final byte[] data = this.data.get(userId, file.getLocation());
+    final byte[] data = this.data.get(new Tuple2<>(userId, file.getLocation()));
     final Charset encoding = file.getFormat().getCharset();
 
     if (data == null) {
@@ -210,14 +221,15 @@ public final class MemoryOnlyFileService implements FileService {
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
 
-    Preconditions.checkArgument(files.get(userId, fileId).equals(file),
-        "The file is not registered!");
+    final Tuple2<String, String> userFileId = new Tuple2<>(userId, fileId);
 
-    final Set<String> tasks = utilizingTasks.get(userId, fileId);
+    Preconditions.checkArgument(files.get(userFileId).equals(file), "The file is not registered!");
+
+    final Set<String> tasks = utilizingTasks.get(userFileId);
 
     final boolean inserted;
     if (tasks == null) {
-      utilizingTasks.put(userId, fileId, Sets.newHashSet(task.getId()));
+      utilizingTasks.put(userFileId, Sets.newHashSet(task.getId()));
       inserted = true;
     } else {
       inserted = tasks.add(task.getId());
@@ -231,10 +243,11 @@ public final class MemoryOnlyFileService implements FileService {
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
 
-    Preconditions.checkArgument(files.get(userId, fileId).equals(file),
-        "The file is not registered!");
+    final Tuple2<String, String> userFileId = new Tuple2<>(userId, fileId);
 
-    final Set<String> tasks = utilizingTasks.get(userId, fileId);
+    Preconditions.checkArgument(files.get(userFileId).equals(file), "The file is not registered!");
+
+    final Set<String> tasks = utilizingTasks.get(userFileId);
 
     final boolean removed;
     if (tasks == null) {
@@ -248,5 +261,27 @@ public final class MemoryOnlyFileService implements FileService {
     }
 
     Preconditions.checkArgument(removed, "The task is not subcscribed to the file!");
+  }
+
+  @Override
+  public Format getFormatForFileId(final String userId, final String fileId) {
+    return getById(userId, fileId).getFormat();
+  }
+
+  @Override
+  public void setFormatForFileId(final String userId, final String fileId, final Format format) {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(format);
+
+    final Tuple2<String, String> userFileId = new Tuple2<>(userId, fileId);
+
+    final File previousfile = this.files.get(userFileId);
+    final File newFile = new File(previousfile.getOwner(), previousfile.getId(),
+        previousfile.getUploaded(), previousfile.getLocation(), format, previousfile.isCached());
+
+    this.files.put(userFileId, newFile);
+    
+    db.commit();
   }
 }
