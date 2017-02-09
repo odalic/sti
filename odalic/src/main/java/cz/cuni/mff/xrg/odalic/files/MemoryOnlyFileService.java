@@ -5,71 +5,61 @@ package cz.cuni.mff.xrg.odalic.files;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.ext.com.google.common.collect.ImmutableSet;
-import org.mapdb.BTreeMap;
-import org.mapdb.DB;
-import org.mapdb.Serializer;
-import org.mapdb.serializer.SerializerArrayTuple;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
+
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
-import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
- * This {@link FileService} implementation persists the file in a {@link DB}-backed maps.
+ * This {@link FileService} implementation provides no persistence.
  * 
  * @author Václav Brodec
  *
  */
-public final class DbFileService implements FileService {
+public final class MemoryOnlyFileService implements FileService {
 
   /**
    * Table of files where the rows are indexed by user IDs and the columns by file IDs.
    */
-  private final BTreeMap<Object[], File> files;
+  private final Table<String, String, File> files;
 
   /**
    * Table of file content where the rows are indexed by user IDs and the columns by file URLs.
    */
-  private final BTreeMap<Object[], byte[]> data;
+  private final Table<String, URL, byte[]> data;
 
   /**
    * Table of task IDs (that belong to tasks that utilize the file indexed by the same row and
    * column) where the rows are indexed by user IDs and the columns by file IDs.
    */
-  private final BTreeMap<Object[], Set<String>> utilizingTasks;
+  private final Table<String, String, Set<String>> utilizingTasks;
 
-  /**
-   * Open transaction.
-   */
-  private final DB db;
+  private MemoryOnlyFileService(Table<String, String, File> files, Table<String, URL, byte[]> data,
+      Table<String, String, Set<String>> utilizingTasks) {
+    Preconditions.checkNotNull(files);
+    Preconditions.checkNotNull(data);
+    Preconditions.checkNotNull(utilizingTasks);
+
+    this.files = files;
+    this.data = data;
+    this.utilizingTasks = utilizingTasks;
+  }
 
   /**
    * Creates the file service with no registered files and data.
    */
-  @Autowired
-  @SuppressWarnings("unchecked")
-  public DbFileService(final DbService dbService) {
-    this.db = dbService.get();
-
-    this.files = db.treeMap("files")
-        .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
-        .valueSerializer(Serializer.JAVA).createOrOpen();
-    this.data = db.treeMap("data")
-        .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
-        .valueSerializer(Serializer.BYTE_ARRAY).createOrOpen();
-    this.utilizingTasks = db.treeMap("utilizingTasks")
-        .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
-        .valueSerializer(Serializer.JAVA).createOrOpen();
+  public MemoryOnlyFileService() {
+    this(HashBasedTable.create(), HashBasedTable.create(), HashBasedTable.create());
   }
 
   /*
@@ -109,17 +99,15 @@ public final class DbFileService implements FileService {
 
     checkUtilization(userId, fileId);
 
-    final File file = this.files.remove(new Object[] {userId, fileId});
+    final File file = this.files.remove(userId, fileId);
     Preconditions.checkArgument(file != null);
 
-    this.data.remove(new Object[] {userId, file.getLocation().toString()});
-
-    db.commit();
+    this.data.remove(userId, file.getLocation());
   }
 
   private void checkUtilization(final String userId, final String fileId)
       throws IllegalStateException {
-    final Set<String> utilizingTaskIds = utilizingTasks.get(new Object[] {userId, fileId});
+    final Set<String> utilizingTaskIds = utilizingTasks.get(userId, fileId);
     if (utilizingTaskIds == null) {
       return;
     }
@@ -139,7 +127,7 @@ public final class DbFileService implements FileService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(fileId);
 
-    final File file = this.files.get(new Object[] {userId, fileId});
+    final File file = this.files.get(userId, fileId);
     Preconditions.checkArgument(file != null, "File does not exists!");
 
     return file;
@@ -152,7 +140,7 @@ public final class DbFileService implements FileService {
    */
   @Override
   public List<File> getFiles(String userId) {
-    return ImmutableList.copyOf(this.files.prefixSubMap(new Object[] {userId }).values());
+    return ImmutableList.copyOf(this.files.row(userId).values());
   }
 
   /*
@@ -164,17 +152,13 @@ public final class DbFileService implements FileService {
   public void replace(File file) {
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
-
-    final Object[] userFileId = new Object[] {userId, fileId};
-
-    final File previous = this.files.get(userFileId);
+    
+    final File previous = this.files.get(userId, fileId);
     if (previous != null && !previous.getLocation().equals(file.getLocation())) {
-      this.data.remove(new Object[] {userId, previous.getLocation()});
+      this.data.remove(userId, previous.getLocation());
     }
 
-    this.files.put(userFileId, file);
-
-    db.commit();
+    this.files.put(userId, fileId, file);
   }
 
 
@@ -187,14 +171,12 @@ public final class DbFileService implements FileService {
   @Override
   public void replace(File file, InputStream fileInputStream) throws IOException {
     Preconditions.checkArgument(file.isCached());
-
+    
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
 
-    this.files.put(new Object[] {userId, fileId}, file);
-    this.data.put(new Object[] {userId, file.getLocation().toString()}, IOUtils.toByteArray(fileInputStream));
-
-    db.commit();
+    this.files.put(userId, fileId, file);
+    this.data.put(userId, file.getLocation(), IOUtils.toByteArray(fileInputStream));
   }
 
   /*
@@ -207,14 +189,14 @@ public final class DbFileService implements FileService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(fileId);
 
-    return this.files.containsKey(new Object[] {userId, fileId});
+    return this.files.contains(userId, fileId);
   }
 
   @Override
   public String getDataById(String userId, String fileId) throws IOException {
     final File file = getById(userId, fileId);
 
-    final byte[] data = this.data.get(new Object[] {userId, file.getLocation().toString()});
+    final byte[] data = this.data.get(userId, file.getLocation());
     final Charset encoding = file.getFormat().getCharset();
 
     if (data == null) {
@@ -229,22 +211,17 @@ public final class DbFileService implements FileService {
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
 
-    final Object[] userFileId = new Object[] {userId, fileId};
+    Preconditions.checkArgument(files.get(userId, fileId).equals(file),
+        "The file is not registered!");
 
-    Preconditions.checkArgument(files.get(userFileId).equals(file), "The file is not registered!");
-
-    final Set<String> tasks = utilizingTasks.get(userFileId);
-
-    final String taskId = task.getId();
+    final Set<String> tasks = utilizingTasks.get(userId, fileId);
 
     final boolean inserted;
     if (tasks == null) {
-      utilizingTasks.put(userFileId, ImmutableSet.of(taskId));
+      utilizingTasks.put(userId, fileId, Sets.newHashSet(task.getId()));
       inserted = true;
     } else {
-      inserted = tasks.contains(taskId);
-      utilizingTasks.put(userFileId,
-          ImmutableSet.<String>builder().addAll(tasks).add(taskId).build());
+      inserted = tasks.add(task.getId());
     }
 
     Preconditions.checkArgument(inserted, "The task has already been subcscribed to the file!");
@@ -255,25 +232,19 @@ public final class DbFileService implements FileService {
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
 
-    final Object[] userFileId = new Object[] {userId, fileId};
+    Preconditions.checkArgument(files.get(userId, fileId).equals(file),
+        "The file is not registered!");
 
-    Preconditions.checkArgument(files.get(userFileId).equals(file), "The file is not registered!");
-
-    final Set<String> tasks = utilizingTasks.get(userFileId);
+    final Set<String> tasks = utilizingTasks.get(userId, fileId);
 
     final boolean removed;
     if (tasks == null) {
       removed = false;
     } else {
-      final String taskId = task.getId();
+      removed = tasks.remove(task.getId());
 
-      removed = tasks.contains(taskId);
-
-      if (tasks.size() == 1) {
-        utilizingTasks.remove(userFileId);
-      } else {
-        utilizingTasks.put(userFileId,
-            ImmutableSet.copyOf(Sets.difference(tasks, ImmutableSet.of(taskId))));
+      if (tasks.isEmpty()) {
+        utilizingTasks.remove(userId, fileId);
       }
     }
 
@@ -291,14 +262,10 @@ public final class DbFileService implements FileService {
     Preconditions.checkNotNull(fileId);
     Preconditions.checkNotNull(format);
 
-    final Object[] userFileId = new Object[] {userId, fileId};
-
-    final File previousfile = this.files.get(userFileId);
+    final File previousfile = this.files.get(userId, fileId);
     final File newFile = new File(previousfile.getOwner(), previousfile.getId(),
         previousfile.getUploaded(), previousfile.getLocation(), format, previousfile.isCached());
 
-    this.files.put(userFileId, newFile);
-
-    db.commit();
+    this.files.put(userId, fileId, newFile);
   }
 }

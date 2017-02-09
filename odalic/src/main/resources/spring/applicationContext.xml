@@ -50,9 +50,8 @@
 		class="cz.cuni.mff.xrg.odalic.feedbacks.DefaultFeedbackToConstraintsAdapter" />
 
 	<!-- Services -->
+	<bean id="dbService" class="cz.cuni.mff.xrg.odalic.util.storage.FileDbService" />
 	<bean id="fileService" class="cz.cuni.mff.xrg.odalic.files.DbFileService" />
-	<bean id="formatService"
-		class="cz.cuni.mff.xrg.odalic.files.formats.MemoryOnlyFormatService" />
 	<bean id="configurationService"
 		class="cz.cuni.mff.xrg.odalic.tasks.configurations.MemoryOnlyConfigurationService" />
 	<bean id="executionService"

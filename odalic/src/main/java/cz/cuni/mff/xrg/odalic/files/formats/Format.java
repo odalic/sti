@@ -24,7 +24,7 @@ public final class Format implements Serializable {
 
   private static final long serialVersionUID = -1910540987387436314L;
   
-  private final Charset charset;
+  private final String charset;
   private final char delimiter;
   private final boolean emptyLinesIgnored;
   private final Character quoteCharacter;
@@ -60,7 +60,7 @@ public final class Format implements Serializable {
     Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Characters.isLineBreak(commentMarker),
         "The comment marker is a line break character.");
 
-    this.charset = charset;
+    this.charset = charset.name();
     this.delimiter = delimiter;
     this.emptyLinesIgnored = emptyLinesIgnored;
     this.quoteCharacter = quoteCharacter;
@@ -93,7 +93,7 @@ public final class Format implements Serializable {
    * to be present and the system line separator.
    */
   public Format() {
-    charset = StandardCharsets.UTF_8;
+    charset = StandardCharsets.UTF_8.name();
     delimiter = ';';
     emptyLinesIgnored = true;
     quoteCharacter = '"';
@@ -107,7 +107,7 @@ public final class Format implements Serializable {
    * @return the character set
    */
   public Charset getCharset() {
-    return charset;
+    return Charset.forName(charset);
   }
 
 

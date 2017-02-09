@@ -3,11 +3,11 @@
  */
 package cz.cuni.mff.xrg.odalic.util.storage;
 
-import java.io.File;
 import java.util.Properties;
 
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
+import org.mapdb.DBMaker.Maker;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
@@ -24,32 +24,27 @@ public final class FileDbService implements DbService {
 
   private static final String FILE_NAME_PROPERTY_KEY = "cz.cuni.mff.xrg.odalic.db.file";
   
-  private final File file; 
+  private final Maker maker; 
   
   @Autowired
   public FileDbService(final PropertiesService propertiesService) {
-    this(initializeFile(propertiesService));
+    this(initializeMaker(propertiesService));
   }
 
-  private static File initializeFile(final PropertiesService propertiesService) {
+  private static Maker initializeMaker(final PropertiesService propertiesService) {
     Preconditions.checkNotNull(propertiesService);
     
     final Properties properties = propertiesService.get();
     final String fileName = properties.getProperty(FILE_NAME_PROPERTY_KEY);
     Preconditions.checkArgument(fileName != null, String.format("Missing key %s in the configuration!", FILE_NAME_PROPERTY_KEY));
     
-    return new File(fileName);
+    return DBMaker.fileDB(fileName).closeOnJvmShutdown().transactionEnable();
   }
   
-  public FileDbService(final File file) {
-    Preconditions.checkNotNull(file);
+  public FileDbService(final Maker maker) {
+    Preconditions.checkNotNull(maker);
     
-    Preconditions.checkArgument(file.exists());
-    Preconditions.checkArgument(file.isFile());
-    Preconditions.checkArgument(file.canRead());
-    Preconditions.checkArgument(file.canWrite());
-    
-    this.file = file;
+    this.maker = maker;
   }
 
   /* (non-Javadoc)
@@ -57,7 +52,6 @@ public final class FileDbService implements DbService {
    */
   @Override
   public DB get() {
-    return DBMaker.newFileDB(file).closeOnJvmShutdown().make();
+    return this.maker.make();
   }
-
 }
