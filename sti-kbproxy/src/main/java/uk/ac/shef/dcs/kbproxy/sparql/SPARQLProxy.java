@@ -449,7 +449,7 @@ public class SPARQLProxy extends KBProxy {
   }
 
 
-  private void performInsertChecks(String label) throws KBProxyException {
+  protected void performInsertChecks(String label) throws KBProxyException {
     if (!isInsertSupported()){
       throw new KBProxyException("Insertion of is not supported for the " + kbDefinition.getName() + " knowledge base.");
     }
