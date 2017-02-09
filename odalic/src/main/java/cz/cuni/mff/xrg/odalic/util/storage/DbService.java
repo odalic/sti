@@ -12,7 +12,7 @@ public interface DbService {
   /**
    * Provides a database.
    * 
-   * @return a {@link DB} instance
+   * @return a shared {@link DB} instance
    */
-  DB get();
+  DB getDb();
 }

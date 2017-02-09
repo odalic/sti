@@ -73,7 +73,7 @@
 	<bean id="passwordHashingService" class="cz.cuni.mff.xrg.odalic.util.hash.ScryptPasswordHashingService" />
 	<bean id="mailService" class="cz.cuni.mff.xrg.odalic.util.mail.SmtpMailService" />
 	<bean id="tokenService" class="cz.cuni.mff.xrg.odalic.users.AuthZeroTokenService" />
-	<bean id="userService" class="cz.cuni.mff.xrg.odalic.users.MemoryOnlyUserService" />
+	<bean id="userService" class="cz.cuni.mff.xrg.odalic.users.DbUserService" />
 	<bean id="taskRdfSerializationService" class="cz.cuni.mff.xrg.odalic.api.rdf.TurtleRdfMappingTaskSerializationService" />
 
 	<!-- Resources -->

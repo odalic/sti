@@ -1,5 +1,7 @@
 package cz.cuni.mff.xrg.odalic.users;
 
+import java.io.Serializable;
+
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -15,7 +17,9 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.CredentialsAdapter;
  */
 @Immutable
 @XmlJavaTypeAdapter(CredentialsAdapter.class)
-public final class Credentials {
+public final class Credentials implements Serializable {
+
+  private static final long serialVersionUID = 2412143757527351681L;
 
   private final String email;
   

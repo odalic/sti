@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.ext.com.google.common.collect.ImmutableSet;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
@@ -19,13 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
- * This {@link FileService} implementation persists the file in a {@link DB}-backed maps.
+ * This {@link FileService} implementation persists the files in {@link DB}-backed maps.
  * 
  * @author Václav Brodec
  *
@@ -33,25 +32,27 @@ import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 public final class DbFileService implements FileService {
 
   /**
-   * Table of files where the rows are indexed by user IDs and the columns by file IDs.
+   * The shared database instance.
+   */
+  private final DB db;
+
+  /**
+   * Table of files where the rows are indexed by user IDs and the columns by file IDs (represented
+   * as an array of size 2).
    */
   private final BTreeMap<Object[], File> files;
 
   /**
-   * Table of file content where the rows are indexed by user IDs and the columns by file URLs.
+   * Table of file content where the rows are indexed by user IDs and the columns by file URLs
+   * (represented as an array of size 2).
    */
   private final BTreeMap<Object[], byte[]> data;
 
   /**
-   * Table of task IDs (that belong to tasks that utilize the file indexed by the same row and
-   * column) where the rows are indexed by user IDs and the columns by file IDs.
+   * A multimap from user ID and file ID pairs to task IDs implemented as a map of user ID, file ID
+   * and task ID triples to dummy boolean values.
    */
-  private final BTreeMap<Object[], Set<String>> utilizingTasks;
-
-  /**
-   * Open transaction.
-   */
-  private final DB db;
+  private final BTreeMap<Object[], Boolean> utilizingTasks;
 
   /**
    * Creates the file service with no registered files and data.
@@ -59,7 +60,9 @@ public final class DbFileService implements FileService {
   @Autowired
   @SuppressWarnings("unchecked")
   public DbFileService(final DbService dbService) {
-    this.db = dbService.get();
+    Preconditions.checkNotNull(dbService);
+
+    this.db = dbService.getDb();
 
     this.files = db.treeMap("files")
         .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
@@ -68,8 +71,9 @@ public final class DbFileService implements FileService {
         .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
         .valueSerializer(Serializer.BYTE_ARRAY).createOrOpen();
     this.utilizingTasks = db.treeMap("utilizingTasks")
-        .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
-        .valueSerializer(Serializer.JAVA).createOrOpen();
+        .keySerializer(
+            new SerializerArrayTuple(Serializer.STRING, Serializer.STRING, Serializer.STRING))
+        .valueSerializer(Serializer.BOOLEAN).createOrOpen();
   }
 
   /*
@@ -119,14 +123,14 @@ public final class DbFileService implements FileService {
 
   private void checkUtilization(final String userId, final String fileId)
       throws IllegalStateException {
-    final Set<String> utilizingTaskIds = utilizingTasks.get(new Object[] {userId, fileId});
-    if (utilizingTaskIds == null) {
-      return;
-    }
+    final Set<String> utilizingTaskIds = utilizingTasks.prefixSubMap(new Object[] {userId, fileId})
+        .keySet().stream().map(e -> (String) e[2]).collect(ImmutableSet.toImmutableSet());
 
-    final String jointUtilizingTasksIds = String.join(", ", utilizingTaskIds);
-    Preconditions.checkState(utilizingTaskIds.isEmpty(),
-        String.format("Some tasks (%s) still refer to this file!", jointUtilizingTasksIds));
+    if (!utilizingTaskIds.isEmpty()) {
+      final String jointUtilizingTasksIds = String.join(", ", utilizingTaskIds);
+      throw new IllegalStateException(
+          String.format("Some tasks (%s) still refer to this file!", jointUtilizingTasksIds));
+    }
   }
 
   /*
@@ -152,7 +156,7 @@ public final class DbFileService implements FileService {
    */
   @Override
   public List<File> getFiles(String userId) {
-    return ImmutableList.copyOf(this.files.prefixSubMap(new Object[] {userId }).values());
+    return ImmutableList.copyOf(this.files.prefixSubMap(new Object[] {userId}).values());
   }
 
   /*
@@ -192,7 +196,8 @@ public final class DbFileService implements FileService {
     final String fileId = file.getId();
 
     this.files.put(new Object[] {userId, fileId}, file);
-    this.data.put(new Object[] {userId, file.getLocation().toString()}, IOUtils.toByteArray(fileInputStream));
+    this.data.put(new Object[] {userId, file.getLocation().toString()},
+        IOUtils.toByteArray(fileInputStream));
 
     db.commit();
   }
@@ -229,25 +234,11 @@ public final class DbFileService implements FileService {
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
 
-    final Object[] userFileId = new Object[] {userId, fileId};
+    Preconditions.checkArgument(files.get(new Object[] {userId, fileId}).equals(file),
+        "The file is not registered!");
 
-    Preconditions.checkArgument(files.get(userFileId).equals(file), "The file is not registered!");
-
-    final Set<String> tasks = utilizingTasks.get(userFileId);
-
-    final String taskId = task.getId();
-
-    final boolean inserted;
-    if (tasks == null) {
-      utilizingTasks.put(userFileId, ImmutableSet.of(taskId));
-      inserted = true;
-    } else {
-      inserted = tasks.contains(taskId);
-      utilizingTasks.put(userFileId,
-          ImmutableSet.<String>builder().addAll(tasks).add(taskId).build());
-    }
-
-    Preconditions.checkArgument(inserted, "The task has already been subcscribed to the file!");
+    final Boolean previous = utilizingTasks.put(new Object[] {userId, fileId, task.getId()}, true);
+    Preconditions.checkArgument(previous == null, "The task has already been subcscribed to the file!");
   }
 
   @Override
@@ -255,29 +246,11 @@ public final class DbFileService implements FileService {
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
 
-    final Object[] userFileId = new Object[] {userId, fileId};
+    Preconditions.checkArgument(files.get(new Object[] {userId, fileId}).equals(file),
+        "The file is not registered!");
 
-    Preconditions.checkArgument(files.get(userFileId).equals(file), "The file is not registered!");
-
-    final Set<String> tasks = utilizingTasks.get(userFileId);
-
-    final boolean removed;
-    if (tasks == null) {
-      removed = false;
-    } else {
-      final String taskId = task.getId();
-
-      removed = tasks.contains(taskId);
-
-      if (tasks.size() == 1) {
-        utilizingTasks.remove(userFileId);
-      } else {
-        utilizingTasks.put(userFileId,
-            ImmutableSet.copyOf(Sets.difference(tasks, ImmutableSet.of(taskId))));
-      }
-    }
-
-    Preconditions.checkArgument(removed, "The task is not subcscribed to the file!");
+    final Boolean removed = utilizingTasks.remove(new Object[] {userId, fileId, task.getId()});
+    Preconditions.checkArgument(removed != null, "The task is not subcscribed to the file!");
   }
 
   @Override

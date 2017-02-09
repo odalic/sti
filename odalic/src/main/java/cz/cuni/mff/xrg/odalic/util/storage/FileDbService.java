@@ -7,7 +7,6 @@ import java.util.Properties;
 
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.mapdb.DBMaker.Maker;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
@@ -24,34 +23,34 @@ public final class FileDbService implements DbService {
 
   private static final String FILE_NAME_PROPERTY_KEY = "cz.cuni.mff.xrg.odalic.db.file";
   
-  private final Maker maker; 
+  private final DB db; 
   
   @Autowired
   public FileDbService(final PropertiesService propertiesService) {
-    this(initializeMaker(propertiesService));
+    this(initializeDb(propertiesService));
   }
 
-  private static Maker initializeMaker(final PropertiesService propertiesService) {
+  private static DB initializeDb(final PropertiesService propertiesService) {
     Preconditions.checkNotNull(propertiesService);
     
     final Properties properties = propertiesService.get();
     final String fileName = properties.getProperty(FILE_NAME_PROPERTY_KEY);
     Preconditions.checkArgument(fileName != null, String.format("Missing key %s in the configuration!", FILE_NAME_PROPERTY_KEY));
     
-    return DBMaker.fileDB(fileName).closeOnJvmShutdown().transactionEnable();
+    return DBMaker.fileDB(fileName).closeOnJvmShutdown().transactionEnable().make();
   }
   
-  public FileDbService(final Maker maker) {
-    Preconditions.checkNotNull(maker);
+  public FileDbService(final DB db) {
+    Preconditions.checkNotNull(db);
     
-    this.maker = maker;
+    this.db = db;
   }
 
   /* (non-Javadoc)
-   * @see cz.cuni.mff.xrg.odalic.util.storage.DbService#get()
+   * @see cz.cuni.mff.xrg.odalic.util.storage.DbService#getDb()
    */
   @Override
-  public DB get() {
-    return this.maker.make();
+  public DB getDb() {
+    return this.db;
   }
 }
