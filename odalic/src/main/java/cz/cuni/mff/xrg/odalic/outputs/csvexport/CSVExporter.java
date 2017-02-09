@@ -2,7 +2,7 @@ package cz.cuni.mff.xrg.odalic.outputs.csvexport;
 
 import java.io.IOException;
 
-import cz.cuni.mff.xrg.odalic.input.CsvConfiguration;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.Input;
 
 /**
@@ -20,6 +20,6 @@ public interface CSVExporter {
    * @return CSV String
    * @throws IOException
    */
-  String export(Input content, CsvConfiguration configuration)
+  String export(Input content, Format configuration)
       throws IOException;
 }

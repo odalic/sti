@@ -1,6 +1,7 @@
 package uk.ac.shef.dcs.kbproxy;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,8 +18,14 @@ import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
  * Created by Jan
  */
 public class KBDefinition {
-  //region Consts
 
+  public enum SEARCH_CLASS_TYPE_MODE_VALUE {
+    DIRECT,
+    INDIRECT
+  }
+
+
+  //region Consts
   private static final String PATH_SEPARATOR = "\\|";
   private static final String URL_SEPARATOR = " ";
 
@@ -30,14 +37,19 @@ public class KBDefinition {
 
   private static final String CACHE_TEMPLATE_PATH_PROPERTY_NAME = "kb.cacheTemplatePath";
 
-  private static final String PREDICATES_PROPERTY_NAME = "kb.predicates";
+  private static final String STRUCTURE_PROPERTY_NAME = "kb.structure";
   private static final String LANGUAGE_SUFFIX = "kb.languageSuffix";
+  private static final String SEARCH_CLASS_TYPE_MODE = "kb.search.class.type.mode";
   private static final String USE_BIF_CONTAINS = "kb.useBifContains";
+  private static final String TREAT_URL_AS_LABEL = "kb.treatUrlAsLabel";
 
   private static final String PREDICATE_NAME_PROPERTY_NAME = "kb.predicate.name";
   private static final String PREDICATE_LABEL_PROPERTY_NAME = "kb.predicate.label";
   private static final String PREDICATE_DESCRIPTION_PROPERTY_NAME = "kb.predicate.description";
   private static final String PREDICATE_TYPE_PROPERTY_NAME = "kb.predicate.type";
+
+  private static final String STRUCTURE_CLASS = "kb.structure.class";
+  private static final String STRUCTURE_PROPERTY = "kb.structure.property";
 
   private static final String INSERT_SUPPORTED = "kb.insert.supported";
   private static final String INSERT_PREFIX_SCHEMA_ELEMENT = "kb.insert.prefix.schema.element";
@@ -49,13 +61,17 @@ public class KBDefinition {
   private static final String INSERT_INSTANCE_OF = "kb.insert.instance.of";
   private static final String INSERT_CLASS_TYPE = "kb.insert.class.type";
   private static final String INSERT_GRAPH = "kb.insert.graph";
+  private static final String INSERT_PROPERTY_TYPE = "kb.insert.property.type";
+  private static final String INSERT_SUB_PROPERTY = "kb.insert.sub.property";
+  private static final String INSERT_DOMAIN = "kb.insert.domain";
+  private static final String INSERT_RANGE = "kb.insert.range";
 
   //endregion
 
   //region Fields
 
-  private final Map<String, Set<String>> predicates = new HashMap<>();
-  protected final Logger log = Logger.getLogger(getClass());
+  private final Map<String, Set<String>> structure = new HashMap<>();
+  protected final Logger log = LoggerFactory.getLogger(getClass());
 
   private String name;
   private String sparqlEndpoint;
@@ -63,6 +79,7 @@ public class KBDefinition {
   private String stopListFile;
 
   private String languageSuffix;
+  private SEARCH_CLASS_TYPE_MODE_VALUE searchClassTypeMode;
   private boolean useBifContains;
 
   private String cacheTemplatePath;
@@ -77,6 +94,10 @@ public class KBDefinition {
   private String insertInstanceOf;
   private String insertClassType;
   private String insertGraph;
+  private String insertPropertyType;
+  private String insertSubProperty;
+  private String insertDomain;
+  private String insertRange;
 
 //endregion
 
@@ -130,6 +151,15 @@ public class KBDefinition {
     this.languageSuffix = languageSuffix;
   }
 
+  public SEARCH_CLASS_TYPE_MODE_VALUE getSearchClassTypeMode() {
+    return searchClassTypeMode;
+  }
+
+  public void setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE searchClassTypeMode) {
+    this.searchClassTypeMode = searchClassTypeMode;
+  }
+
+
   public String getCacheTemplatePath() {
     return cacheTemplatePath;
   }
@@ -147,19 +177,27 @@ public class KBDefinition {
   }
 
   public Set<String> getPredicateName() {
-    return predicates.get(PREDICATE_NAME_PROPERTY_NAME);
+    return structure.get(PREDICATE_NAME_PROPERTY_NAME);
   }
 
   public Set<String> getPredicateLabel() {
-    return predicates.get(PREDICATE_LABEL_PROPERTY_NAME);
+    return structure.get(PREDICATE_LABEL_PROPERTY_NAME);
   }
 
   public Set<String> getPredicateDescription() {
-    return predicates.get(PREDICATE_DESCRIPTION_PROPERTY_NAME);
+    return structure.get(PREDICATE_DESCRIPTION_PROPERTY_NAME);
   }
 
   public Set<String> getPredicateType() {
-    return predicates.get(PREDICATE_TYPE_PROPERTY_NAME);
+    return structure.get(PREDICATE_TYPE_PROPERTY_NAME);
+  }
+
+  public Set<String> getStructureClass() {
+    return structure.get(STRUCTURE_CLASS);
+  }
+
+  public Set<String> getStructureProperty() {
+    return structure.get(STRUCTURE_PROPERTY);
   }
 
   public boolean isInsertSupported() {
@@ -242,15 +280,49 @@ public class KBDefinition {
     this.insertGraph = insertGraph;
   }
 
+  public String getInsertPropertyType() {
+    return insertPropertyType;
+  }
+
+  private void setInsertPropertyType(String insertPropertyType) {
+    this.insertPropertyType = insertPropertyType;
+  }
+
+  public String getInsertSubProperty() {
+    return insertSubProperty;
+  }
+
+  private void setInsertSubProperty(String insertSubProperty) {
+    this.insertSubProperty = insertSubProperty;
+  }
+
+  public String getInsertDomain() {
+    return insertDomain;
+  }
+
+  private void setInsertDomain(String insertDomain) {
+    this.insertDomain = insertDomain;
+  }
+
+  public String getInsertRange() {
+    return insertRange;
+  }
+
+  private void setInsertRange(String insertRange) {
+    this.insertRange = insertRange;
+  }
+
   //endregion
 
   //region constructor
 
   public KBDefinition() {
-    predicates.put(PREDICATE_NAME_PROPERTY_NAME, new HashSet<>());
-    predicates.put(PREDICATE_LABEL_PROPERTY_NAME, new HashSet<>());
-    predicates.put(PREDICATE_DESCRIPTION_PROPERTY_NAME, new HashSet<>());
-    predicates.put(PREDICATE_TYPE_PROPERTY_NAME, new HashSet<>());
+    structure.put(PREDICATE_NAME_PROPERTY_NAME, new HashSet<>());
+    structure.put(PREDICATE_LABEL_PROPERTY_NAME, new HashSet<>());
+    structure.put(PREDICATE_DESCRIPTION_PROPERTY_NAME, new HashSet<>());
+    structure.put(PREDICATE_TYPE_PROPERTY_NAME, new HashSet<>());
+    structure.put(STRUCTURE_CLASS, new HashSet<>());
+    structure.put(STRUCTURE_PROPERTY, new HashSet<>());
   }
 
   //endregion
@@ -279,29 +351,44 @@ public class KBDefinition {
       setLanguageSuffix(kbProperties.getProperty(LANGUAGE_SUFFIX));
     }
 
+    if (kbProperties.containsKey(SEARCH_CLASS_TYPE_MODE)) {
+      setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE.valueOf(kbProperties.getProperty(SEARCH_CLASS_TYPE_MODE).toUpperCase()));
+      //check the value is correct
+      if (!getSearchClassTypeMode().equals(SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT) && !getSearchClassTypeMode().equals(SEARCH_CLASS_TYPE_MODE_VALUE.DIRECT)) {
+        log.warn("Incorect value for kb.search.class.type.mode: {}", getSearchClassTypeMode());
+        setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
+        log.info("Using default value for kb.search.class.type.mode: ", SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT.toString());
+      }
+    }
+    else {
+      //set default choice
+      log.warn("Option kb.search.class.type.mode not available in KB config file, setting to default value: indirect");
+      setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
+    }
+
     // Vistuoso specific settings
     if (kbProperties.containsKey(USE_BIF_CONTAINS)) {
       setUseBifContains(Boolean.parseBoolean(kbProperties.getProperty(USE_BIF_CONTAINS)));
     }
 
-    // Loading predicates
+    // Loading structure
     // Individual paths to definition files are separated by ";"
-    String predicates = kbProperties.getProperty(PREDICATES_PROPERTY_NAME);
-    String[] predicatesArray = predicates.split(PATH_SEPARATOR);
+    String structureDefinitions = kbProperties.getProperty(STRUCTURE_PROPERTY_NAME);
+    String[] structureDefinitionsArray = structureDefinitions.split(PATH_SEPARATOR);
 
-    for (String predicateFile : predicatesArray) {
-      String predicateFileNormalized = combinePaths(workingDirectory, predicateFile);
+    for (String structureDefinitionsFile : structureDefinitionsArray) {
+      String definitionFileNormalized = combinePaths(workingDirectory, structureDefinitionsFile);
 
-      File file = new File(predicateFileNormalized);
+      File file = new File(definitionFileNormalized);
       if (!file.exists() || file.isDirectory()) {
-        log.error("The specified properties file does not exist: " + predicateFileNormalized);
+        log.error("The specified properties file does not exist: " + definitionFileNormalized);
         continue;
       }
 
       Properties properties = new Properties();
-      try (InputStream fileStream = new FileInputStream(predicateFileNormalized)) {
+      try (InputStream fileStream = new FileInputStream(definitionFileNormalized)) {
         properties.load(fileStream);
-        loadPredicates(properties);
+        loadStructure(properties);
       }
     }
 
@@ -320,16 +407,20 @@ public class KBDefinition {
       setInsertInstanceOf(kbProperties.getProperty(INSERT_INSTANCE_OF));
       setInsertClassType(kbProperties.getProperty(INSERT_CLASS_TYPE));
       setInsertGraph(kbProperties.getProperty(INSERT_GRAPH));
+      setInsertPropertyType(kbProperties.getProperty(INSERT_PROPERTY_TYPE));
+      setInsertSubProperty(kbProperties.getProperty(INSERT_SUB_PROPERTY));
+      setInsertDomain(kbProperties.getProperty(INSERT_DOMAIN));
+      setInsertRange(kbProperties.getProperty(INSERT_RANGE));
     }
   }
 
-  private void loadPredicates(Properties properties) {
+  private void loadStructure(Properties properties) {
     for (Map.Entry<Object, Object> entry : properties.entrySet()) {
       String key = (String) entry.getKey();
-      Set<String> predicateValues = predicates.getOrDefault(key, null);
+      Set<String> structureValues = structure.getOrDefault(key, null);
 
-      if (predicateValues == null) {
-        log.error("Unknown predicate key: " + key);
+      if (structureValues == null) {
+        log.error("Unknown structure key: " + key);
         continue;
       }
 
@@ -337,10 +428,10 @@ public class KBDefinition {
       String[] valuesArray = values.split(URL_SEPARATOR);
 
       for (String value : valuesArray) {
-        boolean valueAdded = predicateValues.add(value);
+        boolean valueAdded = structureValues.add(value);
 
         if (!valueAdded) {
-          log.warn(String.format("Predicate value %1$s for the key %2$s is already loaded.", value, key));
+          log.warn(String.format("Structure value %1$s for the key %2$s is already loaded.", value, key));
         }
       }
     }

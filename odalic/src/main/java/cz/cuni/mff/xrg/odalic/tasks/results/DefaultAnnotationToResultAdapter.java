@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks.results;
 
+import cz.cuni.mff.xrg.odalic.entities.EntitiesFactory;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
@@ -44,6 +45,14 @@ import com.google.common.collect.ImmutableMap;
  */
 @Immutable
 public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapter {
+
+  private EntitiesFactory entitiesFactory;
+
+  public DefaultAnnotationToResultAdapter(final EntitiesFactory entitesFactory) {
+    Preconditions.checkNotNull(entitesFactory);
+
+    this.entitiesFactory = entitesFactory;
+  }
 
   /**
    * This implementation demands that the subject columns recognized in the annotations are the
@@ -110,7 +119,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     return entrySetIterator;
   }
 
-  private static void processTheRest(
+  private void processTheRest(
       final Iterator<? extends Map.Entry<? extends KnowledgeBase, ? extends TAnnotation>> entrySetIterator,
       final List<HeaderAnnotation> mergedHeaderAnnotations,
       final CellAnnotation[][] mergedCellAnnotations,
@@ -133,7 +142,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     return subjectColumn;
   }
 
-  private static void mergeColumnRelations(
+  private void mergeColumnRelations(
       final Map<ColumnRelationPosition, ColumnRelationAnnotation> mergedColumnRelations,
       final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
     final Map<ColumnRelationPosition, ColumnRelationAnnotation> columnRelations =
@@ -141,7 +150,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     Maps.mergeWith(mergedColumnRelations, columnRelations, (first, second) -> first.merge(second));
   }
 
-  private static void mergeCells(final CellAnnotation[][] mergedCellAnnotations,
+  private void mergeCells(final CellAnnotation[][] mergedCellAnnotations,
       final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
     final CellAnnotation[][] cellAnnotations =
         convertCellAnnotations(knowledgeBase, tableAnnotation);
@@ -149,7 +158,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
         (first, second) -> first.merge(second));
   }
 
-  private static void mergeHeaders(final List<HeaderAnnotation> mergedHeaderAnnotations,
+  private void mergeHeaders(final List<HeaderAnnotation> mergedHeaderAnnotations,
       final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
     final List<HeaderAnnotation> headerAnnotations =
         convertColumnAnnotations(knowledgeBase, tableAnnotation);
@@ -157,7 +166,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
         (first, second) -> first.merge(second));
   }
 
-  private static Map<ColumnRelationPosition, ColumnRelationAnnotation> convertColumnRelations(
+  private Map<ColumnRelationPosition, ColumnRelationAnnotation> convertColumnRelations(
       KnowledgeBase knowledgeBase, TAnnotation original) {
     Map<ColumnRelationPosition, ColumnRelationAnnotation> columnRelations = new HashMap<>();
     for (Map.Entry<RelationColumns, List<TColumnColumnRelationAnnotation>> annotations : original
@@ -173,7 +182,8 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
 
       EntityCandidate bestCandidate = null;
       for (TColumnColumnRelationAnnotation annotation : annotations.getValue()) {
-        Entity entity = new Entity(annotation.getRelationURI(), annotation.getRelationLabel());
+        Entity entity =
+            entitiesFactory.create(annotation.getRelationURI(), annotation.getRelationLabel());
         Score likelihood = new Score(annotation.getFinalScore());
 
         EntityCandidate candidate = new EntityCandidate(entity, likelihood);
@@ -201,7 +211,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     return columnRelations;
   }
 
-  private static CellAnnotation[][] convertCellAnnotations(KnowledgeBase knowledgeBase,
+  private CellAnnotation[][] convertCellAnnotations(KnowledgeBase knowledgeBase,
       TAnnotation original) {
     int columnCount = original.getCols();
     int rowCount = original.getRows();
@@ -225,15 +235,15 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
           for (TCellAnnotation annotation : annotations) {
             uk.ac.shef.dcs.kbproxy.model.Entity clazz = annotation.getAnnotation();
 
-            Entity entity = new Entity(clazz.getId(), clazz.getLabel());
+            Entity entity = entitiesFactory.create(clazz.getId(), clazz.getLabel());
             Score likelihood = new Score(annotation.getFinalScore());
 
             EntityCandidate candidate = new EntityCandidate(entity, likelihood);
 
             candidatesSet.add(candidate);
 
-            if (bestCandidate == null || bestCandidate.getScore().getValue() < candidate
-                .getScore().getValue()) {
+            if (bestCandidate == null
+                || bestCandidate.getScore().getValue() < candidate.getScore().getValue()) {
               bestCandidate = candidate;
             }
           }
@@ -251,7 +261,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     return cellAnnotations;
   }
 
-  private static List<HeaderAnnotation> convertColumnAnnotations(KnowledgeBase knowledgeBase,
+  private List<HeaderAnnotation> convertColumnAnnotations(KnowledgeBase knowledgeBase,
       TAnnotation original) {
     int columnCount = original.getCols();
     List<HeaderAnnotation> headerAnnotations = new ArrayList<>(columnCount);
@@ -273,7 +283,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
         for (TColumnHeaderAnnotation annotation : annotations) {
           Clazz clazz = annotation.getAnnotation();
 
-          Entity entity = new Entity(clazz.getId(), clazz.getLabel());
+          Entity entity = entitiesFactory.create(clazz.getId(), clazz.getLabel());
           Score likelihood = new Score(annotation.getFinalScore());
 
           EntityCandidate candidate = new EntityCandidate(entity, likelihood);

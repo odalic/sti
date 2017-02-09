@@ -32,7 +32,7 @@ public class FreebaseSearchResultFilter extends KBSearchResultFilter {
                 ||rel.equals(FreebaseEnum.RELATION_HASNAME.getString()))
             return true;
 
-        Set<String> stop = stoplists.get(LABEL_INVALID_ATTRIBUTE);
+        Set<String> stop = stopLists.get(LABEL_INVALID_ATTRIBUTE);
         String relation =attribute.getRelationURI();
         if (stop != null) {
             relation = attribute.getRelationURI();

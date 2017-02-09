@@ -30,11 +30,21 @@ public class FreebaseSearch extends KBProxy {
                         String cachesPath) throws IOException {
     super(null, fuzzyKeywords, cachesPath);
     searcher = new FreebaseQueryProxy(properties);
-    resultFilter = new FreebaseSearchResultFilter(properties.getProperty(KB_SEARCH_RESULT_STOPLIST));
+    resultFilter = new FreebaseSearchResultFilter(properties.getProperty(KB_SEARCH_RESULT_STOP_LIST));
   }
 
   @Override
-  public List<Entity> findEntityByFulltext(String pattern, int limit) throws KBProxyException {
+  public List<Entity> findResourceByFulltext(String pattern, int limit) throws KBProxyException {
+    throw new KBProxyException("Fulltext search in freebase is not supported.");
+  }
+
+  @Override
+  public List<Entity> findClassByFulltext(String pattern, int limit) throws KBProxyException {
+    throw new KBProxyException("Fulltext search in freebase is not supported.");
+  }
+
+  @Override
+  public List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain, URI range) throws KBProxyException {
     throw new KBProxyException("Fulltext search in freebase is not supported.");
   }
 
@@ -72,7 +82,7 @@ public class FreebaseSearch extends KBProxy {
     }
     if (StringUtils.toAlphaNumericWhitechar(text).trim().length() == 0)
       return new ArrayList<>();
-    if (ALWAYS_CALL_REMOTE_SEARCHAPI)
+    if (ALWAYS_CALL_REMOTE_SEARCH_API)
       forceQuery = true;
 
 
@@ -308,6 +318,9 @@ public class FreebaseSearch extends KBProxy {
     throw new KBProxyException("Inserting new concepts in not supported for the Freebase.");
   }
 
+  public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range) throws KBProxyException {
+    throw new KBProxyException("Inserting new concepts in not supported for the Freebase.");
+  }
 
   @SuppressWarnings("unchecked")
   private List<Attribute> find_attributes(String id, SolrCache cache) throws KBProxyException {

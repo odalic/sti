@@ -3,13 +3,11 @@ package cz.cuni.mff.xrg.odalic.files;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
-
-import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
-
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.FileValueOutputAdapter;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 
 /**
  * File description.
@@ -17,9 +15,8 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.FileValueOutputAdapter;
  * @author Václav Brodec
  *
  */
-@Immutable
 @XmlJavaTypeAdapter(FileValueOutputAdapter.class)
-public class File implements Serializable {
+public final class File implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
@@ -28,10 +25,12 @@ public class File implements Serializable {
   private final Date uploaded;
 
   private final String owner;
-  
+
   private final URL location;
-  
+
   private final boolean cached;
+
+  private Format format;
 
   /**
    * Create new file description.
@@ -40,31 +39,37 @@ public class File implements Serializable {
    * @param uploaded time of upload
    * @param owner file owner description
    * @param location file location
+   * @param format CSV file format
    * @param cached boolean
    */
-  public File(String id, Date uploaded, String owner, URL location, boolean cached) {
+  public File(final String id, final Date uploaded, final String owner, final URL location,
+      final Format format, final boolean cached) {
     Preconditions.checkNotNull(id);
     Preconditions.checkNotNull(uploaded);
     Preconditions.checkNotNull(owner);
     Preconditions.checkNotNull(location);
-    
+    Preconditions.checkNotNull(format);
+
     this.id = id;
     this.uploaded = uploaded;
     this.owner = owner;
     this.location = location;
+    this.format = format;
     this.cached = cached;
   }
-  
+
   /**
    * Create new file description for a file uploaded now.
    * 
    * @param id file ID
    * @param owner file owner description
    * @param location file location
+   * @param format CSV file format
    * @param cached cached
    */
-  public File(String id, String owner, URL location, boolean cached) {
-    this(id, new Date(), owner, location, cached);
+  public File(final String id, final String owner, final URL location, final Format format,
+      final boolean cached) {
+    this(id, new Date(), owner, location, format, cached);
   }
 
   /**
@@ -94,12 +99,28 @@ public class File implements Serializable {
   public URL getLocation() {
     return location;
   }
-  
+
   /**
    * @return cached
    */
   public boolean isCached() {
     return cached;
+  }
+
+  /**
+   * @return the format
+   */
+  public Format getFormat() {
+    return format;
+  }
+
+  /**
+   * @param format the format to set
+   */
+  public void setFormat(Format format) {
+    Preconditions.checkNotNull(format);
+
+    this.format = format;
   }
 
   /**
@@ -138,12 +159,14 @@ public class File implements Serializable {
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
     return "File [id=" + id + ", uploaded=" + uploaded + ", owner=" + owner + ", location="
-        + location + ", cached=" + cached + "]";
+        + location + ", format=" + format + ", cached=" + cached + "]";
   }
 }

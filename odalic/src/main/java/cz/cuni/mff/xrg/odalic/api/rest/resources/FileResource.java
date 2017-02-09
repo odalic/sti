@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -24,6 +25,8 @@ import javax.ws.rs.core.UriInfo;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +37,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
 import cz.cuni.mff.xrg.odalic.api.rest.values.FileValueInput;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 
 /**
  * File resource definition.
@@ -46,8 +50,10 @@ public final class FileResource {
 
   public static final String TEXT_CSV_MEDIA_TYPE = "text/csv";
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileResource.class);
+
   private final FileService fileService;
-  
+
   @Context
   private UriInfo uriInfo;
 
@@ -74,7 +80,7 @@ public final class FileResource {
     try {
       file = fileService.getById(id);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The file does not exist!");
+      throw new NotFoundException("The file does not exist!", e);
     }
 
     return Reply.data(Response.Status.OK, file, uriInfo).toResponse();
@@ -89,9 +95,9 @@ public final class FileResource {
     if (fileInputStream == null) {
       throw new BadRequestException("No input provided!");
     }
-    
+
     final URL location = cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id);
-    final File file = new File(id, "", location, true);
+    final File file = new File(id, "", location, new Format(), true);
 
     if (!fileService.existsFileWithId(id)) {
       fileService.create(file, fileInputStream);
@@ -114,12 +120,14 @@ public final class FileResource {
     if (fileInput == null) {
       throw new BadRequestException("No file description provided!");
     }
-    
+
     if (fileInput.getLocation() == null) {
       throw new BadRequestException("No location provided!");
     }
-    
-    final File file = new File(id, "", fileInput.getLocation(), false);
+
+    final Format usedFormat = getFormatOrDefault(fileInput);
+
+    final File file = new File(id, "", fileInput.getLocation(), usedFormat, false);
 
     if (!fileService.existsFileWithId(id)) {
       fileService.create(file);
@@ -135,6 +143,17 @@ public final class FileResource {
     }
   }
 
+  private Format getFormatOrDefault(FileValueInput fileInput) {
+    final @Nullable Format format = fileInput.getFormat();
+    final Format usedFormat;
+    if (format == null) {
+      usedFormat = new Format();
+    } else {
+      usedFormat = format;
+    }
+    return usedFormat;
+  }
+
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
@@ -144,18 +163,19 @@ public final class FileResource {
     if (fileInputStream == null) {
       throw new BadRequestException("No input provided!");
     }
-    
+
     if (fileDetail == null) {
       throw new BadRequestException("No input detail provided!");
     }
-    
+
     final String id = fileDetail.getFileName();
     if (id == null) {
       throw new BadRequestException("No file name provided!");
     }
-    
-    final File file = new File(id, "",
-        cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id), true);
+
+    final File file =
+        new File(id, "", cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, id),
+            new Format(), true);
 
     if (fileService.existsFileWithId(id)) {
       throw new WebApplicationException(
@@ -176,7 +196,9 @@ public final class FileResource {
     try {
       fileService.deleteById(id);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The file does not exist!");
+      throw new NotFoundException("The file does not exist!", e);
+    } catch (final IllegalStateException e) {
+      throw new WebApplicationException(e.getMessage(), e, Response.Status.CONFLICT);
     }
 
     return Message.of("File definition deleted.").toResponse(Response.Status.OK, uriInfo);
@@ -190,9 +212,18 @@ public final class FileResource {
     try {
       data = fileService.getDataById(id);
     } catch (final IllegalArgumentException e) {
+      LOGGER.error(e.getMessage(), e);
+
       return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     return Response.ok(data).build();
+  }
+
+  @GET
+  @Path("{id}/data")
+  @Produces(TEXT_CSV_MEDIA_TYPE)
+  public Response getCsvDataByIdAtData(@PathParam("id") String id) throws IOException {
+    return getCsvDataById(id);
   }
 }

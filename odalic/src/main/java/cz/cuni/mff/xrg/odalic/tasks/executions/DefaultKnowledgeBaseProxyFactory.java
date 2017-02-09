@@ -18,8 +18,6 @@ import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.kbproxy.KBProxyFactory;
 import uk.ac.shef.dcs.sti.STIException;
 
-import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
-
 /**
  * Created by Jan
  */
@@ -38,25 +36,20 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
   private final String propertyFilePath;
   private Properties properties;
 
-  public DefaultKnowledgeBaseProxyFactory(String propertyFilePath) {
+  public DefaultKnowledgeBaseProxyFactory(String propertyFilePath) throws STIException, IOException {
     Preconditions.checkNotNull(propertyFilePath);
 
     this.propertyFilePath = propertyFilePath;
+    
+    initComponents();
   }
 
-  public DefaultKnowledgeBaseProxyFactory() {
+  public DefaultKnowledgeBaseProxyFactory() throws STIException, IOException {
     this(System.getProperty("cz.cuni.mff.xrg.odalic.sti"));
   }
 
   @Override
   public Map<String, KBProxy> getKBProxies() {
-    if (kbProxies == null) {
-      try {
-        initComponents();
-      } catch (STIException | IOException e) {
-        e.printStackTrace();
-      }
-    }
     return kbProxies;
   }
 
@@ -95,8 +88,7 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
           properties.getProperty(PROPERTY_HOME));
     } catch (Exception e) {
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
-      throw new STIException(
-          "Failed initializing KBProxy: " + getAbsolutePath(PROPERTY_PROXY_PROP_FILE), e);
+      throw new STIException("Failed initializing KBProxies.", e);
     }
   }
 
@@ -109,9 +101,5 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing KBProxy cache.", e);
     }
-  }
-
-  private String getAbsolutePath(String propertyName) {
-    return combinePaths(properties.getProperty(PROPERTY_HOME), properties.getProperty(propertyName));
   }
 }

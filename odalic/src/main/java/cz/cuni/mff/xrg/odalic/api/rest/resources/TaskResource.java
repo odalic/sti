@@ -31,10 +31,12 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.ConfigurationValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.StatefulTaskValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.TaskValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.util.States;
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
 
@@ -50,20 +52,23 @@ public final class TaskResource {
   private final TaskService taskService;
   private final FileService fileService;
   private final ExecutionService executionService;
+  private final BasesService basesService;
 
   @Context
   private UriInfo uriInfo;
-  
+
   @Autowired
-  public TaskResource(TaskService taskService, FileService fileService,
-      ExecutionService executionService) {
+  public TaskResource(final TaskService taskService, final FileService fileService,
+      final ExecutionService executionService, final BasesService basesService) {
     Preconditions.checkNotNull(taskService);
     Preconditions.checkNotNull(fileService);
     Preconditions.checkNotNull(executionService);
+    Preconditions.checkNotNull(basesService);
 
     this.taskService = taskService;
     this.fileService = fileService;
     this.executionService = executionService;
+    this.basesService = basesService;
   }
 
   @GET
@@ -91,7 +96,8 @@ public final class TaskResource {
       final Stream<StatefulTaskValue> statefulTasksStream = tasks.stream()
           .map(e -> new StatefulTaskValue(e, States.queryStateValue(executionService, e.getId())));
 
-      return Reply.data(Response.Status.OK, statefulTasksStream.collect(Collectors.toList()), uriInfo)
+      return Reply
+          .data(Response.Status.OK, statefulTasksStream.collect(Collectors.toList()), uriInfo)
           .toResponse(); // List is fine, as it serializes in the same way, and no monkeying with
                          // comparators is needed.
     }
@@ -105,7 +111,7 @@ public final class TaskResource {
     try {
       task = taskService.getById(id);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task does not exist!");
+      throw new NotFoundException("The task does not exist!", e);
     }
 
     return Reply.data(Response.Status.OK, task, uriInfo).toResponse();
@@ -135,11 +141,24 @@ public final class TaskResource {
     try {
       input = fileService.getById(configurationValue.getInput());
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException("The input file does not exist!");
+      throw new BadRequestException("The input file does not exist!", e);
     }
 
-    final Configuration configuration = new Configuration(input,
-        configurationValue.getPrimaryBase(), configurationValue.getFeedback());
+    final NavigableSet<KnowledgeBase> usedBases;
+    if (configurationValue.getUsedBases() == null) {
+      usedBases = basesService.getBases();
+    } else {
+      usedBases = configurationValue.getUsedBases();
+    }
+
+    final Configuration configuration;
+    try {
+      configuration = new Configuration(input, usedBases, configurationValue.getPrimaryBase(),
+          configurationValue.getFeedback(), configurationValue.getRowsLimit());
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e);
+    }
+
     final Task task = new Task(id,
         taskValue.getDescription() == null ? "" : taskValue.getDescription(), configuration);
 
@@ -152,6 +171,7 @@ public final class TaskResource {
       return Message.of("A new task has been created AT THE LOCATION you specified")
           .toResponse(Response.Status.CREATED, location, uriInfo);
     } else {
+      executionService.unscheduleForTaskId(id);
       taskService.replace(task);
       return Message
           .of("The task you specified has been fully updated AT THE LOCATION you specified.")
@@ -166,7 +186,7 @@ public final class TaskResource {
     try {
       taskService.deleteById(id);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task does not exist!");
+      throw new NotFoundException("The task does not exist!", e);
     }
 
     return Message.of("Task deleted.").toResponse(Response.Status.OK, uriInfo);

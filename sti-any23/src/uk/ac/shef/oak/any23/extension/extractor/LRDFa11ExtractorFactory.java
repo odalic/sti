@@ -3,7 +3,6 @@ package uk.ac.shef.oak.any23.extension.extractor;
 import org.apache.any23.extractor.ExtractorDescription;
 import org.apache.any23.extractor.ExtractorFactory;
 import org.apache.any23.extractor.SimpleExtractorFactory;
-import org.apache.any23.rdf.PopularPrefixes;
 import org.apache.any23.rdf.Prefixes;
 
 import java.util.Arrays;

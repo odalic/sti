@@ -10,14 +10,17 @@ import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.sti.STIException;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Default {@link EntitiesService} implementation.
@@ -26,11 +29,16 @@ import java.util.stream.Collectors;
 public final class DefaultEntitiesService implements EntitiesService {
 
   private final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory;
+  private final EntitiesFactory entitiesFactory;
 
-  public DefaultEntitiesService(KnowledgeBaseProxyFactory knowledgeBaseProxyFactory) {
+  @Autowired
+  public DefaultEntitiesService(final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory,
+      final EntitiesFactory entitiesFactory) {
     Preconditions.checkNotNull(knowledgeBaseProxyFactory);
+    Preconditions.checkNotNull(entitiesFactory);
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
+    this.entitiesFactory = entitiesFactory;
   }
 
   /*
@@ -42,13 +50,13 @@ public final class DefaultEntitiesService implements EntitiesService {
    */
   @Override
   public NavigableSet<Entity> searchResources(KnowledgeBase base, String query, int limit)
-      throws IllegalArgumentException, KBProxyException {
+      throws IllegalArgumentException, KBProxyException, STIException, IOException {
     KBProxy kbProxy = getKBProxy(base);
 
     List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
-        kbProxy.findEntityByFulltext(query, limit);
+        kbProxy.findResourceByFulltext(query, limit);
 
-    return searchResult.stream().map(entity -> new Entity(entity.getId(), entity.getLabel()))
+    return searchResult.stream().map(entity -> entitiesFactory.create(entity.getId(), entity.getLabel()))
         .collect(Collectors.toCollection(TreeSet::new));
   }
 
@@ -61,30 +69,30 @@ public final class DefaultEntitiesService implements EntitiesService {
    */
   @Override
   public NavigableSet<Entity> searchClasses(KnowledgeBase base, String query, int limit)
-      throws IllegalArgumentException, KBProxyException {
-    @SuppressWarnings("unused")
-    KBProxy kbProxy = getKBProxy(base);
+      throws IllegalArgumentException, KBProxyException, STIException, IOException {
+    final KBProxy kbProxy = getKBProxy(base);
 
-    // TODO: Find only classes, not all resources. Leave the searchResources behave as it is now,
-    // because every class is also a resource. Only restrict this method to return only classes.
-    List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult = Collections.emptyList();
+    List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
+        kbProxy.findClassByFulltext(query, limit);
 
-    return searchResult.stream().map(entity -> new Entity(entity.getId(), entity.getLabel()))
+    return searchResult.stream().map(entity -> entitiesFactory.create(entity.getId(), entity.getLabel()))
         .collect(Collectors.toCollection(TreeSet::new));
   }
 
 
   @Override
   public NavigableSet<Entity> searchProperties(KnowledgeBase base, String query, int limit,
-      URI domain, URI range) throws IllegalArgumentException, KBProxyException {
-    @SuppressWarnings("unused")
-    KBProxy kbProxy = getKBProxy(base);
+      URI domain, URI range)
+      throws IllegalArgumentException, KBProxyException, STIException, IOException {
+    final KBProxy kbProxy = getKBProxy(base);
 
     // TODO: Find only properties, restricted by the domain (the domains of found properties must be
     // sub-type of the provided domain, the same for ranges). Null means no restriction.
-    List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult = Collections.emptyList();
+    // Ignoring the domain and range for now.
+    List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
+        kbProxy.findPredicateByFulltext(query, limit, domain, range);
 
-    return searchResult.stream().map(entity -> new Entity(entity.getId(), entity.getLabel()))
+    return searchResult.stream().map(entity -> entitiesFactory.create(entity.getId(), entity.getLabel()))
         .collect(Collectors.toCollection(TreeSet::new));
   }
 
@@ -95,26 +103,32 @@ public final class DefaultEntitiesService implements EntitiesService {
    * ClassProposal)
    */
   @Override
-  public Entity propose(KnowledgeBase base, ClassProposal proposal) throws KBProxyException {
+  public Entity propose(KnowledgeBase base, ClassProposal proposal)
+      throws KBProxyException, STIException, IOException {
     KBProxy kbProxy = getKBProxy(base);
 
-    String superClassUri = null;
-    Entity superClass = proposal.getSuperClass();
-    if (superClass != null) {
-      superClassUri = superClass.getResource();
-    }
+    String superClassUri = getEntityValue(proposal.getSuperClass());
 
     uk.ac.shef.dcs.kbproxy.model.Entity entity = kbProxy.insertClass(proposal.getSuffix(),
         proposal.getLabel(), proposal.getAlternativeLabels(), superClassUri);
 
-    return new Entity(entity.getId(), entity.getLabel());
+    return entitiesFactory.create(entity.getId(), entity.getLabel());
   }
-  
+
   @Override
-  public Entity propose(KnowledgeBase base, PropertyProposal proposal) throws KBProxyException {
-    //TODO: Implement.
-    
-    return new Entity("http://odalic.eu/dummy", "Dummy label");
+  public Entity propose(KnowledgeBase base, PropertyProposal proposal)
+      throws KBProxyException, STIException, IOException {
+    KBProxy kbProxy = getKBProxy(base);
+
+    String superPropertyUri = getEntityValue(proposal.getSuperProperty());
+    String rangeUri = getEntityValue(proposal.getRange());
+    String domainUri = getEntityValue(proposal.getDomain());
+
+    uk.ac.shef.dcs.kbproxy.model.Entity entity =
+        kbProxy.insertProperty(proposal.getSuffix(), proposal.getLabel(),
+            proposal.getAlternativeLabels(), superPropertyUri, rangeUri, domainUri);
+
+    return entitiesFactory.create(entity.getId(), entity.getLabel());
   }
 
   /*
@@ -124,7 +138,8 @@ public final class DefaultEntitiesService implements EntitiesService {
    * ResourceProposal)
    */
   @Override
-  public Entity propose(KnowledgeBase base, ResourceProposal proposal) throws KBProxyException {
+  public Entity propose(KnowledgeBase base, ResourceProposal proposal)
+      throws KBProxyException, STIException, IOException {
     KBProxy kbProxy = getKBProxy(base);
 
     Collection<String> classes = null;
@@ -135,10 +150,11 @@ public final class DefaultEntitiesService implements EntitiesService {
     uk.ac.shef.dcs.kbproxy.model.Entity entity = kbProxy.insertConcept(proposal.getSuffix(),
         proposal.getLabel(), proposal.getAlternativeLabels(), classes);
 
-    return new Entity(entity.getId(), entity.getLabel());
+    return entitiesFactory.create(entity.getId(), entity.getLabel());
   }
 
-  private KBProxy getKBProxy(KnowledgeBase base) throws KBProxyException {
+  private KBProxy getKBProxy(KnowledgeBase base)
+      throws KBProxyException, STIException, IOException {
     KBProxy kbProxy = knowledgeBaseProxyFactory.getKBProxies().get(base.getName());
 
     if (kbProxy == null) {
@@ -147,5 +163,13 @@ public final class DefaultEntitiesService implements EntitiesService {
     }
 
     return kbProxy;
+  }
+
+  private String getEntityValue(Entity property) {
+    if (property != null) {
+      return property.getResource();
+    } else {
+      return null;
+    }
   }
 }

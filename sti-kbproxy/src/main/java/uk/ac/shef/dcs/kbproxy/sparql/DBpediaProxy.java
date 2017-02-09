@@ -4,13 +4,8 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.RDFNode;
-
 import uk.ac.shef.dcs.kbproxy.KBDefinition;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
-import uk.ac.shef.dcs.kbproxy.model.Entity;
-import uk.ac.shef.dcs.util.StringUtils;
-
 import java.io.IOException;
 import java.util.*;
 
@@ -33,7 +28,7 @@ public class DBpediaProxy extends SPARQLProxy {
    */
   public DBpediaProxy(KBDefinition kbDefinition,
                       Boolean fuzzyKeywords,
-                      String cachesBasePath) throws IOException {
+                      String cachesBasePath) throws IOException, KBProxyException {
     super(kbDefinition, fuzzyKeywords, cachesBasePath);
     String ontologyURL = kbDefinition.getOntologyUri();
     if (ontologyURL != null) {
@@ -43,61 +38,24 @@ public class DBpediaProxy extends SPARQLProxy {
   }
 
   @Override
-  protected List<String> queryForLabel(String sparqlQuery, String resourceURI) throws KBProxyException {
-    try {
-      org.apache.jena.query.Query query = QueryFactory.create(sparqlQuery);
-      QueryExecution qexec = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), query);
-
-      List<String> out = new ArrayList<>();
-      ResultSet rs = qexec.execSelect();
-      while (rs.hasNext()) {
-        QuerySolution qs = rs.next();
-        RDFNode domain = qs.get("?o");
-        String d = null;
-        if (domain != null)
-          d = domain.toString();
-        if (d != null) {
-          if (d.contains("@")) { //language tag in dbpedia literals
-            if (!d.endsWith("@en"))
-              continue;
-            else {
-              int trim = d.lastIndexOf("@en");
-              if (trim != -1)
-                d = d.substring(0, trim).trim();
-            }
-          }
-
-        }
-        out.add(d);
-      }
-
-      if (out.size() == 0) { //the resource has no statement with prop "rdfs:label", apply heuristics to parse the
-        //resource uri
-        int trim = resourceURI.lastIndexOf("#");
-        if (trim == -1)
-          trim = resourceURI.lastIndexOf("/");
-        if (trim != -1) {
-          String stringValue = resourceURI.substring(trim + 1).replaceAll("[^a-zA-Z0-9]", "").trim();
-          if (resourceURI.contains("yago")) { //this is an yago resource, which may have numbered ids as suffix
-            //e.g., City015467
-            int end = 0;
-            for (int i = 0; i < stringValue.length(); i++) {
-              if (Character.isDigit(stringValue.charAt(i))) {
-                end = i;
-                break;
-              }
-            }
-            if (end > 0)
-              stringValue = stringValue.substring(0, end);
-          }
-          stringValue = StringUtils.splitCamelCase(stringValue);
-          out.add(stringValue);
+  protected String applyCustomUriHeuristics(String resourceURI, String label) {
+    //This is an yago resource, which may have numbered ids as suffix
+    //e.g., City015467.
+    if (resourceURI.contains("yago")) {
+      int end = 0;
+      for (int i = 0; i < label.length(); i++) {
+        if (Character.isDigit(label.charAt(i))) {
+          end = i;
+          break;
         }
       }
-      return out;
-    } catch (QueryParseException ex) {
-      throw new KBProxyException("Invalid query: " + sparqlQuery, ex);
+
+      if (end > 0) {
+        label = label.substring(0, end);
+      }
     }
+
+    return label;
   }
 
   private OntModel loadModel(String ontURL) {

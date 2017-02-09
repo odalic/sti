@@ -1,14 +1,17 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
 import javafx.util.Pair;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Classification;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Ambiguity;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
+import uk.ac.shef.dcs.sti.core.extension.positions.CellPosition;
 import uk.ac.shef.dcs.sti.core.subjectcol.SubjectColumnDetector;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
 import uk.ac.shef.dcs.sti.core.model.*;
@@ -25,7 +28,7 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
   private TColumnColumnRelationEnumerator relationEnumerator;
   private UPDATE update;
   
-  private static final Logger LOG = Logger.getLogger(TMPOdalicInterpreter.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TMPOdalicInterpreter.class.getName());
   
   public TMPOdalicInterpreter(SubjectColumnDetector subjectColumnDetector,
       LEARNING learning, UPDATE update,
@@ -70,6 +73,26 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
           .compute(table, constraints.getSubjectColumnPosition(), ignoreColumnsArray);
       tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
       
+      // when the column does not contain Named entity as the most frequent data type,
+      // we will not disambiguate (and so classify) them, except for
+      // the user defined constraints
+      Set<Ambiguity> newAmbiguities = new HashSet<>(constraints.getAmbiguities());
+      for (int col = 0; col < table.getNumCols(); col++) {
+        if (!getIgnoreColumns().contains(col) &&
+            !table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType().equals(
+                DataTypeClassifier.DataType.NAMED_ENTITY)) {
+          for (int row = 0; row < table.getNumRows(); row++) {
+            if (!constraints.existDisambChosenForCell(col, row)) {
+              newAmbiguities.add(new Ambiguity(new CellPosition(row, col)));
+            }
+          }
+        }
+      }
+      constraints = new Constraints(constraints.getSubjectColumnPosition(),
+          constraints.getColumnIgnores(), constraints.getColumnAmbiguities(),
+          constraints.getClassifications(), constraints.getColumnRelations(),
+          constraints.getDisambiguations(), newAmbiguities);
+      
       List<Integer> annotatedColumns = new ArrayList<>();
       LOG.info(">\t PHASE: LEARNING ...");
       for (int col = 0; col < table.getNumCols(); col++) {
@@ -79,8 +102,8 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
                     learning.learn(table, tableAnnotations, col, constraints);
                 } else {
                     if (getIgnoreColumns().contains(col)) continue;
-                    if (!table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType().equals(DataTypeClassifier.DataType.NAMED_ENTITY))
-                        continue;
+                /*if (!table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType().equals(DataTypeClassifier.DataType.NAMED_ENTITY))
+                    continue;*/
                 /*if (table.getColumnHeader(col).getFeature().isAcronymColumn())
                     continue;*/
                     annotatedColumns.add(col);

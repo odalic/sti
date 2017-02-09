@@ -258,6 +258,18 @@ public final class Constraints implements Serializable {
 
   /**
    * 
+   * @param columnIndex
+   * @param rowIndex
+   * 
+   * @return true if there exist entities chosen for disambiguation of given cell
+   */
+  public boolean existDisambChosenForCell(int columnIndex, int rowIndex) {
+    return getDisambiguations().stream().anyMatch(e -> e.getPosition().getColumnIndex() == columnIndex &&
+        e.getPosition().getRowIndex() == rowIndex && !e.getAnnotation().getChosen().isEmpty());
+  }
+
+  /**
+   * 
    * @param columnIndex column for skipping rows
    * @param rowsCount count of all rows in the column
    * 

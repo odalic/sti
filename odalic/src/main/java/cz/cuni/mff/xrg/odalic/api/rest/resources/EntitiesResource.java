@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.NavigableSet;
 
@@ -9,8 +10,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +23,7 @@ import cz.cuni.mff.xrg.odalic.entities.ResourceProposal;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.sti.STIException;
 
 /**
  * Entities resource definition.
@@ -35,7 +35,6 @@ import uk.ac.shef.dcs.kbproxy.KBProxyException;
 @Path("{base}/entities")
 public final class EntitiesResource {
 
-  private static final Logger logger = LoggerFactory.getLogger(EntitiesResource.class);
   private final EntitiesService entitiesService;
   
   @Context
@@ -50,7 +49,7 @@ public final class EntitiesResource {
   @GET
   @Produces({MediaType.APPLICATION_JSON})
   public Response search(@PathParam("base") String base, @QueryParam("query") String query,
-      @DefaultValue("20") @QueryParam("limit") Integer limit) {
+      @DefaultValue("20") @QueryParam("limit") Integer limit) throws KBProxyException, STIException, IOException {
     return searchResources(base, query, limit);
   }
   
@@ -58,7 +57,7 @@ public final class EntitiesResource {
   @Path("classes")
   @Produces({MediaType.APPLICATION_JSON})
   public Response searchClasses(@PathParam("base") String base, @QueryParam("query") String query,
-      @DefaultValue("20") @QueryParam("limit") Integer limit) {
+      @DefaultValue("20") @QueryParam("limit") Integer limit) throws KBProxyException, STIException, IOException {
     if (query == null) {
       throw new BadRequestException("Query not provided!");
     }
@@ -67,13 +66,7 @@ public final class EntitiesResource {
     try {
       result = entitiesService.searchClasses(new KnowledgeBase(base), query, limit);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException(e.getLocalizedMessage());
-    } catch (final KBProxyException e) {
-      logger.error("KB search error", e);
-      throw new InternalServerErrorException(e.getLocalizedMessage());
-    } catch (final Exception e) {
-      logger.error("Unexpected error", e);
-      throw new InternalServerErrorException(e.getLocalizedMessage());
+      throw new NotFoundException(e);
     }
 
     return Reply.data(Response.Status.OK, result, uriInfo).toResponse();
@@ -83,7 +76,7 @@ public final class EntitiesResource {
   @Path("resources")
   @Produces({MediaType.APPLICATION_JSON})
   public Response searchResources(@PathParam("base") String base, @QueryParam("query") String query,
-      @DefaultValue("20") @QueryParam("limit") Integer limit) {
+      @DefaultValue("20") @QueryParam("limit") Integer limit) throws KBProxyException, STIException, IOException {
     if (query == null) {
       throw new BadRequestException("Query not provided!");
     }
@@ -92,13 +85,7 @@ public final class EntitiesResource {
     try {
       result = entitiesService.searchResources(new KnowledgeBase(base), query, limit);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException(e.getLocalizedMessage());
-    } catch (final KBProxyException e) {
-      logger.error("KB search error", e);
-      throw new InternalServerErrorException(e.getLocalizedMessage());
-    } catch (final Exception e) {
-      logger.error("Unexpected error", e);
-      throw new InternalServerErrorException(e.getLocalizedMessage());
+      throw new NotFoundException(e);
     }
 
     return Reply.data(Response.Status.OK, result, uriInfo).toResponse();
@@ -108,7 +95,7 @@ public final class EntitiesResource {
   @Path("properties")
   @Produces({MediaType.APPLICATION_JSON})
   public Response searchProperties(@PathParam("base") String base, @QueryParam("query") String query,
-      @DefaultValue("20") @QueryParam("limit") Integer limit, @QueryParam("domain") URI domain, @QueryParam("range") URI range) {
+      @DefaultValue("20") @QueryParam("limit") Integer limit, @QueryParam("domain") URI domain, @QueryParam("range") URI range) throws KBProxyException, STIException, IOException {
     if (query == null) {
       throw new BadRequestException("Query not provided!");
     }
@@ -117,13 +104,7 @@ public final class EntitiesResource {
     try {
       result = entitiesService.searchProperties(new KnowledgeBase(base), query, limit, domain, range);
     } catch (final IllegalArgumentException e) {
-      throw new NotFoundException(e.getLocalizedMessage());
-    } catch (final KBProxyException e) {
-      logger.error("KB search error", e);
-      throw new InternalServerErrorException(e.getLocalizedMessage());
-    } catch (final Exception e) {
-      logger.error("Unexpected error", e);
-      throw new InternalServerErrorException(e.getLocalizedMessage());
+      throw new NotFoundException(e);
     }
 
     return Reply.data(Response.Status.OK, result, uriInfo).toResponse();
@@ -132,13 +113,12 @@ public final class EntitiesResource {
   @POST
   @Path("classes")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response propose(@PathParam("base") String base, ClassProposal proposal) {
+  public Response propose(@PathParam("base") String base, ClassProposal proposal) throws KBProxyException, STIException, IOException {
     final Entity createdClass;
     try {
       createdClass = this.entitiesService.propose(new KnowledgeBase(base), proposal);
-    } catch (KBProxyException e) {
-      logger.error("KB proxy error", e);
-      throw new InternalServerErrorException(e.getLocalizedMessage());
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException(e);
     }
 
     return Reply.data(Response.Status.OK, createdClass, uriInfo).toResponse();
@@ -147,13 +127,12 @@ public final class EntitiesResource {
   @POST
   @Path("resources")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response propose(@PathParam("base") String base, ResourceProposal proposal) {
+  public Response propose(@PathParam("base") String base, ResourceProposal proposal) throws KBProxyException, STIException, IOException {
     final Entity createdEntity;
     try {
       createdEntity = this.entitiesService.propose(new KnowledgeBase(base), proposal);
-    } catch (KBProxyException e) {
-      logger.error("KB proxy error", e);
-      throw new InternalServerErrorException(e.getLocalizedMessage());
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException(e);
     }
 
     return Reply.data(Response.Status.OK, createdEntity, uriInfo).toResponse();
@@ -162,13 +141,12 @@ public final class EntitiesResource {
   @POST
   @Path("properties")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response propose(@PathParam("base") String base, PropertyProposal proposal) {
+  public Response propose(@PathParam("base") String base, PropertyProposal proposal) throws KBProxyException, STIException, IOException {
     final Entity createdProperty;
     try {
       createdProperty = this.entitiesService.propose(new KnowledgeBase(base), proposal);
-    } catch (KBProxyException e) {
-      logger.error("KB proxy error", e);
-      throw new InternalServerErrorException(e.getLocalizedMessage());
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException(e);
     }
 
     return Reply.data(Response.Status.OK, createdProperty, uriInfo).toResponse();

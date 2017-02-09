@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
 
 /**
  * Domain class {@link Entity} adapted for REST API.
@@ -24,11 +25,20 @@ public final class EntityValue implements Serializable {
 
   private String label;
 
+  private String prefixed;
+  
+  private Prefix prefix;
+  
+  private String tail;
+
   public EntityValue() {}
 
   public EntityValue(Entity adaptee) {
     this.resource = adaptee.getResource();
     this.label = adaptee.getLabel();
+    this.prefixed = adaptee.getPrefixed();
+    this.prefix = adaptee.getPrefix();
+    this.tail = adaptee.getTail();
   }
 
   /**
@@ -45,7 +55,7 @@ public final class EntityValue implements Serializable {
    */
   public void setResource(String resource) {
     Preconditions.checkNotNull(resource);
-    
+
     this.resource = resource;
   }
 
@@ -63,8 +73,56 @@ public final class EntityValue implements Serializable {
    */
   public void setLabel(String label) {
     Preconditions.checkNotNull(label);
-    
+
     this.label = label;
+  }
+
+  /**
+   * @return the prefixed form of the resource
+   */
+  @XmlElement
+  @Nullable
+  public String getPrefixed() {
+    return prefixed;
+  }
+
+  /**
+   * @param prefixed the prefixed form of the resource to set
+   */
+  public void setPrefixed(String prefixed) {
+    this.prefixed = prefixed;
+  }
+
+  /**
+   * @return the prefix
+   */
+  @XmlElement
+  @Nullable
+  public Prefix getPrefix() {
+    return prefix;
+  }
+
+  /**
+   * @param prefix the prefix to set
+   */
+  public void setPrefix(Prefix prefix) {
+    this.prefix = prefix;
+  }
+
+  /**
+   * @return the tail
+   */
+  @XmlElement
+  @Nullable
+  public String getTail() {
+    return tail;
+  }
+
+  /**
+   * @param tail the tail to set
+   */
+  public void setTail(String tail) {
+    this.tail = tail;
   }
 
   /* (non-Javadoc)
@@ -72,6 +130,7 @@ public final class EntityValue implements Serializable {
    */
   @Override
   public String toString() {
-    return "EntityValue [resource=" + resource + ", label=" + label + "]";
+    return "EntityValue [resource=" + resource + ", label=" + label + ", prefixed=" + prefixed
+        + ", prefix=" + prefix + ", tail=" + tail + "]";
   }
 }

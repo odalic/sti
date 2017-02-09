@@ -1,7 +1,9 @@
 package cz.cuni.mff.xrg.odalic.tasks.configurations;
 
 import java.io.Serializable;
+import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -11,6 +13,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.ConfigurationAdapter;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import jersey.repackaged.com.google.common.collect.ImmutableSet;
 
 /**
  * Task configuration.
@@ -22,38 +25,50 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 @XmlJavaTypeAdapter(ConfigurationAdapter.class)
 public final class Configuration implements Serializable {
 
+  /**
+   * Maximum number of rows that can be processed.
+   */
+  public static final int MAXIMUM_ROWS_LIMIT = Integer.MAX_VALUE;
+
   private static final long serialVersionUID = -6359038623760039155L;
-  
+
   private final File input;
 
   private final Feedback feedback;
-  
+
+  private final Set<KnowledgeBase> usedBases;
+
   private final KnowledgeBase primaryBase;
 
+  private final int rowsLimit;
   /**
-   * Creates configuration without any feedback, thus implying fully automatic processing.
+   * Creates configuration with provided feedback, which serves as hint for the processing
+   * algorithm.
    * 
    * @param input input specification
-   */
-  public Configuration(File input, KnowledgeBase primaryBase) {
-    this(input, primaryBase, new Feedback());
-  }
-  
-  /**
-   * Creates configuration with provided feedback, which serves as hint for the processing algorithm.
-   * 
-   * @param input input specification
+   * @param usedBases bases selected for the task
    * @param primaryBase primary knowledge base
-   * @param feedback constraints for the algorithm
+   * @param feedback constraints for the algorithm, when {@code null}, a default empty
+   *        {@link Feedback} is used
+   * @param rowsLimit maximum number of rows to let the algorithm process
+   * 
+   * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number or zero
    */
-  public Configuration(File input, KnowledgeBase primaryBase, Feedback feedback) {
+  public Configuration(final File input, final Set<? extends KnowledgeBase> usedBases,
+      final KnowledgeBase primaryBase, final @Nullable Feedback feedback,
+      @Nullable final Integer rowsLimit) {
     Preconditions.checkNotNull(input);
+    Preconditions.checkNotNull(usedBases);
     Preconditions.checkNotNull(primaryBase);
-    Preconditions.checkNotNull(feedback);
-    
+
+    Preconditions.checkArgument(rowsLimit == null || rowsLimit > 0);
+    Preconditions.checkArgument(usedBases.contains(primaryBase));
+
     this.input = input;
+    this.usedBases = ImmutableSet.copyOf(usedBases);
     this.primaryBase = primaryBase;
-    this.feedback = feedback;
+    this.feedback = feedback == null ? new Feedback() : feedback;
+    this.rowsLimit = rowsLimit == null ? MAXIMUM_ROWS_LIMIT : rowsLimit;
   }
 
   /**
@@ -71,25 +86,46 @@ public final class Configuration implements Serializable {
   }
 
   /**
+   * @return the bases selected for the task
+   */
+  public Set<KnowledgeBase> getUsedBases() {
+    return usedBases;
+  }
+
+  /**
    * @return the primary knowledge base
    */
   public KnowledgeBase getPrimaryBase() {
     return primaryBase;
   }
 
-  /* (non-Javadoc)
+  /**
+   * @return the maximum number of rows for the algorithm to process
+   */
+  public int getRowsLimit() {
+    return rowsLimit;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((feedback == null) ? 0 : feedback.hashCode());
-    result = prime * result + ((input == null) ? 0 : input.hashCode());
+    result = prime * result + feedback.hashCode();
+    result = prime * result + input.hashCode();
+    result = prime * result + usedBases.hashCode();
+    result = prime * result + primaryBase.hashCode();
+    result = prime * result + rowsLimit;
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
@@ -104,28 +140,32 @@ public final class Configuration implements Serializable {
       return false;
     }
     Configuration other = (Configuration) obj;
-    if (feedback == null) {
-      if (other.feedback != null) {
-        return false;
-      }
-    } else if (!feedback.equals(other.feedback)) {
+    if (!feedback.equals(other.feedback)) {
       return false;
     }
-    if (input == null) {
-      if (other.input != null) {
-        return false;
-      }
-    } else if (!input.equals(other.input)) {
+    if (!input.equals(other.input)) {
+      return false;
+    }
+    if (!usedBases.equals(other.usedBases)) {
+      return false;
+    }
+    if (!primaryBase.equals(other.primaryBase)) {
+      return false;
+    }
+    if (rowsLimit != other.rowsLimit) {
       return false;
     }
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "Configuration [input=" + input + ", feedback=" + feedback + "]";
+    return "Configuration [input=" + input + ", feedback=" + feedback + ", usedBases=" + usedBases
+        + ", primaryBase=" + primaryBase + ", rowsLimit=" + rowsLimit + "]";
   }
 }

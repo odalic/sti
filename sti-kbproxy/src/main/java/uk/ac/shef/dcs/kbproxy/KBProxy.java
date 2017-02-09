@@ -1,9 +1,9 @@
 package uk.ac.shef.dcs.kbproxy;
 
-import com.sun.jndi.toolkit.url.Uri;
-
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.core.CoreContainer;
 
@@ -16,15 +16,19 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableSet;
+import java.util.stream.Collectors;
 
 /**
  */
 public abstract class KBProxy {
+
+  private static final String CACHE_VERSION_ID = "9274dff6-c606-4f5d-8bb5-d528c764e655";
+  private static final String CACHE_VERSION = "1.0.14";
 
   protected SolrCache cacheEntity;
   protected SolrCache cacheConcept;
@@ -34,7 +38,7 @@ public abstract class KBProxy {
   private String cachesBasePath;
   private static final Map<String, CoreContainer> cacheCores = new HashMap<>();
 
-  protected static final String KB_SEARCH_RESULT_STOPLIST = "kb.search.result.stoplistfile";
+  protected static final String KB_SEARCH_RESULT_STOP_LIST = "kb.search.result.stoplistfile";
   protected static final String KB_SEARCH_CLASS = "kb.search.class";
   protected static final String KB_SEARCH_TRY_FUZZY_KEYWORD = "kb.search.tryfuzzykeyword";
 
@@ -44,11 +48,11 @@ public abstract class KBProxy {
   private static final String SIMILARITY_CACHE = "similarity";
 
   protected static final boolean AUTO_COMMIT = true;
-  protected static final boolean ALWAYS_CALL_REMOTE_SEARCHAPI = false;
+  protected static final boolean ALWAYS_CALL_REMOTE_SEARCH_API = false;
 
   protected KBSearchResultFilter resultFilter;
 
-  protected final Logger log = Logger.getLogger(getClass());
+  protected final Logger log = LoggerFactory.getLogger(getClass());
 
   protected KBDefinition kbDefinition;
 
@@ -105,7 +109,25 @@ public abstract class KBProxy {
    * @return
    * @throws IOException
    */
-  public abstract List<Entity> findEntityByFulltext(String pattern, int limit) throws KBProxyException;
+  public abstract List<Entity> findResourceByFulltext(String pattern, int limit) throws KBProxyException;
+
+  /**
+   * Given a string, fetch candidate entities (classes) from the KB based on a fulltext search.
+   * @param pattern
+   * @param limit
+   * @return
+   * @throws IOException
+   */
+  public abstract List<Entity> findClassByFulltext(String pattern, int limit) throws KBProxyException;
+
+  /**
+   * Given a string, fetch candidate entities (predicates) from the KB based on a fulltext search.
+   * @param pattern
+   * @param limit
+   * @return
+   * @throws IOException
+   */
+  public abstract List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain, URI range) throws KBProxyException;
 
   /**
    * Given a string, fetch candidate entities (resources) from the KB
@@ -170,6 +192,11 @@ public abstract class KBProxy {
   public abstract Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels, Collection<String> classes) throws KBProxyException;
 
   /**
+   * Inserts a new propety into the knowledge base
+   */
+  public abstract Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range) throws KBProxyException;
+
+  /**
    * save the computed semantic similarity between the entity and class
    */
   public void cacheEntityClazzSimilarity(String entity_id, String clazz_url, double score, boolean biDirectional,
@@ -227,7 +254,6 @@ public abstract class KBProxy {
     } catch (Exception e) {
       throw new KBProxyException(e);
     }
-
   }
 
 
@@ -242,12 +268,28 @@ public abstract class KBProxy {
      then cache the results in solr. Again you should call these methods to create a query string, which should be
      passed as the id of the record to be added to solr
      */
-  protected String createSolrCacheQuery_fulltextSearch(String pattern, int limit) {
-    return "FULLTEXT_" + limit + "_" + pattern;
+  protected String createSolrCacheQuery_fulltextSearchResources(String pattern, int limit) {
+    return "FULLTEXT_RESOURCE_" + limit + "_" + pattern;
   }
 
-  protected String createSolrCacheQuery_findResources(String content) {
-    return content;
+  protected String createSolrCacheQuery_fulltextSearchClasses(String pattern, int limit) {
+    return "FULLTEXT_CLASS_" + limit + "_" + pattern;
+  }
+
+  protected String createSolrCacheQuery_fulltextSearchPredicates(String pattern, int limit, String domain, String range) {
+    return "FULLTEXT_PREDICATE_" + limit + "_" + pattern + "_" + domain + "_" + range;
+  }
+
+  protected String createSolrCacheQuery_findResources(String content, String... types) {
+    StringBuilder builder = new StringBuilder("FIND_RESOURCE_");
+    builder.append(content);
+
+    for(String type : Arrays.stream(types).sorted().collect(Collectors.toList())) {
+      builder.append("_TYPE_");
+      builder.append(type);
+    }
+
+    return builder.toString();
   }
 
   protected String createSolrCacheQuery_findAttributesOfResource(String resource) {
@@ -286,6 +328,23 @@ public abstract class KBProxy {
       }
     }
 
-    return new EmbeddedSolrServer(cachePath, cacheIdentifier);
+    EmbeddedSolrServer server = new EmbeddedSolrServer(cachePath, cacheIdentifier);
+    verifyServerVersion(server);
+    return server;
+  }
+
+  private void verifyServerVersion(EmbeddedSolrServer server) throws KBProxyException {
+    try {
+      SolrCache cache = new SolrCache(server);
+      String cacheVersion = (String)cache.retrieve(CACHE_VERSION_ID);
+      if (!CACHE_VERSION.equals(cacheVersion)) {
+        server.deleteByQuery("*:*");
+        cache.cache(CACHE_VERSION_ID, CACHE_VERSION, true);
+      }
+    } catch (SolrServerException | IOException | ClassNotFoundException e) {
+      String error = "Error initializing the cache.";
+      log.error(error, e);
+      throw new KBProxyException(error, e);
+    }
   }
 }

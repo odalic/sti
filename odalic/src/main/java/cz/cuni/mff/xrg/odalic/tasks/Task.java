@@ -3,11 +3,13 @@ package cz.cuni.mff.xrg.odalic.tasks;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.TaskAdapter;
+import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 
 /**
@@ -23,12 +25,14 @@ public final class Task implements Serializable {
   private static final long serialVersionUID = 1610346823333685091L;
 
   private final String id;
-  
+
   private final String description;
 
   private final Date created;
 
   private Configuration configuration;
+
+  private Input inputSnapshot;
 
   /**
    * Creates the task instance.
@@ -38,7 +42,8 @@ public final class Task implements Serializable {
    * @param created provided time of creation
    * @param configuration configuration of the task
    */
-  public Task(String id, String description, Date created, Configuration configuration) {
+  public Task(final String id, final String description, final Date created,
+      final Configuration configuration) {
     Preconditions.checkNotNull(id);
     Preconditions.checkNotNull(description);
     Preconditions.checkNotNull(created);
@@ -48,6 +53,7 @@ public final class Task implements Serializable {
     this.description = description;
     this.created = created;
     this.configuration = configuration;
+    this.inputSnapshot = null; // Invalidate.
   }
 
   /**
@@ -78,12 +84,31 @@ public final class Task implements Serializable {
   }
 
   /**
+   * Provides a snapshot of the input.
+   * 
+   * @return a snapshot of the input, {@code null} when there is none
+   */
+  @Nullable
+  public Input getInputSnapshot() {
+    return inputSnapshot;
+  }
+
+  /**
+   * @param inputSnapshot input snapshot to set
+   */
+  public void setInputSnapshot(final Input inputSnapshot) {
+    Preconditions.checkNotNull(inputSnapshot);
+    
+    this.inputSnapshot = inputSnapshot;
+  }
+
+  /**
    * @return the id
    */
   public String getId() {
     return id;
   }
-  
+
   /**
    * @return the description
    */
@@ -146,6 +171,7 @@ public final class Task implements Serializable {
    */
   @Override
   public String toString() {
-    return "Task [id=" + id + ", description=" + description + ", created=" + created + ", configuration=" + configuration + "]";
+    return "Task [id=" + id + ", description=" + description + ", created=" + created
+        + ", configuration=" + configuration + ", inputSnapshot=" + inputSnapshot + "]";
   }
 }

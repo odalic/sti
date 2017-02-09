@@ -1,12 +1,14 @@
 package cz.cuni.mff.xrg.odalic.api.rest.values;
 
 import java.io.Serializable;
-
+import java.util.NavigableSet;
+import java.util.Set;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSortedSet;
 
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
@@ -22,19 +24,26 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 public final class ConfigurationValue implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
-  
+
   private String input;
 
   private Feedback feedback;
+
+  private NavigableSet<KnowledgeBase> usedBases;
   
   private KnowledgeBase primaryBase;
+
+  private Integer rowsLimit;
 
   public ConfigurationValue() {}
 
   public ConfigurationValue(Configuration adaptee) {
     input = adaptee.getInput().getId();
     feedback = adaptee.getFeedback();
+    setUsedBases(ImmutableSortedSet.copyOf(adaptee.getUsedBases()));
     primaryBase = adaptee.getPrimaryBase();
+    rowsLimit =
+        adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
   }
 
   /**
@@ -51,10 +60,10 @@ public final class ConfigurationValue implements Serializable {
    */
   public void setInput(String input) {
     Preconditions.checkNotNull(input);
-    
+
     this.input = input;
   }
-  
+
   /**
    * @return the feedback
    */
@@ -70,8 +79,26 @@ public final class ConfigurationValue implements Serializable {
    */
   public void setFeedback(Feedback feedback) {
     Preconditions.checkNotNull(feedback);
-    
+
     this.feedback = feedback;
+  }
+
+  /**
+   * @return the bases selected for the task
+   */
+  @XmlElement
+  @Nullable
+  public NavigableSet<KnowledgeBase> getUsedBases() {
+    return usedBases;
+  }
+
+  /**
+   * @param usedBases the bases selected for the task to set
+   */
+  public void setUsedBases(Set<? extends KnowledgeBase> usedBases) {
+    Preconditions.checkNotNull(usedBases);
+    
+    this.usedBases = ImmutableSortedSet.copyOf(usedBases);
   }
 
   /**
@@ -88,16 +115,36 @@ public final class ConfigurationValue implements Serializable {
    */
   public void setPrimaryBase(KnowledgeBase primaryBase) {
     Preconditions.checkNotNull(primaryBase);
-    
+
     this.primaryBase = primaryBase;
   }
 
-  /* (non-Javadoc)
+
+  /**
+   * @return the maximum number of rows to process, {@code null} if no such limit set
+   */
+  @Nullable
+  public Integer getRowsLimit() {
+    return rowsLimit;
+  }
+
+  /**
+   * @param rowsLimit the maximum number of rows to process to set
+   */
+  public void setRowsLimit(final @Nullable Integer rowsLimit) {
+    Preconditions.checkArgument(rowsLimit == null || rowsLimit > 0);
+
+    this.rowsLimit = rowsLimit;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "ConfigurationValue [input=" + input + ", feedback=" + feedback + ", primaryBase="
-        + primaryBase + "]";
+    return "ConfigurationValue [input=" + input + ", feedback=" + feedback + ", usedBases=" + usedBases + ", primaryBase="
+        + primaryBase + ", rowsLimit=" + rowsLimit + "]";
   }
 }
