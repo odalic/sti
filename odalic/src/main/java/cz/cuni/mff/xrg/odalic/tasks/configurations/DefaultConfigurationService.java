@@ -10,12 +10,12 @@ import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 
 /**
- * This {@link ConfigurationService} implementation provides no persistence.
+ * This {@link ConfigurationService} implementation just refers to {@link TaskService}.
  * 
  * @author Václav Brodec
  *
  */
-public final class MemoryOnlyConfigurationService implements ConfigurationService {
+public final class DefaultConfigurationService implements ConfigurationService {
 
   private final TaskService taskService;
 
@@ -48,7 +48,7 @@ public final class MemoryOnlyConfigurationService implements ConfigurationServic
   }
 
   @Autowired
-  public MemoryOnlyConfigurationService(final TaskService taskService) {
+  public DefaultConfigurationService(final TaskService taskService) {
     Preconditions.checkNotNull(taskService);
 
     this.taskService = taskService;

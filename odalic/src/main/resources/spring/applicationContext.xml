@@ -53,7 +53,7 @@
 	<bean id="dbService" class="cz.cuni.mff.xrg.odalic.util.storage.FileDbService" />
 	<bean id="fileService" class="cz.cuni.mff.xrg.odalic.files.DbFileService" />
 	<bean id="configurationService"
-		class="cz.cuni.mff.xrg.odalic.tasks.configurations.MemoryOnlyConfigurationService" />
+		class="cz.cuni.mff.xrg.odalic.tasks.configurations.DefaultConfigurationService" />
 	<bean id="executionService"
 		class="cz.cuni.mff.xrg.odalic.tasks.executions.FutureBasedExecutionService" />
 	<bean id="feedbackService"
