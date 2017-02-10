@@ -14,6 +14,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.mapdb.DB;
+import org.mapdb.Serializer;
+import org.mapdb.serializer.SerializerArrayTuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,27 +38,23 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
 import cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
+import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
 
 /**
- * <p>
  * Implementation of {@link ExecutionService} based on {@link Future} and {@link ExecutorService}
- * implementations.
- * </p>
- * 
- * <p>
- * Provides no persistence whatsoever
- * </p>
+ * implementations. Stores the latest computed results using {@link DB}-backed map.
  * 
  * @author Václav Brodec
  *
  */
-public final class FutureBasedExecutionService implements ExecutionService {
+public final class DbCachedFutureBasedExecutionService implements ExecutionService {
 
-  private static final Logger logger = LoggerFactory.getLogger(FutureBasedExecutionService.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(DbCachedFutureBasedExecutionService.class);
 
   private final ConfigurationService configurationService;
   private final FeedbackService feedbackService;
@@ -71,17 +70,30 @@ public final class FutureBasedExecutionService implements ExecutionService {
    * Table of result futures where rows are indexed by user IDs and the columns by task IDs.
    */
   private final com.google.common.collect.Table<String, String, Future<Result>> userTaskIdsToResults;
+  
+  /**
+   * The shared database instance.
+   */
+  private final DB db;
 
+  /**
+   * Table of cached results where rows are indexed by user IDs and the columns by task IDs
+   * (represented as an array of size 2).
+   */
+  private final Map<Object[], Result> userTaskIdsToCachedResults;
+
+  @SuppressWarnings("unchecked")
   @Autowired
-  public FutureBasedExecutionService(final ConfigurationService configurationService,
+  public DbCachedFutureBasedExecutionService(final ConfigurationService configurationService,
       final FeedbackService feedbackService, final FileService fileService,
-      final AnnotationToResultAdapter annotationToResultAdapter,
+      final DbService dbService, final AnnotationToResultAdapter annotationToResultAdapter,
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
       final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter) {
     Preconditions.checkNotNull(configurationService);
     Preconditions.checkNotNull(feedbackService);
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(dbService);
     Preconditions.checkNotNull(annotationToResultAdapter);
     Preconditions.checkNotNull(semanticTableInterpreterFactory);
     Preconditions.checkNotNull(feedbackToConstraintsAdapter);
@@ -98,6 +110,12 @@ public final class FutureBasedExecutionService implements ExecutionService {
     this.inputToTableAdapter = inputToTableAdapter;
 
     this.userTaskIdsToResults = HashBasedTable.create();
+
+    this.db = dbService.getDb();
+
+    this.userTaskIdsToCachedResults = db.treeMap("userTaskIdsToCachedResults")
+        .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
+        .valueSerializer(Serializer.JAVA).createOrOpen();
   }
 
   @Override
@@ -116,6 +134,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final Input input = parsingResult.getInput();
 
     feedbackService.setInputSnapshotForTaskid(userId, taskId, input);
+    db.commit();
 
     final Callable<Result> execution = () -> {
       try {
@@ -143,7 +162,12 @@ public final class FutureBasedExecutionService implements ExecutionService {
           results.put(base, annotationResult);
         }
 
-        return annotationResultAdapter.toResult(results);
+        final Result result = annotationResultAdapter.toResult(results);
+        
+        userTaskIdsToCachedResults.put(new Object[] { userId, taskId }, result);
+        db.commit();
+        
+        return result;
       } catch (final Exception e) {
         logger.error("Error during task execution!", e);
 
@@ -151,6 +175,9 @@ public final class FutureBasedExecutionService implements ExecutionService {
       }
     };
 
+    userTaskIdsToCachedResults.remove(new Object[] { userId, taskId });
+    db.commit();
+    
     final Future<Result> future = executorService.submit(execution);
     userTaskIdsToResults.put(userId, taskId, future);
   }
@@ -174,6 +201,9 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
   @Override
   public void unscheduleForTaskId(String userId, String taskId) {
+    userTaskIdsToCachedResults.remove(new Object[] { userId, taskId });
+    db.commit();
+    
     final Future<Result> resultFuture = userTaskIdsToResults.remove(userId, taskId);
     if (resultFuture == null) {
       return;
@@ -185,6 +215,11 @@ public final class FutureBasedExecutionService implements ExecutionService {
   @Override
   public Result getResultForTaskId(String userId, String taskId)
       throws InterruptedException, ExecutionException, CancellationException {
+    final Result cachedResult = this.userTaskIdsToCachedResults.get(new Object[] { userId, taskId });
+    if (cachedResult != null) {
+      return cachedResult;
+    }
+    
     final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -198,11 +233,17 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
     Preconditions.checkArgument(resultFuture != null);
 
+    userTaskIdsToCachedResults.remove(new Object[] { userId, taskId });
+    db.commit();
     Preconditions.checkState(resultFuture.cancel(false));
   }
 
   @Override
   public boolean isDoneForTaskId(String userId, String taskId) {
+    if (this.userTaskIdsToCachedResults.containsKey(new Object[] { userId, taskId })) {
+      return true;
+    }
+    
     final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -213,8 +254,9 @@ public final class FutureBasedExecutionService implements ExecutionService {
   @Override
   public boolean isCanceledForTaskId(String userId, String taskId) {
     final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
-
-    Preconditions.checkArgument(resultFuture != null);
+    if (resultFuture == null) {
+      return false;
+    }
 
     return resultFuture.isCancelled();
   }
@@ -223,7 +265,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
   public boolean hasBeenScheduledForTaskId(String userId, String taskId) {
     final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
 
-    return resultFuture != null;
+    return resultFuture != null || this.userTaskIdsToCachedResults.containsKey(new Object[] { userId, taskId });
   }
 
   @Override

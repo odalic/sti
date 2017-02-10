@@ -61,11 +61,11 @@ public class States {
       if (canceled) {
         return StateValue.READY;
       } else {
-        if (executionService.hasFailedForTasksId(userId, taskId)) {
+        if (executionService.hasFailedForTaskId(userId, taskId)) {
           return StateValue.ERROR;
         }
         
-        if (executionService.isWarnedForTasksId(userId, taskId)) {
+        if (executionService.hasBeenWarnedForTaskId(userId, taskId)) {
           return StateValue.WARNING;
         }
         

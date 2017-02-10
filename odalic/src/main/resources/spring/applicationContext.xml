@@ -55,7 +55,7 @@
 	<bean id="configurationService"
 		class="cz.cuni.mff.xrg.odalic.tasks.configurations.DefaultConfigurationService" />
 	<bean id="executionService"
-		class="cz.cuni.mff.xrg.odalic.tasks.executions.FutureBasedExecutionService" />
+		class="cz.cuni.mff.xrg.odalic.tasks.executions.DbCachedFutureBasedExecutionService" />
 	<bean id="feedbackService"
 		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.DbFeedbackService" />
 	<bean id="taskService" class="cz.cuni.mff.xrg.odalic.tasks.DbTaskService" />
