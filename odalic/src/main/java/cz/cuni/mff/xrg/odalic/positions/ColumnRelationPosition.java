@@ -1,5 +1,7 @@
 package cz.cuni.mff.xrg.odalic.positions;
 
+import java.io.Serializable;
+
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -15,7 +17,9 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.ColumnRelationPositionAdapter;
  */
 @Immutable
 @XmlJavaTypeAdapter(ColumnRelationPositionAdapter.class)
-public final class ColumnRelationPosition {
+public final class ColumnRelationPosition implements Serializable {
+
+  private static final long serialVersionUID = -730386528524703424L;
 
   private final ColumnPosition first;
 

@@ -3,6 +3,8 @@
  */
 package cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes;
 
+import java.io.Serializable;
+
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -18,7 +20,9 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.PrefixAdapter;
  */
 @Immutable
 @XmlJavaTypeAdapter(PrefixAdapter.class)
-public final class Prefix {
+public final class Prefix implements Serializable {
+
+  private static final long serialVersionUID = 1038022885775345729L;
 
   private final String with;
   

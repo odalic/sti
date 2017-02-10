@@ -3,10 +3,9 @@ package cz.cuni.mff.xrg.odalic.api.rdf.values.util;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
-import java.util.stream.Stream;
-
 import javax.annotation.concurrent.Immutable;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -33,6 +32,8 @@ public final class Annotations {
 
   public static Set<KnowledgeBaseEntityCandidateNavigableSetEntry> toNavigableValues(
       final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidate>> candidates) {
+    Preconditions.checkNotNull(candidates);
+
     final ImmutableSet.Builder<KnowledgeBaseEntityCandidateNavigableSetEntry> candidatesBuilder =
         ImmutableSet.builder();
     for (final Map.Entry<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidate>> entry : candidates
@@ -40,66 +41,83 @@ public final class Annotations {
       final KnowledgeBase base = entry.getKey();
       final NavigableSet<? extends EntityCandidate> baseCandidates = entry.getValue();
 
-      final Stream<EntityCandidateValue> stream =
-          baseCandidates.stream().map(e -> new EntityCandidateValue(e));
-      candidatesBuilder.add(new KnowledgeBaseEntityCandidateNavigableSetEntry(new KnowledgeBaseValue(base), new EntityCandidateNavigableSetWrapper(ImmutableSortedSet.copyOf(stream.iterator()))));
+      final NavigableSet<EntityCandidateValue> values =
+          baseCandidates.stream().map(e -> new EntityCandidateValue(e)).collect(
+              ImmutableSortedSet.toImmutableSortedSet((first, second) -> first.compareTo(second)));
+      candidatesBuilder.add(new KnowledgeBaseEntityCandidateNavigableSetEntry(
+          new KnowledgeBaseValue(base), new EntityCandidateNavigableSetWrapper(values)));
     }
     return candidatesBuilder.build();
   }
 
   public static Set<KnowledgeBaseEntityCandidateSetEntry> toValues(
       final Map<KnowledgeBase, Set<EntityCandidate>> chosen) {
+    Preconditions.checkNotNull(chosen);
+
     final ImmutableSet.Builder<KnowledgeBaseEntityCandidateSetEntry> chosenBuilder =
         ImmutableSet.builder();
     for (final Map.Entry<KnowledgeBase, Set<EntityCandidate>> entry : chosen.entrySet()) {
       final KnowledgeBase base = entry.getKey();
       final Set<EntityCandidate> baseChosen = entry.getValue();
 
-      final Stream<EntityCandidateValue> stream =
-          baseChosen.stream().map(e -> new EntityCandidateValue(e));
-      chosenBuilder.add(new KnowledgeBaseEntityCandidateSetEntry(new KnowledgeBaseValue(base), new EntityCandidateSetWrapper(ImmutableSet.copyOf(stream.iterator()))));
+      final Set<EntityCandidateValue> values = baseChosen.stream()
+          .map(e -> new EntityCandidateValue(e)).collect(ImmutableSet.toImmutableSet());
+      chosenBuilder.add(new KnowledgeBaseEntityCandidateSetEntry(new KnowledgeBaseValue(base),
+          new EntityCandidateSetWrapper(values)));
     }
     return chosenBuilder.build();
   }
 
   public static Set<KnowledgeBaseEntityCandidateNavigableSetEntry> copyNavigableValues(
       Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
+    Preconditions.checkNotNull(candidates);
+
     return ImmutableSet.copyOf(candidates);
   }
 
   public static Set<KnowledgeBaseEntityCandidateSetEntry> copyValues(
       Set<? extends KnowledgeBaseEntityCandidateSetEntry> chosen) {
+    Preconditions.checkNotNull(chosen);
+
     return ImmutableSet.copyOf(chosen);
   }
 
-  public static Map<KnowledgeBase, Set<EntityCandidate>> toNavigableDomain(
+  public static Map<KnowledgeBase, NavigableSet<EntityCandidate>> toNavigableDomain(
       final Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
-    final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> chosenBuilder =
+    Preconditions.checkNotNull(candidates);
+
+    final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidate>> chosenBuilder =
         ImmutableMap.builder();
     for (final KnowledgeBaseEntityCandidateNavigableSetEntry entry : candidates) {
       final KnowledgeBase base = entry.getBase().toKnowledgeBase();
       final Set<EntityCandidateValue> values = entry.getSet().getValue();
 
-      chosenBuilder.put(base, ImmutableSet.copyOf(
-          values.stream().map(e -> new EntityCandidate(e.getEntity().toEntity(), e.getScore().toScore())).iterator()));
+      final NavigableSet<EntityCandidate> domainValues = values.stream()
+          .map(e -> new EntityCandidate(e.getEntity().toEntity(), e.getScore().toScore())).collect(
+              ImmutableSortedSet.toImmutableSortedSet((first, second) -> first.compareTo(second)));
+
+      chosenBuilder.put(base, domainValues);
     }
-    final Map<KnowledgeBase, Set<EntityCandidate>> chosen = chosenBuilder.build();
-    return chosen;
+    return chosenBuilder.build();
   }
 
   public static Map<KnowledgeBase, Set<EntityCandidate>> toDomain(
       final Set<? extends KnowledgeBaseEntityCandidateSetEntry> candidateValues) {
+    Preconditions.checkNotNull(candidateValues);
+
     final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> candidatesBuilder =
         ImmutableMap.builder();
     for (final KnowledgeBaseEntityCandidateSetEntry entry : candidateValues) {
       final KnowledgeBase base = entry.getBase().toKnowledgeBase();
       final Set<EntityCandidateValue> values = entry.getSet().getValue();
 
-      candidatesBuilder.put(base, ImmutableSet.copyOf(
-          values.stream().map(e -> new EntityCandidate(e.getEntity().toEntity(), e.getScore().toScore())).iterator()));
+      final Set<EntityCandidate> domainValues = values.stream()
+          .map(e -> new EntityCandidate(e.getEntity().toEntity(), e.getScore().toScore()))
+          .collect(ImmutableSet.toImmutableSet());
+
+      candidatesBuilder.put(base, domainValues);
     }
-    final Map<KnowledgeBase, Set<EntityCandidate>> candidates = candidatesBuilder.build();
-    return candidates;
+    return candidatesBuilder.build();
   }
 
 }

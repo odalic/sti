@@ -7,6 +7,7 @@ import com.complexible.pinto.RDFMapper;
 import com.complexible.pinto.annotations.RdfProperty;
 import com.complexible.pinto.annotations.RdfsClass;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
@@ -20,7 +21,9 @@ public class EntityCandidateSetWrapper {
 
   private Set<EntityCandidateValue> value;
   
-  public EntityCandidateSetWrapper() {};
+  public EntityCandidateSetWrapper() {
+    value = ImmutableSet.of();
+  }
   
   public EntityCandidateSetWrapper(final Set<? extends EntityCandidateValue> value) {
     Preconditions.checkNotNull(value);
@@ -39,8 +42,10 @@ public class EntityCandidateSetWrapper {
   /**
    * @param value the value to set
    */
-  public void setValue(Set<EntityCandidateValue> value) {
-    this.value = value;
+  public void setValue(Set<? extends EntityCandidateValue> value) {
+    Preconditions.checkNotNull(value);
+    
+    this.value = ImmutableSortedSet.copyOf(value);
   }
 
   /* (non-Javadoc)

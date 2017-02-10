@@ -1,14 +1,13 @@
 package cz.cuni.mff.xrg.odalic.tasks.feedbacks;
 
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.input.Input;
-import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
@@ -21,17 +20,23 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
  */
 public final class MemoryOnlyFeedbackService implements FeedbackService {
 
-  private TaskService taskService;
   private final ConfigurationService configurationService;
+
+  private final Table<String, String, Input> inputSnapshots;
 
   @Autowired
   public MemoryOnlyFeedbackService(final ConfigurationService configurationService,
       final TaskService taskService) {
+    this(configurationService, HashBasedTable.create());
+  }
+
+  private MemoryOnlyFeedbackService(final ConfigurationService configurationService,
+      final Table<String, String, Input> inputSnapshots) {
     Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(taskService);
+    Preconditions.checkNotNull(inputSnapshots);
 
     this.configurationService = configurationService;
-    this.taskService = taskService;
+    this.inputSnapshots = inputSnapshots;
   }
 
   @Override
@@ -50,16 +55,23 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
             oldConfiguration.isStatistical()));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService#getInputForTaskId(java.lang.String)
-   */
   @Override
-  public Input getInputForTaskId(String userId, String taskId)
-      throws IllegalArgumentException, IOException {
-    final Task task = taskService.getById(userId, taskId);
+  public Input getInputSnapshotForTaskId(String userId, String taskId) {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(taskId);
 
-    return task.getInputSnapshot();
+    final Input inputSnapshot = inputSnapshots.get(userId, taskId);
+    Preconditions.checkArgument(inputSnapshot != null, "No such task input snapshot present!");
+
+    return inputSnapshot;
+  }
+
+  @Override
+  public void setInputSnapshotForTaskid(String userId, String taskId, Input inputSnapshot) {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(taskId);
+    Preconditions.checkNotNull(inputSnapshot);
+    
+    inputSnapshots.put(userId, taskId, inputSnapshot);
   }
 }

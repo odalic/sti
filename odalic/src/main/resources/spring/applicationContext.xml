@@ -58,7 +58,7 @@
 		class="cz.cuni.mff.xrg.odalic.tasks.executions.FutureBasedExecutionService" />
 	<bean id="feedbackService"
 		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.MemoryOnlyFeedbackService" />
-	<bean id="taskService" class="cz.cuni.mff.xrg.odalic.tasks.MemoryOnlyTaskService" />
+	<bean id="taskService" class="cz.cuni.mff.xrg.odalic.tasks.DbTaskService" />
 	<bean id="annotatedTableService"
 		class="cz.cuni.mff.xrg.odalic.outputs.annotatedtable.ResultAdaptingAnnotatedTableService" />
 	<bean id="csvExportService"

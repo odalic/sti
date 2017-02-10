@@ -2,6 +2,9 @@ package cz.cuni.mff.xrg.odalic.api.rdf.values;
 
 import java.util.Map;
 import java.util.NavigableSet;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import com.complexible.pinto.RDFMapper;
 import com.complexible.pinto.annotations.RdfProperty;
@@ -20,9 +23,11 @@ public class EntityCandidateNavigableSetWrapper {
 
   private NavigableSet<EntityCandidateValue> value;
   
-  public EntityCandidateNavigableSetWrapper() {};
+  public EntityCandidateNavigableSetWrapper() {
+    value = ImmutableSortedSet.of();
+  }
   
-  public EntityCandidateNavigableSetWrapper(final NavigableSet<? extends EntityCandidateValue> value) {
+  public EntityCandidateNavigableSetWrapper(final Set<? extends EntityCandidateValue> value) {
     Preconditions.checkNotNull(value);
     
     this.value = ImmutableSortedSet.copyOf(value);
@@ -32,6 +37,7 @@ public class EntityCandidateNavigableSetWrapper {
    * @return the value
    */
   @RdfProperty("http://odalic.eu/internal/EntityCandidateNavigableSetWrapper/Value")
+  @Nullable
   public NavigableSet<EntityCandidateValue> getValue() {
     return value;
   }
@@ -39,8 +45,10 @@ public class EntityCandidateNavigableSetWrapper {
   /**
    * @param value the value to set
    */
-  public void setValue(NavigableSet<EntityCandidateValue> value) {
-    this.value = value;
+  public void setValue(Set<? extends EntityCandidateValue> value) {
+    Preconditions.checkNotNull(value);
+    
+    this.value = ImmutableSortedSet.copyOf(value);
   }
 
   /* (non-Javadoc)

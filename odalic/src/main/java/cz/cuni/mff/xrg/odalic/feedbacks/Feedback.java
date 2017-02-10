@@ -9,12 +9,12 @@ import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.FeedbackAdapter;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
-import jersey.repackaged.com.google.common.collect.ImmutableMap;
 
 /**
  * User feedback for the result of annotating algorithm. Expresses also input constraints for the

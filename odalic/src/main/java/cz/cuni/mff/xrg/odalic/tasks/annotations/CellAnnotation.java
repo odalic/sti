@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks.annotations;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
@@ -23,7 +24,9 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.CellAnnotationAdapter;
  */
 @Immutable
 @XmlJavaTypeAdapter(CellAnnotationAdapter.class)
-public final class CellAnnotation {
+public final class CellAnnotation implements Serializable {
+
+  private static final long serialVersionUID = 2348206296236512507L;
 
   private final Map<KnowledgeBase, NavigableSet<EntityCandidate>> candidates;
 

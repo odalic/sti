@@ -60,7 +60,7 @@ public final class ResultAdaptingAnnotatedTableService implements AnnotatedTable
   public AnnotatedTable getAnnotatedTableForTaskId(final String userId, final String taskId)
       throws IllegalArgumentException, CancellationException, InterruptedException, ExecutionException, IOException {
     final Result result = executionService.getResultForTaskId(userId, taskId);
-    final Input input = feedbackService.getInputForTaskId(userId, taskId);
+    final Input input = feedbackService.getInputSnapshotForTaskId(userId, taskId);
     final Configuration configuration = configurationService.getForTaskId(userId, taskId);
 
     return resultToAnnotatedTableAdapter.toAnnotatedTable(result, input, configuration);

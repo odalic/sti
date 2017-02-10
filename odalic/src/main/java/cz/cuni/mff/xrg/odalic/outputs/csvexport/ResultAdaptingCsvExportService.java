@@ -101,7 +101,7 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
   public Input getExtendedInputForTaskId(String userId, String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
     final Result result = executionService.getResultForTaskId(userId, taskId);
-    final Input input = feedbackService.getInputForTaskId(userId, taskId);
+    final Input input = feedbackService.getInputSnapshotForTaskId(userId, taskId);
     final Configuration configuration = configurationService.getForTaskId(userId, taskId);
 
     final Input output = resultToCsvExportAdapter.toCSVExport(result, input, configuration);

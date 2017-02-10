@@ -32,6 +32,7 @@ import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
+import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
 import cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
@@ -57,6 +58,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
   private static final Logger logger = LoggerFactory.getLogger(FutureBasedExecutionService.class);
 
   private final TaskService taskService;
+  private final FeedbackService feedbackService;
   private final FileService fileService;
   private final AnnotationToResultAdapter annotationResultAdapter;
   private final SemanticTableInterpreterFactory semanticTableInterpreterFactory;
@@ -68,12 +70,13 @@ public final class FutureBasedExecutionService implements ExecutionService {
   private final Map<Task, Future<Result>> tasksToResults = new HashMap<>();
 
   @Autowired
-  public FutureBasedExecutionService(final TaskService taskService, final FileService fileService,
+  public FutureBasedExecutionService(final TaskService taskService, final FeedbackService feedbackService, final FileService fileService,
       final AnnotationToResultAdapter annotationToResultAdapter,
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
       final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter) {
     Preconditions.checkNotNull(taskService);
+    Preconditions.checkNotNull(feedbackService);
     Preconditions.checkNotNull(fileService);
     Preconditions.checkNotNull(annotationToResultAdapter);
     Preconditions.checkNotNull(semanticTableInterpreterFactory);
@@ -82,6 +85,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
     Preconditions.checkNotNull(inputToTableAdapter);
 
     this.taskService = taskService;
+    this.feedbackService = feedbackService;
     this.fileService = fileService;
     this.annotationResultAdapter = annotationToResultAdapter;
     this.semanticTableInterpreterFactory = semanticTableInterpreterFactory;
@@ -112,7 +116,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
     final Input input = parsingResult.getInput();
 
-    task.setInputSnapshot(input);
+    feedbackService.setInputSnapshotForTaskid(userId, taskId, input);
 
     final Callable<Result> execution = () -> {
       try {

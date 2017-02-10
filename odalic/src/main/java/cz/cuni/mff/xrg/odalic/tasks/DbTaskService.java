@@ -6,48 +6,57 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.jena.ext.com.google.common.collect.ImmutableSortedSet;
+import org.mapdb.BTreeMap;
+import org.mapdb.DB;
+import org.mapdb.Serializer;
+import org.mapdb.serializer.SerializerArrayTuple;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Table;
-
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
+import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
- * This {@link TaskService} implementation provides no persistence.
+ * This {@link TaskService} implementation persists the files in {@link DB}-backed maps.
  * 
  * @author Václav Brodec
  * @author Josef Janoušek
  *
  */
-public final class MemoryOnlyTaskService implements TaskService {
+public final class DbTaskService implements TaskService {
 
   private final FileService fileService;
 
   /**
-   * Table of tasks where rows are indexed by user IDs and the columns by task IDs.
+   * The shared database instance.
    */
-  private final Table<String, String, Task> tasks;
+  private final DB db;
 
-  private MemoryOnlyTaskService(final FileService fileService,
-      final Table<String, String, Task> tasks) {
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(tasks);
-
-    this.fileService = fileService;
-    this.tasks = tasks;
-  }
+  /**
+   * Table of tasks where rows are indexed by user IDs and the columns by task IDs (represented as
+   * an array of size 2).
+   */
+  private final BTreeMap<Object[], Task> tasks;
 
   /**
    * Creates the task service with no registered tasks.
    */
+  @SuppressWarnings("unchecked")
   @Autowired
-  public MemoryOnlyTaskService(final FileService fileService) {
-    this(fileService, HashBasedTable.create());
+  public DbTaskService(final FileService fileService, final DbService dbService) {
+    Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(dbService);
+
+    this.fileService = fileService;
+
+    this.db = dbService.getDb();
+
+    this.tasks = db.treeMap("tasks")
+        .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
+        .valueSerializer(Serializer.JAVA).createOrOpen();
   }
 
   /*
@@ -57,7 +66,7 @@ public final class MemoryOnlyTaskService implements TaskService {
    */
   @Override
   public Set<Task> getTasks(String userId) {
-    return ImmutableSet.copyOf(tasks.row(userId).values());
+    return ImmutableSet.copyOf(tasks.prefixSubMap(new Object[] {userId}).values());
   }
 
   /*
@@ -70,7 +79,7 @@ public final class MemoryOnlyTaskService implements TaskService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(taskId);
 
-    final Task task = tasks.get(userId, taskId);
+    final Task task = tasks.get(new Object[] {userId, taskId});
     Preconditions.checkArgument(task != null);
 
     return task;
@@ -86,11 +95,13 @@ public final class MemoryOnlyTaskService implements TaskService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(taskId);
 
-    final Task task = tasks.remove(userId, taskId);
+    final Task task = tasks.remove(new Object[] {userId, taskId});
     Preconditions.checkArgument(task != null);
 
     final Configuration configuration = task.getConfiguration();
     fileService.unsubscribe(configuration.getInput(), task);
+
+    db.commit();
   }
 
   /*
@@ -104,7 +115,7 @@ public final class MemoryOnlyTaskService implements TaskService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(taskId);
 
-    return tasks.get(userId, taskId);
+    return tasks.get(new Object[] {userId, taskId});
   }
 
   /*
@@ -130,30 +141,43 @@ public final class MemoryOnlyTaskService implements TaskService {
   public void replace(final Task task) {
     Preconditions.checkNotNull(task);
 
-    final Task previous = tasks.put(task.getOwner().getEmail(), task.getId(), task);
+    final Task previous = tasks.put(new Object[] {task.getOwner().getEmail(), task.getId()}, task);
     if (previous != null) {
       final Configuration previousConfiguration = previous.getConfiguration();
       final File previousInput = previousConfiguration.getInput();
 
-      fileService.unsubscribe(previousInput, previous);
+      try {
+        fileService.unsubscribe(previousInput, previous);
+      } catch (final Exception e) {
+        db.rollback();
+        throw e;
+      }
     }
 
     final Configuration configuration = task.getConfiguration();
     final File input = configuration.getInput();
-    fileService.subscribe(input, task);
+
+    try {
+      fileService.subscribe(input, task);
+    } catch (final Exception e) {
+      db.rollback();
+      throw e;
+    }
+
+    db.commit();
   }
 
   @Override
   public NavigableSet<Task> getTasksSortedByIdInAscendingOrder(String userId) {
     return ImmutableSortedSet.copyOf(
         (Task first, Task second) -> first.getId().compareTo(second.getId()),
-        tasks.row(userId).values());
+        tasks.prefixSubMap(new Object[] {userId}).values());
   }
 
   @Override
   public NavigableSet<Task> getTasksSortedByCreatedInDescendingOrder(String userId) {
     return ImmutableSortedSet.copyOf(
         (Task first, Task second) -> -1 * first.getCreated().compareTo(second.getCreated()),
-        tasks.row(userId).values());
+        tasks.prefixSubMap(new Object[] {userId}).values());
   }
 }

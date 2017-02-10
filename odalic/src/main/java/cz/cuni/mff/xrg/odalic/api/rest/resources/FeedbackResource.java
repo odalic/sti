@@ -111,7 +111,7 @@ public final class FeedbackResource {
       final @PathParam("taskId") String taskId) throws IOException {
     final Input inputForTaskId;
     try {
-      inputForTaskId = feedbackService.getInputForTaskId(userId, taskId);
+      inputForTaskId = feedbackService.getInputSnapshotForTaskId(userId, taskId);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("The task does not exist!", e);
     }

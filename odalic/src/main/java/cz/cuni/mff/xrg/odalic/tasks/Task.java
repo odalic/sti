@@ -3,13 +3,12 @@ package cz.cuni.mff.xrg.odalic.tasks;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.TaskAdapter;
-import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.users.User;
 
@@ -20,6 +19,7 @@ import cz.cuni.mff.xrg.odalic.users.User;
  * @author Václav Brodec
  *
  */
+@Immutable
 @XmlJavaTypeAdapter(TaskAdapter.class)
 public final class Task implements Serializable {
 
@@ -33,9 +33,7 @@ public final class Task implements Serializable {
 
   private final Date created;
 
-  private Configuration configuration;
-
-  private Input inputSnapshot;
+  private final Configuration configuration;
 
   /**
    * Creates the task instance.
@@ -62,7 +60,6 @@ public final class Task implements Serializable {
     this.description = description;
     this.created = created;
     this.configuration = configuration;
-    this.inputSnapshot = null; // Invalidate.
   }
 
   /**
@@ -82,36 +79,6 @@ public final class Task implements Serializable {
    */
   public Configuration getConfiguration() {
     return configuration;
-  }
-
-  /**
-   * @param configuration the configuration to set
-   */
-  public void setConfiguration(Configuration configuration) {
-    Preconditions.checkNotNull(configuration);
-    Preconditions.checkArgument(configuration.getInput().getOwner().equals(owner),
-        "The task owner must also own the processed file!");
-
-    this.configuration = configuration;
-  }
-
-  /**
-   * Provides a snapshot of the input.
-   * 
-   * @return a snapshot of the input, {@code null} when there is none
-   */
-  @Nullable
-  public Input getInputSnapshot() {
-    return inputSnapshot;
-  }
-
-  /**
-   * @param inputSnapshot input snapshot to set
-   */
-  public void setInputSnapshot(final Input inputSnapshot) {
-    Preconditions.checkNotNull(inputSnapshot);
-
-    this.inputSnapshot = inputSnapshot;
   }
 
   /**
@@ -191,6 +158,6 @@ public final class Task implements Serializable {
   @Override
   public String toString() {
     return "Task [owner=" + owner + ", id=" + id + ", description=" + description + ", created="
-        + created + ", configuration=" + configuration + ", inputSnapshot=" + inputSnapshot + "]";
+        + created + ", configuration=" + configuration + "]";
   }
 }

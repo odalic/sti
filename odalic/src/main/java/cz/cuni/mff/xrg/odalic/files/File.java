@@ -34,7 +34,7 @@ public final class File implements Serializable {
 
   private final boolean cached;
 
-  private Format format;
+  private final Format format;
 
   /**
    * Create new file description.

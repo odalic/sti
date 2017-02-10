@@ -42,6 +42,7 @@ import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.DefaultInputToTableAdapter;
+import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.input.ParsingResult;
 import cz.cuni.mff.xrg.odalic.positions.CellPosition;
@@ -66,6 +67,42 @@ import cz.cuni.mff.xrg.odalic.util.configuration.DefaultPropertiesService;
 
 public class CoreExecutionBatch {
 
+  public static final class ResultSnapshot {
+    private final Result result;
+    
+    private final Input inputSnapshot;
+    
+    public ResultSnapshot(final Result result, final Input inputSnapshot) {
+      Preconditions.checkNotNull(result);
+      Preconditions.checkNotNull(inputSnapshot);
+      
+      this.result = result;
+      this.inputSnapshot = inputSnapshot;
+    }
+
+    /**
+     * @return the result
+     */
+    public Result getResult() {
+      return result;
+    }
+
+    /**
+     * @return the input snapshot
+     */
+    public Input getInputSnapshot() {
+      return inputSnapshot;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+      return "ResultSnapshot [result=" + result + ", inputSnapshot=" + inputSnapshot + "]";
+    }
+  }
+  
   private static final Logger log = LoggerFactory.getLogger(CoreExecutionBatch.class);
 
   private static final Map<String, File> files = new HashMap<>();
@@ -127,7 +164,7 @@ public class CoreExecutionBatch {
     return task;
   }
 
-  public static Result testCoreExecution(String propertyFilePath, Task task) {
+  public static ResultSnapshot testCoreExecution(String propertyFilePath, Task task) {
     System.setProperty("cz.cuni.mff.xrg.odalic.sti", propertyFilePath);
 
     File file = task.getConfiguration().getInput();
@@ -147,7 +184,6 @@ public class CoreExecutionBatch {
 
     // Parsed format and input settings
     file = new File(file.getOwner(), file.getId(), file.getUploaded(), file.getLocation(), parsingResult.getFormat(), file.isCached());
-    task.setInputSnapshot(parsingResult.getInput());
 
     // input Table creation
     final Table table = new DefaultInputToTableAdapter().toTable(parsingResult.getInput());
@@ -203,7 +239,7 @@ public class CoreExecutionBatch {
         new PrefixMappingEntitiesFactory(pms)).toResult(results);
     log.info("Odalic Result is: " + odalicResult);
 
-    return odalicResult;
+    return new ResultSnapshot(odalicResult, parsingResult.getInput());
   }
 
   public static KnowledgeBaseProxyFactory getKnowledgeBaseProxyFactory() {

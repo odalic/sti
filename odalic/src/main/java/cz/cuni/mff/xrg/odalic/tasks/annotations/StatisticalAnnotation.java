@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks.annotations;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,7 +22,9 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
  */
 @Immutable
 @XmlJavaTypeAdapter(StatisticalAnnotationAdapter.class)
-public final class StatisticalAnnotation {
+public final class StatisticalAnnotation implements Serializable {
+
+  private static final long serialVersionUID = -1695807148169080424L;
 
   private final Map<KnowledgeBase, ComponentTypeValue> component;
 

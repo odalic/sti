@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks.annotations;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
@@ -22,7 +23,9 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.HeaderAnnotationAdapter;
  */
 @Immutable
 @XmlJavaTypeAdapter(HeaderAnnotationAdapter.class)
-public final class HeaderAnnotation {
+public final class HeaderAnnotation implements Serializable {
+
+  private static final long serialVersionUID = -3116665248087475756L;
 
   private final Map<KnowledgeBase, NavigableSet<EntityCandidate>> candidates;
 
