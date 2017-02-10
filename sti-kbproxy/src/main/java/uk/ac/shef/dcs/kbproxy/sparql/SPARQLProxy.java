@@ -360,17 +360,17 @@ public class SPARQLProxy extends KBProxy {
   }
 
   @Override
-  public List<Entity> findEntityCandidates(String content) throws KBProxyException {
+  protected List<Entity> findEntityCandidatesInternal(String content) throws KBProxyException {
     return queryEntityCandidates(content);
   }
 
   @Override
-  public List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws KBProxyException {
+  protected List<Entity> findEntityCandidatesOfTypesInternal(String content, String... types) throws KBProxyException {
     return queryEntityCandidates(content, types);
   }
 
   @Override
-  public Entity loadEntity(String uri) throws KBProxyException {
+  protected Entity loadEntityInternal(String uri) throws KBProxyException {
     //prepare cache
     String queryCache = createSolrCacheQuery_loadResource(uri);
 
@@ -673,7 +673,7 @@ public class SPARQLProxy extends KBProxy {
   }
 
   private void loadEntityAttributes(Entity ec) throws KBProxyException {
-    List<Attribute> attributes = findAttributesOfEntities(ec);
+    List<Attribute> attributes = findAttributesOfEntitiesInternal(ec);
     ec.setAttributes(attributes);
     for (Attribute attr : attributes) {
       adjustValueOfURLResource(attr);
@@ -742,7 +742,7 @@ public class SPARQLProxy extends KBProxy {
   }
 
   @Override
-  public List<Attribute> findAttributesOfEntities(Entity ec) throws KBProxyException {
+  protected List<Attribute> findAttributesOfEntitiesInternal(Entity ec) throws KBProxyException {
     return findAttributes(ec.getId(), cacheEntity);
   }
 
@@ -799,12 +799,12 @@ public class SPARQLProxy extends KBProxy {
   }
 
   @Override
-  public List<Attribute> findAttributesOfClazz(String clazzId) throws KBProxyException {
+  protected List<Attribute> findAttributesOfClazzInternal(String clazzId) throws KBProxyException {
     return findAttributes(clazzId, cacheEntity);
   }
 
   @Override
-  public List<Attribute> findAttributesOfProperty(String propertyId) throws KBProxyException {
+  protected List<Attribute> findAttributesOfPropertyInternal(String propertyId) throws KBProxyException {
     return findAttributes(propertyId, cacheEntity);
   }
 

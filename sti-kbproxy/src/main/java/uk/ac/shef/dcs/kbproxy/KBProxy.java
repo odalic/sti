@@ -16,11 +16,16 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -134,22 +139,32 @@ public abstract class KBProxy {
    * Candidate entities are those resources for which label or part of the label matches the given content
    * @param content
    * @return
-   * @throws IOException
    */
-  public abstract List<Entity> findEntityCandidates(String content) throws KBProxyException;
+  public KBProxyResult<List<Entity>> findEntityCandidates(String content) {
+    return Do(() -> findEntityCandidatesInternal(content), new ArrayList<Entity>());
+  }
+
+  protected abstract List<Entity> findEntityCandidatesInternal(String content) throws KBProxyException;
 
   /**
    * Given a string,  fetch candidate entities (resources) from the KB that only match certain types
    */
-  public abstract List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws KBProxyException;
+  public KBProxyResult<List<Entity>> findEntityCandidatesOfTypes(String content, String... types) {
+    return Do(() -> findEntityCandidatesOfTypesInternal(content, types), new ArrayList<Entity>());
+  }
+
+  protected abstract List<Entity> findEntityCandidatesOfTypesInternal(String content, String... types) throws KBProxyException;
 
   /**
    * Loads the entity from the knowledge base.
    * @param uri The entity uri.
    * @return The entity or null if no such uri was found in the knowledge base.
-   * @throws KBProxyException
    */
-  public abstract Entity loadEntity(String uri) throws KBProxyException;
+  public KBProxyResult<Entity> loadEntity(String uri) {
+    return Do(() -> loadEntityInternal(uri), null);
+  }
+
+  protected abstract Entity loadEntityInternal(String uri) throws KBProxyException;
 
   /**
    * Get attributes of the entity candidate
@@ -157,30 +172,49 @@ public abstract class KBProxy {
    *
    * Note: Certain predicates may be blacklisted.
    */
-  public abstract List<Attribute> findAttributesOfEntities(Entity ec) throws KBProxyException;
+  public KBProxyResult<List<Attribute>> findAttributesOfEntities(Entity ec) {
+    return Do(() -> findAttributesOfEntitiesInternal(ec), new ArrayList<Attribute>());
+  }
+
+  protected abstract List<Attribute> findAttributesOfEntitiesInternal(Entity ec) throws KBProxyException;
 
   /**
    * get attributes of the class
    */
-  public abstract List<Attribute> findAttributesOfClazz(String clazzId) throws KBProxyException;
+  public KBProxyResult<List<Attribute>> findAttributesOfClazz(String clazzId) {
+    return Do(() -> findAttributesOfClazzInternal(clazzId), new ArrayList<Attribute>());
+  }
+
+  protected abstract List<Attribute> findAttributesOfClazzInternal(String clazzId) throws KBProxyException;
 
   /**
    * get attributes of the property
    */
-  public abstract List<Attribute> findAttributesOfProperty(String propertyId) throws KBProxyException;
+  public KBProxyResult<List<Attribute>> findAttributesOfProperty(String propertyId) {
+    return Do(() -> findAttributesOfPropertyInternal(propertyId), new ArrayList<Attribute>());
+  }
+
+  protected abstract List<Attribute> findAttributesOfPropertyInternal(String propertyId) throws KBProxyException;
 
   /**
    * @return the granularity of the class in the KB.
-   * @throws KBProxyException if the method is not supported
    */
-  public double findGranularityOfClazz(String clazz) throws KBProxyException {
+  public KBProxyResult<Double> findGranularityOfClazz(String clazz) {
+    return Do(() -> findGranularityOfClazzInternal(clazz), 0.0);
+  }
+
+  protected double findGranularityOfClazzInternal(String clazz) throws KBProxyException {
     return 0;
   }
 
   /**
    * compute the seamntic similarity between an entity and a class
    */
-  public double findEntityClazzSimilarity(String entity_id, String clazz_url) throws KBProxyException {
+  public KBProxyResult<Double> findEntityClazzSimilarity(String entity_id, String clazz_url) {
+    return Do(() -> findEntityClazzSimilarityInternal(entity_id, clazz_url), 0.0);
+  }
+
+  protected double findEntityClazzSimilarityInternal(String entity_id, String clazz_url) throws KBProxyException {
     return 0;
   }
 
@@ -208,7 +242,7 @@ public abstract class KBProxy {
    * save the computed semantic similarity between the entity and class
    */
   public void cacheEntityClazzSimilarity(String entity_id, String clazz_url, double score, boolean biDirectional,
-                                         boolean commit) throws KBProxyException {
+                                         boolean commit) {
     String query = createSolrCacheQuery_findEntityClazzSimilarity(entity_id, clazz_url);
     try {
       cacheSimilarity.cache(query, score, commit);
@@ -346,5 +380,25 @@ public abstract class KBProxy {
       log.error(error, e);
       throw new KBProxyException(error, e);
     }
+  }
+
+  protected <ResultType> KBProxyResult<ResultType> Do(Func<ResultType> func, ResultType defaultValue) {
+    try {
+      double randomNumber = Math.random();
+      if (randomNumber < 0.05) {
+        throw new KBProxyException("Test exception");
+      }
+
+      ResultType result = func.Do();
+      return new KBProxyResult<>(result);
+    }
+    catch (Exception ex) {
+      log.error(ex.getLocalizedMessage(), ex);
+      return new KBProxyResult<>(defaultValue, ex.getLocalizedMessage());
+    }
+  }
+
+  protected interface Func<Type> {
+    Type Do() throws KBProxyException;
   }
 }
