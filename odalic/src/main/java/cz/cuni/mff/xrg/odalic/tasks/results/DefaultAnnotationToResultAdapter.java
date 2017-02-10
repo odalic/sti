@@ -24,16 +24,16 @@ import uk.ac.shef.dcs.sti.core.model.TColumnHeaderAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.concurrent.Immutable;
-
-import org.apache.jena.ext.com.google.common.collect.ImmutableList;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -62,8 +62,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
    * This implementation demands that the subject columns recognized in the annotations are the
    * same.
    * 
-   * @see cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter#toResult(Map,
-   *      KnowledgeBase)
+   * @see cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter#toResult(Map)
    */
   @Override
   public Result toResult(
@@ -92,13 +91,71 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
         convertColumnRelations(firstKnowledgeBase, firstTableAnnotation);
     final List<StatisticalAnnotation> mergedStatisticalAnnotations =
         convertStatisticalAnnotations(firstKnowledgeBase, firstTableAnnotation);
+    final List<String> mergedWarnings = getWarnings(firstKnowledgeBase, firstTableAnnotation);
 
     // Process the rest.
     processTheRest(entrySetIterator, mergedHeaderAnnotations, mergedCellAnnotations,
-        mergedColumnRelations, mergedStatisticalAnnotations);
+        mergedColumnRelations, mergedStatisticalAnnotations, mergedWarnings);
+
+    Collections.sort(mergedWarnings);
 
     return new Result(subjectColumnPositions, mergedHeaderAnnotations, mergedCellAnnotations,
-        mergedColumnRelations, mergedStatisticalAnnotations, ImmutableList.of()); // TODO: Implement warnings.
+        mergedColumnRelations, mergedStatisticalAnnotations, mergedWarnings);
+  }
+
+  private static List<String> getWarnings(KnowledgeBase knowledgeBase, TAnnotation original) {
+    int columnCount = original.getCols();
+    int rowCount = original.getRows();
+
+    List<String> result = original
+            .getColumnRelationWarnings()
+            .entrySet()
+            .stream()
+            .flatMap(entry ->
+                    entry.getValue().stream().map(warning ->
+                            getRelationWarning(knowledgeBase, entry.getKey(), warning)))
+            .collect(Collectors.toList());
+
+    for(int column = 0; column < columnCount; column++) {
+      final int columnFinal = column;
+
+      for(int row = 0; row < rowCount; row++) {
+        final int rowFinal = row;
+
+        result.addAll(original.getContentWarnings(row, column).stream().map(warning ->
+                getCellWarning(knowledgeBase, rowFinal, columnFinal, warning)).collect(Collectors.toList()));
+      }
+      result.addAll(original.getHeaderWarnings(column).stream().map(warning ->
+              getHeaderWarning(knowledgeBase, columnFinal, warning)).collect(Collectors.toList()));
+    }
+
+    return result;
+  }
+
+  private static String getRelationWarning(KnowledgeBase knowledgeBase, RelationColumns relationColumns, String warning) {
+    return String.format(
+            "%1$s - Relation %2$d -> %3$d - %4$s",
+            knowledgeBase.getName(),
+            relationColumns.getSubjectCol() + 1,
+            relationColumns.getObjectCol() + 1,
+            warning);
+  }
+
+  private static String getCellWarning(KnowledgeBase knowledgeBase, int row, int column, String warning) {
+    return String.format(
+            "%1$s - Cell on row %2$d, column %3$d - %4$s",
+            knowledgeBase.getName(),
+            row + 1,
+            column + 1,
+            warning);
+  }
+
+  private static String getHeaderWarning(KnowledgeBase knowledgeBase, int column, String warning) {
+    return String.format(
+            "%1$s - Header %2$d - %3$s",
+            knowledgeBase.getName(),
+            column + 1,
+            warning);
   }
 
   private static Map<KnowledgeBase, ColumnPosition> extractSubjectColumnPositions(
@@ -120,17 +177,16 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
       Map<? extends KnowledgeBase, ? extends TAnnotation> basesToTableAnnotations) {
     final Set<? extends Map.Entry<? extends KnowledgeBase, ? extends TAnnotation>> entrySet =
         basesToTableAnnotations.entrySet();
-    final Iterator<? extends Map.Entry<? extends KnowledgeBase, ? extends TAnnotation>> entrySetIterator =
-        entrySet.iterator();
-    return entrySetIterator;
+    return entrySet.iterator();
   }
 
   private void processTheRest(
-      final Iterator<? extends Map.Entry<? extends KnowledgeBase, ? extends TAnnotation>> entrySetIterator,
-      final List<HeaderAnnotation> mergedHeaderAnnotations,
-      final CellAnnotation[][] mergedCellAnnotations,
-      final Map<ColumnRelationPosition, ColumnRelationAnnotation> mergedColumnRelations,
-      final List<StatisticalAnnotation> mergedStatisticalAnnotations) {
+          final Iterator<? extends Map.Entry<? extends KnowledgeBase, ? extends TAnnotation>> entrySetIterator,
+          final List<HeaderAnnotation> mergedHeaderAnnotations,
+          final CellAnnotation[][] mergedCellAnnotations,
+          final Map<ColumnRelationPosition, ColumnRelationAnnotation> mergedColumnRelations,
+          final List<StatisticalAnnotation> mergedStatisticalAnnotations,
+          final List<String> mergedWarnings) {
     while (entrySetIterator.hasNext()) {
       final Map.Entry<? extends KnowledgeBase, ? extends TAnnotation> entry =
           entrySetIterator.next();
@@ -142,12 +198,18 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
       mergeCells(mergedCellAnnotations, knowledgeBase, tableAnnotation);
       mergeColumnRelations(mergedColumnRelations, knowledgeBase, tableAnnotation);
       mergeStatisticalAnnotations(mergedStatisticalAnnotations, knowledgeBase, tableAnnotation);
+      mergeWarnings(mergedWarnings, knowledgeBase, tableAnnotation);
     }
   }
 
+  private void mergeWarnings(final List<String> mergedWarnings, final KnowledgeBase knowledgeBase,
+                             final TAnnotation tableAnnotation) {
+    final List<String> warnings = getWarnings(knowledgeBase, tableAnnotation);
+    mergedWarnings.addAll(warnings);
+  }
+
   private static ColumnPosition extractSubjectColumnPosition(final TAnnotation tableAnnotation) {
-    final ColumnPosition subjectColumn = new ColumnPosition(tableAnnotation.getSubjectColumn());
-    return subjectColumn;
+    return new ColumnPosition(tableAnnotation.getSubjectColumn());
   }
 
   private void mergeColumnRelations(
@@ -155,31 +217,28 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
       final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
     final Map<ColumnRelationPosition, ColumnRelationAnnotation> columnRelations =
         convertColumnRelations(knowledgeBase, tableAnnotation);
-    Maps.mergeWith(mergedColumnRelations, columnRelations, (first, second) -> first.merge(second));
+    Maps.mergeWith(mergedColumnRelations, columnRelations, ColumnRelationAnnotation::merge);
   }
 
   private void mergeCells(final CellAnnotation[][] mergedCellAnnotations,
       final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
     final CellAnnotation[][] cellAnnotations =
         convertCellAnnotations(knowledgeBase, tableAnnotation);
-    Arrays.zipMatrixWith(mergedCellAnnotations, cellAnnotations,
-        (first, second) -> first.merge(second));
+    Arrays.zipMatrixWith(mergedCellAnnotations, cellAnnotations, CellAnnotation::merge);
   }
 
   private void mergeHeaders(final List<HeaderAnnotation> mergedHeaderAnnotations,
       final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
     final List<HeaderAnnotation> headerAnnotations =
         convertColumnAnnotations(knowledgeBase, tableAnnotation);
-    Lists.zipWith(mergedHeaderAnnotations, headerAnnotations,
-        (first, second) -> first.merge(second));
+    Lists.zipWith(mergedHeaderAnnotations, headerAnnotations, HeaderAnnotation::merge);
   }
 
   private void mergeStatisticalAnnotations(final List<StatisticalAnnotation> mergedStatisticalAnnotations,
       final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
     final List<StatisticalAnnotation> statisticalAnnotations =
         convertStatisticalAnnotations(knowledgeBase, tableAnnotation);
-    Lists.zipWith(mergedStatisticalAnnotations, statisticalAnnotations,
-        (first, second) -> first.merge(second));
+    Lists.zipWith(mergedStatisticalAnnotations, statisticalAnnotations, StatisticalAnnotation::merge);
   }
 
   private Map<ColumnRelationPosition, ColumnRelationAnnotation> convertColumnRelations(
