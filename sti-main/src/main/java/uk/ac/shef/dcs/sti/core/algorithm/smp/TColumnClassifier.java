@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.KBProxyResult;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.sti.core.model.TCellAnnotation;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
@@ -83,11 +84,15 @@ public class TColumnClassifier {
                     }
                 }
             }
+
             final Map<String, Double> granularityScore = new HashMap<>();
             if (count_same_max_score > 1) {
                 for (Pair<String, Double> e : voteResult) {
                     if (e.getValue() == maxScore) {
-                        granularityScore.put(e.getKey(), kbSearch.findGranularityOfClazz(e.getKey()));
+                        KBProxyResult<Double> granularityResult = kbSearch.findGranularityOfClazz(e.getKey());
+
+                        granularityScore.put(e.getKey(), granularityResult.getResult());
+                        tableAnnotation.addHeaderWarning(col, granularityResult.getWarning());
                     }
                 }
             }

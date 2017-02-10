@@ -1,11 +1,11 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
-import javafx.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.KBProxyResult;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPClazzScorer;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
@@ -60,7 +60,7 @@ public class UPDATE {
             List<Integer> interpretedColumnIndexes,
             Table table,
             TAnnotation currentAnnotation
-    ) throws KBProxyException, STIException {
+    ) throws STIException {
       update(interpretedColumnIndexes, table, currentAnnotation, new Constraints());
     }
 
@@ -79,7 +79,7 @@ public class UPDATE {
             Table table,
             TAnnotation currentAnnotation,
             Constraints constraints
-    ) throws KBProxyException, STIException {
+    ) throws STIException {
 
         int currentIteration = 0;
         TAnnotation prevAnnotation;
@@ -178,7 +178,7 @@ public class UPDATE {
             Table table,
             TAnnotation currentAnnotation,
             List<Integer> interpretedColumns,
-            Constraints constraints) throws KBProxyException, STIException {
+            Constraints constraints) throws STIException {
         //now revise annotations on each of the interpreted columns
         for (int c : interpretedColumns) {
             LOG.info("\t\t>> for column " + c);
@@ -215,8 +215,7 @@ public class UPDATE {
                 }
 
                 //constrained disambiguation
-                List<Pair<Entity, Map<String, Double>>>
-                        entity_and_scoreMap =
+                DisambiguationResult entity_and_scoreMap =
                         disambiguate(allEntityIds,
                                 sample,
                                 table,
@@ -224,10 +223,15 @@ public class UPDATE {
                                 rows, c, ranking.size(),
                                 constraints);
 
-                if (entity_and_scoreMap.size() > 0) {
+                if (entity_and_scoreMap.getResult().size() > 0) {
                     disambiguator.addCellAnnotation(table, currentAnnotation, rows, c,
                             entity_and_scoreMap);
                     updated.addAll(rows);
+                }
+                else {
+                    for (int row : rows) {
+                        currentAnnotation.addContentWarnings(row, c, entity_and_scoreMap.getWarnings());
+                    }
                 }
             }
 
@@ -250,20 +254,25 @@ public class UPDATE {
     }
 
 
-    private List<Pair<Entity, Map<String, Double>>> disambiguate(Set<String> ignoreEntityIds,
+    private DisambiguationResult disambiguate(Set<String> ignoreEntityIds,
                                                                  TCell tcc,
                                                                  Table table,
                                                                  Set<String> constrainedClazz,
                                                                  List<Integer> rowBlock,
                                                                  int table_cell_col,
                                                                  int totalRowBlocks,
-                                                                 Constraints constraints) throws KBProxyException {
-        List<Pair<Entity, Map<String, Double>>> entity_and_scoreMap;
+                                                                 Constraints constraints) {
+        DisambiguationResult entity_and_scoreMap;
 
-        List<Entity> candidates = constraints.getDisambChosenForCell(table_cell_col, rowBlock.get(0), kbSearch);
+        EntityResult entityResult = constraints.getDisambChosenForCell(table_cell_col, rowBlock.get(0), kbSearch);
+        List<Entity> candidates = entityResult.getResult();
+        List<String> warnings = entityResult.getWarnings();
 
         if (candidates.isEmpty()) {
-          candidates = kbSearch.findEntityCandidatesOfTypes(tcc.getText(), constrainedClazz.toArray(new String[0]));
+          KBProxyResult<List<Entity>> candidatesResult = kbSearch.findEntityCandidatesOfTypes(tcc.getText(), constrainedClazz.toArray(new String[0]));
+
+          candidates = candidatesResult.getResult();
+          candidatesResult.appendWarning(warnings);
         }
 
         int ignore = 0;
@@ -271,15 +280,19 @@ public class UPDATE {
             if (ignoreEntityIds.contains(ec.getId()))
                 ignore++;
         }
-        if (candidates != null && candidates.size() != 0) {
-        } else {
-            candidates = kbSearch.findEntityCandidatesOfTypes(tcc.getText());
+        if (candidates.isEmpty()) {
+            KBProxyResult<List<Entity>> candidatesResult = kbSearch.findEntityCandidatesOfTypes(tcc.getText());
+
+            candidates = candidatesResult.getResult();
+            candidatesResult.appendWarning(warnings);
         }
         LOG.debug("\t\t>> Rows=" + rowBlock + "/" + totalRowBlocks + " (Total candidates=" + candidates.size() + ", previously already processed=" + ignore + ")");
         //now each candidate is given scores
         entity_and_scoreMap =
                 disambiguator.constrainedDisambiguate
                         (candidates, table, rowBlock, table_cell_col, totalRowBlocks, false);
+
+        entity_and_scoreMap.getWarnings().addAll(warnings);
 
         return entity_and_scoreMap;
     }

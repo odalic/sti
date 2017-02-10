@@ -17,8 +17,11 @@ import com.google.common.collect.ImmutableSet;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.KBProxyResult;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
+import uk.ac.shef.dcs.sti.core.model.EntityResult;
+import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 
 /**
  * User feedback for the result of annotating algorithm. Expresses also input constraints for the
@@ -273,13 +276,19 @@ public final class Constraints implements Serializable {
    * 
    * @return entities chosen for disambiguation of given cell
    */
-  public List<Entity> getDisambChosenForCell(int columnIndex, int rowIndex, KBProxy kbProxy) {
+  public EntityResult getDisambChosenForCell(int columnIndex, int rowIndex, KBProxy kbProxy) {
     List<Entity> entities = new ArrayList<>();
+    List<String> warnings = new ArrayList<>();
+
     getDisambiguations().stream().filter(e -> e.getPosition().getColumnIndex() == columnIndex &&
         e.getPosition().getRowIndex() == rowIndex && !e.getAnnotation().getChosen().isEmpty())
-      .forEach(e -> e.getAnnotation().getChosen().forEach(ec -> entities.add(
-          findOrCreateEntity(ec.getEntity().getResource(), ec.getEntity().getLabel(), kbProxy))));
-    return entities;
+      .forEach(e -> e.getAnnotation().getChosen().forEach(ec -> {
+        KBProxyResult<Entity> entityResult = findOrCreateEntity(ec.getEntity().getResource(), ec.getEntity().getLabel(), kbProxy);
+
+        entityResult.appendWarning(warnings);
+        entities.add(entityResult.getResult());
+      }));
+    return new EntityResult(entities, warnings);
   }
 
   /**
@@ -322,15 +331,11 @@ public final class Constraints implements Serializable {
     return skipRows;
   }
 
-  private Entity findOrCreateEntity(String resource, String label, KBProxy kbProxy) {
-    Entity entity = null;
-    try {
-      entity = kbProxy.loadEntity(resource);
-    } catch (KBProxyException e) {
-      LOG.error(e.getLocalizedMessage(), e);
-    }
+  private KBProxyResult<Entity> findOrCreateEntity(String resource, String label, KBProxy kbProxy) {
+    KBProxyResult<Entity> entity = kbProxy.loadEntity(resource);
+
     if (entity == null) {
-      entity = new Entity(resource, label);
+      entity = new KBProxyResult<Entity>(new Entity(resource, label));
     }
     return entity;
   }
