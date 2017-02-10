@@ -28,8 +28,8 @@ import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
 import cz.cuni.mff.xrg.odalic.api.rest.util.Security;
 import cz.cuni.mff.xrg.odalic.api.rest.values.FormatValue;
+import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.files.formats.FormatService;
 import cz.cuni.mff.xrg.odalic.users.Role;
 
 @Component
@@ -37,7 +37,7 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 @Secured({Role.ADMINISTRATOR, Role.USER})
 public final class FormatResource {
 
-  private final FormatService formatService;
+  private final FileService fileService;
 
   @Context
   private SecurityContext securityContext;
@@ -46,10 +46,10 @@ public final class FormatResource {
   private UriInfo uriInfo;
 
   @Autowired
-  public FormatResource(final FormatService formatService) {
-    Preconditions.checkNotNull(formatService);
+  public FormatResource(final FileService fileService) {
+    Preconditions.checkNotNull(fileService);
 
-    this.formatService = formatService;
+    this.fileService = fileService;
   }
 
   @PUT
@@ -79,7 +79,7 @@ public final class FormatResource {
         formatValue.getEscapeCharacter(), formatValue.getCommentMarker());
 
     try {
-      formatService.setForFileId(userId, fileId, format);
+      fileService.setFormatForFileId(userId, fileId, format);
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException("The file does not exist.", e);
     }
@@ -102,7 +102,7 @@ public final class FormatResource {
     
     final Format formatForFileId;
     try {
-      formatForFileId = formatService.getForFileId(userId, fileId);
+      formatForFileId = fileService.getFormatForFileId(userId, fileId);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("File does not exist.", e);
     }

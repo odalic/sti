@@ -12,7 +12,7 @@ import cz.cuni.mff.xrg.odalic.outputs.csvexport.CSVExportTest;
 import cz.cuni.mff.xrg.odalic.outputs.rdfexport.RDFExportTest;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
-import cz.cuni.mff.xrg.odalic.tasks.results.Result;
+import cz.cuni.mff.xrg.odalic.tasks.executions.CoreExecutionBatch.ResultSnapshot;
 
 public class InterpreterExecutionBatch {
 
@@ -41,7 +41,7 @@ public class InterpreterExecutionBatch {
     }
 
     // Core execution
-    final Result odalicResult = CoreExecutionBatch.testCoreExecution(propertyFilePath, task);
+    final ResultSnapshot odalicResult = CoreExecutionBatch.testCoreExecution(propertyFilePath, task);
 
     if (odalicResult == null) {
       log.warn("Result of core algorithm is null, so exports cannot be launched.");
@@ -49,19 +49,19 @@ public class InterpreterExecutionBatch {
     }
 
     // settings for export
-    final Input input = task.getInputSnapshot();
+    final Input input = odalicResult.getInputSnapshot();
     final Configuration config = task.getConfiguration();
     final String baseExportPath = FilenameUtils.getFullPath(testInputFilePath)
         + FilenameUtils.getBaseName(testInputFilePath) + "-export";
     final KnowledgeBaseProxyFactory kbf = CoreExecutionBatch.getKnowledgeBaseProxyFactory();
 
     // JSON export
-    AnnotatedTable annotatedTable = CSVExportTest.testExportToAnnotatedTable(odalicResult, input,
+    AnnotatedTable annotatedTable = CSVExportTest.testExportToAnnotatedTable(odalicResult.getResult(), input,
         config, baseExportPath + ".json", kbf);
 
     // CSV export
     Input extendedInput =
-        CSVExportTest.testExportToCSVFile(odalicResult, input, config, baseExportPath + ".csv", kbf);
+        CSVExportTest.testExportToCSVFile(odalicResult.getResult(), input, config, baseExportPath + ".csv", kbf);
 
     // RDF export
     if (annotatedTable == null || extendedInput == null) {

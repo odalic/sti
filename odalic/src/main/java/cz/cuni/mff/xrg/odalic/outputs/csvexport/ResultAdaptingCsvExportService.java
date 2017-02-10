@@ -13,9 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.files.formats.FormatService;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
@@ -39,7 +39,7 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
 
   private final ConfigurationService configurationService;
 
-  private final FormatService formatService;
+  private final FileService fileService;
 
   private final ResultToCSVExportAdapter resultToCsvExportAdapter;
 
@@ -48,19 +48,19 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
   @Autowired
   public ResultAdaptingCsvExportService(final ExecutionService executionService,
       final FeedbackService feedbackService, final ConfigurationService configurationService,
-      final FormatService formatService, final ResultToCSVExportAdapter resultToCsvExportAdapter,
+      final FileService fileService, final ResultToCSVExportAdapter resultToCsvExportAdapter,
       final CSVExporter csvExporter) {
     Preconditions.checkNotNull(feedbackService);
     Preconditions.checkNotNull(executionService);
     Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(formatService);
+    Preconditions.checkNotNull(fileService);
     Preconditions.checkNotNull(resultToCsvExportAdapter);
     Preconditions.checkNotNull(csvExporter);
 
     this.executionService = executionService;
     this.feedbackService = feedbackService;
     this.configurationService = configurationService;
-    this.formatService = formatService;
+    this.fileService = fileService;
     this.resultToCsvExportAdapter = resultToCsvExportAdapter;
     this.csvExporter = csvExporter;
   }
@@ -86,7 +86,7 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
   private Format getOriginalFormat(String userId, String taskId) {
     final Configuration configuration = configurationService.getForTaskId(userId, taskId);
     final File file = configuration.getInput();
-    final Format format = formatService.getForFileId(userId, file.getId());
+    final Format format = fileService.getFormatForFileId(userId, file.getId());
     return format;
   }
 
@@ -101,7 +101,7 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
   public Input getExtendedInputForTaskId(String userId, String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
     final Result result = executionService.getResultForTaskId(userId, taskId);
-    final Input input = feedbackService.getInputForTaskId(userId, taskId);
+    final Input input = feedbackService.getInputSnapshotForTaskId(userId, taskId);
     final Configuration configuration = configurationService.getForTaskId(userId, taskId);
 
     final Input output = resultToCsvExportAdapter.toCSVExport(result, input, configuration);

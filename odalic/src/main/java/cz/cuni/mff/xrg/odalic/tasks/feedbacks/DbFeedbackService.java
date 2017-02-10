@@ -1,42 +1,54 @@
 package cz.cuni.mff.xrg.odalic.tasks.feedbacks;
 
+import java.util.Map;
+
+import org.mapdb.DB;
+import org.mapdb.Serializer;
+import org.mapdb.serializer.SerializerArrayTuple;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.input.Input;
-import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
+import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
- * This {@link FeedbackService} implementation provides no persistence.
+ * This {@link FeedbackService} implementation persists the snapshots in {@link DB}-backed maps.
  * 
  * @author Václav Brodec
  *
  */
-public final class MemoryOnlyFeedbackService implements FeedbackService {
+public final class DbFeedbackService implements FeedbackService {
 
   private final ConfigurationService configurationService;
 
-  private final Table<String, String, Input> inputSnapshots;
+  /**
+   * Table of snapshots where rows are indexed by user IDs and the columns by task IDs (represented
+   * as an array of size 2).
+   */
+  private final Map<Object[], Input> inputSnapshots;
 
+  /**
+   * The shared database instance.
+   */
+  private final DB db;
+
+  @SuppressWarnings("unchecked")
   @Autowired
-  public MemoryOnlyFeedbackService(final ConfigurationService configurationService,
-      final TaskService taskService) {
-    this(configurationService, HashBasedTable.create());
-  }
-
-  private MemoryOnlyFeedbackService(final ConfigurationService configurationService,
-      final Table<String, String, Input> inputSnapshots) {
+  public DbFeedbackService(final ConfigurationService configurationService,
+      final DbService dbService) {
     Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(inputSnapshots);
+    Preconditions.checkNotNull(dbService);
 
     this.configurationService = configurationService;
-    this.inputSnapshots = inputSnapshots;
+
+    this.db = dbService.getDb();
+
+    this.inputSnapshots = db.treeMap("inputSnapshots")
+        .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
+        .valueSerializer(Serializer.JAVA).createOrOpen();
   }
 
   @Override
@@ -60,7 +72,7 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(taskId);
 
-    final Input inputSnapshot = inputSnapshots.get(userId, taskId);
+    final Input inputSnapshot = inputSnapshots.get(new Object[] {userId, taskId});
     Preconditions.checkArgument(inputSnapshot != null, "No such task input snapshot present!");
 
     return inputSnapshot;
@@ -71,7 +83,9 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(taskId);
     Preconditions.checkNotNull(inputSnapshot);
-    
-    inputSnapshots.put(userId, taskId, inputSnapshot);
+
+    inputSnapshots.put(new Object[] {userId, taskId}, inputSnapshot);
+
+    db.commit();
   }
 }

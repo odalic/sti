@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.entities;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.NavigableSet;
 import java.util.Set;
@@ -29,7 +30,9 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
  */
 @Immutable
 @XmlJavaTypeAdapter(ClassProposalAdapter.class)
-public final class ClassProposal {
+public final class ClassProposal implements Serializable {
+
+  private static final long serialVersionUID = 1780898655030310168L;
 
   private final String label;
 

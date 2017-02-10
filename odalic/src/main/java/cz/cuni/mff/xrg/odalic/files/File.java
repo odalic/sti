@@ -3,6 +3,8 @@ package cz.cuni.mff.xrg.odalic.files;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
+
+import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
@@ -16,6 +18,7 @@ import cz.cuni.mff.xrg.odalic.users.User;
  * @author Václav Brodec
  *
  */
+@Immutable
 @XmlJavaTypeAdapter(FileValueOutputAdapter.class)
 public final class File implements Serializable {
 
@@ -31,7 +34,7 @@ public final class File implements Serializable {
 
   private final boolean cached;
 
-  private Format format;
+  private final Format format;
 
   /**
    * Create new file description.
@@ -114,15 +117,6 @@ public final class File implements Serializable {
    */
   public Format getFormat() {
     return format;
-  }
-
-  /**
-   * @param format the format to set
-   */
-  public void setFormat(Format format) {
-    Preconditions.checkNotNull(format);
-
-    this.format = format;
   }
 
   /**

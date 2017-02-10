@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 
 /**
@@ -87,4 +88,22 @@ public interface FileService {
    * @param task utilizing task
    */
   void unsubscribe(File file, Task task);
+
+  /**
+   * Retrieves the current {@link Format} of the file.
+   * 
+   * @param userId user ID
+   * @param fileId file ID
+   * @return file format
+   */
+  Format getFormatForFileId(String userId, String fileId);
+
+  /**
+   * Sets the file {@link Format}.
+   * 
+   * @param userId user ID
+   * @param fileId file ID
+   * @param format the new format
+   */
+  void setFormatForFileId(String userId, String fileId, Format format);
 }

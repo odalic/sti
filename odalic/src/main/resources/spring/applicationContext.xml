@@ -50,16 +50,15 @@
 		class="cz.cuni.mff.xrg.odalic.feedbacks.DefaultFeedbackToConstraintsAdapter" />
 
 	<!-- Services -->
-	<bean id="fileService" class="cz.cuni.mff.xrg.odalic.files.MemoryOnlyFileService" />
-	<bean id="formatService"
-		class="cz.cuni.mff.xrg.odalic.files.formats.MemoryOnlyFormatService" />
+	<bean id="dbService" class="cz.cuni.mff.xrg.odalic.util.storage.FileDbService" />
+	<bean id="fileService" class="cz.cuni.mff.xrg.odalic.files.DbFileService" />
 	<bean id="configurationService"
-		class="cz.cuni.mff.xrg.odalic.tasks.configurations.MemoryOnlyConfigurationService" />
+		class="cz.cuni.mff.xrg.odalic.tasks.configurations.DefaultConfigurationService" />
 	<bean id="executionService"
-		class="cz.cuni.mff.xrg.odalic.tasks.executions.FutureBasedExecutionService" />
+		class="cz.cuni.mff.xrg.odalic.tasks.executions.DbCachedFutureBasedExecutionService" />
 	<bean id="feedbackService"
-		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.MemoryOnlyFeedbackService" />
-	<bean id="taskService" class="cz.cuni.mff.xrg.odalic.tasks.MemoryOnlyTaskService" />
+		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.DbFeedbackService" />
+	<bean id="taskService" class="cz.cuni.mff.xrg.odalic.tasks.DbTaskService" />
 	<bean id="annotatedTableService"
 		class="cz.cuni.mff.xrg.odalic.outputs.annotatedtable.ResultAdaptingAnnotatedTableService" />
 	<bean id="csvExportService"
@@ -74,7 +73,7 @@
 	<bean id="passwordHashingService" class="cz.cuni.mff.xrg.odalic.util.hash.ScryptPasswordHashingService" />
 	<bean id="mailService" class="cz.cuni.mff.xrg.odalic.util.mail.SmtpMailService" />
 	<bean id="tokenService" class="cz.cuni.mff.xrg.odalic.users.AuthZeroTokenService" />
-	<bean id="userService" class="cz.cuni.mff.xrg.odalic.users.MemoryOnlyUserService" />
+	<bean id="userService" class="cz.cuni.mff.xrg.odalic.users.DbUserService" />
 	<bean id="taskRdfSerializationService" class="cz.cuni.mff.xrg.odalic.api.rdf.TurtleRdfMappingTaskSerializationService" />
 
 	<!-- Resources -->

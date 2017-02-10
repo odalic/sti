@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks.annotations;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
@@ -22,7 +23,9 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.ColumnRelationAnnotationAdapter;
  */
 @Immutable
 @XmlJavaTypeAdapter(ColumnRelationAnnotationAdapter.class)
-public final class ColumnRelationAnnotation {
+public final class ColumnRelationAnnotation implements Serializable {
+
+  private static final long serialVersionUID = -2796093085969859813L;
 
   private final Map<KnowledgeBase, NavigableSet<EntityCandidate>> candidates;
 

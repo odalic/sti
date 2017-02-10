@@ -103,7 +103,7 @@ public interface ExecutionService {
    * 
    * @return true if warned, false otherwise
    */
-  boolean isWarnedForTasksId(String userId, String taskId);
+  boolean hasBeenWarnedForTaskId(String userId, String taskId);
   
   /**
    * Indicates whether the task has failed.
@@ -112,5 +112,5 @@ public interface ExecutionService {
    * 
    * @return true if failed, false otherwise
    */
-  boolean hasFailedForTasksId(String userId, String taskId);
+  boolean hasFailedForTaskId(String userId, String taskId);
 }

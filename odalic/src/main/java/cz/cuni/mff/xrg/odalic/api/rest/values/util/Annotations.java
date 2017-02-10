@@ -3,8 +3,6 @@ package cz.cuni.mff.xrg.odalic.api.rest.values.util;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
-import java.util.stream.Stream;
-
 import javax.annotation.concurrent.Immutable;
 
 import com.google.common.collect.ImmutableMap;
@@ -35,9 +33,9 @@ public final class Annotations {
       final KnowledgeBase base = entry.getKey();
       final NavigableSet<? extends EntityCandidate> baseCandidates = entry.getValue();
 
-      final Stream<EntityCandidateValue> stream =
-          baseCandidates.stream().map(e -> new EntityCandidateValue(e));
-      candidatesBuilder.put(base, ImmutableSortedSet.copyOf(stream.iterator()));
+      final NavigableSet<EntityCandidateValue> values =
+          baseCandidates.stream().map(e -> new EntityCandidateValue(e)).collect(ImmutableSortedSet.toImmutableSortedSet((first, second) -> first.compareTo(second)));
+      candidatesBuilder.put(base, ImmutableSortedSet.copyOf(values));
     }
     return candidatesBuilder.build();
   }
@@ -50,9 +48,9 @@ public final class Annotations {
       final KnowledgeBase base = entry.getKey();
       final Set<EntityCandidate> baseChosen = entry.getValue();
 
-      final Stream<EntityCandidateValue> stream =
-          baseChosen.stream().map(e -> new EntityCandidateValue(e));
-      chosenBuilder.put(base, ImmutableSet.copyOf(stream.iterator()));
+      final Set<EntityCandidateValue> values =
+          baseChosen.stream().map(e -> new EntityCandidateValue(e)).collect(ImmutableSet.toImmutableSet());
+      chosenBuilder.put(base, values);
     }
     return chosenBuilder.build();
   }
