@@ -382,13 +382,8 @@ public abstract class KBProxy {
     }
   }
 
-  protected <ResultType> KBProxyResult<ResultType> Do(Func<ResultType> func, ResultType defaultValue) {
+  private <ResultType> KBProxyResult<ResultType> Do(Func<ResultType> func, ResultType defaultValue) {
     try {
-      double randomNumber = Math.random();
-      if (randomNumber < 0.05) {
-        throw new KBProxyException("Test exception");
-      }
-
       ResultType result = func.Do();
       return new KBProxyResult<>(result);
     }
