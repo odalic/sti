@@ -9,6 +9,7 @@ import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.Map;
 public class SimilarityComputerThread extends Thread{
 
     private Map<String[], Double> scores;
+    List<String> warnings;
     private List<Pair<Entity, Clazz>> pairs;
     private EntityAndClazzSimilarityScorer simScorer;
     private KBProxy kbSearch;
@@ -30,6 +32,7 @@ public class SimilarityComputerThread extends Thread{
                                     List<Pair<Entity, Clazz>> pairs, EntityAndClazzSimilarityScorer simScorer,
                                     KBProxy kbSearch){
         scores=new HashMap<>();
+        warnings = new ArrayList<>();
         this.pairs=pairs;
         this.simScorer=simScorer;
         this.kbSearch = kbSearch;
@@ -42,7 +45,7 @@ public class SimilarityComputerThread extends Thread{
         for(Pair<Entity, Clazz> pair: pairs){
             Pair<Double, Boolean> score=null;
             try {
-                score = simScorer.computeEntityConceptSimilarity(pair.getKey(), pair.getValue(), kbSearch, useCache);
+                score = simScorer.computeEntityConceptSimilarity(pair.getKey(), pair.getValue(), kbSearch, useCache, warnings);
             } catch (Exception e) {
                 LOG.error("Failed to compute similarity for pair:"+pair);
                 LOG.error(ExceptionUtils.getFullStackTrace(e));
@@ -60,5 +63,9 @@ public class SimilarityComputerThread extends Thread{
 
     public Map<String[], Double> getScores(){
         return scores;
+    }
+
+    public List<String> getWarnings() {
+        return warnings;
     }
 }

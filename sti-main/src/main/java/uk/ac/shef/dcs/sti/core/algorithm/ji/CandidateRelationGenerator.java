@@ -211,17 +211,19 @@ public class CandidateRelationGenerator {
                 if (!columnDataType.equals(DataTypeClassifier.DataType.NAMED_ENTITY)) continue;
                 TColumnHeaderAnnotation[] candidates_col1 = annotation.getHeaderAnnotation(subjectColumn);
                 TColumnHeaderAnnotation[] candidates_col2 = annotation.getHeaderAnnotation(objectColumn);
-                List<JIAdaptedAttributeMatcher.MatchResult> matchResults = matcher.matchColumnAnnotations(
+                JIAdaptedAttributeMatcher.MatchResults matchResults = matcher.matchColumnAnnotations(
                         Arrays.asList(candidates_col1),
                         Arrays.asList(candidates_col2),
                         colTypes.get(objectColumn),
                         kbSearch);
 
-                for (JIAdaptedAttributeMatcher.MatchResult mr : matchResults) {
+                for (JIAdaptedAttributeMatcher.MatchResult mr : matchResults.results) {
                     createCandidateAnnotation(annotation,
                             subjectColumn, objectColumn,
                             mr.attribute, mr.subjectAnnotation, mr.objectAnnotations);
                 }
+
+                annotation.addColumnRelationWarnings(new RelationColumns(subjectColumn, objectColumn), matchResults.warnings);
             }
         }
     }

@@ -5,9 +5,16 @@ import cern.colt.matrix.ObjectMatrix2D;
 import cern.colt.matrix.impl.SparseObjectMatrix1D;
 import cern.colt.matrix.impl.SparseObjectMatrix2D;
 import uk.ac.shef.dcs.sti.STIException;
-import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation.TComponentType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  */
@@ -18,7 +25,10 @@ public class TAnnotation {
     protected int subjectColumn;
     protected ObjectMatrix1D headerAnnotations; //each object in the matrix is an array of TColumnHeaderAnnotation
     protected ObjectMatrix2D contentAnnotations; //each object in the matrix is an array of TCellAnnotation
-    protected Map<RelationColumns, Map<Integer, java.util.List<TCellCellRelationAnotation>>>
+    protected ObjectMatrix1D headerWarnings;
+    protected ObjectMatrix2D contentWarnings;
+    protected Map<RelationColumns, List<String>> columnRelationWarnings;
+    protected Map<RelationColumns, Map<Integer, List<TCellCellRelationAnotation>>>
             cellcellRelations; //first key being the sub-obj column; second key is the row index
     private Map<RelationColumns, java.util.List<TColumnColumnRelationAnnotation>>
             columncolumnRelations;
@@ -29,6 +39,9 @@ public class TAnnotation {
         this.cols = cols;
         headerAnnotations = new SparseObjectMatrix1D(cols);
         contentAnnotations = new SparseObjectMatrix2D(rows, cols);
+        headerWarnings = new SparseObjectMatrix1D(cols);
+        contentWarnings = new SparseObjectMatrix2D(rows, cols);
+        columnRelationWarnings = new HashMap<>();
         cellcellRelations = new HashMap<>();
         columncolumnRelations = new HashMap<>();
         statisticalAnnotations = new SparseObjectMatrix1D(cols);
@@ -263,5 +276,104 @@ public class TAnnotation {
             return null;
 
         return (TStatisticalAnnotation) o;
+    }
+
+    public void addContentWarnings(int row, int column, Collection<String> newWarnings) {
+        if (newWarnings == null || newWarnings.isEmpty()) {
+            return;
+        }
+
+        List<String> warnings = ensureContentWarnings(row, column);
+
+        warnings.addAll(newWarnings);
+    }
+
+    public void addContentWarning(int row, int column, String newWarning) {
+        if (newWarning == null) {
+            return;
+        }
+
+        List<String> warnings = ensureContentWarnings(row, column);
+
+        warnings.add(newWarning);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> ensureContentWarnings(int row, int column) {
+        List<String> warnings;
+        Object warningsObj = contentWarnings.get(row, column);
+
+        if (warningsObj == null) {
+            warnings = new ArrayList<>();
+            contentWarnings.set(row, column, warnings);
+        }
+        else {
+            warnings = (List<String>)warningsObj;
+        }
+        return warnings;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getContentWarnings(int row, int column) {
+        Object warningsObj = contentWarnings.get(row, column);
+        if (warningsObj == null) {
+            return new ArrayList<>();
+        }
+
+        return (List<String>)warningsObj;
+    }
+
+    public void addHeaderWarnings(int headerCol, Collection<String> newWarnings) {
+        if (newWarnings == null || newWarnings.isEmpty()) {
+            return;
+        }
+
+        List<String> warnings = ensureHeaderWarnings(headerCol);
+
+        warnings.addAll(newWarnings);
+    }
+
+    public void addHeaderWarning(int headerCol, String newWarning) {
+        if (newWarning == null) {
+            return;
+        }
+
+        List<String> warnings = ensureHeaderWarnings(headerCol);
+
+        warnings.add(newWarning);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> ensureHeaderWarnings(int headerCol) {
+        List<String> warnings;
+        Object warningsObj = headerWarnings.get(headerCol);
+
+        if (warningsObj == null) {
+            warnings = new ArrayList<>();
+            headerWarnings.set(headerCol, warnings);
+        }
+        else {
+            warnings = (List<String>)warningsObj;
+        }
+        return warnings;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getHeaderWarnings(int headerCol) {
+        Object warningsObj = headerWarnings.get(headerCol);
+        if (warningsObj == null) {
+            return new ArrayList<>();
+        }
+
+        return (List<String>)warningsObj;
+    }
+
+    public Map<RelationColumns, List<String>> getColumnRelationWarnings() {
+        return columnRelationWarnings;
+    }
+
+    public void addColumnRelationWarnings(RelationColumns columns, Collection<String> newWarnings) {
+        List<String> warnings = columnRelationWarnings.computeIfAbsent(columns, k -> new ArrayList<>());
+        warnings.addAll(newWarnings);
     }
 }

@@ -24,7 +24,7 @@ public abstract class TCellDisambiguator {
     }
 
     protected abstract Map<Integer, List<Pair<Entity, Map<String, Double>>>> disambiguate(
-            Table table, TAnnotation table_annotation, int column, Integer... skipRows) throws KBProxyException;
+            Table table, TAnnotation table_annotation, int column, Integer... skipRows);
 
     protected void revise(TAnnotation tableAnnotation,
                        Table table,

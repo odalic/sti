@@ -4,6 +4,7 @@ import javafx.util.Pair;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.KBProxyResult;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.nlp.Lemmatizer;
@@ -35,10 +36,16 @@ public class EntityAndClazzSimilarityScorer {
     public Pair<Double, Boolean> computeEntityConceptSimilarity(Entity entity,
                                                                Clazz concept,
                                                                KBProxy kbSearch,
-                                                               boolean useCache) throws KBProxyException {
+                                                               boolean useCache,
+                                                               List<String> warnings) {
         double score = -1;
-        if (useCache)
-            score = kbSearch.findEntityClazzSimilarity(entity.getId(), concept.getId());
+        if (useCache) {
+            KBProxyResult<Double> scoreResult = kbSearch.findEntityClazzSimilarity(entity.getId(), concept.getId());
+
+            score = scoreResult.getResult();
+            scoreResult.appendWarning(warnings);
+        }
+
         boolean fromCache = false;
         if (score != -1)
             fromCache =true;

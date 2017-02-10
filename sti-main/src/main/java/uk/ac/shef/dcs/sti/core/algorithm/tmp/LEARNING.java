@@ -24,11 +24,11 @@ public class LEARNING {
         this.cellTagger = cellTagger;
     }
 
-    public void learn(Table table, TAnnotation tableAnnotation, int column) throws KBProxyException, ClassNotFoundException, STIException {
+    public void learn(Table table, TAnnotation tableAnnotation, int column) throws ClassNotFoundException, STIException {
       learn(table, tableAnnotation, column, new Constraints());
     }
 
-    public void learn(Table table, TAnnotation tableAnnotation, int column, Constraints constraints) throws KBProxyException, ClassNotFoundException, STIException {
+    public void learn(Table table, TAnnotation tableAnnotation, int column, Constraints constraints) throws ClassNotFoundException, STIException {
       Set<Integer> skipRows = constraints.getSkipRowsForColumn(column, table.getNumRows());
 
       Integer[] skipRowsArray = skipRows.toArray(new Integer[skipRows.size()]);

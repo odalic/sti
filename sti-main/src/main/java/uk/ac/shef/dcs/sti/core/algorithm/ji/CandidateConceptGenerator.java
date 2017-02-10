@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.KBProxyResult;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
@@ -44,7 +45,7 @@ public class CandidateConceptGenerator {
         simComputer = new SimilarityComputerManager(useCache,kbSearch,entityAndConceptScorer);
     }
 
-    public void generateInitialColumnAnnotations(TAnnotationJI tableAnnotation, Table table, int col) throws KBProxyException, STIException {
+    public void generateInitialColumnAnnotations(TAnnotationJI tableAnnotation, Table table, int col) throws STIException {
         List<Clazz> distinctTypes = new ArrayList<>();
         Map<String, Set<String>> entityId_and_clazzURLs = new HashMap<>();
         List<Entity> distinctEntities = new ArrayList<>();
@@ -77,8 +78,10 @@ public class CandidateConceptGenerator {
             clazzScorer.computeFinal(tca, table.getNumRows());
             Clazz c = tca.getAnnotation();
             LOG.info("\t\t>> retrieving clazz attributes (may involve querying KB) for " + c);
-            List<Attribute> triples = kbSearch.findAttributesOfClazz(c.getId());
-            c.setAttributes(triples);
+            KBProxyResult<List<Attribute>> triplesResult = kbSearch.findAttributesOfClazz(c.getId());
+            tableAnnotation.addHeaderWarning(col, triplesResult.getWarning());
+
+            c.setAttributes(triplesResult.getResult());
             if (!distinctTypes.contains(c))
                 distinctTypes.add(c);
         }
@@ -87,8 +90,9 @@ public class CandidateConceptGenerator {
 
         //go thru every entity-concept pair, compute their scores
         LOG.info("\t\t>> compute entity-clazz semantic similarity (Ent:" + distinctEntities.size() + " Clz:" + distinctTypes.size() + ")");
+        List<String> warnings = new ArrayList<>();
         Map<String, Double> simScores =
-                simComputer.computeSemanticSimilarity(threads, distinctEntities, distinctTypes, true);
+                simComputer.computeSemanticSimilarity(threads, distinctEntities, distinctTypes, true, warnings);
         for (Entity entity : distinctEntities) {
             for (Clazz concept : distinctTypes) {
                 Double sim = simScores.get(entity.getId() + "," + concept.getId());
@@ -96,6 +100,8 @@ public class CandidateConceptGenerator {
                 tableAnnotation.setScoreEntityAndConceptSimilarity(entity.getId(), concept.getId(), sim);
             }
         }
+
+        tableAnnotation.addHeaderWarnings(col, warnings);
 
         //then update scores for every entity-concept pair where the entity votes for the concept
         LOG.info("\t\t>> compute entity-clazz affinity scores, can involve querying KB for computing clazz specificity (Ent:" + distinctEntities.size() + ")");
