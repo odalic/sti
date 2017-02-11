@@ -57,7 +57,7 @@ public final class ThrowableMapper implements ExceptionMapper<Throwable> {
 
     // Send the default message only if acceptable by the client.
     if (acceptable.contains(MediaType.WILDCARD_TYPE)
-        || acceptable.contains(MediaType.APPLICATION_JSON)) {
+        || acceptable.contains(MediaType.APPLICATION_JSON_TYPE)) {
       return Message.of(text, debugContent).toResponse(statusType, uriInfo);
     } else {
       return Response.status(statusType).type(acceptable.get(0)).build();
