@@ -97,24 +97,6 @@ public final class FormatValue implements Serializable {
 
 
   /**
-   * @return the headerCaseIgnored
-   * @deprecated
-   */
-  @XmlElement
-  @Nullable
-  public Boolean isHeaderCaseIgnored() {
-    return null;
-  }
-
-
-  /**
-   * @param headerCaseIgnored the headerCaseIgnored to set
-   * @deprecated
-   */
-  public void setHeaderCaseIgnored(Boolean headerCaseIgnored) {}
-
-
-  /**
    * @return the quoteCharacter
    */
   @XmlElement
