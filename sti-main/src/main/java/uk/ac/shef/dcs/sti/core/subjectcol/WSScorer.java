@@ -61,7 +61,13 @@ public class WSScorer {
             Date start = new Date();
             try {
                 InputStream is = searcher.search(queryId);
-                List<WebSearchResultDoc> searchResult = searcher.getResultParser().parse(is);
+                List<WebSearchResultDoc> searchResult = null;
+                try {
+                  searchResult = searcher.getResultParser().parse(is);
+                } catch (final IllegalArgumentException e) {
+                  LOG.warn("The search stream is invalid!", e);
+                }
+                
                 result = searchResult == null ? new ArrayList<>() : searchResult;
 
                 cache.cache(queryId, result, true);

@@ -285,7 +285,17 @@ public class GSBuilder_Limaye_Wikitables {
         }
 
         if (url.equals("")) {
-            List<WebSearchResultDoc> docs = parser.parse(searcher.search(wikiTitle + " wikipedia"));
+            List<WebSearchResultDoc> docs = null;  
+            try {  
+                docs = parser.parse(searcher.search(wikiTitle + " wikipedia"));
+            } catch (final IllegalArgumentException e) {
+              log.warning(e.getMessage());
+            }
+            
+            if (docs == null) {
+              docs = new ArrayList<>();
+            }
+            
             for (WebSearchResultDoc d : docs) {
                 String title = d.getTitle().replaceAll("[^a-zA-Z0-9]", " ").trim();
                 if (d.getUrl().indexOf("wikipedia.org/wiki") == -1)
