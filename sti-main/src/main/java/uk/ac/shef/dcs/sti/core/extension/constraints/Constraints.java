@@ -9,19 +9,14 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.kbproxy.KBProxyResult;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 import uk.ac.shef.dcs.sti.core.model.EntityResult;
-import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 
 /**
  * User feedback for the result of annotating algorithm. Expresses also input constraints for the
@@ -50,8 +45,6 @@ public final class Constraints implements Serializable {
   private final Set<ColumnRelation> columnRelations;
 
   private final Set<DataCubeComponent> dataCubeComponents;
-
-  private static final Logger LOG = LoggerFactory.getLogger(Constraints.class.getName());
 
   /**
    * Creates empty feedback.
