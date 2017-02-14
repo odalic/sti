@@ -16,6 +16,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.ResultAdapter;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
@@ -54,17 +55,22 @@ public class Result implements Serializable {
 
   private final List<StatisticalAnnotation> statisticalAnnotations;
 
+  private final List<ColumnProcessingAnnotation> columnProcessingAnnotations;
+
   private final List<String> warnings;
 
   public Result(Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions,
       List<? extends HeaderAnnotation> headerAnnotations, CellAnnotation[][] cellAnnotations,
       Map<? extends ColumnRelationPosition, ? extends ColumnRelationAnnotation> columnRelationAnnotations,
-      List<? extends StatisticalAnnotation> statisticalAnnotations, List<? extends String> warnings) {
+      List<? extends StatisticalAnnotation> statisticalAnnotations,
+      List<? extends ColumnProcessingAnnotation> columnProcessingAnnotations,
+      List<? extends String> warnings) {
     Preconditions.checkNotNull(subjectColumnPositions);
     Preconditions.checkNotNull(headerAnnotations);
     Preconditions.checkNotNull(cellAnnotations);
     Preconditions.checkNotNull(columnRelationAnnotations);
     Preconditions.checkNotNull(statisticalAnnotations);
+    Preconditions.checkNotNull(columnProcessingAnnotations);
     Preconditions.checkNotNull(warnings);
     Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Arrays.containsNull(cellAnnotations));
     Preconditions.checkArgument(cz.cuni.mff.xrg.odalic.util.Arrays.isMatrix(cellAnnotations));
@@ -75,6 +81,7 @@ public class Result implements Serializable {
         cz.cuni.mff.xrg.odalic.util.Arrays.deepCopy(CellAnnotation.class, cellAnnotations);
     this.columnRelationAnnotations = ImmutableMap.copyOf(columnRelationAnnotations);
     this.statisticalAnnotations = ImmutableList.copyOf(statisticalAnnotations);
+    this.columnProcessingAnnotations = ImmutableList.copyOf(columnProcessingAnnotations);
     this.warnings = ImmutableList.copyOf(warnings);
   }
 
@@ -115,6 +122,13 @@ public class Result implements Serializable {
   }
 
   /**
+   * @return the column processing annotations
+   */
+  public List<ColumnProcessingAnnotation> getColumnProcessingAnnotations() {
+    return columnProcessingAnnotations;
+  }
+
+  /**
    * @return the warnings in order of appearance
    */
   public List<String> getWarnings() {
@@ -137,6 +151,7 @@ public class Result implements Serializable {
     result =
         prime * result + ((subjectColumnPositions == null) ? 0 : subjectColumnPositions.hashCode());
     result = prime * result + ((statisticalAnnotations == null) ? 0 : statisticalAnnotations.hashCode());
+    result = prime * result + ((columnProcessingAnnotations == null) ? 0 : columnProcessingAnnotations.hashCode());
     return result;
   }
 
@@ -188,6 +203,13 @@ public class Result implements Serializable {
     } else if (!statisticalAnnotations.equals(other.statisticalAnnotations)) {
       return false;
     }
+    if (columnProcessingAnnotations == null) {
+      if (other.columnProcessingAnnotations != null) {
+        return false;
+      }
+    } else if (!columnProcessingAnnotations.equals(other.columnProcessingAnnotations)) {
+      return false;
+    }
     if (warnings == null) {
       if (other.warnings != null) {
         return false;
@@ -208,6 +230,8 @@ public class Result implements Serializable {
     return "Result [subjectColumnPositions=" + subjectColumnPositions + ", headerAnnotations="
         + headerAnnotations + ", cellAnnotations=" + Arrays.deepToString(cellAnnotations)
         + ", columnRelationAnnotations=" + columnRelationAnnotations
-        + ", statisticalAnnotations=" + statisticalAnnotations + ", warnings=" + warnings + "]";
+        + ", statisticalAnnotations=" + statisticalAnnotations
+        + ", columnProcessingAnnotations=" + columnProcessingAnnotations
+        + ", warnings=" + warnings + "]";
   }
 }
