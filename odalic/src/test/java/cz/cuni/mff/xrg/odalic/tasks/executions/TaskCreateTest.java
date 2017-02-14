@@ -6,12 +6,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -29,10 +31,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ConfigurationValue;
+import cz.cuni.mff.xrg.odalic.api.rest.values.CredentialsValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.TaskValue;
-import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.users.Credentials;
 
 /**
  * JUnit test for creating tasks with test files
@@ -47,6 +50,8 @@ public class TaskCreateTest {
 
   private static Client client;
   private static WebTarget target;
+  private static String token;
+  private static boolean run = true;
 
   private File file;
   private Format format;
@@ -66,7 +71,7 @@ public class TaskCreateTest {
 
     return Arrays.asList(new Object[][] {{new File(
         TaskCreateTest.class.getClassLoader().getResource("book-input.csv").toURI()),
-        new Format(StandardCharsets.UTF_8, ';', true, '"', null, null), 10, false}});
+        new Format(StandardCharsets.ISO_8859_1, ';', true, '"', null, null), 10, false}});
   }
 
   @BeforeClass
@@ -74,17 +79,23 @@ public class TaskCreateTest {
 
     client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
     target = client.target("http://localhost:8080/odalic");
+
+    try {
+      Response userResponse = target.path("users").path("authentications").request().post(
+          Entity.json(new CredentialsValue(new Credentials("odalic@email.cz", "admin"))));
+      token = "Bearer " + ((HashMap<?,?>)userResponse.readEntity(HashMap.class).get("payload"))
+          .get("token");
+      userResponse.close();
+    } catch (ProcessingException e) {
+      log.info("Server is not running, so test was stopped: " + e.getMessage());
+      run = false;
+    }
   }
 
   @Test
   public void TestFileCreateTask() {
 
-    // Test of server availability by simple get request
-    try {
-      Response testResponse = target.path("files").request().get();
-      testResponse.close();
-    } catch (ProcessingException e) {
-      log.info("Server is not running, so test was stopped: " + e.getMessage());
+    if (!run) {
       return;
     }
 
@@ -94,18 +105,19 @@ public class TaskCreateTest {
     multipart.bodyPart(filePart);
 
     Response fileResponse = target.path("files").path(file.getName()).request()
+        .header(HttpHeaders.AUTHORIZATION, token)
         .put(Entity.entity(multipart, multipart.getMediaType()));
     fileResponse.close();
 
     // Format settings
-    Response formatResponse =
-        target.path("files").path(file.getName()).path("format").request().put(Entity.json(format));
+    Response formatResponse = target.path("files").path(file.getName()).path("format")
+        .request().header(HttpHeaders.AUTHORIZATION, token).put(Entity.json(format));
     formatResponse.close();
 
     // Task settings
     ConfigurationValue configuration = new ConfigurationValue();
     configuration.setInput(file.getName());
-    configuration.setFeedback(new Feedback());
+    configuration.setFeedback(CoreExecutionBatch.createFeedback(true));
     configuration.setUsedBases(ImmutableSet.of(new KnowledgeBase("DBpedia"),
         new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")));
     configuration.setPrimaryBase(new KnowledgeBase("DBpedia"));
@@ -118,8 +130,8 @@ public class TaskCreateTest {
     task.setDescription(file.getName() + " task description");
     task.setConfiguration(configuration);
 
-    Response taskResponse =
-        target.path("tasks").path(task.getId()).request().put(Entity.json(task));
+    Response taskResponse = target.path("tasks").path(task.getId()).request()
+        .header(HttpHeaders.AUTHORIZATION, token).put(Entity.json(task));
     taskResponse.close();
   }
 
