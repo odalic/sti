@@ -41,7 +41,6 @@ public class SPARQLProxy extends KBProxy {
   private static final String SPARQL_VARIABLE_CLASS = "?class";
   private static final String SPARQL_VARIABLE_TEMP_INSTANCE = "?temp_instance";
 
-  private static final String SPARQL_PREDICATE_TYPE = createSPARQLResource(RDF.type.getURI());
   private static final String SPARQL_PREDICATE_BIF_CONTAINS = "<bif:contains>";
 
   private static final String SPARQL_FILTER_REGEX = "regex (str(%1$s), %2$s, \"i\")";
@@ -117,7 +116,7 @@ public class SPARQLProxy extends KBProxy {
    * @throws ParseException Invalid regex expression
    * @throws KBProxyException Invalid KB definition
    */
-  protected Query createFulltextQueryForResources(String content, Integer limit, boolean restrictClassTypes, String... types) throws ParseException, KBProxyException {
+  protected Query createFulltextQueryForResources(String content, Integer limit, boolean restrictClassTypes, String... types) throws ParseException {
     SelectBuilder builder = createFulltextQueryBuilder(content, limit, types);
 
     // Class restriction
@@ -126,19 +125,19 @@ public class SPARQLProxy extends KBProxy {
     return builder.build();
   }
 
-  protected Query createFulltextQueryForClasses(String content, Integer limit) throws ParseException, KBProxyException {
+  protected Query createFulltextQueryForClasses(String content, Integer limit) throws ParseException {
     Set<String> classTypes = kbDefinition.getStructureClass();
     SelectBuilder builder = createFulltextQueryBuilder(content, limit, classTypes.toArray(new String[classTypes.size()]));
 
     if (classTypes.size() == 0) {
       // If there are no class definitions, then add restriction on existence of instances.
-      builder = builder.addWhere(SPARQL_VARIABLE_TEMP_INSTANCE, SPARQL_PREDICATE_TYPE, SPARQL_VARIABLE_SUBJECT);
+      builder = builder.addWhere(SPARQL_VARIABLE_TEMP_INSTANCE, createSPARQLResource(kbDefinition.getStructureInstanceOf()), SPARQL_VARIABLE_SUBJECT);
     }
 
     return builder.build();
   }
 
-  protected Query createFulltextQueryForPredicates(String content, Integer limit, String domain, String range) throws ParseException, KBProxyException {
+  protected Query createFulltextQueryForPredicates(String content, Integer limit, String domain, String range) throws ParseException {
     Set<String> predicateTypes = kbDefinition.getStructureProperty();
     SelectBuilder builder = createFulltextQueryBuilder(content, limit, predicateTypes.toArray(new String[predicateTypes.size()]));
 
@@ -153,17 +152,38 @@ public class SPARQLProxy extends KBProxy {
     return builder.build();
   }
 
-  protected Query createExactMatchQuery(String content, String... types) {
-    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_SUBJECT);
-
-    // Label restriction
-    builder = addLabelRestriction(builder, content);
-
-    // Type restriction
-    builder = addTypeRestriction(builder, Arrays.asList(types));
+  protected Query createExactMatchQueryForResources(String content, Integer limit, boolean restrictClassTypes, String... types) throws ParseException {
+    SelectBuilder builder = createExactMatchQueryBuilder(content, limit, types);
 
     // Class restriction
-    builder = addClassRestriction(builder, true);
+    builder = addClassRestriction(builder, restrictClassTypes);
+
+    return builder.build();
+  }
+
+  protected Query createExactMatchQueryForClasses(String content, Integer limit) throws ParseException {
+    Set<String> classTypes = kbDefinition.getStructureClass();
+    SelectBuilder builder = createExactMatchQueryBuilder(content, limit, classTypes.toArray(new String[classTypes.size()]));
+
+    if (classTypes.size() == 0) {
+      // If there are no class definitions, then add restriction on existence of instances.
+      builder = builder.addWhere(SPARQL_VARIABLE_TEMP_INSTANCE, createSPARQLResource(kbDefinition.getStructureInstanceOf()), SPARQL_VARIABLE_SUBJECT);
+    }
+
+    return builder.build();
+  }
+
+  protected Query createExactMatchQueryForPredicates(String content, Integer limit, String domain, String range) throws ParseException {
+    Set<String> predicateTypes = kbDefinition.getStructureProperty();
+    SelectBuilder builder = createExactMatchQueryBuilder(content, limit, predicateTypes.toArray(new String[predicateTypes.size()]));
+
+    if (!isNullOrEmpty(domain)) {
+      builder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(kbDefinition.getStructureDomain()), createSPARQLResource(domain));
+    }
+
+    if (!isNullOrEmpty(range)) {
+      builder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(kbDefinition.getStructureRange()), createSPARQLResource(range));
+    }
 
     return builder.build();
   }
@@ -349,7 +369,7 @@ public class SPARQLProxy extends KBProxy {
   public List<Entity> findResourceByFulltext(String pattern, int limit) {
     try {
       // Proposed resources can have types, that are not classes.
-      return findByFulltext(() -> createFulltextQueryForResources(pattern, limit, false));
+      return findByFulltext(() -> createExactMatchQueryForResources(pattern, limit, false), () -> createFulltextQueryForResources(pattern, limit, false), pattern);
     }
     catch (Exception e){
       // If the search expression causes any error on the KB side, we only log
@@ -363,7 +383,7 @@ public class SPARQLProxy extends KBProxy {
   @Override
   public List<Entity> findClassByFulltext(String pattern, int limit) {
     try {
-      return findByFulltext(() -> createFulltextQueryForClasses(pattern, limit));
+      return findByFulltext(() -> createExactMatchQueryForClasses(pattern, limit), () -> createFulltextQueryForClasses(pattern, limit), pattern);
     }
     catch (Exception e){
       // If the search expression causes any error on the KB side, we only log
@@ -380,7 +400,7 @@ public class SPARQLProxy extends KBProxy {
     String rangeString = range != null ? range.toString() : null;
 
     try {
-      return findByFulltext(() -> createFulltextQueryForPredicates(pattern, limit, domainString, rangeString));
+      return findByFulltext(() -> createExactMatchQueryForPredicates(pattern, limit, domainString, rangeString), () -> createFulltextQueryForPredicates(pattern, limit, domainString, rangeString), pattern);
     }
     catch (Exception e){
       // If the search expression causes any error on the KB side, we only log
@@ -407,7 +427,7 @@ public class SPARQLProxy extends KBProxy {
     String queryCache = createSolrCacheQuery_loadResource(uri);
     Entity result = retrieveOrTryExecute(queryCache, cacheEntity, () -> {
       //there is nothing suitable in the cache or the cache is disabled
-      AskBuilder builder = new AskBuilder().addWhere(createSPARQLResource(uri), SPARQL_PREDICATE_TYPE, "?Type");
+      AskBuilder builder = new AskBuilder().addWhere(createSPARQLResource(uri), createSPARQLResource(kbDefinition.getStructureInstanceOf()), "?Type");
       boolean askResult = ask(builder.build());
 
       if (!askResult) {
@@ -484,11 +504,24 @@ public class SPARQLProxy extends KBProxy {
     return new Entity(url, label);
   }
 
-  private List<Entity> findByFulltext(QueryGetter queryGetter) throws SolrServerException, ClassNotFoundException, IOException, KBProxyException, ParseException {
-    Query query = queryGetter.getQuery();
-    List<Pair<String, String>> queryResult = queryReturnTuples(query, "");
+  private List<Entity> findByFulltext(QueryGetter exactQueryGetter, QueryGetter fulltextQueryGetter, String content) throws SolrServerException, ClassNotFoundException, IOException, KBProxyException, ParseException {
+    // Find results by both fulltext and exact match
+    Query exactQuery = exactQueryGetter.getQuery();
+    List<String> exactQueryResult = queryReturnSingleValues(exactQuery);
 
-    return queryResult.stream().map(pair -> new Entity(pair.getKey(), pair.getValue())).collect(Collectors.toList());
+    Query fulltextQuery = fulltextQueryGetter.getQuery();
+    List<Pair<String, String>> fulltextQueryResult = queryReturnTuples(fulltextQuery, content);
+
+    // Marge results and prefer the exact match.
+    Map<String, Entity> result = exactQueryResult.stream().collect(Collectors.toMap(item -> item, item -> new Entity(item, content)));
+
+    for (Pair<String, String> fulltextResult : fulltextQueryResult) {
+      if (!result.containsKey(fulltextResult.getKey())) {
+        result.put(fulltextResult.getKey(), new Entity(fulltextResult.getKey(), fulltextResult.getValue()));
+      }
+    }
+
+    return result.values().stream().collect(Collectors.toList());
   }
 
 
@@ -622,7 +655,7 @@ public class SPARQLProxy extends KBProxy {
 
       //1. try exact string
       // prepare the query
-      Query sparqlQuery = createExactMatchQuery(unescapedContent, types);
+      Query sparqlQuery = createExactMatchQueryForResources(unescapedContent,null, false, types);
       List<String> resourceAndType = queryReturnSingleValues(sparqlQuery);
       for(String resource : resourceAndType) {
         queryResult.add(new Pair<>(resource, unescapedContent)); //I may add content because it is exact match
@@ -632,7 +665,7 @@ public class SPARQLProxy extends KBProxy {
       //the same for type/non-type restrictions ??
       if (resourceAndType.size() == 0 && fuzzyKeywords) {
         log.debug("(query by regex. This can take a long time)");
-        sparqlQuery = createFulltextQueryForResources(unescapedContent, null, true,  types);
+        sparqlQuery = createFulltextQueryForResources(unescapedContent, null, false,  types);
         queryResult = queryReturnTuples(sparqlQuery, unescapedContent);
       }
 
@@ -800,6 +833,22 @@ public class SPARQLProxy extends KBProxy {
     return builder;
   }
 
+  private SelectBuilder createExactMatchQueryBuilder(String content, Integer limit, String... types) throws ParseException {
+    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_SUBJECT);
+
+    if (limit != null){
+      builder = builder.setLimit(limit);
+    }
+
+    // Label restriction
+    builder = addLabelRestriction(builder, content);
+
+    // Type restriction
+    builder = addTypeRestriction(builder, Arrays.asList(types));
+
+    return builder;
+  }
+
   /**
    * Strips the searched value of all special characters and creates a proper search expression from the individual words.
    **/
@@ -847,7 +896,7 @@ public class SPARQLProxy extends KBProxy {
     return addUnion(
             builder,
             types,
-            (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, createSPARQLResource(value)),
+            (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(kbDefinition.getStructureInstanceOf()), createSPARQLResource(value)),
             SPARQL_VARIABLE_SUBJECT);
   }
 
@@ -855,13 +904,13 @@ public class SPARQLProxy extends KBProxy {
 
       if (kbDefinition.getSearchClassTypeMode().equals(KBDefinition.SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT)) {
         //as proposed by Jan
-        builder = builder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, SPARQL_VARIABLE_CLASS);
+        builder = builder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(kbDefinition.getStructureInstanceOf()), SPARQL_VARIABLE_CLASS);
         // If there are no class types defined, then we at least demand the subject is an instance of some class.
         if (restrictClassTypes && kbDefinition.getStructureClass().size() > 0) {
           builder = addUnion(
                   builder,
                   kbDefinition.getStructureClass(),
-                  (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_CLASS, SPARQL_PREDICATE_TYPE, createSPARQLResource(value)),
+                  (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_CLASS, createSPARQLResource(kbDefinition.getStructureInstanceOf()), createSPARQLResource(value)),
                   SPARQL_VARIABLE_CLASS);
         }
       }
@@ -871,7 +920,7 @@ public class SPARQLProxy extends KBProxy {
           builder = addUnion(
                   builder,
                   kbDefinition.getStructureClass(),
-                  (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, SPARQL_PREDICATE_TYPE, createSPARQLResource(value)),
+                  (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(kbDefinition.getStructureInstanceOf()), createSPARQLResource(value)),
                   SPARQL_VARIABLE_SUBJECT);
         }
       }
