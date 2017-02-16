@@ -63,9 +63,14 @@ public class KBDefinition {
   private static final String INSERT_PROPERTY_TYPE = "kb.insert.property.type";
   private static final String INSERT_SUB_PROPERTY = "kb.insert.sub.property";
 
-  private static final String STRUCTURE_INSTANCE_OF = "kb.insert.instance.of";
-  private static final String STRUCTURE_DOMAIN = "kb.insert.domain";
-  private static final String STRUCTURE_RANGE = "kb.insert.range";
+  private static final String STRUCTURE_INSTANCE_OF = "kb.structure.instance.of";
+  private static final String STRUCTURE_DOMAIN = "kb.structure.domain";
+  private static final String STRUCTURE_RANGE = "kb.structure.range";
+
+  private static final String DEFAULT_STRUCTURE_INSTANCE_OF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+  private static final String DEFAULT_STRUCTURE_DOMAIN = "http://www.w3.org/2000/01/rdf-schema#domain";
+  private static final String DEFAULT_STRUCTURE_RANGE = "http://www.w3.org/2000/01/rdf-schema#range";
+
   //endregion
 
   //region Fields
@@ -96,9 +101,9 @@ public class KBDefinition {
   private String insertPropertyType;
   private String insertSubProperty;
 
-  private String structureInstanceOf;
-  private String structureDomain;
-  private String structureRange;
+  private String structureInstanceOf = DEFAULT_STRUCTURE_INSTANCE_OF;
+  private String structureDomain = DEFAULT_STRUCTURE_DOMAIN;
+  private String structureRange = DEFAULT_STRUCTURE_RANGE;
 
 //endregion
 
@@ -393,9 +398,15 @@ public class KBDefinition {
       }
     }
 
-    setStructureInstanceOf(kbProperties.getProperty(STRUCTURE_INSTANCE_OF));
-    setStructureDomain(kbProperties.getProperty(STRUCTURE_DOMAIN));
-    setStructureRange(kbProperties.getProperty(STRUCTURE_RANGE));
+    if (kbProperties.containsKey(STRUCTURE_INSTANCE_OF)) {
+      setStructureInstanceOf(kbProperties.getProperty(STRUCTURE_INSTANCE_OF));
+    }
+    if (kbProperties.containsKey(STRUCTURE_DOMAIN)) {
+      setStructureDomain(kbProperties.getProperty(STRUCTURE_DOMAIN));
+    }
+    if (kbProperties.containsKey(STRUCTURE_RANGE)) {
+      setStructureRange(kbProperties.getProperty(STRUCTURE_RANGE));
+    }
 
     // SPARQL insert
     if (kbProperties.containsKey(INSERT_SUPPORTED)) {
