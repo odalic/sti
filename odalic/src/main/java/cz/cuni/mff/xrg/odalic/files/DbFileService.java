@@ -173,7 +173,7 @@ public final class DbFileService implements FileService {
 
     final File previous = this.files.get(userFileId);
     if (previous != null && !previous.getLocation().equals(file.getLocation())) {
-      this.data.remove(new Object[] {userId, previous.getLocation()});
+      this.data.remove(new Object[] {userId, previous.getLocation().toString()});
     }
 
     this.files.put(userFileId, file);
