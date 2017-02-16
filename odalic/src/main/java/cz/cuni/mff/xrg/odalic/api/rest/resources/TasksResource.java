@@ -110,6 +110,7 @@ public final class TasksResource {
           break;
         case "created":
           tasks = taskService.getTasksSortedByCreatedInDescendingOrder(userId);
+          break;
         default:
           throw new BadRequestException("Invalid sorting key!");
       }
