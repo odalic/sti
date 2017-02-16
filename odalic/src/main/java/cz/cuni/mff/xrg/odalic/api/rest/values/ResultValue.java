@@ -24,6 +24,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.conversions.KnowledgeBaseKeyJsonSerialize
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
@@ -51,6 +52,8 @@ public final class ResultValue implements Serializable {
 
   private List<StatisticalAnnotation> statisticalAnnotations;
 
+  private List<ColumnProcessingAnnotation> columnProcessingAnnotations;
+
   private List<String> warnings;
 
   public ResultValue() {
@@ -59,6 +62,7 @@ public final class ResultValue implements Serializable {
     cellAnnotations = new CellAnnotation[0][0];;
     columnRelationAnnotations = ImmutableMap.of();
     statisticalAnnotations = ImmutableList.of();
+    columnProcessingAnnotations = ImmutableList.of();
     warnings = ImmutableList.of();
   }
 
@@ -67,6 +71,7 @@ public final class ResultValue implements Serializable {
     headerAnnotations = adaptee.getHeaderAnnotations();
     cellAnnotations = adaptee.getCellAnnotations();
     statisticalAnnotations = adaptee.getStatisticalAnnotations();
+    columnProcessingAnnotations = adaptee.getColumnProcessingAnnotations();
     warnings = adaptee.getWarnings();
 
     initializeColumnRelationAnnotations(adaptee);
@@ -187,6 +192,23 @@ public final class ResultValue implements Serializable {
     Preconditions.checkNotNull(statisticalAnnotations);
 
     this.statisticalAnnotations = ImmutableList.copyOf(statisticalAnnotations);
+  }
+
+  /**
+   * @return the column processing annotations
+   */
+  @XmlElement
+  public List<ColumnProcessingAnnotation> getColumnProcessingAnnotations() {
+    return columnProcessingAnnotations;
+  }
+
+  /**
+   * @param columnProcessingAnnotations the column processing annotations to set
+   */
+  public void setColumnProcessingAnnotations(List<ColumnProcessingAnnotation> columnProcessingAnnotations) {
+    Preconditions.checkNotNull(columnProcessingAnnotations);
+
+    this.columnProcessingAnnotations = ImmutableList.copyOf(columnProcessingAnnotations);
   }
 
   /**

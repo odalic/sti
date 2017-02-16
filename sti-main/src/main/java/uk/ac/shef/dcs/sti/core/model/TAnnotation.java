@@ -33,6 +33,7 @@ public class TAnnotation {
     private Map<RelationColumns, java.util.List<TColumnColumnRelationAnnotation>>
             columncolumnRelations;
     private ObjectMatrix1D statisticalAnnotations; //each object in the matrix is a TStatisticalAnnotation
+    private ObjectMatrix1D columnProcessingAnnotations; //each object in the matrix is a TColumnProcessingAnnotation
 
     public TAnnotation(int rows, int cols) {
         this.rows = rows;
@@ -45,6 +46,7 @@ public class TAnnotation {
         cellcellRelations = new HashMap<>();
         columncolumnRelations = new HashMap<>();
         statisticalAnnotations = new SparseObjectMatrix1D(cols);
+        columnProcessingAnnotations = new SparseObjectMatrix1D(cols);
     }
 
     public int getRows() {
@@ -116,6 +118,14 @@ public class TAnnotation {
             TStatisticalAnnotation copy = new TStatisticalAnnotation(annotation.getComponent(),
                 annotation.getPredicateURI(), annotation.getPredicateLabel(), annotation.getScore());
             target.setStatisticalAnnotation(col, copy);
+        }
+
+        for (int col = 0; col < source.getCols(); col++) {
+            TColumnProcessingAnnotation annotation = source.getColumnProcessingAnnotation(col);
+            if (annotation == null)
+                continue;
+            TColumnProcessingAnnotation copy = new TColumnProcessingAnnotation(annotation.getProcessingType());
+            target.setColumnProcessingAnnotation(col, copy);
         }
     }
 
@@ -276,6 +286,18 @@ public class TAnnotation {
             return null;
 
         return (TStatisticalAnnotation) o;
+    }
+
+    public void setColumnProcessingAnnotation(int col, TColumnProcessingAnnotation annotation) {
+        columnProcessingAnnotations.set(col, annotation);
+    }
+
+    public TColumnProcessingAnnotation getColumnProcessingAnnotation(int col) {
+        Object o = columnProcessingAnnotations.get(col);
+        if (o == null)
+            return null;
+
+        return (TColumnProcessingAnnotation) o;
     }
 
     public void addContentWarnings(int row, int column, Collection<String> newWarnings) {

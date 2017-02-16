@@ -1,10 +1,12 @@
 package cz.cuni.mff.xrg.odalic.tasks.results;
 
+import cz.cuni.mff.xrg.odalic.api.rest.values.ColumnProcessingTypeValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
 import cz.cuni.mff.xrg.odalic.entities.EntitiesFactory;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
@@ -21,6 +23,7 @@ import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TCellAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TColumnColumnRelationAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TColumnHeaderAnnotation;
+import uk.ac.shef.dcs.sti.core.model.TColumnProcessingAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation;
 
 import java.util.ArrayList;
@@ -91,16 +94,20 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
         convertColumnRelations(firstKnowledgeBase, firstTableAnnotation);
     final List<StatisticalAnnotation> mergedStatisticalAnnotations =
         convertStatisticalAnnotations(firstKnowledgeBase, firstTableAnnotation);
+    final List<ColumnProcessingAnnotation> mergedColumnProcessingAnnotations =
+        convertColumnProcessingAnnotations(firstKnowledgeBase, firstTableAnnotation);
     final List<String> mergedWarnings = getWarnings(firstKnowledgeBase, firstTableAnnotation);
 
     // Process the rest.
     processTheRest(entrySetIterator, mergedHeaderAnnotations, mergedCellAnnotations,
-        mergedColumnRelations, mergedStatisticalAnnotations, mergedWarnings);
+        mergedColumnRelations, mergedStatisticalAnnotations, mergedColumnProcessingAnnotations,
+        mergedWarnings);
 
     Collections.sort(mergedWarnings);
 
     return new Result(subjectColumnPositions, mergedHeaderAnnotations, mergedCellAnnotations,
-        mergedColumnRelations, mergedStatisticalAnnotations, mergedWarnings);
+        mergedColumnRelations, mergedStatisticalAnnotations, mergedColumnProcessingAnnotations,
+        mergedWarnings);
   }
 
   private static List<String> getWarnings(KnowledgeBase knowledgeBase, TAnnotation original) {
@@ -186,6 +193,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
           final CellAnnotation[][] mergedCellAnnotations,
           final Map<ColumnRelationPosition, ColumnRelationAnnotation> mergedColumnRelations,
           final List<StatisticalAnnotation> mergedStatisticalAnnotations,
+          final List<ColumnProcessingAnnotation> mergedColumnProcessingAnnotations,
           final List<String> mergedWarnings) {
     while (entrySetIterator.hasNext()) {
       final Map.Entry<? extends KnowledgeBase, ? extends TAnnotation> entry =
@@ -198,6 +206,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
       mergeCells(mergedCellAnnotations, knowledgeBase, tableAnnotation);
       mergeColumnRelations(mergedColumnRelations, knowledgeBase, tableAnnotation);
       mergeStatisticalAnnotations(mergedStatisticalAnnotations, knowledgeBase, tableAnnotation);
+      mergeColumnProcessingAnnotations(mergedColumnProcessingAnnotations, knowledgeBase, tableAnnotation);
       mergeWarnings(mergedWarnings, knowledgeBase, tableAnnotation);
     }
   }
@@ -239,6 +248,13 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     final List<StatisticalAnnotation> statisticalAnnotations =
         convertStatisticalAnnotations(knowledgeBase, tableAnnotation);
     Lists.zipWith(mergedStatisticalAnnotations, statisticalAnnotations, StatisticalAnnotation::merge);
+  }
+
+  private void mergeColumnProcessingAnnotations(final List<ColumnProcessingAnnotation> mergedColumnProcessingAnnotations,
+      final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
+    final List<ColumnProcessingAnnotation> columnProcessingAnnotations =
+        convertColumnProcessingAnnotations(knowledgeBase, tableAnnotation);
+    Lists.zipWith(mergedColumnProcessingAnnotations, columnProcessingAnnotations, ColumnProcessingAnnotation::merge);
   }
 
   private Map<ColumnRelationPosition, ColumnRelationAnnotation> convertColumnRelations(
@@ -431,5 +447,43 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     }
 
     return statisticalAnnotations;
+  }
+
+  private List<ColumnProcessingAnnotation> convertColumnProcessingAnnotations(KnowledgeBase knowledgeBase,
+      TAnnotation original) {
+    int columnCount = original.getCols();
+    List<ColumnProcessingAnnotation> columnProcessingAnnotations = new ArrayList<>(columnCount);
+
+    for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
+      TColumnProcessingAnnotation annotation = original.getColumnProcessingAnnotation(columnIndex);
+
+      HashMap<KnowledgeBase, ColumnProcessingTypeValue> processingType = new HashMap<>();
+
+      if (annotation != null) {
+        ColumnProcessingTypeValue processingTypeValue;
+
+        switch (annotation.getProcessingType()) {
+          case NAMED_ENTITY:
+            processingTypeValue = ColumnProcessingTypeValue.NAMED_ENTITY;
+            break;
+          case NON_NAMED_ENTITY:
+            processingTypeValue = ColumnProcessingTypeValue.NON_NAMED_ENTITY;
+            break;
+          case IGNORED:
+            processingTypeValue = ColumnProcessingTypeValue.IGNORED;
+            break;
+          default:
+            processingTypeValue = ColumnProcessingTypeValue.NAMED_ENTITY;
+            break;
+        }
+
+        processingType.put(knowledgeBase, processingTypeValue);
+      }
+
+      ColumnProcessingAnnotation columnProcessingAnnotation = new ColumnProcessingAnnotation(processingType);
+      columnProcessingAnnotations.add(columnProcessingAnnotation);
+    }
+
+    return columnProcessingAnnotations;
   }
 }

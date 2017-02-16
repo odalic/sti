@@ -16,6 +16,8 @@ import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.extension.constraints.DataCubeComponent;
 import uk.ac.shef.dcs.sti.core.extension.positions.CellPosition;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
+import uk.ac.shef.dcs.sti.core.model.TColumnProcessingAnnotation;
+import uk.ac.shef.dcs.sti.core.model.TColumnProcessingAnnotation.TColumnProcessingType;
 import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation.TComponentType;
 import uk.ac.shef.dcs.sti.core.model.Table;
@@ -81,14 +83,29 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
           .compute(table, constraints.getSubjectColumnPosition(), ignoreColumnsArray);
       tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
       
-      // when the column does not contain Named entity as the most frequent data type,
+      // set column processing annotations:
+      // 1) when the column is ignored, set processing type to IGNORED
+      // 2) when the column's most frequent data type is Named entity,
+      // set processing type to NAMEDENTITY
+      // 3) otherwise (i.e. the column does not contain Named entity as the most frequent data type),
+      // set processing type to NONNAMEDENTITY and in this case
       // we will not disambiguate (and so classify) them, except for
       // the user defined constraints
       Set<Ambiguity> newAmbiguities = new HashSet<>(constraints.getAmbiguities());
       for (int col = 0; col < table.getNumCols(); col++) {
-        if (!getIgnoreColumns().contains(col) &&
-            !table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType().equals(
-                DataTypeClassifier.DataType.NAMED_ENTITY)) {
+        if (getIgnoreColumns().contains(col)) {
+          tableAnnotations.setColumnProcessingAnnotation(col,
+              new TColumnProcessingAnnotation(TColumnProcessingType.IGNORED));
+        }
+        else if (table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType().equals(
+            DataTypeClassifier.DataType.NAMED_ENTITY)) {
+          tableAnnotations.setColumnProcessingAnnotation(col,
+              new TColumnProcessingAnnotation(TColumnProcessingType.NAMED_ENTITY));
+        }
+        else {
+          tableAnnotations.setColumnProcessingAnnotation(col,
+              new TColumnProcessingAnnotation(TColumnProcessingType.NON_NAMED_ENTITY));
+          
           for (int row = 0; row < table.getNumRows(); row++) {
             if (!constraints.existDisambChosenForCell(col, row)) {
               newAmbiguities.add(new Ambiguity(new CellPosition(row, col)));

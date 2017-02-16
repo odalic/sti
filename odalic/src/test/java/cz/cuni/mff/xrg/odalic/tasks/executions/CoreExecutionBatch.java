@@ -1,10 +1,8 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -18,7 +16,6 @@ import uk.ac.shef.dcs.sti.core.model.Table;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,13 +39,11 @@ import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.DefaultInputToTableAdapter;
-import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.input.ParsingResult;
 import cz.cuni.mff.xrg.odalic.positions.CellPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
-import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
@@ -59,6 +54,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
+import cz.cuni.mff.xrg.odalic.tasks.executions.InterpreterExecutionBatch.CoreSnapshot;
 import cz.cuni.mff.xrg.odalic.tasks.results.DefaultAnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import cz.cuni.mff.xrg.odalic.users.Role;
@@ -67,47 +63,7 @@ import cz.cuni.mff.xrg.odalic.util.configuration.DefaultPropertiesService;
 
 public class CoreExecutionBatch {
 
-  public static final class ResultSnapshot {
-    private final Result result;
-    
-    private final Input inputSnapshot;
-    
-    public ResultSnapshot(final Result result, final Input inputSnapshot) {
-      Preconditions.checkNotNull(result);
-      Preconditions.checkNotNull(inputSnapshot);
-      
-      this.result = result;
-      this.inputSnapshot = inputSnapshot;
-    }
-
-    /**
-     * @return the result
-     */
-    public Result getResult() {
-      return result;
-    }
-
-    /**
-     * @return the input snapshot
-     */
-    public Input getInputSnapshot() {
-      return inputSnapshot;
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-      return "ResultSnapshot [result=" + result + ", inputSnapshot=" + inputSnapshot + "]";
-    }
-  }
-  
   private static final Logger log = LoggerFactory.getLogger(CoreExecutionBatch.class);
-
-  private static final Map<String, File> files = new HashMap<>();
-  private static final Map<URL, byte[]> data = new HashMap<>();
-  private static final Multimap<String, String> utilizingTasks = HashMultimap.create();
 
   private static KnowledgeBaseProxyFactory kbf;
 
@@ -126,64 +82,47 @@ public class CoreExecutionBatch {
     final String propertyFilePath = args[0];
     final String testInputFilePath = args[1];
 
-    // Core settings
-    final Task task = testCoreSettings(Paths.get(testInputFilePath));
-
-    if (task == null) {
-      log.warn("Task was not set correctly, so execution cannot be launched.");
-      return;
-    }
-
     // Core execution
-    testCoreExecution(propertyFilePath, task);
+    testCoreExecution(propertyFilePath, testInputFilePath);
   }
 
-  public static Task testCoreSettings(Path path) {
-    final User user = new User("test@odalic.eu", "hased-password", Role.USER);
-    
-    final String fileId = path.getFileName().toString();
+  public static CoreSnapshot testCoreExecution(String propertyFilePath, String testInputFilePath) {
+    System.setProperty("cz.cuni.mff.xrg.odalic.sti", propertyFilePath);
 
     // File settings
+    final Path path = Paths.get(testInputFilePath);
+    File file;
     try {
-      final File file = new File(user, fileId, path.toUri().toURL(), new Format(StandardCharsets.ISO_8859_1, ';', true, '"', null, null), true);
-      files.put(file.getId(), file);
-      data.put(file.getLocation(),
-          IOUtils.toByteArray(new FileInputStream(file.getLocation().getFile())));
+      file = new File(new User("test@odalic.eu", "passwordHash", Role.USER),
+          path.getFileName().toString(), path.toUri().toURL(), new Format(
+              StandardCharsets.ISO_8859_1, ';', true, '"', null, null), true);
     } catch (IOException e) {
       log.error("Error - File settings:", e);
       return null;
     }
-
-    // Task settings
-    Task task = new Task(user, "simple_task", "task description",
-        new Configuration(files.get(fileId), ImmutableSet.of(new KnowledgeBase("DBpedia"),
-            new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")),
-            new KnowledgeBase("DBpedia"), createFeedback(false), null, true));
-    utilizingTasks.put(task.getConfiguration().getInput().getId(), task.getId());
-
-    return task;
-  }
-
-  public static ResultSnapshot testCoreExecution(String propertyFilePath, Task task) {
-    System.setProperty("cz.cuni.mff.xrg.odalic.sti", propertyFilePath);
-
-    File file = task.getConfiguration().getInput();
+    int rowsLimit = Configuration.MAXIMUM_ROWS_LIMIT;
 
     // Code for extraction from CSV
     final ParsingResult parsingResult;
     try {
       parsingResult = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
           new DefaultApacheCsvFormatAdapter()).parse(
-              new String(data.get(file.getLocation()), file.getFormat().getCharset()), file.getId(),
-              file.getFormat(), task.getConfiguration().getRowsLimit());
-      log.info("Input CSV file loaded.");
+              new String(IOUtils.toByteArray(new FileInputStream(file.getLocation().getFile())),
+                  file.getFormat().getCharset()), file.getId(), file.getFormat(), rowsLimit);
+      log.info("Input CSV file loaded: " + file.getLocation());
     } catch (IOException e) {
       log.error("Error - loading input CSV file:", e);
       return null;
     }
 
-    // Parsed format and input settings
-    file = new File(file.getOwner(), file.getId(), file.getUploaded(), file.getLocation(), parsingResult.getFormat(), file.isCached());
+    // Parsed format settings
+    file = new File(file.getOwner(), file.getId(), file.getUploaded(), file.getLocation(),
+        parsingResult.getFormat(), file.isCached());
+
+    // Configuration settings
+    Configuration configuration = new Configuration(file, ImmutableSet.of(new KnowledgeBase("DBpedia"),
+            new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")),
+            new KnowledgeBase("DBpedia"), createFeedback(true), rowsLimit, false);
 
     // input Table creation
     final Table table = new DefaultInputToTableAdapter().toTable(parsingResult.getInput());
@@ -208,15 +147,15 @@ public class CoreExecutionBatch {
       for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : semanticTableInterpreters
           .entrySet()) {
         final KnowledgeBase base = new KnowledgeBase(interpreterEntry.getKey());
-        if (!task.getConfiguration().getUsedBases().contains(base)) {
+        if (!configuration.getUsedBases().contains(base)) {
           continue;
         }
 
         Constraints constraints = new DefaultFeedbackToConstraintsAdapter().toConstraints(
-            task.getConfiguration().getFeedback(), base);
+            configuration.getFeedback(), base);
 
         TAnnotation annotationResult = interpreterEntry.getValue().start(table,
-            task.getConfiguration().isStatistical(), constraints);
+            configuration.isStatistical(), constraints);
 
         results.put(base, annotationResult);
       }
@@ -239,14 +178,14 @@ public class CoreExecutionBatch {
         new PrefixMappingEntitiesFactory(pms)).toResult(results);
     log.info("Odalic Result is: " + odalicResult);
 
-    return new ResultSnapshot(odalicResult, parsingResult.getInput());
+    return new CoreSnapshot(odalicResult, parsingResult.getInput(), configuration);
   }
 
   public static KnowledgeBaseProxyFactory getKnowledgeBaseProxyFactory() {
     return kbf;
   }
 
-  private static Feedback createFeedback(boolean emptyFeedback) {
+  public static Feedback createFeedback(boolean emptyFeedback) {
     if (emptyFeedback) {
       return new Feedback();
     }
