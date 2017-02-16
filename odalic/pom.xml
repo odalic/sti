@@ -204,19 +204,16 @@
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
 			<version>1.9.2</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.10</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.complexible.common</groupId>
 			<artifactId>cp-openrdf-utils</artifactId>
 			<version>4.0.1</version>
-			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<artifactId>sesame-rio</artifactId>
@@ -228,7 +225,6 @@
 			<groupId>com.complexible.common</groupId>
 			<artifactId>cp-common-utils</artifactId>
 			<version>5.0.1</version>
-			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<artifactId>*</artifactId>
@@ -240,19 +236,16 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-rio-ntriples</artifactId>
 			<version>4.0.0</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.7</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
 			<version>1.7.7</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
