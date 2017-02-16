@@ -34,6 +34,16 @@ public class FreebaseSearch extends KBProxy {
   }
 
   @Override
+  public List<String> getPropertyDomains(String uri) throws KBProxyException{
+    throw new KBProxyException("Getting domains in freebase is not supported.");
+  }
+
+  @Override
+  public List<String> getPropertyRanges(String uri) throws KBProxyException{
+    throw new KBProxyException("Getting ranges in freebase is not supported.");
+  }
+
+  @Override
   public List<Entity> findResourceByFulltext(String pattern, int limit) throws KBProxyException {
     throw new KBProxyException("Fulltext search in freebase is not supported.");
   }

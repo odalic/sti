@@ -108,6 +108,22 @@ public abstract class KBProxy {
   }
 
   /**
+   * Fetches domain of the gives resource.
+   * @param uri
+   * @return
+   * @throws KBProxyException
+   */
+  public abstract List<String> getPropertyDomains(String uri) throws KBProxyException;
+
+  /**
+   * Fetches range of the gives resource.
+   * @param uri
+   * @return
+   * @throws KBProxyException
+   */
+  public abstract List<String> getPropertyRanges(String uri) throws KBProxyException;
+
+  /**
    * Given a string, fetch candidate entities (resources) from the KB based on a fulltext search.
    * @param pattern
    * @param limit
@@ -310,6 +326,34 @@ public abstract class KBProxy {
      then cache the results in solr. Again you should call these methods to create a query string, which should be
      passed as the id of the record to be added to solr
      */
+
+  @SuppressWarnings("unchecked")
+  protected <T> T retrieveCachedValue(String queryCache, SolrCache cache) {
+    T result = null;
+    if (!ALWAYS_CALL_REMOTE_SEARCH_API) {
+      //if cache is not disabled, try to examine the cache first
+      try {
+        log.debug("QUERY (" + cache.getServer().getCoreContainer().getSolrHome() + ", cache load)=" + queryCache);
+
+        result = (T) cache.retrieve(queryCache);
+      } catch (Exception ex) {
+        log.error("Error fetching resource from the cache.", ex);
+      }
+    }
+
+    return result;
+  }
+
+  void cacheValue(String queryCache, Object value, SolrCache cache) {
+    try {
+      log.debug("QUERY (" + cache.getServer().getCoreContainer().getSolrHome() + ", cache save)=" + queryCache);
+      cache.cache(queryCache, value, AUTO_COMMIT);
+    }
+    catch (Exception ex) {
+      log.error("Error saving resource to the cache.", ex);
+    }
+  }
+
   protected String createSolrCacheQuery_findResources(String content, String... types) {
     StringBuilder builder = new StringBuilder("FIND_RESOURCE_");
     builder.append(content);
@@ -320,6 +364,10 @@ public abstract class KBProxy {
     }
 
     return builder.toString();
+  }
+
+  protected String createSolrCacheQuery_getPropertyValues(String uri, String propertyUri) {
+    return "GET_PROPERTY_VALUES_" + uri + "_" + propertyUri;
   }
 
   protected String createSolrCacheQuery_loadResource(String uri) {
@@ -393,7 +441,44 @@ public abstract class KBProxy {
     }
   }
 
+  protected <ResultType> ResultType retrieveOrTryExecute(String queryCache, SolrCache cache, Func<ResultType> func) throws KBProxyException {
+    ResultType result = retrieveCachedValue(queryCache, cache);
+
+    if (isNullOrEmpty(result)) {
+      try {
+        result = func.Do();
+
+        if (!isNullOrEmpty(result)) {
+          cacheValue(queryCache, result, cache);
+        }
+      }
+      catch (Exception ex) {
+        throw new KBProxyException("Unexpected error during KB access.", ex);
+      }
+    }
+
+    return result;
+  }
+
+  private boolean isNullOrEmpty(Object obj) {
+    if (obj == null) {
+      return true;
+    }
+
+    if (obj instanceof String) {
+      String objString = (String)obj;
+      return objString.isEmpty();
+    }
+
+    if (obj instanceof List<?>) {
+      List<?> objList = (List<?>)obj;
+      return objList.isEmpty();
+    }
+
+    return false;
+  }
+
   protected interface Func<Type> {
-    Type Do() throws KBProxyException;
+    Type Do() throws Exception;
   }
 }

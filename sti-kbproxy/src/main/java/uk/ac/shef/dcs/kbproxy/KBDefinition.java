@@ -58,14 +58,14 @@ public class KBDefinition {
   private static final String INSERT_LABEL = "kb.insert.label";
   private static final String INSERT_ALTERNATIVE_LABEL = "kb.insert.alternative.label";
   private static final String INSERT_SUBCLASS_OF = "kb.insert.subclass.of";
-  private static final String INSERT_INSTANCE_OF = "kb.insert.instance.of";
   private static final String INSERT_CLASS_TYPE = "kb.insert.class.type";
   private static final String INSERT_GRAPH = "kb.insert.graph";
   private static final String INSERT_PROPERTY_TYPE = "kb.insert.property.type";
   private static final String INSERT_SUB_PROPERTY = "kb.insert.sub.property";
-  private static final String INSERT_DOMAIN = "kb.insert.domain";
-  private static final String INSERT_RANGE = "kb.insert.range";
 
+  private static final String STRUCTURE_INSTANCE_OF = "kb.insert.instance.of";
+  private static final String STRUCTURE_DOMAIN = "kb.insert.domain";
+  private static final String STRUCTURE_RANGE = "kb.insert.range";
   //endregion
 
   //region Fields
@@ -91,13 +91,14 @@ public class KBDefinition {
   private String insertLabel;
   private String insertAlternativeLabel;
   private String insertSubclassOf;
-  private String insertInstanceOf;
   private String insertClassType;
   private String insertGraph;
   private String insertPropertyType;
   private String insertSubProperty;
-  private String insertDomain;
-  private String insertRange;
+
+  private String structureInstanceOf;
+  private String structureDomain;
+  private String structureRange;
 
 //endregion
 
@@ -256,12 +257,12 @@ public class KBDefinition {
     this.insertSubclassOf = insertSubclassOf;
   }
 
-  public String getInsertInstanceOf() {
-    return insertInstanceOf;
+  public String getStructureInstanceOf() {
+    return structureInstanceOf;
   }
 
-  private void setInsertInstanceOf(String insertInstanceOf) {
-    this.insertInstanceOf = insertInstanceOf;
+  private void setStructureInstanceOf(String structureInstanceOf) {
+    this.structureInstanceOf = structureInstanceOf;
   }
 
   public String getInsertClassType() {
@@ -296,20 +297,20 @@ public class KBDefinition {
     this.insertSubProperty = insertSubProperty;
   }
 
-  public String getInsertDomain() {
-    return insertDomain;
+  public String getStructureDomain() {
+    return structureDomain;
   }
 
-  private void setInsertDomain(String insertDomain) {
-    this.insertDomain = insertDomain;
+  private void setStructureDomain(String structureDomain) {
+    this.structureDomain = structureDomain;
   }
 
-  public String getInsertRange() {
-    return insertRange;
+  public String getStructureRange() {
+    return structureRange;
   }
 
-  private void setInsertRange(String insertRange) {
-    this.insertRange = insertRange;
+  private void setStructureRange(String structureRange) {
+    this.structureRange = structureRange;
   }
 
   //endregion
@@ -392,6 +393,10 @@ public class KBDefinition {
       }
     }
 
+    setStructureInstanceOf(kbProperties.getProperty(STRUCTURE_INSTANCE_OF));
+    setStructureDomain(kbProperties.getProperty(STRUCTURE_DOMAIN));
+    setStructureRange(kbProperties.getProperty(STRUCTURE_RANGE));
+
     // SPARQL insert
     if (kbProperties.containsKey(INSERT_SUPPORTED)) {
       setInsertSupported(Boolean.parseBoolean(kbProperties.getProperty(INSERT_SUPPORTED)));
@@ -404,13 +409,10 @@ public class KBDefinition {
       setInsertAlternativeLabel(kbProperties.getProperty(INSERT_ALTERNATIVE_LABEL));
       setInsertRootClass(kbProperties.getProperty(INSERT_ROOT_CLASS));
       setInsertSubclassOf(kbProperties.getProperty(INSERT_SUBCLASS_OF));
-      setInsertInstanceOf(kbProperties.getProperty(INSERT_INSTANCE_OF));
       setInsertClassType(kbProperties.getProperty(INSERT_CLASS_TYPE));
       setInsertGraph(kbProperties.getProperty(INSERT_GRAPH));
       setInsertPropertyType(kbProperties.getProperty(INSERT_PROPERTY_TYPE));
       setInsertSubProperty(kbProperties.getProperty(INSERT_SUB_PROPERTY));
-      setInsertDomain(kbProperties.getProperty(INSERT_DOMAIN));
-      setInsertRange(kbProperties.getProperty(INSERT_RANGE));
     }
   }
 
