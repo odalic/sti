@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 
+import javax.ws.rs.BadRequestException;
+
 import org.openrdf.model.IRI;
 import org.openrdf.model.Model;
 import org.openrdf.model.impl.SimpleValueFactory;
@@ -124,7 +126,11 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
     final Model model = parse(taskStream);
 
     final TaskValue taskValue = fromModel(baseUri, model);
+    
     final ConfigurationValue configurationValue = taskValue.getConfiguration();
+    if (configurationValue == null) {
+      throw new BadRequestException("No configuration provided!");
+    }
 
     final File input = getInput(userId, configurationValue);
     final Configuration configuration = initializeConfiguration(configurationValue, input);
