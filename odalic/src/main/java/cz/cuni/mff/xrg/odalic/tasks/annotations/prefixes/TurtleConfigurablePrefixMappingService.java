@@ -45,12 +45,12 @@ public final class TurtleConfigurablePrefixMappingService implements PrefixMappi
    * 
    */
   @Autowired
-  public TurtleConfigurablePrefixMappingService(final PropertiesService configurationService) throws FileNotFoundException, IOException {
+  public TurtleConfigurablePrefixMappingService(final PropertiesService configurationService) throws IOException {
     this(readFromConfiguration(configurationService));
   }
 
   private static Map<String, String> readFromConfiguration(final PropertiesService configurationService)
-      throws IOException, FileNotFoundException {
+      throws IOException {
     final Properties properties = configurationService.get();
 
     final String basePath = properties.getProperty(BASE_PATH_CONFIGURATION_KEY);
@@ -99,6 +99,16 @@ public final class TurtleConfigurablePrefixMappingService implements PrefixMappi
     });
 
     return trie;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.tasks.annotations.PrefixService#getPrefixToUriMap()
+   */
+  @Override
+  public Map<String, String> getPrefixToUriMap() {
+    return ImmutableMap.copyOf(prefixesToUris);
   }
 
   /*

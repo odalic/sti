@@ -1,5 +1,7 @@
 package cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes;
 
+import java.util.Map;
+
 /**
  * Service that assigns prefixes to URIs.
  * 
@@ -19,8 +21,14 @@ public interface PrefixMappingService {
    * When none is applicable, returns {@code null}.
    * </p>
    * 
-   * @param text text to look for the prefixed part in
-   * @return the associated prefix
+   * @param uri Text to look for the prefixed part in
+   * @return The associated prefix
    */
   Prefix getPrefix(String uri);
+
+  /**
+   * The map from prefixes to URIs.
+   * @return
+   */
+  Map<String, String> getPrefixToUriMap();
 }
