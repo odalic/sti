@@ -1,7 +1,5 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
-import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry;
-
 import javafx.util.Pair;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.util.Asserts;
@@ -220,16 +218,22 @@ public class SPARQLProxy extends KBProxy {
 
 
   /**
-   * Returns the entity URL and if available, also type of that entity)
+   * Returns the entity URL and if available, also label of that entity)
    * @param query
    * @return
    */
   protected List<Pair<String, String>> queryReturnTuples(Query query, String defaultObjectValue) {
+    return  queryReturnNodeTuples(query).stream()
+            .map(item -> new Pair<>(item.getKey().toString(), item.getValue() != null ? item.getValue().toString() : defaultObjectValue))
+            .collect(Collectors.toList());
+  }
+
+  protected List<Pair<RDFNode, RDFNode>> queryReturnNodeTuples(Query query) {
     log.info("SPARQL query: \n" + query.toString());
 
     QueryExecution qExec = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), query);
 
-    List<Pair<String, String>> out = new ArrayList<>();
+    List<Pair<RDFNode, RDFNode>> out = new ArrayList<>();
     ResultSet rs = qExec.execSelect();
     while (rs.hasNext()) {
 
@@ -237,7 +241,7 @@ public class SPARQLProxy extends KBProxy {
       RDFNode subject = qs.get(SPARQL_VARIABLE_SUBJECT);
       RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
 
-      out.add(new Pair<>(subject.toString(), object != null ? object.toString() : defaultObjectValue));
+      out.add(new Pair<>(subject, object));
     }
     return out;
   }
@@ -252,24 +256,52 @@ public class SPARQLProxy extends KBProxy {
   }
 
   protected List<String> queryReturnSingleValues(Query query, String columnName) {
+    return queryReturnSingleNodes(query, columnName).stream().map(RDFNode::toString).collect(Collectors.toList());
+  }
+
+  protected List<RDFNode> queryReturnSingleNodes(Query query, String columnName) {
     log.info("SPARQL query: \n" + query.toString());
 
     QueryExecution qExec = QueryExecutionFactory.sparqlService(kbDefinition.getSparqlEndpoint(), query);
 
-    List<String> out = new ArrayList<>();
+    List<RDFNode> out = new ArrayList<>();
     ResultSet rs = qExec.execSelect();
     while (rs.hasNext()) {
       QuerySolution qs = rs.next();
       RDFNode columnNode = qs.get(columnName);
-      out.add(columnNode.toString());
+      out.add(columnNode);
     }
     return out;
   }
 
   protected List<String> queryForLabel(Query sparqlQuery, String resourceURI) throws KBProxyException {
     // Query all labels of the resource.
-    List<String> labels = queryReturnSingleValues(sparqlQuery, SPARQL_VARIABLE_OBJECT);
-    labels = labels.stream().filter(item -> !isNullOrEmpty(item)).collect(Collectors.toList());
+    List<RDFNode> nodes = queryReturnSingleNodes(sparqlQuery, SPARQL_VARIABLE_OBJECT);
+    List<Label> labels = nodes.stream()
+            .filter(item -> item.isLiteral() && !isNullOrEmpty(item.toString()))
+            .map(node -> new Label(node.asLiteral().getString(), node.asLiteral().getLanguage()))
+            .collect(Collectors.toList());
+
+    List<String> filteredLabels;
+
+    // Filter language tags
+    String suffix = kbDefinition.getLanguageSuffix();
+    if (!isNullOrEmpty(suffix)) {
+      if (suffix.startsWith("@")) {
+        suffix = suffix.substring(1);
+      }
+      final String finalSuffix = suffix;
+
+      filteredLabels = labels.stream()
+              .filter(item -> isNullOrEmpty(item.languageSuffix) || item.languageSuffix.equals(finalSuffix))
+              .map(item -> item.labelValue)
+              .collect(Collectors.toList());
+    }
+    else {
+      filteredLabels = labels.stream()
+              .map(item -> item.labelValue)
+              .collect(Collectors.toList());
+    }
 
     // The resource has no statement with label property, apply simple heuristics to parse the
     // resource URI.
@@ -291,32 +323,11 @@ public class SPARQLProxy extends KBProxy {
         stringValue = applyCustomUriHeuristics(resourceURI, stringValue);
         stringValue = StringUtils.splitCamelCase(stringValue);
 
-        labels.add(stringValue);
+        filteredLabels.add(stringValue);
       }
     }
 
-    // Remove any language tags
-    String suffix = kbDefinition.getLanguageSuffix();
-    if (!isNullOrEmpty(suffix)) {
-      List<String> filteredLabels = new ArrayList<>();
-
-      for(String label : labels) {
-        if (label.contains("@")) {
-          if (label.endsWith(suffix)) {
-            label = label.substring(0, label.length() - suffix.length()).trim();
-          }
-          else {
-            continue;
-          }
-        }
-
-        filteredLabels.add(label);
-      }
-
-      labels = filteredLabels;
-    }
-
-    return labels;
+    return filteredLabels;
   }
 
   protected String applyCustomUriHeuristics(String resourceURI, String label) {
@@ -513,14 +524,22 @@ public class SPARQLProxy extends KBProxy {
     List<String> exactQueryResult = queryReturnSingleValues(exactQuery);
 
     Query fulltextQuery = fulltextQueryGetter.getQuery();
-    List<Pair<String, String>> fulltextQueryResult = queryReturnTuples(fulltextQuery, content);
+    List<Pair<RDFNode, RDFNode>> fulltextQueryResult = queryReturnNodeTuples(fulltextQuery);
 
     // Marge results and prefer the exact match.
     Map<String, Entity> result = exactQueryResult.stream().collect(Collectors.toMap(item -> item, item -> new Entity(item, content)));
 
-    for (Pair<String, String> fulltextResult : fulltextQueryResult) {
-      if (!result.containsKey(fulltextResult.getKey())) {
-        result.put(fulltextResult.getKey(), new Entity(fulltextResult.getKey(), fulltextResult.getValue()));
+    for (Pair<RDFNode, RDFNode> fulltextResult : fulltextQueryResult) {
+      String uri = fulltextResult.getKey().toString();
+      if (!result.containsKey(uri)) {
+        RDFNode labelNode = fulltextResult.getValue();
+
+        String label = null;
+        if (labelNode.isLiteral()) {
+          label = labelNode.asLiteral().getString();
+        }
+
+        result.put(uri, new Entity(uri, isNullOrEmpty(label) ? content : label));
       }
     }
 
@@ -1029,5 +1048,15 @@ public class SPARQLProxy extends KBProxy {
 
   private interface BuilderAction {
     SelectBuilder performAction(SelectBuilder builder, String value);
+  }
+
+  private class Label {
+    String labelValue;
+    String languageSuffix;
+
+    Label(String labelValue, String languageSuffix) {
+      this.labelValue = labelValue;
+      this.languageSuffix = languageSuffix;
+    }
   }
 }
