@@ -22,4 +22,6 @@ public interface UserService {
   User getUser(String id);
 
   NavigableSet<User> getUsers();
+
+  void deleteUser(String userId);
 }

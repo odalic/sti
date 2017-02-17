@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
@@ -238,7 +239,8 @@ public final class DbFileService implements FileService {
         "The file is not registered!");
 
     final Boolean previous = utilizingTasks.put(new Object[] {userId, fileId, task.getId()}, true);
-    Preconditions.checkArgument(previous == null, "The task has already been subcscribed to the file!");
+    Preconditions.checkArgument(previous == null,
+        "The task has already been subcscribed to the file!");
   }
 
   @Override
@@ -273,5 +275,18 @@ public final class DbFileService implements FileService {
     this.files.put(userFileId, newFile);
 
     db.commit();
+  }
+
+  @Override
+  public void deleteAll(String userId) {
+    Preconditions.checkNotNull(userId);
+
+    final Object[] userIdKey = new Object[] {userId};
+
+    final Map<Object[], File> fileIdsToFiles = this.files.prefixSubMap(userIdKey);
+    fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
+    fileIdsToFiles.clear();
+
+    this.data.prefixSubMap(userIdKey).clear();
   }
 }

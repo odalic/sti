@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.mapdb.serializer.SerializerArrayTuple;
@@ -70,7 +71,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
    * Table of result futures where rows are indexed by user IDs and the columns by task IDs.
    */
   private final com.google.common.collect.Table<String, String, Future<Result>> userTaskIdsToResults;
-  
+
   /**
    * The shared database instance.
    */
@@ -80,7 +81,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
    * Table of cached results where rows are indexed by user IDs and the columns by task IDs
    * (represented as an array of size 2).
    */
-  private final Map<Object[], Result> userTaskIdsToCachedResults;
+  private final BTreeMap<Object[], Result> userTaskIdsToCachedResults;
 
   @SuppressWarnings("unchecked")
   @Autowired
@@ -163,10 +164,10 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
         }
 
         final Result result = annotationResultAdapter.toResult(results);
-        
-        userTaskIdsToCachedResults.put(new Object[] { userId, taskId }, result);
+
+        userTaskIdsToCachedResults.put(new Object[] {userId, taskId}, result);
         db.commit();
-        
+
         return result;
       } catch (final Exception e) {
         logger.error("Error during task execution!", e);
@@ -175,9 +176,9 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
       }
     };
 
-    userTaskIdsToCachedResults.remove(new Object[] { userId, taskId });
+    userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
     db.commit();
-    
+
     final Future<Result> future = executorService.submit(execution);
     userTaskIdsToResults.put(userId, taskId, future);
   }
@@ -201,9 +202,9 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
   @Override
   public void unscheduleForTaskId(String userId, String taskId) {
-    userTaskIdsToCachedResults.remove(new Object[] { userId, taskId });
+    userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
     db.commit();
-    
+
     final Future<Result> resultFuture = userTaskIdsToResults.remove(userId, taskId);
     if (resultFuture == null) {
       return;
@@ -215,11 +216,11 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   @Override
   public Result getResultForTaskId(String userId, String taskId)
       throws InterruptedException, ExecutionException, CancellationException {
-    final Result cachedResult = this.userTaskIdsToCachedResults.get(new Object[] { userId, taskId });
+    final Result cachedResult = this.userTaskIdsToCachedResults.get(new Object[] {userId, taskId});
     if (cachedResult != null) {
       return cachedResult;
     }
-    
+
     final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -233,17 +234,17 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
     Preconditions.checkArgument(resultFuture != null);
 
-    userTaskIdsToCachedResults.remove(new Object[] { userId, taskId });
+    userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
     db.commit();
     Preconditions.checkState(resultFuture.cancel(false));
   }
 
   @Override
   public boolean isDoneForTaskId(String userId, String taskId) {
-    if (this.userTaskIdsToCachedResults.containsKey(new Object[] { userId, taskId })) {
+    if (this.userTaskIdsToCachedResults.containsKey(new Object[] {userId, taskId})) {
       return true;
     }
-    
+
     final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
 
     Preconditions.checkArgument(resultFuture != null);
@@ -265,7 +266,8 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   public boolean hasBeenScheduledForTaskId(String userId, String taskId) {
     final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
 
-    return resultFuture != null || this.userTaskIdsToCachedResults.containsKey(new Object[] { userId, taskId });
+    return resultFuture != null
+        || this.userTaskIdsToCachedResults.containsKey(new Object[] {userId, taskId});
   }
 
   @Override
@@ -323,5 +325,16 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     } catch (final InterruptedException | ExecutionException e) {
       return true;
     }
+  }
+
+  @Override
+  public void unscheduleAll(String userId) {
+    Preconditions.checkNotNull(userId);
+
+    userTaskIdsToCachedResults.prefixSubMap(new Object[] { userId }).clear();
+    db.commit();
+
+    this.userTaskIdsToResults.row(userId).entrySet().stream()
+        .forEach(e -> e.getValue().cancel(false));
   }
 }

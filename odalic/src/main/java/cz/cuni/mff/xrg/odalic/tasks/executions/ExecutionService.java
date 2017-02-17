@@ -113,4 +113,11 @@ public interface ExecutionService {
    * @return true if failed, false otherwise
    */
   boolean hasFailedForTaskId(String userId, String taskId);
+
+  /**
+   * Removes all the tasks belonging to the user from the scheduled tasks.
+   * 
+   * @param userId user ID
+   */
+  void unscheduleAll(String userId);
 }
