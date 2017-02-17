@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
@@ -20,7 +21,8 @@ public class KBProxyFactory {
   public Collection<KBProxy> createInstances(
           String kbPropertyFiles,
           String cachesBasePath,
-          String workingDirectory) throws KBProxyException {
+          String workingDirectory,
+          Map<String, String> prefixToUriMap) throws KBProxyException {
 
     try {
       List<KBProxy> result = new ArrayList<>();
@@ -38,9 +40,10 @@ public class KBProxyFactory {
           result.add((KBProxy) Class.forName(className).
                   getDeclaredConstructor(Properties.class,
                           Boolean.class,
-                          String.class).
+                          String.class,
+                          Map.class).
                   newInstance(properties,
-                          fuzzyKeywords, cachesBasePath));
+                          fuzzyKeywords, cachesBasePath, prefixToUriMap));
         } else if (className.equals(DBpediaProxy.class.getName())) {
           KBDefinition definition = new KBDefinition();
           definition.load(properties, workingDirectory);
@@ -48,9 +51,10 @@ public class KBProxyFactory {
           result.add((KBProxy) Class.forName(className).
                   getDeclaredConstructor(KBDefinition.class,
                           Boolean.class,
-                          String.class).
+                          String.class,
+                          Map.class).
                   newInstance(definition,
-                          fuzzyKeywords, cachesBasePath));
+                          fuzzyKeywords, cachesBasePath, prefixToUriMap));
         } else {
           throw new KBProxyException("Class:" + className + " not supported");
         }

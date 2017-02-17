@@ -1,5 +1,7 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
+import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry;
+
 import javafx.util.Pair;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.util.Asserts;
@@ -12,7 +14,6 @@ import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateProcessor;
 import org.apache.jena.update.UpdateRequest;
-import org.apache.jena.vocabulary.RDF;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.simmetrics.StringMetric;
 import org.simmetrics.metrics.Levenshtein;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 
 public class SPARQLProxy extends KBProxy {
 
+  private static final String SPARQL_PREFIX = "PREFIX %1$s: <%2$s>";
   private static final String INSERT_BASE = "INSERT DATA {GRAPH <%1$s> {%2$s .}}";
 
   private static final String SPARQL_VARIABLE_SUBJECT = "?subject";
@@ -80,8 +82,9 @@ public class SPARQLProxy extends KBProxy {
    */
   public SPARQLProxy(KBDefinition kbDefinition,
                      Boolean fuzzyKeywords,
-                     String cachesBasePath) throws IOException, KBProxyException {
-    super(kbDefinition, fuzzyKeywords, cachesBasePath);
+                     String cachesBasePath,
+                     Map<String, String> prefixToUriMap) throws IOException, KBProxyException {
+    super(kbDefinition, fuzzyKeywords, cachesBasePath, prefixToUriMap);
 
     if (kbDefinition.getPredicateLabel().size() == 0) {
       throw new KBProxyException("KB definition contains no label predicates.");
@@ -427,7 +430,7 @@ public class SPARQLProxy extends KBProxy {
     String queryCache = createSolrCacheQuery_loadResource(uri);
     Entity result = retrieveOrTryExecute(queryCache, cacheEntity, () -> {
       //there is nothing suitable in the cache or the cache is disabled
-      AskBuilder builder = new AskBuilder().addWhere(createSPARQLResource(uri), createSPARQLResource(kbDefinition.getStructureInstanceOf()), "?Type");
+      AskBuilder builder = getAskBuilder().addWhere(createSPARQLResource(uri), createSPARQLResource(kbDefinition.getStructureInstanceOf()), "?Type");
       boolean askResult = ask(builder.build());
 
       if (!askResult) {
@@ -586,7 +589,17 @@ public class SPARQLProxy extends KBProxy {
   }
 
   private void insert(String tripleDefinition) {
-    String sparqlQuery = String.format(INSERT_BASE, kbDefinition.getInsertGraph(), tripleDefinition);
+    StringBuilder queryBuilder = new StringBuilder();
+
+    if (prefixToUriMap != null) {
+      for(Map.Entry<String, String> prefix : prefixToUriMap.entrySet()) {
+        queryBuilder.append(String.format(SPARQL_PREFIX, prefix.getKey(), prefix.getValue()));
+        queryBuilder.append("\n");
+      }
+    }
+
+    queryBuilder.append(String.format(INSERT_BASE, kbDefinition.getInsertGraph(), tripleDefinition));
+    String sparqlQuery = queryBuilder.toString();
     log.info("SPARQL query: \n" + sparqlQuery);
 
     UpdateRequest query = UpdateFactory.create(sparqlQuery);
@@ -607,7 +620,7 @@ public class SPARQLProxy extends KBProxy {
         uriString = combineURI(baseURI, uri.toString());
       }
 
-      AskBuilder builder = new AskBuilder().addWhere(createSPARQLResource(uriString), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
+      AskBuilder builder = getAskBuilder().addWhere(createSPARQLResource(uriString), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
       Query query = builder.build();
 
       boolean exists = ask(query);
@@ -933,8 +946,25 @@ public class SPARQLProxy extends KBProxy {
 
     builder = builder.setDistinct(true);
 
+    if (prefixToUriMap != null) {
+      for (Map.Entry<String, String> prefix : prefixToUriMap.entrySet()) {
+        builder = builder.addPrefix(prefix.getKey(), prefix.getValue());
+      }
+    }
+
     for (String variable : variables) {
       builder = builder.addVar(variable);
+    }
+
+    return builder;
+  }
+  private AskBuilder getAskBuilder() {
+    AskBuilder builder = new AskBuilder();
+
+    if (prefixToUriMap != null) {
+      for (Map.Entry<String, String> prefix : prefixToUriMap.entrySet()) {
+        builder = builder.addPrefix(prefix.getKey(), prefix.getValue());
+      }
     }
 
     return builder;
