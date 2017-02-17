@@ -24,7 +24,7 @@ public class FreebaseTypeGranularityPopulator {
         Properties properties = new Properties();
         properties.load(new FileReader(new File(args[2])));
         FreebaseSearch kbSeacher =
-                new FreebaseSearch(properties, true, getAbsolutePath(properties, PROPERTY_CACHE_FOLDER));
+                new FreebaseSearch(properties, true, getAbsolutePath(properties, PROPERTY_CACHE_FOLDER), null);
         kbSeacher.initializeCaches();
 
         //kbSeacher.find_triplesForProperty("/award/award_category/nomination_announcement");
