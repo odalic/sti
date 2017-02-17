@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks;
 
+import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
 
@@ -33,8 +34,7 @@ public final class MemoryOnlyTaskService implements TaskService {
    */
   private final Table<String, String, Task> tasks;
 
-  private MemoryOnlyTaskService(final FileService fileService,
-      final Table<String, String, Task> tasks) {
+  private MemoryOnlyTaskService(final FileService fileService, final Table<String, String, Task> tasks) {
     Preconditions.checkNotNull(fileService);
     Preconditions.checkNotNull(tasks);
 
@@ -155,5 +155,15 @@ public final class MemoryOnlyTaskService implements TaskService {
     return ImmutableSortedSet.copyOf(
         (Task first, Task second) -> -1 * first.getCreated().compareTo(second.getCreated()),
         tasks.row(userId).values());
+  }
+
+  @Override
+  public void deleteAll(final String userId) {
+    Preconditions.checkNotNull(userId);
+
+    final Map<String, Task> taskIdsToTasks = this.tasks.row(userId);
+    taskIdsToTasks.entrySet().stream().forEach(
+        e -> fileService.unsubscribe(e.getValue().getConfiguration().getInput(), e.getValue()));
+    taskIdsToTasks.clear();
   }
 }

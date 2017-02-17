@@ -24,6 +24,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 
+import cz.cuni.mff.xrg.odalic.files.FileService;
+import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.util.FixedSizeHashMap;
 import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
 import cz.cuni.mff.xrg.odalic.util.hash.PasswordHashingService;
@@ -71,6 +73,8 @@ public final class MemoryOnlyUserService implements UserService {
   private final PasswordHashingService passwordHashingService;
   private final MailService mailService;
   private final TokenService tokenService;
+  private final TaskService taskService;
+  private final FileService fileService;
 
   private final long signUpConfirmationWindowMinutes;
   private final long passwordSettingConfirmationWindowMinutes;
@@ -85,21 +89,25 @@ public final class MemoryOnlyUserService implements UserService {
   private final Map<String, User> userIdsToUsers;
   private final Multimap<String, UUID> userIdsToTokenIds;
 
-
   @Autowired
   public MemoryOnlyUserService(final PropertiesService propertiesService,
       final PasswordHashingService passwordHashingService, final MailService mailService,
-      final TokenService tokenService) {
+      final TokenService tokenService, final TaskService taskService,
+      final FileService fileService) {
     Preconditions.checkNotNull(propertiesService);
     Preconditions.checkNotNull(passwordHashingService);
     Preconditions.checkNotNull(mailService);
     Preconditions.checkNotNull(tokenService);
+    Preconditions.checkNotNull(taskService);
+    Preconditions.checkNotNull(fileService);
 
     final Properties properties = propertiesService.get();
 
     this.passwordHashingService = passwordHashingService;
     this.mailService = mailService;
     this.tokenService = tokenService;
+    this.taskService = taskService;
+    this.fileService = fileService;
 
     this.userIdsToUsers = new HashMap<>();
 
@@ -491,5 +499,15 @@ public final class MemoryOnlyUserService implements UserService {
   @Override
   public NavigableSet<User> getUsers() {
     return ImmutableSortedSet.copyOf(this.userIdsToUsers.values());
+  }
+
+  @Override
+  public void deleteUser(final String userId) {
+    this.taskService.deleteAll(userId);
+    this.fileService.deleteAll(userId);
+
+    this.userIdsToTokenIds.removeAll(userId);
+    final User removed = this.userIdsToUsers.remove(userId);
+    Preconditions.checkArgument(removed != null, "No such user exists!");
   }
 }

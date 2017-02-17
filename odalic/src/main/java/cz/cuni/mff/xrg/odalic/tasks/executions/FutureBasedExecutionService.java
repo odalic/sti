@@ -282,4 +282,12 @@ public final class FutureBasedExecutionService implements ExecutionService {
       return true;
     }
   }
+
+  @Override
+  public void unscheduleAll(final String userId) {
+    Preconditions.checkNotNull(userId);
+
+    this.userTaskIdsToResults.row(userId).entrySet().stream()
+        .forEach(e -> e.getValue().cancel(false));
+  }
 }

@@ -26,4 +26,11 @@ public interface TaskService {
   void create(Task task);
 
   void replace(Task task);
+
+  /**
+   * Deletes all tasks belonging to the user.
+   * 
+   * @param userId user ID
+   */
+  void deleteAll(String userId);
 }
