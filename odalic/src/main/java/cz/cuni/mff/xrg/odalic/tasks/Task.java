@@ -2,6 +2,7 @@ package cz.cuni.mff.xrg.odalic.tasks;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -24,6 +25,8 @@ import cz.cuni.mff.xrg.odalic.users.User;
 public final class Task implements Serializable {
 
   private static final long serialVersionUID = 1610346823333685091L;
+
+  public static final Pattern VALID_ID_PATTERN = Pattern.compile("[-a-zA-Z0-9_., ]+");
 
   private final User owner;
 
@@ -52,6 +55,9 @@ public final class Task implements Serializable {
     Preconditions.checkNotNull(created);
     Preconditions.checkNotNull(configuration);
 
+    Preconditions.checkArgument(!id.isEmpty(), "The task identifier is empty!");
+    Preconditions.checkArgument(VALID_ID_PATTERN.matcher(id).matches(),
+        "The task identifier contains illegal characters!");
     Preconditions.checkArgument(configuration.getInput().getOwner().equals(owner),
         "The task owner must also own the processed file!");
 

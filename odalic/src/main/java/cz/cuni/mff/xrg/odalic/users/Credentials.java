@@ -3,6 +3,8 @@ package cz.cuni.mff.xrg.odalic.users;
 import java.io.Serializable;
 
 import javax.annotation.concurrent.Immutable;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
@@ -35,8 +37,21 @@ public final class Credentials implements Serializable {
     Preconditions.checkNotNull(email);
     Preconditions.checkNotNull(password);
     
+    Preconditions.checkArgument(!email.isEmpty(), "The provided e-mail address is empty!");
+    checkEmailAddressFormat(email);
+
+    Preconditions.checkArgument(!password.isEmpty(), "The provided password is empty!");
+    
     this.email = email;
     this.password = password;
+  }
+  
+  private static void checkEmailAddressFormat(final String email) {
+    try {
+      new InternetAddress(email).validate();
+    } catch (final AddressException e) {
+      throw new IllegalArgumentException("Illegal format of the e-mail address!", e);
+    }
   }
 
   /**

@@ -134,7 +134,13 @@ public final class FilesResource {
 
     final URL location =
         cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, fileId);
-    final File file = new File(userService.getUser(userId), fileId, location, new Format(), true);
+    
+    final File file;
+    try {
+      file = new File(userService.getUser(userId), fileId, location, new Format(), true);
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
 
     if (!fileService.existsFileWithId(userId, fileId)) {
       fileService.create(file, fileInputStream);
@@ -176,8 +182,13 @@ public final class FilesResource {
 
     final Format usedFormat = getFormatOrDefault(fileInput);
 
-    final File file = new File(this.userService.getUser(userId), fileId, fileInput.getLocation(),
-        usedFormat, false);
+    final File file;
+    try {
+      file = new File(this.userService.getUser(userId), fileId, fileInput.getLocation(), usedFormat,
+          false);
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
 
     if (!fileService.existsFileWithId(userId, fileId)) {
       fileService.create(file);
@@ -235,9 +246,14 @@ public final class FilesResource {
       throw new BadRequestException("No file name provided!");
     }
 
-    final File file = new File(userService.getUser(userId), fileId,
-        cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, fileId), new Format(),
-        true);
+    final File file;
+    try {
+      file = new File(userService.getUser(userId), fileId,
+          cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, fileId), new Format(),
+          true);
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
 
     if (fileService.existsFileWithId(userId, fileId)) {
       throw new WebApplicationException(
