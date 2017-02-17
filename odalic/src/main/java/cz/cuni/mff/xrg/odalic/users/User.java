@@ -3,6 +3,8 @@ package cz.cuni.mff.xrg.odalic.users;
 import java.io.Serializable;
 
 import javax.annotation.concurrent.Immutable;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
@@ -39,9 +41,22 @@ public final class User implements Serializable, Comparable<User> {
     Preconditions.checkNotNull(passwordHash);
     Preconditions.checkNotNull(role);
 
+    Preconditions.checkArgument(!email.isEmpty(), "The provided e-mail address is empty!");
+    checkEmailAddressFormat(email);
+
+    Preconditions.checkArgument(!passwordHash.isEmpty(), "The provided password hash is empty!");
+
     this.email = email;
     this.passwordHash = passwordHash;
     this.role = role;
+  }
+
+  private static void checkEmailAddressFormat(final String email) {
+    try {
+      new InternetAddress(email).validate();
+    } catch (final AddressException e) {
+      throw new IllegalArgumentException("Illegal format of the e-mail address!", e);
+    }
   }
 
   /**

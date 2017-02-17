@@ -3,6 +3,7 @@ package cz.cuni.mff.xrg.odalic.files;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -23,6 +24,8 @@ import cz.cuni.mff.xrg.odalic.users.User;
 public final class File implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
+  
+  public static final Pattern VALID_ID_PATTERN = Pattern.compile("[-a-zA-Z0-9_., ]+");
 
   private final User owner;
 
@@ -54,6 +57,10 @@ public final class File implements Serializable {
     Preconditions.checkNotNull(location);
     Preconditions.checkNotNull(format);
 
+    Preconditions.checkArgument(!id.isEmpty(), "The file identifier is empty!");
+    Preconditions.checkArgument(VALID_ID_PATTERN.matcher(id).matches(),
+        "The file identifier contains illegal characters!");
+    
     this.owner = owner;
     this.id = id;
     this.uploaded = uploaded;

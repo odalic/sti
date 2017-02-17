@@ -204,7 +204,7 @@ public final class TasksResource {
           configurationValue.getFeedback(), configurationValue.getRowsLimit(),
           configurationValue.isStatistical());
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException(e);
+      throw new BadRequestException(e.getMessage(), e);
     }
 
     final Task task;
@@ -212,7 +212,7 @@ public final class TasksResource {
       task = new Task(userService.getUser(userId), taskId,
           taskValue.getDescription() == null ? "" : taskValue.getDescription(), configuration);
     } catch (final IllegalArgumentException e) {
-      throw new BadRequestException(e);
+      throw new BadRequestException(e.getMessage(), e);
     }
 
     final Task taskById = taskService.verifyTaskExistenceById(userId, taskId);
