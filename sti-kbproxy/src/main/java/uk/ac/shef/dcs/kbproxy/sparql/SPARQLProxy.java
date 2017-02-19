@@ -680,7 +680,7 @@ public class SPARQLProxy extends KBProxy {
         unescapedContent = unescapedContent.substring(0, bracket).trim();
       }
       if (StringUtils.toAlphaNumericWhitechar(unescapedContent).trim().length() == 0)
-        return new ArrayList<>();
+        return new ArrayList<Entity>();
 
       List<Entity> res = new ArrayList<>();
       List<Pair<String, String>> queryResult = new ArrayList<>();
