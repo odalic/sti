@@ -41,6 +41,8 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * This implementation of {@link AnnotationToResultAdapter} simply merges the annotations done with
  * different knowledge bases.
@@ -55,6 +57,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
 
   private EntitiesFactory entitiesFactory;
 
+  @Autowired
   public DefaultAnnotationToResultAdapter(final EntitiesFactory entitesFactory) {
     Preconditions.checkNotNull(entitesFactory);
 

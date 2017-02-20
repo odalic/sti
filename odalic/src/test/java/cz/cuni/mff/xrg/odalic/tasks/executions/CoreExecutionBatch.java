@@ -52,6 +52,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.PrefixMappingService;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.executions.InterpreterExecutionBatch.CoreSnapshot;
@@ -130,7 +131,7 @@ public class CoreExecutionBatch {
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
-      kbf = new DefaultKnowledgeBaseProxyFactory();
+      kbf = new DefaultKnowledgeBaseProxyFactory(null);
       semanticTableInterpreters = new TableMinerPlusFactory(kbf).getInterpreters();
     } catch (IOException e) {
       log.error("Error - TMP initialization process fails to load its configuration:", e);

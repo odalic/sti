@@ -40,6 +40,9 @@ public class SolrCache {
             server.commit();
     }
 
+    public EmbeddedSolrServer getServer() {
+        return server;
+    }
 
     public void commit() throws IOException, SolrServerException {
         server.commit();
