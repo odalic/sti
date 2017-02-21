@@ -32,12 +32,14 @@ import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.DefaultResultToAnnotatedTableAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.executions.DefaultKnowledgeBaseProxyFactory;
 import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import cz.cuni.mff.xrg.odalic.users.Role;
 import cz.cuni.mff.xrg.odalic.users.User;
+import cz.cuni.mff.xrg.odalic.util.configuration.DefaultPropertiesService;
 import uk.ac.shef.dcs.sti.STIException;
 
 /**
@@ -67,7 +69,7 @@ public class CSVExportTest {
     try {
       System.setProperty("cz.cuni.mff.xrg.odalic.sti", Paths.get("").toAbsolutePath()
           .resolveSibling("config").resolve("sti.properties").toString());
-      kbf = new DefaultKnowledgeBaseProxyFactory(null);
+      kbf = new DefaultKnowledgeBaseProxyFactory(new TurtleConfigurablePrefixMappingService(new DefaultPropertiesService()));
     } catch (STIException | IOException e) {
       log.info("KnowledgeBaseProxyFactory is not available, so test was stopped: " + e.getMessage());
       return;

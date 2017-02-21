@@ -121,16 +121,25 @@ public class CoreExecutionBatch {
 
     // Configuration settings
     Configuration configuration = new Configuration(file, ImmutableSet.of(new KnowledgeBase("DBpedia"),
-            new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")),
-            new KnowledgeBase("DBpedia"), createFeedback(true), rowsLimit, false);
+        new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")),
+        new KnowledgeBase("DBpedia"), createFeedback(true), rowsLimit, false);
 
     // input Table creation
     final Table table = new DefaultInputToTableAdapter().toTable(parsingResult.getInput());
 
+    // PrefixMappingService
+    TurtleConfigurablePrefixMappingService pms;
+    try {
+      pms = new TurtleConfigurablePrefixMappingService(new DefaultPropertiesService());
+    } catch (IOException e) {
+      log.error("Error - prefix mapping service loading:", e);
+      return null;
+    }
+
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
-      kbf = new DefaultKnowledgeBaseProxyFactory(null);
+      kbf = new DefaultKnowledgeBaseProxyFactory(pms);
       semanticTableInterpreters = new TableMinerPlusFactory(kbf).getInterpreters();
     } catch (IOException e) {
       log.error("Error - TMP initialization process fails to load its configuration:", e);
@@ -161,15 +170,6 @@ public class CoreExecutionBatch {
       }
     } catch (STIException e) {
       log.error("Error - running TableMinerPlus algorithm:", e);
-      return null;
-    }
-
-    // PrefixMappingService
-    TurtleConfigurablePrefixMappingService pms;
-    try {
-      pms = new TurtleConfigurablePrefixMappingService(new DefaultPropertiesService());
-    } catch (IOException e) {
-      log.error("Error - prefix mapping service loading:", e);
       return null;
     }
 
@@ -255,7 +255,7 @@ public class CoreExecutionBatch {
       dataCubeComponents.add(createDCC(7, ComponentTypeValue.MEASURE,
           "http://odalic.eu/schema/livebirths", "Livebirths"));
       dataCubeComponents.add(createDCC(8, ComponentTypeValue.MEASURE,
-          "http://odalic.eu/schema/year", "Year"));
+          "http://dbpedia.org/ontology/year", "Year"));
 
       /**/
       // statistical data feedback example

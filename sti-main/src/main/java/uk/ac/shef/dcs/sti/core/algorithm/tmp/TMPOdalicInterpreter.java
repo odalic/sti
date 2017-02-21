@@ -86,9 +86,9 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       // set column processing annotations:
       // 1) when the column is ignored, set processing type to IGNORED
       // 2) when the column's most frequent data type is Named entity,
-      // set processing type to NAMEDENTITY
+      // set processing type to NAMED_ENTITY
       // 3) otherwise (i.e. the column does not contain Named entity as the most frequent data type),
-      // set processing type to NONNAMEDENTITY and in this case
+      // set processing type to NON_NAMED_ENTITY and in this case
       // we will not disambiguate (and so classify) them, except for
       // the user defined constraints
       Set<Ambiguity> newAmbiguities = new HashSet<>(constraints.getAmbiguities());
