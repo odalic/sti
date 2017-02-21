@@ -86,7 +86,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
         // aboutUrl is not a column link, so we create just one triple statement, not a triple pattern
         try {
           tripleStatements.add(factory.createStatement(createIRI(column.getAboutUrl()),
-              createIRI(column.getPropertyUrl()), createIRIorLiteral(column.getValueUrl())));
+              createIRI(column.getPropertyUrl()), createIRIorLiteral(column.getValueUrl(), column.getDataType())));
         } catch (NullPointerException | IllegalArgumentException e) {
           log.error("No triple statement is produced because of " + e);
         }
@@ -103,7 +103,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
         // it is object property
         // so far we suppose that valueUrl contains either the URL itself or pattern in the form {columnName}, meaning that URL is taken from that column.
         if (StringUtils.isEmpty(column.getSeparator())) {
-          tp = new ObjectPropertyTriplePattern(column.getAboutUrl(), createIRI(column.getPropertyUrl()), column.getValueUrl());
+          tp = new ObjectPropertyTriplePattern(column.getAboutUrl(), createIRI(column.getPropertyUrl()), column.getValueUrl(), column.getDataType());
         }
         else {
           // if separator is not empty, valueUrl contains list of values
@@ -223,7 +223,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
               continue;
             }
             try {
-              objects.add(createIRIorLiteral(row.get(objectPosition)));
+              objects.add(createIRIorLiteral(row.get(objectPosition), otp.getDataType()));
             } catch (NullPointerException | IllegalArgumentException e) {
               log.error("No triple is produced because of " + e);
             }
@@ -310,10 +310,15 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
     }
   }
   
-  private Value createIRIorLiteral(String object) {
+  private Value createIRIorLiteral(String object, String dataType) {
     if (notValidIRI(object)) {
       log.info("Not a valid (absolute) IRI: " + object + " , literal will be created.");
-      return factory.createLiteral(object);
+      if (dataType == null || notValidIRI(dataType)) {
+        return factory.createLiteral(object);
+      }
+      else {
+        return factory.createLiteral(object, createIRI(dataType));
+      }
     }
     else {
       return createIRI(object);
