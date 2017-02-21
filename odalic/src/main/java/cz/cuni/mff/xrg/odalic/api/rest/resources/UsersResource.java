@@ -5,6 +5,7 @@ import java.util.NavigableSet;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -26,6 +27,9 @@ import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
 import cz.cuni.mff.xrg.odalic.api.rest.values.PasswordChangeValue;
+import cz.cuni.mff.xrg.odalic.files.FileService;
+import cz.cuni.mff.xrg.odalic.tasks.TaskService;
+import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
 import cz.cuni.mff.xrg.odalic.users.Credentials;
 import cz.cuni.mff.xrg.odalic.users.Role;
 import cz.cuni.mff.xrg.odalic.users.Token;
@@ -42,15 +46,25 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 public final class UsersResource {
 
   private final UserService userService;
+  private final ExecutionService executionService;
+  private final TaskService taskService;
+  private final FileService fileService;
 
   @Context
   private UriInfo uriInfo;
 
   @Autowired
-  public UsersResource(final UserService userService) {
+  public UsersResource(final UserService userService, final ExecutionService executionService,
+      final TaskService taskService, final FileService fileService) {
     Preconditions.checkNotNull(userService);
+    Preconditions.checkNotNull(executionService);
+    Preconditions.checkNotNull(taskService);
+    Preconditions.checkNotNull(fileService);
 
     this.userService = userService;
+    this.executionService = executionService;
+    this.taskService = taskService;
+    this.fileService = fileService;
   }
 
   @POST
@@ -68,7 +82,7 @@ public final class UsersResource {
         .of("An account created. Please activate via the code sent to the provided e-mail before the first use.")
         .toResponse(Response.Status.OK, uriInfo);
   }
-  
+
   @POST
   @Path("users/confirmations")
   @Produces(MediaType.APPLICATION_JSON)
@@ -82,34 +96,52 @@ public final class UsersResource {
 
     return Message.of("Successfully activated!").toResponse(Response.Status.OK, uriInfo);
   }
-  
+
   @POST
   @Path("users/authentications")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response authenticate(final Credentials credentials) {
     final User user;
-    try {  
+    try {
       user = userService.authenticate(credentials);
     } catch (final Exception e) {
       throw new BadRequestException(e.getMessage(), e);
     }
-    
+
     final Token token = userService.issueToken(user);
-    
+
     return Reply.data(Response.Status.OK, token, uriInfo).toResponse();
   }
-  
+
   @GET
   @Path("users")
   @Secured({Role.ADMINISTRATOR})
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUsers() {
     final NavigableSet<User> users = this.userService.getUsers();
-    
+
     return Reply.data(Status.OK, users, uriInfo).toResponse();
   }
-  
+
+  @DELETE
+  @Path("users/{userId}")
+  @Secured({Role.ADMINISTRATOR})
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deleteUser(final @PathParam("userId") String userId) {
+    try {
+      // In reverse order to initialization
+      this.executionService.unscheduleAll(userId);
+      this.taskService.deleteAll(userId);
+      this.fileService.deleteAll(userId);
+      this.userService.deleteUser(userId);
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
+
+    return Message.of("The user has been deleted.").toResponse(Status.OK, uriInfo);
+  }
+
   @GET
   @Path("users/{userId}")
   @Secured({Role.ADMINISTRATOR, Role.USER})
@@ -121,7 +153,7 @@ public final class UsersResource {
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }
-    
+
     return Reply.data(Status.OK, user, uriInfo).toResponse();
   }
 
@@ -133,7 +165,8 @@ public final class UsersResource {
       final PasswordChangeValue passwordChangeValue) throws MalformedURLException {
     final User user;
     try {
-      user = userService.authenticate(new Credentials(userId, passwordChangeValue.getOldPassword()));
+      user =
+          userService.authenticate(new Credentials(userId, passwordChangeValue.getOldPassword()));
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }

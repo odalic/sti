@@ -27,8 +27,9 @@ public class FreebaseSearch extends KBProxy {
 
   public FreebaseSearch(Properties properties,
                         Boolean fuzzyKeywords,
-                        String cachesPath) throws IOException {
-    super(null, fuzzyKeywords, cachesPath);
+                        String cachesPath,
+                        Map<String, String> prefixToUriMap) throws IOException {
+    super(null, fuzzyKeywords, cachesPath, prefixToUriMap);
     searcher = new FreebaseQueryProxy(properties);
     resultFilter = new FreebaseSearchResultFilter(properties.getProperty(KB_SEARCH_RESULT_STOP_LIST));
   }

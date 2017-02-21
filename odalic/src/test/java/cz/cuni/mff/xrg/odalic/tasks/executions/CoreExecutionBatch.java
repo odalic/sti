@@ -130,7 +130,7 @@ public class CoreExecutionBatch {
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
-      kbf = new DefaultKnowledgeBaseProxyFactory();
+      kbf = new DefaultKnowledgeBaseProxyFactory(null);
       semanticTableInterpreters = new TableMinerPlusFactory(kbf).getInterpreters();
     } catch (IOException e) {
       log.error("Error - TMP initialization process fails to load its configuration:", e);

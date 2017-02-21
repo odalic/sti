@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks;
 
+import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
 
@@ -179,5 +180,15 @@ public final class DbTaskService implements TaskService {
     return ImmutableSortedSet.copyOf(
         (Task first, Task second) -> -1 * first.getCreated().compareTo(second.getCreated()),
         tasks.prefixSubMap(new Object[] {userId}).values());
+  }
+
+  @Override
+  public void deleteAll(String userId) {
+    Preconditions.checkNotNull(userId);
+
+    final Map<Object[], Task> taskIdsToTasks = this.tasks.prefixSubMap(new Object[] { userId });
+    taskIdsToTasks.entrySet().stream().forEach(
+        e -> fileService.unsubscribe(e.getValue().getConfiguration().getInput(), e.getValue()));
+    taskIdsToTasks.clear();
   }
 }

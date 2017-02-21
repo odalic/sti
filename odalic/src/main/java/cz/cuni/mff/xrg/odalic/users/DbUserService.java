@@ -24,6 +24,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSortedSet;
+
+import cz.cuni.mff.xrg.odalic.files.FileService;
+import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
 import cz.cuni.mff.xrg.odalic.util.hash.PasswordHashingService;
 import cz.cuni.mff.xrg.odalic.util.mail.MailService;
@@ -71,6 +74,8 @@ public final class DbUserService implements UserService {
   private final PasswordHashingService passwordHashingService;
   private final MailService mailService;
   private final TokenService tokenService;
+  private final TaskService taskService;
+  private final FileService fileService;
 
   private final long signUpConfirmationWindowMinutes;
   private final long passwordSettingConfirmationWindowMinutes;
@@ -95,22 +100,26 @@ public final class DbUserService implements UserService {
    */
   private final BTreeMap<Object[], Boolean> userIdsToTokenIds;
 
-
   @SuppressWarnings("unchecked")
   @Autowired
   public DbUserService(final PropertiesService propertiesService,
       final PasswordHashingService passwordHashingService, final MailService mailService,
-      final TokenService tokenService, final DbService dbService) {
+      final TokenService tokenService, final DbService dbService, final TaskService taskService,
+      final FileService fileService) {
     Preconditions.checkNotNull(propertiesService);
     Preconditions.checkNotNull(passwordHashingService);
     Preconditions.checkNotNull(mailService);
     Preconditions.checkNotNull(tokenService);
+    Preconditions.checkNotNull(taskService);
+    Preconditions.checkNotNull(fileService);
 
     final Properties properties = propertiesService.get();
 
     this.passwordHashingService = passwordHashingService;
     this.mailService = mailService;
     this.tokenService = tokenService;
+    this.taskService = taskService;
+    this.fileService = fileService;
 
     this.db = dbService.getDb();
 
@@ -118,7 +127,7 @@ public final class DbUserService implements UserService {
         db.hashMap("userIdsToUsers", Serializer.STRING, Serializer.JAVA).createOrOpen();
 
     final int maximumCodesKept = getMaxCodesKept(properties);
-    
+
     this.tokenIdsToUnconfirmed =
         db.hashMap("tokenIdsToUnconfirmed", Serializer.UUID, Serializer.JAVA)
             .expireMaxSize(maximumCodesKept).expireAfterCreate().expireAfterGet()
@@ -130,7 +139,8 @@ public final class DbUserService implements UserService {
 
     this.sessionMaximumHours = getSessionMaximumHours(properties);
     this.signUpConfirmationWindowMinutes = getSignUpConfirmationWindowMinutes(properties);
-    this.passwordSettingConfirmationWindowMinutes = getPasswordSettingConfirmationWindowsMinutes(properties);
+    this.passwordSettingConfirmationWindowMinutes =
+        getPasswordSettingConfirmationWindowsMinutes(properties);
 
     this.signUpConfirmationUrlFormat = getSignUpConfirmationUrlFormat(properties);
     this.passwordSettingConfirmationUrlFormat = getPasswordSettingConfirmationUrlFormat(properties);
@@ -138,40 +148,40 @@ public final class DbUserService implements UserService {
     this.userIdsToTokenIds = db.treeMap("userIdsToTokenIds",
         new SerializerArrayTuple(Serializer.STRING, Serializer.UUID), Serializer.BOOLEAN)
         .createOrOpen();
-    
+
     createAdminIfNotPresent(properties);
   }
 
   private static String getPasswordSettingConfirmationUrlFormat(final Properties properties) {
     final String passwordSettingConfirmationUrlFormat =
         properties.getProperty(PASSWORD_SETTING_CONFIRMATION_URL_FORMAT_PROPERTY_KEY);
-    
+
     Preconditions.checkArgument(passwordSettingConfirmationUrlFormat != null,
         String.format("Missing key %s in the configuration!",
             PASSWORD_SETTING_CONFIRMATION_URL_FORMAT_PROPERTY_KEY));
-    
+
     try {
       formatUrlWithToken(passwordSettingConfirmationUrlFormat, new Token("dummy"));
     } catch (final IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid password setting confirmation URL format set!");
     }
-    
+
     return passwordSettingConfirmationUrlFormat;
   }
 
   private static String getSignUpConfirmationUrlFormat(final Properties properties) {
     final String signUpConfirmationUrlFormat =
         properties.getProperty(SIGNUP_CONFIRMATION_URL_FORMAT_PROPERTY_KEY);
-    
+
     Preconditions.checkArgument(signUpConfirmationUrlFormat != null, String.format(
         "Missing key %s in the configuration!", SIGNUP_CONFIRMATION_URL_FORMAT_PROPERTY_KEY));
-    
+
     try {
       formatUrlWithToken(signUpConfirmationUrlFormat, new Token("dummy"));
     } catch (final IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid sign-up confirmation URL format set!");
     }
-    
+
     return signUpConfirmationUrlFormat;
   }
 
@@ -198,7 +208,7 @@ public final class DbUserService implements UserService {
     Preconditions.checkArgument(signUpConfirmationWindowMinutesString != null, String.format(
         "Missing key %s in the configuration!", SIGNUP_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY));
     try {
-     return Long.parseLong(signUpConfirmationWindowMinutesString);
+      return Long.parseLong(signUpConfirmationWindowMinutesString);
     } catch (final NumberFormatException e) {
       throw new IllegalArgumentException("Invalid sign-up confirmation windows duration value!", e);
     }
@@ -209,7 +219,7 @@ public final class DbUserService implements UserService {
         properties.getProperty(SESSION_MAXIMUM_HOURS_PROPERTY_KEY);
     Preconditions.checkArgument(sessionMaximumHoursString != null,
         String.format("Missing key %s in the configuration!", SESSION_MAXIMUM_HOURS_PROPERTY_KEY));
-    
+
     try {
       return Long.parseLong(sessionMaximumHoursString);
     } catch (final NumberFormatException e) {
@@ -220,7 +230,7 @@ public final class DbUserService implements UserService {
   private static int getMaxCodesKept(final Properties properties) {
     final String maximumCodesKeptString = properties.getProperty(MAXIMUM_CODES_KEPT_PROPERTY_KEY);
     Preconditions.checkNotNull(maximumCodesKeptString);
-    
+
     try {
       return Integer.parseInt(maximumCodesKeptString);
     } catch (final NumberFormatException e) {
@@ -245,7 +255,7 @@ public final class DbUserService implements UserService {
     }
 
     doCreate(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
-    
+
     db.commit();
   }
 
@@ -266,7 +276,7 @@ public final class DbUserService implements UserService {
     final String message = generateSignUpMessage(token);
 
     this.mailService.send(ODALIC_SIGN_UP_CONFIRMATION_SUBJECT, message, new Address[] {address});
-    
+
     db.commit();
   }
 
@@ -322,9 +332,9 @@ public final class DbUserService implements UserService {
   public void create(final Credentials credentials, final Role role) {
     Preconditions.checkNotNull(credentials);
     Preconditions.checkNotNull(role);
-        
+
     doCreate(credentials, role);
-    
+
     db.commit();
   }
 
@@ -380,19 +390,19 @@ public final class DbUserService implements UserService {
       db.rollback();
       throw e;
     }
-    
+
     db.commit();
   }
 
   private Credentials matchCredentials(final DecodedToken decodedToken) {
     final UUID tokenId = decodedToken.getId();
-    
+
     final Credentials credentials = this.tokenIdsToUnconfirmed.remove(tokenId);
     if (credentials == null) {
       logger.warn("Unknown sign-up confirmation token {}!", decodedToken);
       throw new IllegalArgumentException("Invalid confirmation code!");
     }
-    
+
     return credentials;
   }
 
@@ -411,7 +421,7 @@ public final class DbUserService implements UserService {
     this.userIdsToTokenIds.put(new Object[] {userId, tokenId}, true);
 
     db.commit();
-    
+
     return token;
   }
 
@@ -439,7 +449,7 @@ public final class DbUserService implements UserService {
 
     this.mailService.send(ODALIC_PASSWORD_CHANGING_CONFIRMATION_SUBJECT,
         generatePasswordChangingMessage(token), new Address[] {address});
-    
+
     db.commit();
   }
 
@@ -487,7 +497,7 @@ public final class DbUserService implements UserService {
     }
 
     invalidateTokens(replaced);
-    
+
     db.commit();
   }
 
@@ -507,7 +517,7 @@ public final class DbUserService implements UserService {
       logger.warn("Invalid password setting confirmation token {}!", decodedToken);
       throw new IllegalArgumentException("Invalid confirmation code!");
     }
-    
+
     return user;
   }
 
@@ -580,5 +590,15 @@ public final class DbUserService implements UserService {
   @Override
   public NavigableSet<User> getUsers() {
     return ImmutableSortedSet.copyOf(this.userIdsToUsers.values());
+  }
+
+  @Override
+  public void deleteUser(final String userId) {
+    this.taskService.deleteAll(userId);
+    this.fileService.deleteAll(userId);
+
+    this.userIdsToTokenIds.prefixSubMap(new Object[] {userId}).clear();
+    final User removed = this.userIdsToUsers.remove(userId);
+    Preconditions.checkArgument(removed != null, "No such user exists!");
   }
 }

@@ -1,5 +1,7 @@
 package uk.ac.shef.dcs.kbproxy;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
@@ -33,7 +35,7 @@ import java.util.stream.Collectors;
 public abstract class KBProxy {
 
   private static final String CACHE_VERSION_ID = "9274dff6-c606-4f5d-8bb5-d528c764e655";
-  private static final String CACHE_VERSION = "1.0.15";
+  private static final String CACHE_VERSION = "1.0.18";
 
   protected SolrCache cacheEntity;
   protected SolrCache cacheConcept;
@@ -60,6 +62,7 @@ public abstract class KBProxy {
   protected final Logger log = LoggerFactory.getLogger(getClass());
 
   protected KBDefinition kbDefinition;
+  protected Map<String, String> prefixToUriMap;
 
   /**
    * @param kbDefinition    the knowledge base definition
@@ -72,11 +75,13 @@ public abstract class KBProxy {
    */
   public KBProxy(KBDefinition kbDefinition,
                  Boolean fuzzyKeywords,
-                 String cachesBasePath) throws IOException {
+                 String cachesBasePath,
+                 Map<String, String> prefixToUriMap) throws IOException {
 
     this.kbDefinition = kbDefinition;
     this.cachesBasePath = cachesBasePath;
     this.fuzzyKeywords = fuzzyKeywords;
+    this.prefixToUriMap = ImmutableMap.copyOf(prefixToUriMap);
   }
 
   public void initializeCaches() throws KBProxyException {

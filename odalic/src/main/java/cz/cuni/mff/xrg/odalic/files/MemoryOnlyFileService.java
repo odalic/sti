@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
@@ -152,7 +153,7 @@ public final class MemoryOnlyFileService implements FileService {
   public void replace(File file) {
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
-    
+
     final File previous = this.files.get(userId, fileId);
     if (previous != null && !previous.getLocation().equals(file.getLocation())) {
       this.data.remove(userId, previous.getLocation());
@@ -171,7 +172,7 @@ public final class MemoryOnlyFileService implements FileService {
   @Override
   public void replace(File file, InputStream fileInputStream) throws IOException {
     Preconditions.checkArgument(file.isCached());
-    
+
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
 
@@ -267,5 +268,16 @@ public final class MemoryOnlyFileService implements FileService {
         previousfile.getUploaded(), previousfile.getLocation(), format, previousfile.isCached());
 
     this.files.put(userId, fileId, newFile);
+  }
+
+  @Override
+  public void deleteAll(final String userId) {
+    Preconditions.checkNotNull(userId);
+
+    final Map<String, File> fileIdsToFiles = this.files.row(userId);
+    fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
+    fileIdsToFiles.clear();
+
+    this.data.row(userId).clear();
   }
 }

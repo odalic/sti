@@ -106,4 +106,11 @@ public interface FileService {
    * @param format the new format
    */
   void setFormatForFileId(String userId, String fileId, Format format);
+
+  /**
+   * Deletes all files belonging to the user.
+   * 
+   * @param userId user ID
+   */
+  void deleteAll(String userId);
 }

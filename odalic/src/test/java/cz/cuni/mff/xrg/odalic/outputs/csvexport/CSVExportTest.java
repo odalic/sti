@@ -67,7 +67,7 @@ public class CSVExportTest {
     try {
       System.setProperty("cz.cuni.mff.xrg.odalic.sti", Paths.get("").toAbsolutePath()
           .resolveSibling("config").resolve("sti.properties").toString());
-      kbf = new DefaultKnowledgeBaseProxyFactory();
+      kbf = new DefaultKnowledgeBaseProxyFactory(null);
     } catch (STIException | IOException e) {
       log.info("KnowledgeBaseProxyFactory is not available, so test was stopped: " + e.getMessage());
       return;
