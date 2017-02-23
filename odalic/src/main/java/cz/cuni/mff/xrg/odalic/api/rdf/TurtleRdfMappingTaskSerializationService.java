@@ -39,7 +39,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  */
 public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializationService {
 
-  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX = "serializedTask/v1";
+  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX = "SerializedTask/V2";
 
   private final RDFMapper rdfMapper;
   private final UserService userService;

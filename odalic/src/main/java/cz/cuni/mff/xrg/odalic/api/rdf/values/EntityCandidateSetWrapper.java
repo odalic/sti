@@ -34,7 +34,7 @@ public class EntityCandidateSetWrapper {
   /**
    * @return the value
    */
-  @RdfProperty("http://odalic.eu/internal/EntityCandidateSetWrapper/Value")
+  @RdfProperty("http://odalic.eu/internal/EntityCandidateSetWrapper/value")
   public Set<EntityCandidateValue> getValue() {
     return value;
   }

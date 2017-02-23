@@ -39,7 +39,7 @@ public final class HeaderAnnotationValue {
   /**
    * @return the candidates
    */
-  @RdfProperty("http://odalic.eu/internal/HeaderAnnotation/Candidates")
+  @RdfProperty("http://odalic.eu/internal/HeaderAnnotation/candidates")
   public Set<KnowledgeBaseEntityCandidateNavigableSetEntry> getCandidates() {
     return candidates;
   }
@@ -55,7 +55,7 @@ public final class HeaderAnnotationValue {
   /**
    * @return the chosen
    */
-  @RdfProperty("http://odalic.eu/internal/HeaderAnnotation/Chosen")
+  @RdfProperty("http://odalic.eu/internal/HeaderAnnotation/chosen")
   public Set<KnowledgeBaseEntityCandidateSetEntry> getChosen() {
     return chosen;
   }

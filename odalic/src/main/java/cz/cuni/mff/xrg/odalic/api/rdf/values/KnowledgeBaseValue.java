@@ -29,7 +29,7 @@ public final class KnowledgeBaseValue {
   /**
    * @return the name
    */
-  @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/Name", datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/name", datatype = "http://www.w3.org/2001/XMLSchema#string")
   @RdfId
   @Nullable
   public String getName() {

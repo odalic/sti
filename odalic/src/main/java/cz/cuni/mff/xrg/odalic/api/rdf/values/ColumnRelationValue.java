@@ -34,7 +34,7 @@ public final class ColumnRelationValue implements Serializable {
   /**
    * @return the position
    */
-  @RdfProperty("http://odalic.eu/internal/ColumnRelation/Position")
+  @RdfProperty("http://odalic.eu/internal/ColumnRelation/position")
   @Nullable
   public ColumnRelationPositionValue getPosition() {
     return position;
@@ -52,7 +52,7 @@ public final class ColumnRelationValue implements Serializable {
   /**
    * @return the annotation
    */
-  @RdfProperty("http://odalic.eu/internal/ColumnRelation/Annotation")
+  @RdfProperty("http://odalic.eu/internal/ColumnRelation/annotation")
   @Nullable
   public ColumnRelationAnnotationValue getAnnotation() {
     return annotation;

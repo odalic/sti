@@ -39,7 +39,7 @@ public final class TaskValue implements Serializable, Identifiable {
    * @return the description
    */
   @Nullable
-  @RdfProperty(value = "http://odalic.eu/internal/Task/Description", datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @RdfProperty(value = "http://odalic.eu/internal/Task/description", datatype = "http://www.w3.org/2001/XMLSchema#string")
   public String getDescription() {
     return description;
   }
@@ -56,7 +56,7 @@ public final class TaskValue implements Serializable, Identifiable {
   /**
    * @return the configuration
    */
-  @RdfProperty("http://odalic.eu/internal/Task/Configuration")
+  @RdfProperty("http://odalic.eu/internal/Task/configuration")
   @Nullable
   public ConfigurationValue getConfiguration() {
     return configuration;

@@ -34,7 +34,7 @@ public final class PrefixValue {
   /**
    * @return the substitution
    */
-  @RdfProperty(value = "http://odalic.eu/internal/Prefix/With", datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @RdfProperty(value = "http://odalic.eu/internal/Prefix/with", datatype = "http://www.w3.org/2001/XMLSchema#string")
   @Nullable
   public String getWith() {
     return with;
@@ -52,7 +52,7 @@ public final class PrefixValue {
   /**
    * @return the substituted text
    */
-  @RdfProperty(value = "http://odalic.eu/internal/Prefix/What", datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @RdfProperty(value = "http://odalic.eu/internal/Prefix/what", datatype = "http://www.w3.org/2001/XMLSchema#string")
   @Nullable
   public String getWhat() {
     return what;

@@ -35,7 +35,7 @@ public final class ClassificationValue implements Serializable {
   /**
    * @return the position
    */
-  @RdfProperty("http://odalic.eu/internal/Classification/Position")
+  @RdfProperty("http://odalic.eu/internal/Classification/position")
   @Nullable
   public ColumnPositionValue getPosition() {
     return position;
@@ -53,7 +53,7 @@ public final class ClassificationValue implements Serializable {
   /**
    * @return the annotation
    */
-  @RdfProperty("http://odalic.eu/internal/Classification/Annotation")
+  @RdfProperty("http://odalic.eu/internal/Classification/annotation")
   @Nullable
   public HeaderAnnotationValue getAnnotation() {
     return annotation;

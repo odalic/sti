@@ -40,7 +40,7 @@ public final class CellAnnotationValue {
   /**
    * @return the candidates
    */
-  @RdfProperty("http://odalic.eu/internal/CellAnnotation/Candidates")
+  @RdfProperty("http://odalic.eu/internal/CellAnnotation/candidates")
   public Set<KnowledgeBaseEntityCandidateNavigableSetEntry> getCandidates() {
     return candidates;
   }
@@ -56,7 +56,7 @@ public final class CellAnnotationValue {
   /**
    * @return the chosen
    */
-  @RdfProperty("http://odalic.eu/internal/CellAnnotation/Chosen")
+  @RdfProperty("http://odalic.eu/internal/CellAnnotation/chosen")
   public Set<KnowledgeBaseEntityCandidateSetEntry> getChosen() {
     return chosen;
   }

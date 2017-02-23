@@ -42,7 +42,7 @@ public final class EntityValue implements Serializable {
   /**
    * @return the resource ID
    */
-  @RdfProperty(value = "http://odalic.eu/internal/Entity/Resource", datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @RdfProperty(value = "http://odalic.eu/internal/Entity/resource", datatype = "http://www.w3.org/2001/XMLSchema#string")
   @Nullable
   public String getResource() {
     return resource;
@@ -60,7 +60,7 @@ public final class EntityValue implements Serializable {
   /**
    * @return the label
    */
-  @RdfProperty(value = "http://odalic.eu/internal/Entity/Label", datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @RdfProperty(value = "http://odalic.eu/internal/Entity/label", datatype = "http://www.w3.org/2001/XMLSchema#string")
   @Nullable
   public String getLabel() {
     return label;
@@ -78,7 +78,7 @@ public final class EntityValue implements Serializable {
   /**
    * @return the prefixed form of the resource
    */
-  @RdfProperty(value = "http://odalic.eu/internal/Entity/Prefixed", datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @RdfProperty(value = "http://odalic.eu/internal/Entity/prefixed", datatype = "http://www.w3.org/2001/XMLSchema#string")
   @Nullable
   public String getPrefixed() {
     return prefixed;
@@ -94,7 +94,7 @@ public final class EntityValue implements Serializable {
   /**
    * @return the prefix
    */
-  @RdfProperty("http://odalic.eu/internal/Entity/Prefix")
+  @RdfProperty("http://odalic.eu/internal/Entity/prefix")
   @Nullable
   public PrefixValue getPrefix() {
     return prefix;
@@ -110,7 +110,7 @@ public final class EntityValue implements Serializable {
   /**
    * @return the tail
    */
-  @RdfProperty(value = "http://odalic.eu/internal/Entity/Tail", datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @RdfProperty(value = "http://odalic.eu/internal/Entity/tail", datatype = "http://www.w3.org/2001/XMLSchema#string")
   @Nullable
   public String getTail() {
     return tail;

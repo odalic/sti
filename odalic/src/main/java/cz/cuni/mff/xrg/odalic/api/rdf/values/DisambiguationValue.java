@@ -34,7 +34,7 @@ public final class DisambiguationValue implements Serializable {
   /**
    * @return the position
    */
-  @RdfProperty("http://odalic.eu/internal/Disambiguation/Position")
+  @RdfProperty("http://odalic.eu/internal/Disambiguation/position")
   @Nullable
   public CellPositionValue getPosition() {
     return position;
@@ -52,7 +52,7 @@ public final class DisambiguationValue implements Serializable {
   /**
    * @return the annotation
    */
-  @RdfProperty("http://odalic.eu/internal/Disambiguation/Annotation")
+  @RdfProperty("http://odalic.eu/internal/Disambiguation/annotation")
   @Nullable
   public CellAnnotationValue getAnnotation() {
     return annotation;

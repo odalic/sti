@@ -18,7 +18,7 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
  *
  */
 @XmlRootElement(name = "configuration")
-@RdfsClass("http://odalic.eu/internal/Configuration")
+@RdfsClass("http://odalic.eu/internal/configuration")
 public final class ConfigurationValue implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
@@ -52,7 +52,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  @RdfProperty("http://odalic.eu/internal/Configuration/Input")
+  @RdfProperty("http://odalic.eu/internal/Configuration/input")
   public String getInput() {
     return input;
   }
@@ -71,7 +71,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  @RdfProperty("http://odalic.eu/internal/Configuration/Feedback")
+  @RdfProperty("http://odalic.eu/internal/Configuration/feedback")
   public FeedbackValue getFeedback() {
     return feedback;
   }
@@ -90,7 +90,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  @RdfProperty("http://odalic.eu/internal/Configuration/UsedBase")
+  @RdfProperty("http://odalic.eu/internal/Configuration/usedBase")
   public List<KnowledgeBaseValue> getUsedBases() {
     return usedBases;
   }
@@ -109,7 +109,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  @RdfProperty("http://odalic.eu/internal/Configuration/PrimaryBase")
+  @RdfProperty("http://odalic.eu/internal/Configuration/primaryBase")
   public KnowledgeBaseValue getPrimaryBase() {
     return primaryBase;
   }
@@ -128,7 +128,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  @RdfProperty(value = "http://odalic.eu/internal/Configuration/RowsLimit",
+  @RdfProperty(value = "http://odalic.eu/internal/Configuration/rowsLimit",
       datatype = "http://www.w3.org/2001/XMLSchema#positiveInteger")
   public Integer getRowsLimit() {
     return rowsLimit;
@@ -148,7 +148,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  @RdfProperty(value = "http://odalic.eu/internal/Configuration/Statistical",
+  @RdfProperty(value = "http://odalic.eu/internal/Configuration/statistical",
       datatype = "http://www.w3.org/2001/XMLSchema#boolean")
   public Boolean isStatistical() {
     return statistical;

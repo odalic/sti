@@ -24,7 +24,7 @@ public class KnowledgeBaseEntityCandidateNavigableSetEntry {
   /**
    * @return the base
    */
-  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseEntityCandidateNavigableSetEntry/Base")
+  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseEntityCandidateNavigableSetEntry/base")
   public KnowledgeBaseValue getBase() {
     return base;
   }
@@ -41,7 +41,7 @@ public class KnowledgeBaseEntityCandidateNavigableSetEntry {
   /**
    * @return the set
    */
-  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseEntityCandidateNavigableSetEntry/Set")
+  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseEntityCandidateNavigableSetEntry/set")
   public EntityCandidateNavigableSetWrapper getSet() {
     return set;
   }

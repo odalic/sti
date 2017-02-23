@@ -24,7 +24,7 @@ public class KnowledgeBaseColumnPositionEntry {
   /**
    * @return the base
    */
-  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseColumnPositionEntry/Base")
+  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseColumnPositionEntry/base")
   public KnowledgeBaseValue getBase() {
     return base;
   }
@@ -41,7 +41,7 @@ public class KnowledgeBaseColumnPositionEntry {
   /**
    * @return the value
    */
-  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseColumnPositionEntry/Value")
+  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseColumnPositionEntry/value")
   public ColumnPositionValue getValue() {
     return value;
   }
