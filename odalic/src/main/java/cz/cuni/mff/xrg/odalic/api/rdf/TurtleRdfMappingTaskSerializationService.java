@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
+import java.util.UUID;
 
 import javax.ws.rs.BadRequestException;
 
@@ -39,7 +40,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  */
 public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializationService {
 
-  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX = "SerializedTask/V2";
+  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V2/%s";
 
   private final RDFMapper rdfMapper;
   private final UserService userService;
@@ -103,7 +104,9 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
 
   private static IRI getRootSubjectIri(final URI baseUri) {
     return SimpleValueFactory.getInstance()
-        .createIRI(baseUri.resolve(VERSIONED_SERIALIZED_TASK_URI_SUFFIX).toString());
+        .createIRI(baseUri
+            .resolve(String.format(VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT, UUID.randomUUID()))
+            .toString());
   }
 
   private static TaskValue toProxy(final Task task) {
@@ -126,7 +129,7 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
     final Model model = parse(taskStream);
 
     final TaskValue taskValue = fromModel(baseUri, model);
-    
+
     final ConfigurationValue configurationValue = taskValue.getConfiguration();
     if (configurationValue == null) {
       throw new BadRequestException("No configuration provided!");
