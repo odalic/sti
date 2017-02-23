@@ -13,14 +13,21 @@ public class ObjectPropertyTriplePattern extends TriplePattern {
 
     private String objectPattern;
 
-    public ObjectPropertyTriplePattern(String subjectPattern, IRI predicate, String objectPattern) {
+    private String dataType;
+
+    public ObjectPropertyTriplePattern(String subjectPattern, IRI predicate, String objectPattern, String dataType) {
         super(subjectPattern, predicate);
         Preconditions.checkNotNull(objectPattern);
         this.objectPattern = objectPattern;
+        this.dataType = dataType;
     }
 
     public String getObjectPattern() {
         return objectPattern;
+    }
+
+    public String getDataType() {
+        return dataType;
     }
 
 }

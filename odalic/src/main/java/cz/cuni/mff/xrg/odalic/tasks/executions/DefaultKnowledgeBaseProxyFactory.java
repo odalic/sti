@@ -36,12 +36,15 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
   private Lock initLock = new ReentrantLock();
   private boolean isInitialized = false;
 
+  private final PrefixMappingService prefixService;
   private final String propertyFilePath;
   private Properties properties;
 
   public DefaultKnowledgeBaseProxyFactory(PrefixMappingService prefixService, String propertyFilePath) throws STIException, IOException {
+    Preconditions.checkNotNull(prefixService);
     Preconditions.checkNotNull(propertyFilePath);
 
+    this.prefixService = prefixService;
     this.propertyFilePath = propertyFilePath;
     
     initComponents(prefixService);
@@ -111,5 +114,10 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing KBProxy cache.", e);
     }
+  }
+
+  @Override
+  public PrefixMappingService getPrefixService() {
+    return prefixService;
   }
 }
