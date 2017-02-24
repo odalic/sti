@@ -60,10 +60,9 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
   @Autowired
   public TurtleRdfMappingTaskSerializationService(final UserService userService,
       final FileService fileService) {
-    this(
-        RDFMapper.builder().set(MappingOptions.IGNORE_CARDINALITY_VIOLATIONS, false)
-            .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false).build(),
-        userService, fileService);
+    this(RDFMapper.builder().set(MappingOptions.IGNORE_CARDINALITY_VIOLATIONS, false)
+        .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false)
+        .namespace("", "http://odalic.eu/internal/Node/").build(), userService, fileService);
   }
 
   /*
