@@ -43,17 +43,17 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
 
   private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V2/%s";
 
-  private final RDFMapper rdfMapper;
+  private final RDFMapper.Builder rdfMapperBuilder;
   private final UserService userService;
   private final FileService fileService;
 
-  public TurtleRdfMappingTaskSerializationService(final RDFMapper rdfMapper,
+  public TurtleRdfMappingTaskSerializationService(final RDFMapper.Builder rdfMapperBuilder,
       final UserService userService, final FileService fileService) {
-    Preconditions.checkNotNull(rdfMapper);
+    Preconditions.checkNotNull(rdfMapperBuilder);
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(fileService);
 
-    this.rdfMapper = rdfMapper;
+    this.rdfMapperBuilder = rdfMapperBuilder;
     this.userService = userService;
     this.fileService = fileService;
   }
@@ -62,8 +62,7 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
   public TurtleRdfMappingTaskSerializationService(final UserService userService,
       final FileService fileService) {
     this(RDFMapper.builder().set(MappingOptions.IGNORE_CARDINALITY_VIOLATIONS, false)
-        .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false)
-        .namespace("", "http://odalic.eu/internal/Node/").build(), userService, fileService);
+        .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false), userService, fileService);
   }
 
   /*
@@ -82,12 +81,16 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
 
     setRootSubjectIdentifier(baseUri, taskValue);
 
-    final Model model = toModel(taskValue);
+    final Model model = toModel(taskValue, baseUri);
     return format(model);
   }
 
-  private Model toModel(final TaskValue proxy) {
-    return rdfMapper.writeValue(proxy);
+  private Model toModel(final TaskValue proxy, final URI baseUri) {
+    return buildMapper(baseUri).writeValue(proxy);
+  }
+
+  private RDFMapper buildMapper(final URI baseUri) {
+    return rdfMapperBuilder.namespace("", baseUri.resolve("SerializedTask/Node/").toString()).build();
   }
 
   private static String format(final Model model) {
@@ -165,17 +168,17 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
   }
 
   private TaskValue fromModel(final URI baseUri, final Model model) {
-    return rdfMapper.readValue(model, TaskValue.class, getRootResource(model));
+    return buildMapper(baseUri).readValue(model, TaskValue.class, getRootResource(model));
   }
 
   private static Resource getRootResource(final Model model) {
-    final Model rootModel = model.filter((Resource) null, (IRI) null, getRootSubject());
+    final Model rootModel = model.filter((Resource) null, (IRI) null, getRootObject());
     Preconditions.checkArgument(!rootModel.isEmpty(), "Missing root resource!");
-    
+
     return rootModel.iterator().next().getSubject();
   }
 
-  private static IRI getRootSubject() {
+  private static IRI getRootObject() {
     return SimpleValueFactory.getInstance().createIRI("http://odalic.eu/internal/Task");
   }
 
