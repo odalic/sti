@@ -26,7 +26,7 @@ public class KnowledgeBaseComponentTypeValueEntry {
   /**
    * @return the base
    */
-  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseConponentTypeValueEntry/Base")
+  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseConponentTypeValueEntry/base")
   public KnowledgeBaseValue getBase() {
     return base;
   }
@@ -43,7 +43,7 @@ public class KnowledgeBaseComponentTypeValueEntry {
   /**
    * @return the value
    */
-  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseConponentTypeValueEntry/Value")
+  @RdfProperty("http://odalic.eu/internal/KnowledgeBaseConponentTypeValueEntry/value")
   public ComponentTypeValue getValue() {
     return value;
   }

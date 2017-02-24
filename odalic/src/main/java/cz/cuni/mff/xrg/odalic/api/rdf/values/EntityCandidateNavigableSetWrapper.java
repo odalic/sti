@@ -36,7 +36,7 @@ public class EntityCandidateNavigableSetWrapper {
   /**
    * @return the value
    */
-  @RdfProperty("http://odalic.eu/internal/EntityCandidateNavigableSetWrapper/Value")
+  @RdfProperty("http://odalic.eu/internal/EntityCandidateNavigableSetWrapper/value")
   @Nullable
   public NavigableSet<EntityCandidateValue> getValue() {
     return value;

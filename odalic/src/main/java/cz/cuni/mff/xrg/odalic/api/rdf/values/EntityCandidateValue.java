@@ -36,7 +36,7 @@ public final class EntityCandidateValue implements Serializable, Comparable<Enti
   /**
    * @return the entity
    */
-  @RdfProperty("http://odalic.eu/internal/EntityCandidate/Entity")
+  @RdfProperty("http://odalic.eu/internal/EntityCandidate/entity")
   @Nullable
   public EntityValue getEntity() {
     return entity;
@@ -54,7 +54,7 @@ public final class EntityCandidateValue implements Serializable, Comparable<Enti
   /**
    * @return the score
    */
-  @RdfProperty("http://odalic.eu/internal/EntityCandidate/Score")
+  @RdfProperty("http://odalic.eu/internal/EntityCandidate/score")
   @Nullable
   public ScoreValue getScore() {
     return score;

@@ -42,7 +42,7 @@ public final class StatisticalAnnotationValue {
   /**
    * @return the component
    */
-  @RdfProperty("http://odalic.eu/internal/StatisticalAnnotation/Component")
+  @RdfProperty("http://odalic.eu/internal/StatisticalAnnotation/component")
   public Set<KnowledgeBaseComponentTypeValueEntry> getComponent() {
     return component;
   }
@@ -57,7 +57,7 @@ public final class StatisticalAnnotationValue {
   /**
    * @return the predicate
    */
-  @RdfProperty("http://odalic.eu/internal/StatisticalAnnotation/Predicate")
+  @RdfProperty("http://odalic.eu/internal/StatisticalAnnotation/predicate")
   public Set<KnowledgeBaseEntityCandidateSetEntry> getPredicate() {
     return predicate;
   }

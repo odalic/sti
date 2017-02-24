@@ -34,7 +34,7 @@ public class DataCubeComponentValue implements Serializable {
   /**
    * @return the position
    */
-  @RdfProperty("http://odalic.eu/internal/DataCubeComponent/Position")
+  @RdfProperty("http://odalic.eu/internal/DataCubeComponent/position")
   @Nullable
   public ColumnPositionValue getPosition() {
     return position;
@@ -52,7 +52,7 @@ public class DataCubeComponentValue implements Serializable {
   /**
    * @return the annotation
    */
-  @RdfProperty("http://odalic.eu/internal/DataCubeComponent/Annotation")
+  @RdfProperty("http://odalic.eu/internal/DataCubeComponent/annotation")
   @Nullable
   public StatisticalAnnotationValue getAnnotation() {
     return annotation;

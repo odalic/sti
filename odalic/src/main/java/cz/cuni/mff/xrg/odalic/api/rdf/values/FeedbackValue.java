@@ -75,7 +75,7 @@ public final class FeedbackValue implements Serializable {
   /**
    * @return the subject column positions
    */
-  @RdfProperty("http://odalic.eu/internal/Feedback/SubjectColumnPositions")
+  @RdfProperty("http://odalic.eu/internal/Feedback/subjectColumnPositions")
   public Set<KnowledgeBaseColumnPositionEntry> getSubjectColumnPositions() {
     return subjectColumnPositions;
   }
@@ -93,7 +93,7 @@ public final class FeedbackValue implements Serializable {
   /**
    * @return the column ignores
    */
-  @RdfProperty("http://odalic.eu/internal/Feedback/ColumnIgnore")
+  @RdfProperty("http://odalic.eu/internal/Feedback/columnIgnore")
   public Set<ColumnIgnoreValue> getColumnIgnores() {
     return columnIgnores;
   }
@@ -110,7 +110,7 @@ public final class FeedbackValue implements Serializable {
   /**
    * @return the column ambiguities
    */
-  @RdfProperty("http://odalic.eu/internal/Feedback/ColumnAmbiguity")
+  @RdfProperty("http://odalic.eu/internal/Feedback/columnAmbiguity")
   public Set<ColumnAmbiguityValue> getColumnAmbiguities() {
     return columnAmbiguities;
   }
@@ -127,7 +127,7 @@ public final class FeedbackValue implements Serializable {
   /**
    * @return the classifications
    */
-  @RdfProperty("http://odalic.eu/internal/Feedback/Classification")
+  @RdfProperty("http://odalic.eu/internal/Feedback/classification")
   public Set<ClassificationValue> getClassifications() {
     return classifications;
   }
@@ -144,7 +144,7 @@ public final class FeedbackValue implements Serializable {
   /**
    * @return the column relations
    */
-  @RdfProperty("http://odalic.eu/internal/Feedback/ColumnRelation")
+  @RdfProperty("http://odalic.eu/internal/Feedback/columnRelation")
   public Set<ColumnRelationValue> getColumnRelations() {
     return columnRelations;
   }
@@ -161,7 +161,7 @@ public final class FeedbackValue implements Serializable {
   /**
    * @return the disambiguations
    */
-  @RdfProperty("http://odalic.eu/internal/Feedback/Disambiguation")
+  @RdfProperty("http://odalic.eu/internal/Feedback/disambiguation")
   public Set<DisambiguationValue> getDisambiguations() {
     return disambiguations;
   }
@@ -178,7 +178,7 @@ public final class FeedbackValue implements Serializable {
   /**
    * @return the ambiguities
    */
-  @RdfProperty("http://odalic.eu/internal/Feedback/Ambiguity")
+  @RdfProperty("http://odalic.eu/internal/Feedback/ambiguity")
   public Set<AmbiguityValue> getAmbiguities() {
     return ambiguities;
   }
@@ -195,7 +195,7 @@ public final class FeedbackValue implements Serializable {
   /**
    * @return the dataCubeComponents
    */
-  @RdfProperty("http://odalic.eu/internal/Feedback/DataCubeComponent")
+  @RdfProperty("http://odalic.eu/internal/Feedback/dataCubeComponent")
   public Set<DataCubeComponentValue> getDataCubeComponents() {
     return dataCubeComponents;
   }

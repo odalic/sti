@@ -39,7 +39,7 @@ public final class ColumnRelationAnnotationValue {
   /**
    * @return the candidates
    */
-  @RdfProperty("http://odalic.eu/internal/ColumnRelationAnnotation/Candidates")
+  @RdfProperty("http://odalic.eu/internal/ColumnRelationAnnotation/candidates")
   public Set<KnowledgeBaseEntityCandidateNavigableSetEntry> getCandidates() {
     return candidates;
   }
@@ -55,7 +55,7 @@ public final class ColumnRelationAnnotationValue {
   /**
    * @return the chosen
    */
-  @RdfProperty("http://odalic.eu/internal/ColumnRelationAnnotation/Chosen")
+  @RdfProperty("http://odalic.eu/internal/ColumnRelationAnnotation/chosen")
   public Set<KnowledgeBaseEntityCandidateSetEntry> getChosen() {
     return chosen;
   }
