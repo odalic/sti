@@ -40,6 +40,7 @@ public final class Configuration extends ResourceConfig {
     register(JacksonJaxbJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
     
     // Resources registration
+    register(WelcomeResource.class);
     register(FilesResource.class);
     register(TasksResource.class);
     register(ConfigurationResource.class);
