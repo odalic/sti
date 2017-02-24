@@ -13,6 +13,7 @@ import javax.ws.rs.BadRequestException;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
 import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
@@ -127,7 +128,12 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
       final URI baseUri) throws IOException {
     final Model model = parse(taskStream);
 
-    final TaskValue taskValue = fromModel(baseUri, model);
+    final TaskValue taskValue;
+    try {
+      taskValue = fromModel(baseUri, model);
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
 
     final ConfigurationValue configurationValue = taskValue.getConfiguration();
     if (configurationValue == null) {
@@ -159,7 +165,18 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
   }
 
   private TaskValue fromModel(final URI baseUri, final Model model) {
-    return rdfMapper.readValue(model, TaskValue.class, getRootSubjectIri(baseUri));
+    return rdfMapper.readValue(model, TaskValue.class, getRootResource(model));
+  }
+
+  private static Resource getRootResource(final Model model) {
+    final Model rootModel = model.filter((Resource) null, (IRI) null, getRootSubject());
+    Preconditions.checkArgument(!rootModel.isEmpty(), "Missing root resource!");
+    
+    return rootModel.iterator().next().getSubject();
+  }
+
+  private static IRI getRootSubject() {
+    return SimpleValueFactory.getInstance().createIRI("http://odalic.eu/internal/Task");
   }
 
   private static Configuration initializeConfiguration(final ConfigurationValue configurationValue,
