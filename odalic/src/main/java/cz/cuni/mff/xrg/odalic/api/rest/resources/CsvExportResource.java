@@ -27,7 +27,7 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 /**
  * Definition of the resource providing a complementary part of the result (extended CSV data) to
  * the annotations represented by {@link AnnotatedTable}.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -39,26 +39,36 @@ public final class CsvExportResource {
 
   @Context
   private SecurityContext securityContext;
-  
+
   private final CsvExportService csvExportService;
 
   @Autowired
-  public CsvExportResource(CsvExportService csvExportService) {
+  public CsvExportResource(final CsvExportService csvExportService) {
     Preconditions.checkNotNull(csvExportService);
 
     this.csvExportService = csvExportService;
   }
 
   @GET
+  @Path("tasks/{taskId}/result/csv-export")
+  @Produces(TEXT_CSV_MEDIA_TYPE)
+  @Secured({Role.ADMINISTRATOR, Role.USER})
+  public Response getCsvExport(final @PathParam("taskId") String taskId)
+      throws InterruptedException, IOException {
+    return getCsvExport(this.securityContext.getUserPrincipal().getName(), taskId);
+  }
+
+  @GET
   @Path("users/{userId}/tasks/{taskId}/result/csv-export")
   @Produces(TEXT_CSV_MEDIA_TYPE)
   @Secured({Role.ADMINISTRATOR, Role.USER})
-  public Response getCsvExport(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId) throws InterruptedException, IOException {
+  public Response getCsvExport(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId) throws InterruptedException, IOException {
     Security.checkAuthorization(this.securityContext, userId);
-    
+
     final String csvContent;
     try {
-      csvContent = csvExportService.getExtendedCsvForTaskId(userId, taskId);
+      csvContent = this.csvExportService.getExtendedCsvForTaskId(userId, taskId);
     } catch (final CancellationException | ExecutionException e) {
       throw new NotFoundException(
           "The underlying CSV is not available, because the processing did not finish. Check the result first!");
@@ -67,13 +77,5 @@ public final class CsvExportResource {
     }
 
     return Response.ok(csvContent).build();
-  }
-  
-  @GET
-  @Path("tasks/{taskId}/result/csv-export")
-  @Produces(TEXT_CSV_MEDIA_TYPE)
-  @Secured({Role.ADMINISTRATOR, Role.USER})
-  public Response getCsvExport(final @PathParam("taskId") String taskId) throws InterruptedException, IOException {
-    return getCsvExport(securityContext.getUserPrincipal().getName(), taskId);
   }
 }

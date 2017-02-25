@@ -1,7 +1,12 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
 import java.util.NavigableSet;
-import javax.ws.rs.*;
+
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -20,7 +25,7 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 
 /**
  * Knowledge bases resource definition.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -34,7 +39,7 @@ public final class BasesResource {
   private UriInfo uriInfo;
 
   @Autowired
-  public BasesResource(BasesService basesService) {
+  public BasesResource(final BasesService basesService) {
     Preconditions.checkNotNull(basesService);
 
     this.basesService = basesService;
@@ -44,14 +49,14 @@ public final class BasesResource {
   @Produces({MediaType.APPLICATION_JSON})
   @Secured({Role.ADMINISTRATOR, Role.USER})
   public Response getBases(
-      @QueryParam(value = "modifiable") @DefaultValue("false") boolean modifiable) {
+      @QueryParam(value = "modifiable") @DefaultValue("false") final boolean modifiable) {
     final NavigableSet<KnowledgeBase> bases;
     if (modifiable) {
-      bases = basesService.getInsertSupportingBases();
+      bases = this.basesService.getInsertSupportingBases();
     } else {
-      bases = basesService.getBases();
+      bases = this.basesService.getBases();
     }
 
-    return Reply.data(Response.Status.OK, bases, uriInfo).toResponse();
+    return Reply.data(Response.Status.OK, bases, this.uriInfo).toResponse();
   }
 }

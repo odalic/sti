@@ -13,7 +13,7 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 
 /**
  * Domain class {@link ColumnAmbiguity} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -23,10 +23,10 @@ public final class ColumnAmbiguityValue implements Serializable {
   private static final long serialVersionUID = -9087389821835847372L;
 
   private ColumnPosition position;
-  
+
   public ColumnAmbiguityValue() {}
-  
-  public ColumnAmbiguityValue(ColumnAmbiguity adaptee) {
+
+  public ColumnAmbiguityValue(final ColumnAmbiguity adaptee) {
     this.position = adaptee.getPosition();
   }
 
@@ -36,23 +36,25 @@ public final class ColumnAmbiguityValue implements Serializable {
   @XmlElement
   @Nullable
   public ColumnPosition getPosition() {
-    return position;
+    return this.position;
   }
 
   /**
    * @param position the position to set
    */
-  public void setPosition(ColumnPosition position) {
+  public void setPosition(final ColumnPosition position) {
     Preconditions.checkNotNull(position);
-    
+
     this.position = position;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "ColumnAmbiguityValue [position=" + position + "]";
+    return "ColumnAmbiguityValue [position=" + this.position + "]";
   }
 }

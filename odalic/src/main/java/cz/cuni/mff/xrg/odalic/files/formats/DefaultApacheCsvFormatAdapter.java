@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.files.formats;
 
@@ -9,7 +9,7 @@ import org.apache.commons.csv.CSVFormat;
 
 /**
  * Default {@link ApacheCsvFormatAdapter} implementation.
- * 
+ *
  * @author Jan Váňa
  * @author Václav Brodec
  *
@@ -19,13 +19,13 @@ public final class DefaultApacheCsvFormatAdapter implements ApacheCsvFormatAdapt
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * cz.cuni.mff.xrg.odalic.files.formats.ApacheCsvFormatAdapter#toApacheCsvFormat(cz.cuni.mff.xrg.
    * odalic.files.formats.Format)
    */
   @Override
-  public CSVFormat toApacheCsvFormat(Format applicationFormat) {
+  public CSVFormat toApacheCsvFormat(final Format applicationFormat) {
     CSVFormat format = CSVFormat.newFormat(applicationFormat.getDelimiter())
         .withAllowMissingColumnNames().withIgnoreEmptyLines(applicationFormat.isEmptyLinesIgnored())
         .withRecordSeparator(applicationFormat.getLineSeparator());

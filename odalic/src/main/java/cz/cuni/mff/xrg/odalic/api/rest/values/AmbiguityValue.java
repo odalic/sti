@@ -13,7 +13,7 @@ import cz.cuni.mff.xrg.odalic.positions.CellPosition;
 
 /**
  * Domain class {@link Ambiguity} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -23,10 +23,10 @@ public final class AmbiguityValue implements Serializable {
   private static final long serialVersionUID = -9087389821835847372L;
 
   private CellPosition position;
-  
+
   public AmbiguityValue() {}
-  
-  public AmbiguityValue(Ambiguity adaptee) {
+
+  public AmbiguityValue(final Ambiguity adaptee) {
     this.position = adaptee.getPosition();
   }
 
@@ -36,23 +36,25 @@ public final class AmbiguityValue implements Serializable {
   @XmlElement
   @Nullable
   public CellPosition getPosition() {
-    return position;
+    return this.position;
   }
 
   /**
    * @param position the position to set
    */
-  public void setPosition(CellPosition position) {
+  public void setPosition(final CellPosition position) {
     Preconditions.checkNotNull(position);
-    
+
     this.position = position;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "AmbiguityValue [position=" + position + "]";
+    return "AmbiguityValue [position=" + this.position + "]";
   }
 }

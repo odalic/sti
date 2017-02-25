@@ -9,12 +9,12 @@ import cz.cuni.mff.xrg.odalic.users.User;
 public final class UserAdapter extends XmlAdapter<UserValue, User> {
 
   @Override
-  public UserValue marshal(User bound) throws Exception {
+  public UserValue marshal(final User bound) throws Exception {
     return new UserValue(bound);
   }
 
   @Override
-  public User unmarshal(UserValue value) throws Exception {
+  public User unmarshal(final UserValue value) throws Exception {
     throw new UnsupportedOperationException();
   }
 }

@@ -13,7 +13,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 
 /**
  * A custom nested map JSON serializer.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -21,8 +21,9 @@ public final class ColumnPositionToColumnRelationAnnotationMapSerializer
     extends JsonSerializer<Map<ColumnPosition, ColumnRelationAnnotation>> {
 
   @Override
-  public void serialize(Map<ColumnPosition, ColumnRelationAnnotation> value, JsonGenerator jgen,
-      SerializerProvider provider) throws IOException, JsonProcessingException {
+  public void serialize(final Map<ColumnPosition, ColumnRelationAnnotation> value,
+      final JsonGenerator jgen, final SerializerProvider provider)
+      throws IOException, JsonProcessingException {
     jgen.writeStartObject();
     for (final Map.Entry<ColumnPosition, ColumnRelationAnnotation> entry : value.entrySet()) {
       jgen.writeObjectField(Integer.toString(entry.getKey().getIndex()), entry.getValue());

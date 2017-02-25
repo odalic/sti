@@ -20,12 +20,12 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
  * Model of the proposal for a new property in the primary base, that the user provides to the
  * server.
  * </p>
- * 
+ *
  * <p>
  * Every property used in the user feedback must already exist in any of the present bases, if it
  * does not, the user is encouraged to enter it first as a proposal.
  * </p>
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -50,7 +50,7 @@ public final class PropertyProposal implements Serializable {
   public PropertyProposal(final String label, final Set<? extends String> alternativeLabels,
       final URI suffix, final Entity superProperty, final String domain, final String range) {
     Preconditions.checkNotNull(label);
-    Preconditions.checkArgument(suffix == null || !suffix.isAbsolute(),
+    Preconditions.checkArgument((suffix == null) || !suffix.isAbsolute(),
         "The suffix must be a relative URI!");
 
     this.label = label;
@@ -61,69 +61,13 @@ public final class PropertyProposal implements Serializable {
     this.range = range;
   }
 
-  /**
-   * @return the label
-   */
-  public String getLabel() {
-    return label;
-  }
-
-  /**
-   * @return the alternative labels
-   */
-  public NavigableSet<String> getAlternativeLabels() {
-    return alternativeLabels;
-  }
-
-  /**
-   * @return the URI suffix
-   */
-  public URI getSuffix() {
-    return suffix;
-  }
-
-  /**
-   * @return the super property
-   */
-  @Nullable
-  public Entity getSuperProperty() {
-    return superProperty;
-  }
-
-  /**
-   * @return the domain
-   */
-  public String getDomain() {
-    return domain;
-  }
-
-  /**
-   * @return the range
-   */
-  public String getRange() {
-    return range;
-  }
-
   /*
    * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((suffix == null) ? 0 : suffix.hashCode());
-    return result;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -133,26 +77,82 @@ public final class PropertyProposal implements Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    PropertyProposal other = (PropertyProposal) obj;
-    if (suffix == null) {
+    final PropertyProposal other = (PropertyProposal) obj;
+    if (this.suffix == null) {
       if (other.suffix != null) {
         return false;
       }
-    } else if (!suffix.equals(other.suffix)) {
+    } else if (!this.suffix.equals(other.suffix)) {
       return false;
     }
     return true;
   }
 
+  /**
+   * @return the alternative labels
+   */
+  public NavigableSet<String> getAlternativeLabels() {
+    return this.alternativeLabels;
+  }
+
+  /**
+   * @return the domain
+   */
+  public String getDomain() {
+    return this.domain;
+  }
+
+  /**
+   * @return the label
+   */
+  public String getLabel() {
+    return this.label;
+  }
+
+  /**
+   * @return the range
+   */
+  public String getRange() {
+    return this.range;
+  }
+
+  /**
+   * @return the URI suffix
+   */
+  public URI getSuffix() {
+    return this.suffix;
+  }
+
+  /**
+   * @return the super property
+   */
+  @Nullable
+  public Entity getSuperProperty() {
+    return this.superProperty;
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + ((this.suffix == null) ? 0 : this.suffix.hashCode());
+    return result;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "PropertyProposal [label=" + label + ", alternativeLabels=" + alternativeLabels
-        + ", suffix=" + suffix + ", superProperty=" + superProperty + ", domain=" + domain
-        + ", range=" + range + "]";
+    return "PropertyProposal [label=" + this.label + ", alternativeLabels=" + this.alternativeLabels
+        + ", suffix=" + this.suffix + ", superProperty=" + this.superProperty + ", domain="
+        + this.domain + ", range=" + this.range + "]";
   }
 }

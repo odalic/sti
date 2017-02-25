@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.files;
 
@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
@@ -23,7 +24,7 @@ import cz.cuni.mff.xrg.odalic.tasks.Task;
 
 /**
  * This {@link FileService} implementation provides no persistence.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -45,8 +46,16 @@ public final class MemoryOnlyFileService implements FileService {
    */
   private final Table<String, String, Set<String>> utilizingTasks;
 
-  private MemoryOnlyFileService(Table<String, String, File> files, Table<String, URL, byte[]> data,
-      Table<String, String, Set<String>> utilizingTasks) {
+  /**
+   * Creates the file service with no registered files and data.
+   */
+  public MemoryOnlyFileService() {
+    this(HashBasedTable.create(), HashBasedTable.create(), HashBasedTable.create());
+  }
+
+  private MemoryOnlyFileService(final Table<String, String, File> files,
+      final Table<String, URL, byte[]> data,
+      final Table<String, String, Set<String>> utilizingTasks) {
     Preconditions.checkNotNull(files);
     Preconditions.checkNotNull(data);
     Preconditions.checkNotNull(utilizingTasks);
@@ -56,20 +65,13 @@ public final class MemoryOnlyFileService implements FileService {
     this.utilizingTasks = utilizingTasks;
   }
 
-  /**
-   * Creates the file service with no registered files and data.
-   */
-  public MemoryOnlyFileService() {
-    this(HashBasedTable.create(), HashBasedTable.create(), HashBasedTable.create());
-  }
-
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.files.FileService#create(cz.cuni.mff.xrg.odalic.files.File)
    */
   @Override
-  public void create(File file) {
+  public void create(final File file) {
     Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
 
     replace(file);
@@ -77,24 +79,35 @@ public final class MemoryOnlyFileService implements FileService {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.files.FileService#create(cz.cuni.mff.xrg.odalic.files.File,
    * java.io.InputStream)
    */
   @Override
-  public void create(File file, InputStream fileInputStream) throws IOException {
+  public void create(final File file, final InputStream fileInputStream) throws IOException {
     Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
 
     replace(file, fileInputStream);
   }
 
+  @Override
+  public void deleteAll(final String userId) {
+    Preconditions.checkNotNull(userId);
+
+    final Map<String, File> fileIdsToFiles = this.files.row(userId);
+    fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
+    fileIdsToFiles.clear();
+
+    this.data.row(userId).clear();
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.files.FileService#deleteById(java.lang.String)
    */
   @Override
-  public void deleteById(String userId, String fileId) {
+  public void deleteById(final String userId, final String fileId) {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(fileId);
 
@@ -106,25 +119,26 @@ public final class MemoryOnlyFileService implements FileService {
     this.data.remove(userId, file.getLocation());
   }
 
-  private void checkUtilization(final String userId, final String fileId)
-      throws IllegalStateException {
-    final Set<String> utilizingTaskIds = utilizingTasks.get(userId, fileId);
-    if (utilizingTaskIds == null) {
-      return;
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.files.FileService#existsFileWithId(java.lang.String)
+   */
+  @Override
+  public boolean existsFileWithId(final String userId, final String fileId) {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(fileId);
 
-    final String jointUtilizingTasksIds = String.join(", ", utilizingTaskIds);
-    Preconditions.checkState(utilizingTaskIds.isEmpty(),
-        String.format("Some tasks (%s) still refer to this file!", jointUtilizingTasksIds));
+    return this.files.contains(userId, fileId);
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.files.FileService#getById(java.lang.String)
    */
   @Override
-  public File getById(String userId, String fileId) {
+  public File getById(final String userId, final String fileId) {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(fileId);
 
@@ -134,67 +148,8 @@ public final class MemoryOnlyFileService implements FileService {
     return file;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#getFiles()
-   */
   @Override
-  public List<File> getFiles(String userId) {
-    return ImmutableList.copyOf(this.files.row(userId).values());
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#replace(cz.cuni.mff.xrg.odalic.files.File)
-   */
-  @Override
-  public void replace(File file) {
-    final String userId = file.getOwner().getEmail();
-    final String fileId = file.getId();
-
-    final File previous = this.files.get(userId, fileId);
-    if (previous != null && !previous.getLocation().equals(file.getLocation())) {
-      this.data.remove(userId, previous.getLocation());
-    }
-
-    this.files.put(userId, fileId, file);
-  }
-
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#replace(cz.cuni.mff.xrg.odalic.files.File,
-   * java.io.InputStream)
-   */
-  @Override
-  public void replace(File file, InputStream fileInputStream) throws IOException {
-    Preconditions.checkArgument(file.isCached());
-
-    final String userId = file.getOwner().getEmail();
-    final String fileId = file.getId();
-
-    this.files.put(userId, fileId, file);
-    this.data.put(userId, file.getLocation(), IOUtils.toByteArray(fileInputStream));
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#existsFileWithId(java.lang.String)
-   */
-  @Override
-  public boolean existsFileWithId(String userId, String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
-
-    return this.files.contains(userId, fileId);
-  }
-
-  @Override
-  public String getDataById(String userId, String fileId) throws IOException {
+  public String getDataById(final String userId, final String fileId) throws IOException {
     final File file = getById(userId, fileId);
 
     final byte[] data = this.data.get(userId, file.getLocation());
@@ -207,54 +162,67 @@ public final class MemoryOnlyFileService implements FileService {
     }
   }
 
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.files.FileService#getFiles()
+   */
   @Override
-  public void subscribe(final File file, final Task task) {
-    final String userId = file.getOwner().getEmail();
-    final String fileId = file.getId();
-
-    Preconditions.checkArgument(files.get(userId, fileId).equals(file),
-        "The file is not registered!");
-
-    final Set<String> tasks = utilizingTasks.get(userId, fileId);
-
-    final boolean inserted;
-    if (tasks == null) {
-      utilizingTasks.put(userId, fileId, Sets.newHashSet(task.getId()));
-      inserted = true;
-    } else {
-      inserted = tasks.add(task.getId());
-    }
-
-    Preconditions.checkArgument(inserted, "The task has already been subcscribed to the file!");
-  }
-
-  @Override
-  public void unsubscribe(final File file, final Task task) {
-    final String userId = file.getOwner().getEmail();
-    final String fileId = file.getId();
-
-    Preconditions.checkArgument(files.get(userId, fileId).equals(file),
-        "The file is not registered!");
-
-    final Set<String> tasks = utilizingTasks.get(userId, fileId);
-
-    final boolean removed;
-    if (tasks == null) {
-      removed = false;
-    } else {
-      removed = tasks.remove(task.getId());
-
-      if (tasks.isEmpty()) {
-        utilizingTasks.remove(userId, fileId);
-      }
-    }
-
-    Preconditions.checkArgument(removed, "The task is not subcscribed to the file!");
+  public List<File> getFiles(final String userId) {
+    return ImmutableList.copyOf(this.files.row(userId).values());
   }
 
   @Override
   public Format getFormatForFileId(final String userId, final String fileId) {
     return getById(userId, fileId).getFormat();
+  }
+
+  private void checkUtilization(final String userId, final String fileId)
+      throws IllegalStateException {
+    final Set<String> utilizingTaskIds = this.utilizingTasks.get(userId, fileId);
+    if (utilizingTaskIds == null) {
+      return;
+    }
+
+    final String jointUtilizingTasksIds = String.join(", ", utilizingTaskIds);
+    Preconditions.checkState(utilizingTaskIds.isEmpty(),
+        String.format("Some tasks (%s) still refer to this file!", jointUtilizingTasksIds));
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.files.FileService#replace(cz.cuni.mff.xrg.odalic.files.File)
+   */
+  @Override
+  public void replace(final File file) {
+    final String userId = file.getOwner().getEmail();
+    final String fileId = file.getId();
+
+    final File previous = this.files.get(userId, fileId);
+    if ((previous != null) && !previous.getLocation().equals(file.getLocation())) {
+      this.data.remove(userId, previous.getLocation());
+    }
+
+    this.files.put(userId, fileId, file);
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.files.FileService#replace(cz.cuni.mff.xrg.odalic.files.File,
+   * java.io.InputStream)
+   */
+  @Override
+  public void replace(final File file, final InputStream fileInputStream) throws IOException {
+    Preconditions.checkArgument(file.isCached());
+
+    final String userId = file.getOwner().getEmail();
+    final String fileId = file.getId();
+
+    this.files.put(userId, fileId, file);
+    this.data.put(userId, file.getLocation(), IOUtils.toByteArray(fileInputStream));
   }
 
   @Override
@@ -271,13 +239,47 @@ public final class MemoryOnlyFileService implements FileService {
   }
 
   @Override
-  public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+  public void subscribe(final File file, final Task task) {
+    final String userId = file.getOwner().getEmail();
+    final String fileId = file.getId();
 
-    final Map<String, File> fileIdsToFiles = this.files.row(userId);
-    fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
-    fileIdsToFiles.clear();
+    Preconditions.checkArgument(this.files.get(userId, fileId).equals(file),
+        "The file is not registered!");
 
-    this.data.row(userId).clear();
+    final Set<String> tasks = this.utilizingTasks.get(userId, fileId);
+
+    final boolean inserted;
+    if (tasks == null) {
+      this.utilizingTasks.put(userId, fileId, Sets.newHashSet(task.getId()));
+      inserted = true;
+    } else {
+      inserted = tasks.add(task.getId());
+    }
+
+    Preconditions.checkArgument(inserted, "The task has already been subcscribed to the file!");
+  }
+
+  @Override
+  public void unsubscribe(final File file, final Task task) {
+    final String userId = file.getOwner().getEmail();
+    final String fileId = file.getId();
+
+    Preconditions.checkArgument(this.files.get(userId, fileId).equals(file),
+        "The file is not registered!");
+
+    final Set<String> tasks = this.utilizingTasks.get(userId, fileId);
+
+    final boolean removed;
+    if (tasks == null) {
+      removed = false;
+    } else {
+      removed = tasks.remove(task.getId());
+
+      if (tasks.isEmpty()) {
+        this.utilizingTasks.remove(userId, fileId);
+      }
+    }
+
+    Preconditions.checkArgument(removed, "The task is not subcscribed to the file!");
   }
 }

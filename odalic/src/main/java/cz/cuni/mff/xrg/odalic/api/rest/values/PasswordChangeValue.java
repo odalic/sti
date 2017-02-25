@@ -8,7 +8,7 @@ import com.google.common.base.Preconditions;
 
 /**
  * Encapsulation of old and new password for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -17,26 +17,8 @@ public final class PasswordChangeValue {
 
   private String oldPassword;
   private String newPassword;
-  
+
   public PasswordChangeValue() {}
-
-  /**
-   * @return the old password
-   */
-  @XmlElement
-  @Nullable
-  public String getOldPassword() {
-    return oldPassword;
-  }
-
-  /**
-   * @param oldPassword the old password to set
-   */
-  public void setOldPassword(String oldPassword) {
-    Preconditions.checkNotNull(oldPassword);
-    
-    this.oldPassword = oldPassword;
-  }
 
   /**
    * @return the new password
@@ -44,19 +26,39 @@ public final class PasswordChangeValue {
   @XmlElement
   @Nullable
   public String getNewPassword() {
-    return newPassword;
+    return this.newPassword;
+  }
+
+  /**
+   * @return the old password
+   */
+  @XmlElement
+  @Nullable
+  public String getOldPassword() {
+    return this.oldPassword;
   }
 
   /**
    * @param newPassword the new password to set
    */
-  public void setNewPassword(String newPassword) {
+  public void setNewPassword(final String newPassword) {
     Preconditions.checkNotNull(newPassword);
-    
+
     this.newPassword = newPassword;
   }
 
-  /* (non-Javadoc)
+  /**
+   * @param oldPassword the old password to set
+   */
+  public void setOldPassword(final String oldPassword) {
+    Preconditions.checkNotNull(oldPassword);
+
+    this.oldPassword = oldPassword;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override

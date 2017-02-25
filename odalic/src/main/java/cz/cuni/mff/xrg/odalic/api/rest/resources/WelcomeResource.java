@@ -7,7 +7,7 @@ import javax.ws.rs.core.MediaType;
 
 /**
  * Welcome page.
- * 
+ *
  * @author Václav Brodec
  */
 @Path("/")

@@ -14,7 +14,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 
 /**
  * Domain class {@link Classification} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -28,28 +28,10 @@ public class ClassificationValue implements Serializable {
   private HeaderAnnotation annotation;
 
   public ClassificationValue() {}
-  
-  public ClassificationValue(Classification adaptee) {
+
+  public ClassificationValue(final Classification adaptee) {
     this.position = adaptee.getPosition();
     this.annotation = adaptee.getAnnotation();
-  }
-
-  /**
-   * @return the position
-   */
-  @XmlElement
-  @Nullable
-  public ColumnPosition getPosition() {
-    return position;
-  }
-
-  /**
-   * @param position the position to set
-   */
-  public void setPosition(ColumnPosition position) {
-    Preconditions.checkNotNull(position);
-    
-    this.position = position;
   }
 
   /**
@@ -58,23 +40,44 @@ public class ClassificationValue implements Serializable {
   @XmlElement
   @Nullable
   public HeaderAnnotation getAnnotation() {
-    return annotation;
+    return this.annotation;
+  }
+
+  /**
+   * @return the position
+   */
+  @XmlElement
+  @Nullable
+  public ColumnPosition getPosition() {
+    return this.position;
   }
 
   /**
    * @param annotation the annotation to set
    */
-  public void setAnnotation(HeaderAnnotation annotation) {
+  public void setAnnotation(final HeaderAnnotation annotation) {
     Preconditions.checkNotNull(annotation);
-    
+
     this.annotation = annotation;
   }
 
-  /* (non-Javadoc)
+  /**
+   * @param position the position to set
+   */
+  public void setPosition(final ColumnPosition position) {
+    Preconditions.checkNotNull(position);
+
+    this.position = position;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "ClassificationValue [position=" + position + ", annotation=" + annotation + "]";
+    return "ClassificationValue [position=" + this.position + ", annotation=" + this.annotation
+        + "]";
   }
 }

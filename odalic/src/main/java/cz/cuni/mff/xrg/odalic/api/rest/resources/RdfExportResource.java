@@ -26,7 +26,7 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 
 /**
  * Definition of the resource providing the result as serialized RDF data.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -41,27 +41,34 @@ public final class RdfExportResource {
   private static final Logger LOGGER = LoggerFactory.getLogger(RdfExportResource.class);
 
   private final RdfExportService rdfExportService;
-  
+
   @Context
-  private SecurityContext securityContext;  
+  private SecurityContext securityContext;
 
   @Autowired
-  public RdfExportResource(RdfExportService RdfExportService) {
+  public RdfExportResource(final RdfExportService RdfExportService) {
     Preconditions.checkNotNull(RdfExportService);
 
     this.rdfExportService = RdfExportService;
   }
 
   @GET
-  @Path("users/{userId}/tasks/{taskId}/result/rdf-export")
-  @Produces(TURTLE_MIME_TYPE)
-  public Response getTurtleExport(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId)
+  @Path("tasks/{taskId}/result/rdf-export")
+  @Produces(JSON_LD_MIME_TYPE)
+  public Response getJsonLdExport(final @PathParam("taskId") String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
-    Security.checkAuthorization(securityContext, userId);
-    
+    return getJsonLdExport(this.securityContext.getUserPrincipal().getName(), taskId);
+  }
+
+  @GET
+  @Path("users/{userId}/tasks/{taskId}/result/rdf-export")
+  @Produces(JSON_LD_MIME_TYPE)
+  public Response getJsonLdExport(final @PathParam("userId") String userId,
+      final @PathParam("id") String taskId)
+      throws CancellationException, InterruptedException, ExecutionException, IOException {
     final String rdfContent;
     try {
-      rdfContent = rdfExportService.exportToTurtle(userId, taskId);
+      rdfContent = this.rdfExportService.exportToJsonLd(userId, taskId);
     } catch (final CancellationException | ExecutionException e) {
       LOGGER.error(
           "RDF export is not available, because the processing did not finish. Check the result first!",
@@ -76,23 +83,26 @@ public final class RdfExportResource {
 
     return Response.ok(rdfContent).build();
   }
-  
+
   @GET
   @Path("tasks/{taskId}/result/rdf-export")
   @Produces(TURTLE_MIME_TYPE)
   public Response getTurtleExport(final @PathParam("taskId") String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
-    return getTurtleExport(securityContext.getUserPrincipal().getName(), taskId);
+    return getTurtleExport(this.securityContext.getUserPrincipal().getName(), taskId);
   }
 
   @GET
   @Path("users/{userId}/tasks/{taskId}/result/rdf-export")
-  @Produces(JSON_LD_MIME_TYPE)
-  public Response getJsonLdExport(final @PathParam("userId") String userId, final @PathParam("id") String taskId)
+  @Produces(TURTLE_MIME_TYPE)
+  public Response getTurtleExport(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
     final String rdfContent;
     try {
-      rdfContent = rdfExportService.exportToJsonLd(userId, taskId);
+      rdfContent = this.rdfExportService.exportToTurtle(userId, taskId);
     } catch (final CancellationException | ExecutionException e) {
       LOGGER.error(
           "RDF export is not available, because the processing did not finish. Check the result first!",
@@ -106,13 +116,5 @@ public final class RdfExportResource {
     }
 
     return Response.ok(rdfContent).build();
-  }
-  
-  @GET
-  @Path("tasks/{taskId}/result/rdf-export")
-  @Produces(JSON_LD_MIME_TYPE)
-  public Response getJsonLdExport(final @PathParam("taskId") String taskId)
-      throws CancellationException, InterruptedException, ExecutionException, IOException {
-    return getJsonLdExport(securityContext.getUserPrincipal().getName(), taskId);
   }
 }

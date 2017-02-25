@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Abstract resource used to symbolize submitting a task for execution when put and canceling the
  * execution when deleted.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -23,15 +23,15 @@ public final class ExecutionValue implements Serializable {
   private boolean draft;
 
   public ExecutionValue() {
-    draft = false;
+    this.draft = false;
   }
 
   /**
    * Creates execution resource representation.
-   * 
+   *
    * @param draft draft indicator
    */
-  public ExecutionValue(boolean draft) {
+  public ExecutionValue(final boolean draft) {
     this.draft = draft;
   }
 
@@ -40,23 +40,23 @@ public final class ExecutionValue implements Serializable {
    */
   @XmlElement
   public boolean isDraft() {
-    return draft;
+    return this.draft;
   }
 
   /**
    * @param draft the draft indicator to set
    */
-  public void setDraft(boolean draft) {
+  public void setDraft(final boolean draft) {
     this.draft = draft;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "ExecutionValue [draft=" + draft + "]";
+    return "ExecutionValue [draft=" + this.draft + "]";
   }
 }

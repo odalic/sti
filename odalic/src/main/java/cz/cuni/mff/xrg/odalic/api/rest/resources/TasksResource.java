@@ -21,14 +21,15 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.Response.Status;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
+
 import cz.cuni.mff.xrg.odalic.api.rdf.TaskRdfSerializationService;
 import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
@@ -51,7 +52,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 
 /**
  * Task resource definition.
- * 
+ *
  * @author Václav Brodec
  */
 @Component
@@ -93,156 +94,11 @@ public final class TasksResource {
     this.taskSerializationService = taskSerializationService;
   }
 
-  @GET
-  @Path("users/{userId}/tasks")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getTasks(final @PathParam("userId") String userId,
-      final @QueryParam("states") Boolean states, final @QueryParam("orderedBy") String orderedBy) {
-    Security.checkAuthorization(securityContext, userId);
-
-    final NavigableSet<Task> tasks;
-    if (orderedBy == null) {
-      tasks = taskService.getTasksSortedByIdInAscendingOrder(userId);
-    } else {
-      switch (orderedBy) {
-        case "id":
-          tasks = taskService.getTasksSortedByIdInAscendingOrder(userId);
-          break;
-        case "created":
-          tasks = taskService.getTasksSortedByCreatedInDescendingOrder(userId);
-          break;
-        default:
-          throw new BadRequestException("Invalid sorting key!");
-      }
-    }
-
-    if (states == null || (!states)) {
-      return Reply.data(Response.Status.OK, tasks, uriInfo).toResponse();
-    } else {
-      final Stream<StatefulTaskValue> statefulTasksStream = tasks.stream()
-          .map(e -> new StatefulTaskValue(e, States.queryStateValue(executionService, e)));
-
-      return Reply
-          .data(Response.Status.OK, statefulTasksStream.collect(Collectors.toList()), uriInfo)
-          .toResponse(); // List is fine, as it serializes in the same way, and no monkeying with
-                         // comparators is needed.
-    }
-  }
-
-  @GET
-  @Path("tasks")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getTasks(final @QueryParam("states") Boolean states,
-      final @QueryParam("orderedBy") String orderedBy) {
-    return getTasks(securityContext.getUserPrincipal().getName(), states, orderedBy);
-  }
-
-  @GET
-  @Path("users/{userId}/tasks/{taskId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getTaskById(final @PathParam("userId") String userId,
-      final @PathParam("taskId") String taskId) {
-    Security.checkAuthorization(securityContext, userId);
-
-    final Task task;
-    try {
-      task = taskService.getById(userId, taskId);
-    } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task does not exist!", e);
-    }
-
-    return Reply.data(Response.Status.OK, task, uriInfo).toResponse();
-  }
-
-  @GET
+  @DELETE
   @Path("tasks/{taskId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getTaskById(final @PathParam("taskId") String taskId) {
-    return getTaskById(securityContext.getUserPrincipal().getName(), taskId);
-  }
-
-  @PUT
-  @Path("users/{userId}/tasks/{taskId}")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response putTaskWithId(final @PathParam("userId") String userId,
-      final @PathParam("taskId") String taskId, final TaskValue taskValue)
-      throws MalformedURLException {
-    Security.checkAuthorization(securityContext, userId);
-
-    if (taskValue == null) {
-      throw new BadRequestException("No task definition provided!");
-    }
-
-    if (taskValue.getConfiguration() == null) {
-      throw new BadRequestException("Configuration must be included!");
-    }
-
-    final ConfigurationValue configurationValue = taskValue.getConfiguration();
-
-    if (taskValue.getId() != null && !taskValue.getId().equals(taskId)) {
-      throw new BadRequestException("The ID in the payload is not the same as the ID of resource.");
-    }
-
-    final File input;
-    try {
-      input = fileService.getById(userId, configurationValue.getInput());
-    } catch (final IllegalArgumentException e) {
-      throw new BadRequestException("The input file does not exist!", e);
-    }
-
-    final NavigableSet<KnowledgeBase> usedBases;
-    if (configurationValue.getUsedBases() == null) {
-      usedBases = basesService.getBases();
-    } else {
-      usedBases = configurationValue.getUsedBases();
-    }
-
-    final Configuration configuration;
-    try {
-      configuration = new Configuration(input, usedBases, configurationValue.getPrimaryBase(),
-          configurationValue.getFeedback(), configurationValue.getRowsLimit(),
-          configurationValue.isStatistical());
-    } catch (final IllegalArgumentException e) {
-      throw new BadRequestException(e.getMessage(), e);
-    }
-
-    final Task task;
-    try {
-      task = new Task(userService.getUser(userId), taskId,
-          taskValue.getDescription() == null ? "" : taskValue.getDescription(), configuration);
-    } catch (final IllegalArgumentException e) {
-      throw new BadRequestException(e.getMessage(), e);
-    }
-
-    final Task taskById = taskService.verifyTaskExistenceById(userId, taskId);
-
-    final URL location =
-        cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, taskId);
-
-    if (taskById == null) {
-      taskService.create(task);
-      return Message.of("A new task has been created AT THE LOCATION you specified")
-          .toResponse(Response.Status.CREATED, location, uriInfo);
-    } else {
-      if (!task.getConfiguration().equals(taskById.getConfiguration())) {
-        executionService.unscheduleForTaskId(userId, taskId);
-      }
-      
-      taskService.replace(task);
-      return Message
-          .of("The task you specified has been fully updated AT THE LOCATION you specified.")
-          .toResponse(Response.Status.OK, location, uriInfo);
-    }
-  }
-
-  @PUT
-  @Path("tasks/{taskId}")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response putTaskWithId(final @PathParam("taskId") String taskId, final TaskValue taskValue)
-      throws MalformedURLException {
-    return putTaskWithId(securityContext.getUserPrincipal().getName(), taskId, taskValue);
+  public Response deleteTaskById(final @PathParam("taskId") String taskId) {
+    return deleteTaskById(this.securityContext.getUserPrincipal().getName(), taskId);
   }
 
   @DELETE
@@ -250,67 +106,22 @@ public final class TasksResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteTaskById(final @PathParam("userId") String userId,
       final @PathParam("taskId") String taskId) {
-    Security.checkAuthorization(securityContext, userId);
+    Security.checkAuthorization(this.securityContext, userId);
 
     try {
-      taskService.deleteById(userId, taskId);
+      this.taskService.deleteById(userId, taskId);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("The task does not exist!", e);
     }
 
-    return Message.of("Task deleted.").toResponse(Response.Status.OK, uriInfo);
+    return Message.of("Task deleted.").toResponse(Response.Status.OK, this.uriInfo);
   }
 
-  @DELETE
-  @Path("tasks/{taskId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response deleteTaskById(final @PathParam("taskId") String taskId) {
-    return deleteTaskById(securityContext.getUserPrincipal().getName(), taskId);
-  }
-
-  @PUT
-  @Path("users/{userId}/tasks/{taskId}")
-  @Consumes(TURTLE_MIME_TYPE)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response importTaskId(final @PathParam("userId") String userId,
-      final @PathParam("taskId") String taskId, final InputStream body) throws IOException {
-    Security.checkAuthorization(this.securityContext, userId);
-
-    if (body == null) {
-      throw new BadRequestException("The body cannot be null!");
-    }
-
-    final Task task;
-    try {
-      task = taskSerializationService.deserialize(body, userId, taskId, uriInfo.getBaseUri());
-    } catch (final IllegalArgumentException e) {
-      throw new BadRequestException(e.getMessage(), e);
-    }
-
-    final Task taskById = taskService.verifyTaskExistenceById(userId, taskId);
-
-    final URL location =
-        cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, taskId);
-
-    if (taskById == null) {
-      taskService.create(task);
-      return Message.of("A task has been imported AT THE LOCATION you specified")
-          .toResponse(Response.Status.CREATED, location, uriInfo);
-    } else {
-      executionService.unscheduleForTaskId(userId, taskId);
-      taskService.replace(task);
-      return Message
-          .of("The task you specified has been fully updated from the import AT THE LOCATION you specified.")
-          .toResponse(Response.Status.OK, location, uriInfo);
-    }
-  }
-
-  @PUT
-  @Path("tasks/{taskId}")
-  @Consumes(TURTLE_MIME_TYPE)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response importTaskId(final @PathParam("taskId") String taskId, final InputStream body) throws IOException {
-    return importTaskId(securityContext.getUserPrincipal().getName(), taskId, body);
+  @GET
+  @Path("tasks/{taskId}/")
+  @Produces(TURTLE_MIME_TYPE)
+  public Response exportTaskId(final @PathParam("taskId") String taskId) {
+    return exportTaskId(this.securityContext.getUserPrincipal().getName(), taskId);
   }
 
   @GET
@@ -327,15 +138,208 @@ public final class TasksResource {
       return Response.status(Status.NOT_FOUND).build();
     }
 
-    final String exportedTask = taskSerializationService.serialize(task, uriInfo.getBaseUri());
-    
+    final String exportedTask =
+        this.taskSerializationService.serialize(task, this.uriInfo.getBaseUri());
+
     return Response.ok(exportedTask).build();
   }
 
   @GET
-  @Path("tasks/{taskId}/")
-  @Produces(TURTLE_MIME_TYPE)
-  public Response exportTaskId(final @PathParam("taskId") String taskId) {
-    return exportTaskId(securityContext.getUserPrincipal().getName(), taskId);
+  @Path("tasks/{taskId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getTaskById(final @PathParam("taskId") String taskId) {
+    return getTaskById(this.securityContext.getUserPrincipal().getName(), taskId);
+  }
+
+  @GET
+  @Path("users/{userId}/tasks/{taskId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getTaskById(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId) {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final Task task;
+    try {
+      task = this.taskService.getById(userId, taskId);
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException("The task does not exist!", e);
+    }
+
+    return Reply.data(Response.Status.OK, task, this.uriInfo).toResponse();
+  }
+
+  @GET
+  @Path("tasks")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getTasks(final @QueryParam("states") Boolean states,
+      final @QueryParam("orderedBy") String orderedBy) {
+    return getTasks(this.securityContext.getUserPrincipal().getName(), states, orderedBy);
+  }
+
+  @GET
+  @Path("users/{userId}/tasks")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getTasks(final @PathParam("userId") String userId,
+      final @QueryParam("states") Boolean states, final @QueryParam("orderedBy") String orderedBy) {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final NavigableSet<Task> tasks;
+    if (orderedBy == null) {
+      tasks = this.taskService.getTasksSortedByIdInAscendingOrder(userId);
+    } else {
+      switch (orderedBy) {
+        case "id":
+          tasks = this.taskService.getTasksSortedByIdInAscendingOrder(userId);
+          break;
+        case "created":
+          tasks = this.taskService.getTasksSortedByCreatedInDescendingOrder(userId);
+          break;
+        default:
+          throw new BadRequestException("Invalid sorting key!");
+      }
+    }
+
+    if ((states == null) || (!states)) {
+      return Reply.data(Response.Status.OK, tasks, this.uriInfo).toResponse();
+    } else {
+      final Stream<StatefulTaskValue> statefulTasksStream = tasks.stream()
+          .map(e -> new StatefulTaskValue(e, States.queryStateValue(this.executionService, e)));
+
+      return Reply
+          .data(Response.Status.OK, statefulTasksStream.collect(Collectors.toList()), this.uriInfo)
+          .toResponse(); // List is fine, as it serializes in the same way, and no monkeying with
+                         // comparators is needed.
+    }
+  }
+
+  @PUT
+  @Path("tasks/{taskId}")
+  @Consumes(TURTLE_MIME_TYPE)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response importTaskId(final @PathParam("taskId") String taskId, final InputStream body)
+      throws IOException {
+    return importTaskId(this.securityContext.getUserPrincipal().getName(), taskId, body);
+  }
+
+  @PUT
+  @Path("users/{userId}/tasks/{taskId}")
+  @Consumes(TURTLE_MIME_TYPE)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response importTaskId(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId, final InputStream body) throws IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    if (body == null) {
+      throw new BadRequestException("The body cannot be null!");
+    }
+
+    final Task task;
+    try {
+      task = this.taskSerializationService.deserialize(body, userId, taskId,
+          this.uriInfo.getBaseUri());
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
+
+    final Task taskById = this.taskService.verifyTaskExistenceById(userId, taskId);
+
+    final URL location =
+        cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(this.uriInfo, taskId);
+
+    if (taskById == null) {
+      this.taskService.create(task);
+      return Message.of("A task has been imported AT THE LOCATION you specified")
+          .toResponse(Response.Status.CREATED, location, this.uriInfo);
+    } else {
+      this.executionService.unscheduleForTaskId(userId, taskId);
+      this.taskService.replace(task);
+      return Message
+          .of("The task you specified has been fully updated from the import AT THE LOCATION you specified.")
+          .toResponse(Response.Status.OK, location, this.uriInfo);
+    }
+  }
+
+  @PUT
+  @Path("users/{userId}/tasks/{taskId}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response putTaskWithId(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId, final TaskValue taskValue)
+      throws MalformedURLException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    if (taskValue == null) {
+      throw new BadRequestException("No task definition provided!");
+    }
+
+    if (taskValue.getConfiguration() == null) {
+      throw new BadRequestException("Configuration must be included!");
+    }
+
+    final ConfigurationValue configurationValue = taskValue.getConfiguration();
+
+    if ((taskValue.getId() != null) && !taskValue.getId().equals(taskId)) {
+      throw new BadRequestException("The ID in the payload is not the same as the ID of resource.");
+    }
+
+    final File input;
+    try {
+      input = this.fileService.getById(userId, configurationValue.getInput());
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException("The input file does not exist!", e);
+    }
+
+    final NavigableSet<KnowledgeBase> usedBases;
+    if (configurationValue.getUsedBases() == null) {
+      usedBases = this.basesService.getBases();
+    } else {
+      usedBases = configurationValue.getUsedBases();
+    }
+
+    final Configuration configuration;
+    try {
+      configuration = new Configuration(input, usedBases, configurationValue.getPrimaryBase(),
+          configurationValue.getFeedback(), configurationValue.getRowsLimit(),
+          configurationValue.isStatistical());
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
+
+    final Task task;
+    try {
+      task = new Task(this.userService.getUser(userId), taskId,
+          taskValue.getDescription() == null ? "" : taskValue.getDescription(), configuration);
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
+
+    final Task taskById = this.taskService.verifyTaskExistenceById(userId, taskId);
+
+    final URL location =
+        cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(this.uriInfo, taskId);
+
+    if (taskById == null) {
+      this.taskService.create(task);
+      return Message.of("A new task has been created AT THE LOCATION you specified")
+          .toResponse(Response.Status.CREATED, location, this.uriInfo);
+    } else {
+      if (!task.getConfiguration().equals(taskById.getConfiguration())) {
+        this.executionService.unscheduleForTaskId(userId, taskId);
+      }
+
+      this.taskService.replace(task);
+      return Message
+          .of("The task you specified has been fully updated AT THE LOCATION you specified.")
+          .toResponse(Response.Status.OK, location, this.uriInfo);
+    }
+  }
+
+  @PUT
+  @Path("tasks/{taskId}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response putTaskWithId(final @PathParam("taskId") String taskId, final TaskValue taskValue)
+      throws MalformedURLException {
+    return putTaskWithId(this.securityContext.getUserPrincipal().getName(), taskId, taskValue);
   }
 }

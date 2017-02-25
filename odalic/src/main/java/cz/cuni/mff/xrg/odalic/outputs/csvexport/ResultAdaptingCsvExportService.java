@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.outputs.csvexport;
 
@@ -13,10 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
-import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.File;
+import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.Input;
+import cz.cuni.mff.xrg.odalic.outputs.rdfexport.RdfExportService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
@@ -26,7 +27,7 @@ import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 /**
  * Implementation of {@link RdfExportService} that gets the extended CSV data by adapting present
  * {@link Result}, {@link Input} and {@link Format} instances.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -67,45 +68,45 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * cz.cuni.mff.xrg.odalic.outputs.csvexport.CsvExportService#getExtendedCsvForTaskId(java.lang.
    * String)
    */
   @Override
-  public String getExtendedCsvForTaskId(String userId, String taskId)
+  public String getExtendedCsvForTaskId(final String userId, final String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
     final Input output = getExtendedInputForTaskId(userId, taskId);
     final Format originalFormat = getOriginalFormat(userId, taskId);
 
-    final String data = csvExporter.export(output, originalFormat);
+    final String data = this.csvExporter.export(output, originalFormat);
 
     return data;
   }
 
-  private Format getOriginalFormat(String userId, String taskId) {
-    final Configuration configuration = configurationService.getForTaskId(userId, taskId);
-    final File file = configuration.getInput();
-    final Format format = fileService.getFormatForFileId(userId, file.getId());
-    return format;
-  }
-
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * cz.cuni.mff.xrg.odalic.outputs.csvexport.CsvExportService#getExtendedInputForTaskId(java.lang.
    * String)
    */
   @Override
-  public Input getExtendedInputForTaskId(String userId, String taskId)
+  public Input getExtendedInputForTaskId(final String userId, final String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
-    final Result result = executionService.getResultForTaskId(userId, taskId);
-    final Input input = feedbackService.getInputSnapshotForTaskId(userId, taskId);
-    final Configuration configuration = configurationService.getForTaskId(userId, taskId);
+    final Result result = this.executionService.getResultForTaskId(userId, taskId);
+    final Input input = this.feedbackService.getInputSnapshotForTaskId(userId, taskId);
+    final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
 
-    final Input output = resultToCsvExportAdapter.toCSVExport(result, input, configuration);
+    final Input output = this.resultToCsvExportAdapter.toCSVExport(result, input, configuration);
 
     return output;
+  }
+
+  private Format getOriginalFormat(final String userId, final String taskId) {
+    final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
+    final File file = configuration.getInput();
+    final Format format = this.fileService.getFormatForFileId(userId, file.getId());
+    return format;
   }
 }

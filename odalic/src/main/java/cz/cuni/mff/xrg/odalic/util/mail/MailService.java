@@ -5,14 +5,14 @@ import javax.mail.Address;
 
 /**
  * Simple mail service.
- * 
+ *
  * @author Václav Brodec
  *
  */
 public interface MailService {
   /**
    * Sends an e-mail.
-   * 
+   *
    * @param subject subject
    * @param text message content
    * @param tos recipients

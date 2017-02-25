@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * Catch-all throwable mapper.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -36,13 +36,33 @@ public final class ThrowableMapper implements ExceptionMapper<Throwable> {
   @Context
   private UriInfo uriInfo;
 
+  /**
+   * Tests the throwable against JSON mapping exception to detect {@link JsonMappingException}
+   * mappable to {@link BadRequestException}.
+   *
+   * Defaults to internal server error in case the exception is not instance of
+   * {@link WebApplicationException}.
+   *
+   * @param throwable throwable instance
+   * @return HTTP status
+   */
+  private StatusType getHttpStatus(final Throwable throwable) {
+    if (throwable instanceof WebApplicationException) {
+      return ((WebApplicationException) throwable).getResponse().getStatusInfo();
+    } else if (throwable instanceof JsonMappingException) {
+      return Status.BAD_REQUEST;
+    } else {
+      return Response.Status.INTERNAL_SERVER_ERROR;
+    }
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see javax.ws.rs.ext.ExceptionMapper#toResponse(java.lang.Throwable)
    */
   @Override
-  public Response toResponse(Throwable throwable) {
+  public Response toResponse(final Throwable throwable) {
     final StatusType statusType = getHttpStatus(throwable);
 
     final String text = throwable.getMessage();
@@ -53,34 +73,14 @@ public final class ThrowableMapper implements ExceptionMapper<Throwable> {
     throwable.printStackTrace(new PrintWriter(trace));
     final String debugContent = trace.toString();
 
-    final List<MediaType> acceptable = headers.getAcceptableMediaTypes();
+    final List<MediaType> acceptable = this.headers.getAcceptableMediaTypes();
 
     // Send the default message only if acceptable by the client.
     if (acceptable.contains(MediaType.WILDCARD_TYPE)
         || acceptable.contains(MediaType.APPLICATION_JSON_TYPE)) {
-      return Message.of(text, debugContent).toResponse(statusType, uriInfo);
+      return Message.of(text, debugContent).toResponse(statusType, this.uriInfo);
     } else {
       return Response.status(statusType).type(acceptable.get(0)).build();
-    }
-  }
-
-  /**
-   * Tests the throwable against JSON mapping exception to detect {@link JsonMappingException}
-   * mappable to {@link BadRequestException}.
-   * 
-   * Defaults to internal server error in case the exception is not instance of
-   * {@link WebApplicationException}.
-   * 
-   * @param throwable throwable instance
-   * @return HTTP status
-   */
-  private StatusType getHttpStatus(Throwable throwable) {
-    if (throwable instanceof WebApplicationException) {
-      return ((WebApplicationException) throwable).getResponse().getStatusInfo();
-    } else if (throwable instanceof JsonMappingException) {
-      return Status.BAD_REQUEST;
-    } else {
-      return Response.Status.INTERNAL_SERVER_ERROR;
     }
   }
 }

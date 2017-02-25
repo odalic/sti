@@ -9,12 +9,12 @@ import cz.cuni.mff.xrg.odalic.files.formats.Format;
 public final class FormatAdapter extends XmlAdapter<FormatValue, Format> {
 
   @Override
-  public FormatValue marshal(Format bound) throws Exception {
+  public FormatValue marshal(final Format bound) throws Exception {
     return new FormatValue(bound);
   }
 
   @Override
-  public Format unmarshal(FormatValue value) throws Exception {
+  public Format unmarshal(final FormatValue value) throws Exception {
     throw new UnsupportedOperationException();
   }
 }

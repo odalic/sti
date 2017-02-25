@@ -9,12 +9,12 @@ import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
 public final class AnnotatedTableAdapter extends XmlAdapter<AnnotatedTableValue, AnnotatedTable> {
 
   @Override
-  public AnnotatedTableValue marshal(AnnotatedTable bound) throws Exception {
+  public AnnotatedTableValue marshal(final AnnotatedTable bound) throws Exception {
     return new AnnotatedTableValue(bound);
   }
 
   @Override
-  public AnnotatedTable unmarshal(AnnotatedTableValue value) throws Exception {
+  public AnnotatedTable unmarshal(final AnnotatedTableValue value) throws Exception {
     return new AnnotatedTable(value.getContext(), value.getUrl(), value.getTableSchema());
   }
 }

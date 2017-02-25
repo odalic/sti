@@ -10,14 +10,12 @@ public final class DataCubeComponentAdapter
     extends XmlAdapter<DataCubeComponentValue, DataCubeComponent> {
 
   @Override
-  public DataCubeComponentValue marshal(DataCubeComponent bound)
-      throws Exception {
+  public DataCubeComponentValue marshal(final DataCubeComponent bound) throws Exception {
     return new DataCubeComponentValue(bound);
   }
 
   @Override
-  public DataCubeComponent unmarshal(DataCubeComponentValue value)
-      throws Exception {
+  public DataCubeComponent unmarshal(final DataCubeComponentValue value) throws Exception {
     return new DataCubeComponent(value.getPosition(), value.getAnnotation());
   }
 }

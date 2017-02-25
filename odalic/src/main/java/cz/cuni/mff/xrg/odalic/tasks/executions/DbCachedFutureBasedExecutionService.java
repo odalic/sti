@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
@@ -48,7 +48,7 @@ import uk.ac.shef.dcs.sti.core.model.Table;
 /**
  * Implementation of {@link ExecutionService} based on {@link Future} and {@link ExecutorService}
  * implementations. Stores the latest computed results using {@link DB}-backed map.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -114,114 +114,31 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
     this.db = dbService.getDb();
 
-    this.userTaskIdsToCachedResults = db.treeMap("userTaskIdsToCachedResults")
+    this.userTaskIdsToCachedResults = this.db.treeMap("userTaskIdsToCachedResults")
         .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
         .valueSerializer(Serializer.JAVA).createOrOpen();
   }
 
   @Override
-  public void submitForTaskId(String userId, String taskId)
-      throws IllegalStateException, IOException {
-    checkNotAlreadyScheduled(userId, taskId);
+  public void cancelForTaskId(final String userId, final String taskId) {
+    final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    final Configuration configuration = configurationService.getForTaskId(userId, taskId);
+    Preconditions.checkArgument(resultFuture != null);
 
-    final String fileId = configuration.getInput().getId();
-    final Feedback feedback = configuration.getFeedback();
-    final Set<KnowledgeBase> usedBases = configuration.getUsedBases();
-    final int rowsLimit = configuration.getRowsLimit();
-
-    final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
-    final Input input = parsingResult.getInput();
-
-    feedbackService.setInputSnapshotForTaskid(userId, taskId, input);
-    db.commit();
-
-    final Callable<Result> execution = () -> {
-      try {
-        final Table table = inputToTableAdapter.toTable(input);
-        final boolean isStatistical = configuration.isStatistical();
-
-        final Map<String, SemanticTableInterpreter> interpreters =
-            semanticTableInterpreterFactory.getInterpreters();
-
-        final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
-
-        for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters
-            .entrySet()) {
-          final KnowledgeBase base = new KnowledgeBase(interpreterEntry.getKey());
-          if (!usedBases.contains(base)) {
-            continue;
-          }
-
-          final Constraints constraints =
-              feedbackToConstraintsAdapter.toConstraints(feedback, base);
-          final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
-
-          final TAnnotation annotationResult = interpreter.start(table, isStatistical, constraints);
-
-          results.put(base, annotationResult);
-        }
-
-        final Result result = annotationResultAdapter.toResult(results);
-
-        userTaskIdsToCachedResults.put(new Object[] {userId, taskId}, result);
-        db.commit();
-
-        return result;
-      } catch (final Exception e) {
-        logger.error("Error during task execution!", e);
-
-        throw e;
-      }
-    };
-
-    userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
-    db.commit();
-
-    final Future<Result> future = executorService.submit(execution);
-    userTaskIdsToResults.put(userId, taskId, future);
-  }
-
-  private ParsingResult parse(final String userId, final String fileId, final int rowsLimit)
-      throws IOException {
-    final String data = fileService.getDataById(userId, fileId);
-    final Format format = fileService.getFormatForFileId(userId, fileId);
-
-    final ParsingResult result = csvInputParser.parse(data, fileId, format, rowsLimit);
-    fileService.setFormatForFileId(userId, fileId, result.getFormat());
-
-    return result;
-  }
-
-  private void checkNotAlreadyScheduled(final String userId, final String taskId) {
-    final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
-    Preconditions.checkState(resultFuture == null || resultFuture.isDone());
-  }
-
-
-  @Override
-  public void unscheduleForTaskId(String userId, String taskId) {
-    userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
-    db.commit();
-
-    final Future<Result> resultFuture = userTaskIdsToResults.remove(userId, taskId);
-    if (resultFuture == null) {
-      return;
-    }
-
-    resultFuture.cancel(false);
+    this.userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
+    this.db.commit();
+    Preconditions.checkState(resultFuture.cancel(false));
   }
 
   @Override
-  public Result getResultForTaskId(String userId, String taskId)
+  public Result getResultForTaskId(final String userId, final String taskId)
       throws InterruptedException, ExecutionException, CancellationException {
     final Result cachedResult = this.userTaskIdsToCachedResults.get(new Object[] {userId, taskId});
     if (cachedResult != null) {
       return cachedResult;
     }
 
-    final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
+    final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
     Preconditions.checkArgument(resultFuture != null);
 
@@ -229,68 +146,16 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   }
 
   @Override
-  public void cancelForTaskId(String userId, String taskId) {
-    final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
+  public boolean hasBeenScheduledForTaskId(final String userId, final String taskId) {
+    final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
-
-    userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
-    db.commit();
-    Preconditions.checkState(resultFuture.cancel(false));
-  }
-
-  @Override
-  public boolean isDoneForTaskId(String userId, String taskId) {
-    if (this.userTaskIdsToCachedResults.containsKey(new Object[] {userId, taskId})) {
-      return true;
-    }
-
-    final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
-
-    Preconditions.checkArgument(resultFuture != null);
-
-    return resultFuture.isDone();
-  }
-
-  @Override
-  public boolean isCanceledForTaskId(String userId, String taskId) {
-    final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
-    if (resultFuture == null) {
-      return false;
-    }
-
-    return resultFuture.isCancelled();
-  }
-
-  @Override
-  public boolean hasBeenScheduledForTaskId(String userId, String taskId) {
-    final Future<Result> resultFuture = userTaskIdsToResults.get(userId, taskId);
-
-    return resultFuture != null
+    return (resultFuture != null)
         || this.userTaskIdsToCachedResults.containsKey(new Object[] {userId, taskId});
   }
 
-  @Override
-  public boolean isSuccessForTasksId(String userId, String taskId) {
-    if (!isDoneForTaskId(userId, taskId)) {
-      return false;
-    }
-
-    if (isCanceledForTaskId(userId, taskId)) {
-      return false;
-    }
-
-    try {
-      final Result result = getResultForTaskId(userId, taskId);
-
-      return result.getWarnings().isEmpty();
-    } catch (final InterruptedException | ExecutionException e) {
-      return false;
-    }
-  }
 
   @Override
-  public boolean hasBeenWarnedForTaskId(String userId, String taskId) {
+  public boolean hasBeenWarnedForTaskId(final String userId, final String taskId) {
     if (!isDoneForTaskId(userId, taskId)) {
       return false;
     }
@@ -309,7 +174,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   }
 
   @Override
-  public boolean hasFailedForTaskId(String userId, String taskId) {
+  public boolean hasFailedForTaskId(final String userId, final String taskId) {
     if (!isDoneForTaskId(userId, taskId)) {
       return false;
     }
@@ -327,14 +192,149 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     }
   }
 
+  private void checkNotAlreadyScheduled(final String userId, final String taskId) {
+    final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
+    Preconditions.checkState((resultFuture == null) || resultFuture.isDone());
+  }
+
   @Override
-  public void unscheduleAll(String userId) {
+  public boolean isCanceledForTaskId(final String userId, final String taskId) {
+    final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
+    if (resultFuture == null) {
+      return false;
+    }
+
+    return resultFuture.isCancelled();
+  }
+
+  @Override
+  public boolean isDoneForTaskId(final String userId, final String taskId) {
+    if (this.userTaskIdsToCachedResults.containsKey(new Object[] {userId, taskId})) {
+      return true;
+    }
+
+    final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
+
+    Preconditions.checkArgument(resultFuture != null);
+
+    return resultFuture.isDone();
+  }
+
+  @Override
+  public boolean isSuccessForTasksId(final String userId, final String taskId) {
+    if (!isDoneForTaskId(userId, taskId)) {
+      return false;
+    }
+
+    if (isCanceledForTaskId(userId, taskId)) {
+      return false;
+    }
+
+    try {
+      final Result result = getResultForTaskId(userId, taskId);
+
+      return result.getWarnings().isEmpty();
+    } catch (final InterruptedException | ExecutionException e) {
+      return false;
+    }
+  }
+
+  private ParsingResult parse(final String userId, final String fileId, final int rowsLimit)
+      throws IOException {
+    final String data = this.fileService.getDataById(userId, fileId);
+    final Format format = this.fileService.getFormatForFileId(userId, fileId);
+
+    final ParsingResult result = this.csvInputParser.parse(data, fileId, format, rowsLimit);
+    this.fileService.setFormatForFileId(userId, fileId, result.getFormat());
+
+    return result;
+  }
+
+  @Override
+  public void submitForTaskId(final String userId, final String taskId)
+      throws IllegalStateException, IOException {
+    checkNotAlreadyScheduled(userId, taskId);
+
+    final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
+
+    final String fileId = configuration.getInput().getId();
+    final Feedback feedback = configuration.getFeedback();
+    final Set<KnowledgeBase> usedBases = configuration.getUsedBases();
+    final int rowsLimit = configuration.getRowsLimit();
+
+    final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
+    final Input input = parsingResult.getInput();
+
+    this.feedbackService.setInputSnapshotForTaskid(userId, taskId, input);
+    this.db.commit();
+
+    final Callable<Result> execution = () -> {
+      try {
+        final Table table = this.inputToTableAdapter.toTable(input);
+        final boolean isStatistical = configuration.isStatistical();
+
+        final Map<String, SemanticTableInterpreter> interpreters =
+            this.semanticTableInterpreterFactory.getInterpreters();
+
+        final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
+
+        for (final Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters
+            .entrySet()) {
+          final KnowledgeBase base = new KnowledgeBase(interpreterEntry.getKey());
+          if (!usedBases.contains(base)) {
+            continue;
+          }
+
+          final Constraints constraints =
+              this.feedbackToConstraintsAdapter.toConstraints(feedback, base);
+          final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
+
+          final TAnnotation annotationResult = interpreter.start(table, isStatistical, constraints);
+
+          results.put(base, annotationResult);
+        }
+
+        final Result result = this.annotationResultAdapter.toResult(results);
+
+        this.userTaskIdsToCachedResults.put(new Object[] {userId, taskId}, result);
+        this.db.commit();
+
+        return result;
+      } catch (final Exception e) {
+        logger.error("Error during task execution!", e);
+
+        throw e;
+      }
+    };
+
+    this.userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
+    this.db.commit();
+
+    final Future<Result> future = this.executorService.submit(execution);
+    this.userTaskIdsToResults.put(userId, taskId, future);
+  }
+
+  @Override
+  public void unscheduleAll(final String userId) {
     Preconditions.checkNotNull(userId);
 
-    userTaskIdsToCachedResults.prefixSubMap(new Object[] { userId }).clear();
-    db.commit();
+    this.userTaskIdsToCachedResults.prefixSubMap(new Object[] {userId}).clear();
+    this.db.commit();
 
     this.userTaskIdsToResults.row(userId).entrySet().stream()
         .forEach(e -> e.getValue().cancel(false));
+  }
+
+  @Override
+  public void unscheduleForTaskId(final String userId, final String taskId) {
+    this.userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
+    this.db.commit();
+
+    final Future<Result> resultFuture = this.userTaskIdsToResults.remove(userId, taskId);
+    if (resultFuture == null) {
+      return;
+    }
+
+    resultFuture.cancel(false);
   }
 }

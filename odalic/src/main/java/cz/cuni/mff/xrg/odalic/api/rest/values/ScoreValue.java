@@ -11,47 +11,49 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
 
 /**
  * Domain class {@link Score} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
 @XmlRootElement(name = "score")
 public final class ScoreValue implements Serializable {
-  
+
   private static final long serialVersionUID = -901650058091668104L;
-  
+
   @XmlElement
   private double value;
 
   public ScoreValue() {
-    value = Double.MIN_VALUE;
+    this.value = Double.MIN_VALUE;
   }
-  
-  public ScoreValue(Score adaptee) {
-    value = adaptee.getValue();
+
+  public ScoreValue(final Score adaptee) {
+    this.value = adaptee.getValue();
   }
 
   /**
    * @return the value (negative when not set)
    */
   public double getValue() {
-    return value;
+    return this.value;
   }
 
   /**
    * @param value the value to set
    */
-  public void setValue(double value) {
+  public void setValue(final double value) {
     Preconditions.checkArgument(value >= 0);
-    
+
     this.value = value;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "ScoreValue [value=" + value + "]";
+    return "ScoreValue [value=" + this.value + "]";
   }
 }

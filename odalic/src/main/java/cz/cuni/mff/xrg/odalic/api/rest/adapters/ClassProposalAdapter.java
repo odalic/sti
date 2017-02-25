@@ -9,12 +9,12 @@ import cz.cuni.mff.xrg.odalic.entities.ClassProposal;
 public final class ClassProposalAdapter extends XmlAdapter<ClassProposalValue, ClassProposal> {
 
   @Override
-  public ClassProposalValue marshal(ClassProposal bound) throws Exception {
+  public ClassProposalValue marshal(final ClassProposal bound) throws Exception {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public ClassProposal unmarshal(ClassProposalValue value) throws Exception {
+  public ClassProposal unmarshal(final ClassProposalValue value) throws Exception {
     return new ClassProposal(value.getLabel(), value.getAlternativeLabels(), value.getSuffix(),
         value.getSuperClass());
   }

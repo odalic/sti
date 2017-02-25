@@ -10,13 +10,12 @@ public final class ColumnRelationPositionAdapter
     extends XmlAdapter<ColumnRelationPositionValue, ColumnRelationPosition> {
 
   @Override
-  public ColumnRelationPositionValue marshal(ColumnRelationPosition bound)
-      throws Exception {
+  public ColumnRelationPositionValue marshal(final ColumnRelationPosition bound) throws Exception {
     return new ColumnRelationPositionValue(bound);
   }
 
   @Override
-  public ColumnRelationPosition unmarshal(ColumnRelationPositionValue value)
+  public ColumnRelationPosition unmarshal(final ColumnRelationPositionValue value)
       throws Exception {
     return new ColumnRelationPosition(value.getFirst(), value.getSecond());
   }

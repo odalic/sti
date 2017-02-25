@@ -9,9 +9,9 @@ import com.complexible.pinto.annotations.Iri;
 
 /**
  * Representation of statistical component for REST API.
- * 
+ *
  * @author Josef Janoušek
- * 
+ *
  */
 @XmlType
 @XmlEnum(String.class)
@@ -20,18 +20,15 @@ public enum ComponentTypeValue {
   /**
    * statistical component representing dimension
    */
-  @Iri("http://odalic.eu/internal/ComponentType/dimension")
-  @XmlEnumValue("DIMENSION") DIMENSION,
-  
+  @Iri("http://odalic.eu/internal/ComponentType/dimension") @XmlEnumValue("DIMENSION") DIMENSION,
+
   /**
    * statistical component representing measure
    */
-  @Iri("http://odalic.eu/internal/ComponentType/measure") 
-  @XmlEnumValue("MEASURE") MEASURE,
-  
+  @Iri("http://odalic.eu/internal/ComponentType/measure") @XmlEnumValue("MEASURE") MEASURE,
+
   /**
    * no statistical component
    */
-  @Iri("http://odalic.eu/internal/ComponentType/none") 
-  @XmlEnumValue("NONE") NONE
+  @Iri("http://odalic.eu/internal/ComponentType/none") @XmlEnumValue("NONE") NONE
 }

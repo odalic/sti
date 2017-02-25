@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonDeserializer;
@@ -18,7 +17,7 @@ import cz.cuni.mff.xrg.odalic.tasks.Task;
 
 /**
  * Aggregation of {@link TaskValue} with {@link StateValue}.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -32,58 +31,31 @@ public final class StatefulTaskValue implements Serializable {
   private String description;
 
   private Date created;
-  
+
   private ConfigurationValue configuration;
 
   private StateValue state;
 
   public StatefulTaskValue() {}
 
-  public StatefulTaskValue(Task adaptee, StateValue state) {
+  public StatefulTaskValue(final Task adaptee, final StateValue state) {
     Preconditions.checkNotNull(state);
-    
+
     this.state = state;
-    
-    id = adaptee.getId();
-    description = adaptee.getDescription();
-    created = adaptee.getCreated();
-    configuration = new ConfigurationValue(adaptee.getConfiguration());
+
+    this.id = adaptee.getId();
+    this.description = adaptee.getDescription();
+    this.created = adaptee.getCreated();
+    this.configuration = new ConfigurationValue(adaptee.getConfiguration());
   }
 
   /**
-   * @return the id
+   * @return the configuration
    */
   @XmlElement
   @Nullable
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * @param id the id to set
-   */
-  public void setId(String id) {
-    Preconditions.checkNotNull(id);
-
-    this.id = id;
-  }
-
-  /**
-   * @return the description
-   */
-  @XmlElement
-  @Nullable
-  public String getDescription() {
-    return description;
-  }
-
-  /**
-   * @param description the task description
-   */
-  public void setDescription(String description) {
-    Preconditions.checkNotNull(description);
-
-    this.description = description;
+  public ConfigurationValue getConfiguration() {
+    return this.configuration;
   }
 
   /**
@@ -94,49 +66,76 @@ public final class StatefulTaskValue implements Serializable {
   @JsonDeserialize(using = CustomDateJsonDeserializer.class)
   @Nullable
   public Date getCreated() {
-    return created;
+    return this.created;
   }
 
   /**
-   * @param created the created to set
-   */
-  public void setCreated(Date created) {
-    Preconditions.checkNotNull(created);
-
-    this.created = created;
-  }
-
-  /**
-   * @return the configuration
+   * @return the description
    */
   @XmlElement
   @Nullable
-  public ConfigurationValue getConfiguration() {
-    return configuration;
+  public String getDescription() {
+    return this.description;
   }
 
   /**
-   * @param configuration the configuration to set
+   * @return the id
    */
-  public void setConfiguration(ConfigurationValue configuration) {
-    Preconditions.checkNotNull(configuration);
-
-    this.configuration = configuration;
+  @XmlElement
+  @Nullable
+  public String getId() {
+    return this.id;
   }
-  
+
   /**
    * @return the state
    */
   @XmlElement
   @Nullable
   public StateValue getState() {
-    return state;
+    return this.state;
+  }
+
+  /**
+   * @param configuration the configuration to set
+   */
+  public void setConfiguration(final ConfigurationValue configuration) {
+    Preconditions.checkNotNull(configuration);
+
+    this.configuration = configuration;
+  }
+
+  /**
+   * @param created the created to set
+   */
+  public void setCreated(final Date created) {
+    Preconditions.checkNotNull(created);
+
+    this.created = created;
+  }
+
+  /**
+   * @param description the task description
+   */
+  public void setDescription(final String description) {
+    Preconditions.checkNotNull(description);
+
+    this.description = description;
+  }
+
+  /**
+   * @param id the id to set
+   */
+  public void setId(final String id) {
+    Preconditions.checkNotNull(id);
+
+    this.id = id;
   }
 
   /**
    * @param state the state to set
    */
-  public void setState(StateValue state) {
+  public void setState(final StateValue state) {
     Preconditions.checkNotNull(state);
 
     this.state = state;
@@ -144,12 +143,12 @@ public final class StatefulTaskValue implements Serializable {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "StatefulTaskValue [id=" + id + ", description=" + description + ", created=" + created
-        + ", configuration=" + configuration + ", state=" + state + "]";
+    return "StatefulTaskValue [id=" + this.id + ", description=" + this.description + ", created="
+        + this.created + ", configuration=" + this.configuration + ", state=" + this.state + "]";
   }
 }

@@ -3,25 +3,25 @@ package cz.cuni.mff.xrg.odalic.users;
 import java.util.NavigableSet;
 
 public interface UserService {
-  void signUp(Credentials credentials);
-  
-  void create(Credentials credentials, Role role);
-  
-  User authenticate(Credentials credentials);
-  
   void activateUser(Token token);
 
-  void requestPasswordChange(User user, String password);
-  
-  void confirmPasswordChange(Token token);
-  
-  Token issueToken(User user);
+  User authenticate(Credentials credentials);
 
-  User validateToken(Token token);
+  void confirmPasswordChange(Token token);
+
+  void create(Credentials credentials, Role role);
+
+  void deleteUser(String userId);
 
   User getUser(String id);
 
   NavigableSet<User> getUsers();
 
-  void deleteUser(String userId);
+  Token issueToken(User user);
+
+  void requestPasswordChange(User user, String password);
+
+  void signUp(Credentials credentials);
+
+  User validateToken(Token token);
 }

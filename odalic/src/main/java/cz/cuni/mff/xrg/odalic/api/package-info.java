@@ -1,4 +1,4 @@
 /**
- * Available Odalic server APIs. 
+ * Available Odalic server APIs.
  */
 package cz.cuni.mff.xrg.odalic.api;

@@ -1,21 +1,22 @@
 package cz.cuni.mff.xrg.odalic.api.rdf.values;
 
 import java.util.Set;
+
 import com.complexible.pinto.annotations.RdfProperty;
 import com.complexible.pinto.annotations.RdfsClass;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 
 /**
  * <p>
  * Domain class {@link StatisticalAnnotation} adapted for RDF serialization.
  * </p>
- * 
+ *
  * @author Josef Janoušek
  *
  */
@@ -27,11 +28,11 @@ public final class StatisticalAnnotationValue {
   private Set<KnowledgeBaseEntityCandidateSetEntry> predicate;
 
   public StatisticalAnnotationValue() {
-    component = ImmutableSet.of();
-    predicate = ImmutableSet.of();
+    this.component = ImmutableSet.of();
+    this.predicate = ImmutableSet.of();
   }
 
-  public StatisticalAnnotationValue(StatisticalAnnotation adaptee) {
+  public StatisticalAnnotationValue(final StatisticalAnnotation adaptee) {
     this.component = adaptee.getComponent().entrySet().stream()
         .map(e -> new KnowledgeBaseComponentTypeValueEntry(new KnowledgeBaseValue(e.getKey()),
             e.getValue()))
@@ -44,14 +45,7 @@ public final class StatisticalAnnotationValue {
    */
   @RdfProperty("http://odalic.eu/internal/StatisticalAnnotation/component")
   public Set<KnowledgeBaseComponentTypeValueEntry> getComponent() {
-    return component;
-  }
-
-  /**
-   * @param component the component to set
-   */
-  public void setComponent(Set<? extends KnowledgeBaseComponentTypeValueEntry> component) {
-    this.component = ImmutableSet.copyOf(component);
+    return this.component;
   }
 
   /**
@@ -59,33 +53,42 @@ public final class StatisticalAnnotationValue {
    */
   @RdfProperty("http://odalic.eu/internal/StatisticalAnnotation/predicate")
   public Set<KnowledgeBaseEntityCandidateSetEntry> getPredicate() {
-    return predicate;
+    return this.predicate;
+  }
+
+  /**
+   * @param component the component to set
+   */
+  public void setComponent(final Set<? extends KnowledgeBaseComponentTypeValueEntry> component) {
+    this.component = ImmutableSet.copyOf(component);
   }
 
   /**
    * @param predicate the predicate to set
    */
-  public void setPredicate(Set<? extends KnowledgeBaseEntityCandidateSetEntry> predicate) {
+  public void setPredicate(final Set<? extends KnowledgeBaseEntityCandidateSetEntry> predicate) {
     this.predicate = Annotations.copyValues(predicate);
   }
 
   public StatisticalAnnotation toStatisticalAnnotation() {
     final ImmutableMap.Builder<KnowledgeBase, ComponentTypeValue> componentMapBuilder =
         ImmutableMap.builder();
-    for (final KnowledgeBaseComponentTypeValueEntry entry : component) {
+    for (final KnowledgeBaseComponentTypeValueEntry entry : this.component) {
       componentMapBuilder.put(entry.getBase().toKnowledgeBase(), entry.getValue());
     }
 
-    return new StatisticalAnnotation(componentMapBuilder.build(), Annotations.toDomain(predicate));
+    return new StatisticalAnnotation(componentMapBuilder.build(),
+        Annotations.toDomain(this.predicate));
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "StatisticalAnnotationValue [component=" + component + ", predicate=" + predicate + "]";
+    return "StatisticalAnnotationValue [component=" + this.component + ", predicate="
+        + this.predicate + "]";
   }
 }

@@ -45,63 +45,41 @@ public final class FeedbackResource {
 
 
   @Autowired
-  public FeedbackResource(FeedbackService feedbackService) {
+  public FeedbackResource(final FeedbackService feedbackService) {
     Preconditions.checkNotNull(feedbackService);
 
     this.feedbackService = feedbackService;
-  }
-
-  @PUT
-  @Path("users/{userId}/tasks/{taskId}/configuration/feedback")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response putFeedbackForTaskId(final @PathParam("userId") String userId,
-      final @PathParam("taskId") String taskId, final Feedback feedback) {
-    Security.checkAuthorization(securityContext, userId);
-
-    if (feedback == null) {
-      throw new BadRequestException("The feedback must be specified!");
-    }
-
-    try {
-      feedbackService.setForTaskId(userId, taskId, feedback);
-    } catch (final IllegalArgumentException e) {
-      throw new BadRequestException("The task that the feedback is made to does not exist!", e);
-    }
-
-    return Message.of("Feedback set.").toResponse(Response.Status.OK, uriInfo);
-  }
-
-  @PUT
-  @Path("tasks/{taskId}/configuration/feedback")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response putFeedbackForTaskId(final @PathParam("taskId") String id, Feedback feedback) {
-    return putFeedbackForTaskId(securityContext.getUserPrincipal().getName(), id, feedback);
-  }
-
-  @GET
-  @Path("users/{userId}/tasks/{taskId}/configuration/feedback")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getFeedbackForTaskId(final @PathParam("userId") String userId,
-      @PathParam("taskId") String taskId) {
-    Security.checkAuthorization(securityContext, userId);
-
-    final Feedback feedbackForTaskId;
-    try {
-      feedbackForTaskId = feedbackService.getForTaskId(userId, taskId);
-    } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task does not exist!", e);
-    }
-
-    return Reply.data(Response.Status.OK, feedbackForTaskId, uriInfo).toResponse();
   }
 
   @GET
   @Path("tasks/{taskId}/configuration/feedback")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFeedbackForTaskId(final @PathParam("taskId") String taskId) {
-    return getFeedbackForTaskId(securityContext.getUserPrincipal().getName(), taskId);
+    return getFeedbackForTaskId(this.securityContext.getUserPrincipal().getName(), taskId);
+  }
+
+  @GET
+  @Path("users/{userId}/tasks/{taskId}/configuration/feedback")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getFeedbackForTaskId(final @PathParam("userId") String userId,
+      @PathParam("taskId") final String taskId) {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final Feedback feedbackForTaskId;
+    try {
+      feedbackForTaskId = this.feedbackService.getForTaskId(userId, taskId);
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException("The task does not exist!", e);
+    }
+
+    return Reply.data(Response.Status.OK, feedbackForTaskId, this.uriInfo).toResponse();
+  }
+
+  @GET
+  @Path("tasks/{taskId}/configuration/feedback/input")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getJsonDataById(final @PathParam("taskId") String taskId) throws IOException {
+    return getJsonDataById(this.securityContext.getUserPrincipal().getName(), taskId);
   }
 
   @GET
@@ -111,7 +89,7 @@ public final class FeedbackResource {
       final @PathParam("taskId") String taskId) throws IOException {
     final Input inputForTaskId;
     try {
-      inputForTaskId = feedbackService.getInputSnapshotForTaskId(userId, taskId);
+      inputForTaskId = this.feedbackService.getInputSnapshotForTaskId(userId, taskId);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("The task does not exist!", e);
     }
@@ -120,13 +98,36 @@ public final class FeedbackResource {
       throw new NotFoundException("The input snapshot does not exist yet!");
     }
 
-    return Reply.data(Response.Status.OK, inputForTaskId, uriInfo).toResponse();
+    return Reply.data(Response.Status.OK, inputForTaskId, this.uriInfo).toResponse();
   }
 
-  @GET
-  @Path("tasks/{taskId}/configuration/feedback/input")
+  @PUT
+  @Path("tasks/{taskId}/configuration/feedback")
+  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getJsonDataById(final @PathParam("taskId") String taskId) throws IOException {
-    return getJsonDataById(securityContext.getUserPrincipal().getName(), taskId);
+  public Response putFeedbackForTaskId(final @PathParam("taskId") String id,
+      final Feedback feedback) {
+    return putFeedbackForTaskId(this.securityContext.getUserPrincipal().getName(), id, feedback);
+  }
+
+  @PUT
+  @Path("users/{userId}/tasks/{taskId}/configuration/feedback")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response putFeedbackForTaskId(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId, final Feedback feedback) {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    if (feedback == null) {
+      throw new BadRequestException("The feedback must be specified!");
+    }
+
+    try {
+      this.feedbackService.setForTaskId(userId, taskId, feedback);
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException("The task that the feedback is made to does not exist!", e);
+    }
+
+    return Message.of("Feedback set.").toResponse(Response.Status.OK, this.uriInfo);
   }
 }

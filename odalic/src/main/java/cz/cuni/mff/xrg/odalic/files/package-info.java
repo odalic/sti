@@ -1,4 +1,4 @@
 /**
- * Input files management. 
+ * Input files management.
  */
 package cz.cuni.mff.xrg.odalic.files;

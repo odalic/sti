@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.util.mail;
 
@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
 import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
@@ -27,7 +28,7 @@ import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesUtil;
 
 /**
  * Uses the configured SMTP server to send e-mail messages.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -47,9 +48,18 @@ public final class SmtpMailService implements MailService {
 
   private static final Logger logger = LoggerFactory.getLogger(SmtpMailService.class);
 
+  private static InternetAddress parseFromAddress(final Properties properties)
+      throws AddressException {
+    final InternetAddress[] fromAdresses =
+        InternetAddress.parse(properties.getProperty(FROM_CONFIGURATION_KEY), true);
+
+    return fromAdresses[0];
+  }
+
   private final String username;
   private final String password;
   private final Address from;
+
   private final Properties smtpConfiguration;
 
   private final Executor executor;
@@ -79,14 +89,6 @@ public final class SmtpMailService implements MailService {
     this.executor = Executors.newFixedThreadPool(1);
   }
 
-  private static InternetAddress parseFromAddress(final Properties properties)
-      throws AddressException {
-    final InternetAddress[] fromAdresses =
-        InternetAddress.parse(properties.getProperty(FROM_CONFIGURATION_KEY), true);
-
-    return fromAdresses[0];
-  }
-
   public SmtpMailService(final String username, final String password, final Address from,
       final Properties smtpConfiguration, final Executor executor) {
     Preconditions.checkNotNull(username);
@@ -104,7 +106,7 @@ public final class SmtpMailService implements MailService {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.util.mail.MailService#send(java.lang.String, java.lang.String,
    * javax.mail.Address[], javax.mail.Address[])
    */
@@ -114,27 +116,29 @@ public final class SmtpMailService implements MailService {
     logger.info("Message added to the queue. Subject: {}, text: {}, to: {}, cc: {}.", subject, text,
         Arrays.toString(to), Arrays.toString(cc));
 
-    executor.execute(() -> {
+    this.executor.execute(() -> {
       logger.info("Message processing started. Subject: {}, text: {}, to: {}, cc: {}.", subject,
           text, Arrays.toString(to), Arrays.toString(cc));
 
       final Session session =
-          Session.getInstance(smtpConfiguration, new javax.mail.Authenticator() {
+          Session.getInstance(this.smtpConfiguration, new javax.mail.Authenticator() {
 
+            @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-              return new PasswordAuthentication(username, password);
+              return new PasswordAuthentication(SmtpMailService.this.username,
+                  SmtpMailService.this.password);
             }
 
           });
 
-      logger.info("Message processing session created for {}.", username);
+      logger.info("Message processing session created for {}.", this.username);
 
       final Message message = new MimeMessage(session);
       try {
-        message.setFrom(from);
+        message.setFrom(this.from);
         message.setRecipients(Message.RecipientType.TO, to);
 
-        if (cc != null && cc.length > 0) {
+        if ((cc != null) && (cc.length > 0)) {
           message.addRecipients(Message.RecipientType.CC, cc);
         }
 

@@ -9,12 +9,12 @@ import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.TableContext;
 public final class TableContextAdapter extends XmlAdapter<TableContextValue, TableContext> {
 
   @Override
-  public TableContextValue marshal(TableContext bound) throws Exception {
+  public TableContextValue marshal(final TableContext bound) throws Exception {
     return new TableContextValue(bound);
   }
 
   @Override
-  public TableContext unmarshal(TableContextValue value) throws Exception {
+  public TableContext unmarshal(final TableContextValue value) throws Exception {
     return new TableContext(value.getMapping());
   }
 }

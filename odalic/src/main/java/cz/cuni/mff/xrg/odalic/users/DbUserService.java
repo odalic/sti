@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.users;
 
@@ -22,6 +22,7 @@ import org.mapdb.serializer.SerializerArrayTuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSortedSet;
 
@@ -34,7 +35,7 @@ import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
  * This {@link UserService} implementation persists the users in {@link DB}-backed maps.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -71,17 +72,147 @@ public final class DbUserService implements UserService {
   private static final Logger logger = LoggerFactory.getLogger(DbUserService.class);
 
 
+  private static Address extractAddress(final Credentials credentials) {
+    final Address address;
+    try {
+      address = new InternetAddress(credentials.getEmail(), true);
+    } catch (final AddressException e) {
+      throw new IllegalArgumentException(e);
+    }
+    return address;
+  }
+
+  private static Address extractAddress(final User user) {
+    final Address address;
+    try {
+      address = new InternetAddress(user.getEmail(), true);
+    } catch (final AddressException e) {
+      throw new IllegalArgumentException(e);
+    }
+    return address;
+  }
+
+  private static String formatMessageWithUrl(final String messageFormat,
+      final java.net.URL confirmationCodeUrl) {
+    return String.format(messageFormat, confirmationCodeUrl);
+  }
+
+  private static java.net.URL formatUrlWithToken(final String urlFormat, final Token token) {
+    // The token string is to be URL friendly, so no escaping is needed.
+    final String urlString = String.format(urlFormat, token.getToken());
+
+    final java.net.URL confirmationCodeUrl;
+    try {
+      confirmationCodeUrl = new java.net.URL(urlString);
+    } catch (final MalformedURLException e) {
+      throw new IllegalArgumentException("The token cannot be encoded to URL!", e);
+    }
+    return confirmationCodeUrl;
+  }
+
+  private static int getMaxCodesKept(final Properties properties) {
+    final String maximumCodesKeptString = properties.getProperty(MAXIMUM_CODES_KEPT_PROPERTY_KEY);
+    Preconditions.checkNotNull(maximumCodesKeptString);
+
+    try {
+      return Integer.parseInt(maximumCodesKeptString);
+    } catch (final NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid maximum codes kept value!", e);
+    }
+  }
+
+  private static String getPasswordSettingConfirmationUrlFormat(final Properties properties) {
+    final String passwordSettingConfirmationUrlFormat =
+        properties.getProperty(PASSWORD_SETTING_CONFIRMATION_URL_FORMAT_PROPERTY_KEY);
+
+    Preconditions.checkArgument(passwordSettingConfirmationUrlFormat != null,
+        String.format("Missing key %s in the configuration!",
+            PASSWORD_SETTING_CONFIRMATION_URL_FORMAT_PROPERTY_KEY));
+
+    try {
+      formatUrlWithToken(passwordSettingConfirmationUrlFormat, new Token("dummy"));
+    } catch (final IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid password setting confirmation URL format set!");
+    }
+
+    return passwordSettingConfirmationUrlFormat;
+  }
+
+  private static long getPasswordSettingConfirmationWindowsMinutes(final Properties properties) {
+    final String passwordSettingConfirmationWindowMinutesString =
+        properties.getProperty(PASSWORD_SETTING_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY);
+    Preconditions.checkArgument(passwordSettingConfirmationWindowMinutesString != null,
+        String.format("Missing key %s in the configuration!",
+            PASSWORD_SETTING_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY));
+    final long passwordSettingConfirmationWindowMinutes;
+    try {
+      passwordSettingConfirmationWindowMinutes =
+          Long.parseLong(passwordSettingConfirmationWindowMinutesString);
+    } catch (final NumberFormatException e) {
+      throw new IllegalArgumentException(
+          "Invalid password setting confirmation windows duration value!", e);
+    }
+    return passwordSettingConfirmationWindowMinutes;
+  }
+
+  private static long getSessionMaximumHours(final Properties properties) {
+    final String sessionMaximumHoursString =
+        properties.getProperty(SESSION_MAXIMUM_HOURS_PROPERTY_KEY);
+    Preconditions.checkArgument(sessionMaximumHoursString != null,
+        String.format("Missing key %s in the configuration!", SESSION_MAXIMUM_HOURS_PROPERTY_KEY));
+
+    try {
+      return Long.parseLong(sessionMaximumHoursString);
+    } catch (final NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid maximum session duration value!", e);
+    }
+  }
+
+  private static String getSignUpConfirmationUrlFormat(final Properties properties) {
+    final String signUpConfirmationUrlFormat =
+        properties.getProperty(SIGNUP_CONFIRMATION_URL_FORMAT_PROPERTY_KEY);
+
+    Preconditions.checkArgument(signUpConfirmationUrlFormat != null, String.format(
+        "Missing key %s in the configuration!", SIGNUP_CONFIRMATION_URL_FORMAT_PROPERTY_KEY));
+
+    try {
+      formatUrlWithToken(signUpConfirmationUrlFormat, new Token("dummy"));
+    } catch (final IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid sign-up confirmation URL format set!");
+    }
+
+    return signUpConfirmationUrlFormat;
+  }
+
+  private static long getSignUpConfirmationWindowMinutes(final Properties properties) {
+    final String signUpConfirmationWindowMinutesString =
+        properties.getProperty(SIGNUP_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY);
+    Preconditions.checkArgument(signUpConfirmationWindowMinutesString != null, String.format(
+        "Missing key %s in the configuration!", SIGNUP_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY));
+    try {
+      return Long.parseLong(signUpConfirmationWindowMinutesString);
+    } catch (final NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid sign-up confirmation windows duration value!", e);
+    }
+  }
+
   private final PasswordHashingService passwordHashingService;
+
   private final MailService mailService;
   private final TokenService tokenService;
+
   private final TaskService taskService;
+
   private final FileService fileService;
 
   private final long signUpConfirmationWindowMinutes;
+
   private final long passwordSettingConfirmationWindowMinutes;
+
   private final long sessionMaximumHours;
 
   private final String signUpConfirmationUrlFormat;
+
   private final String passwordSettingConfirmationUrlFormat;
 
   /**
@@ -90,9 +221,12 @@ public final class DbUserService implements UserService {
   private final DB db;
 
   private final Map<UUID, Credentials> tokenIdsToUnconfirmed;
+
   private final Map<UUID, User> tokenIdsToPasswordChanging;
 
+
   private final Map<String, User> userIdsToUsers;
+
 
   /**
    * A multimap from user IDs to tokenIDs implemented as a map of user ID and token ID pairs to
@@ -124,16 +258,16 @@ public final class DbUserService implements UserService {
     this.db = dbService.getDb();
 
     this.userIdsToUsers =
-        db.hashMap("userIdsToUsers", Serializer.STRING, Serializer.JAVA).createOrOpen();
+        this.db.hashMap("userIdsToUsers", Serializer.STRING, Serializer.JAVA).createOrOpen();
 
     final int maximumCodesKept = getMaxCodesKept(properties);
 
     this.tokenIdsToUnconfirmed =
-        db.hashMap("tokenIdsToUnconfirmed", Serializer.UUID, Serializer.JAVA)
+        this.db.hashMap("tokenIdsToUnconfirmed", Serializer.UUID, Serializer.JAVA)
             .expireMaxSize(maximumCodesKept).expireAfterCreate().expireAfterGet()
             .expireAfterUpdate().createOrOpen();
     this.tokenIdsToPasswordChanging =
-        db.hashMap("tokenIdsToPasswordChanging", Serializer.UUID, Serializer.JAVA)
+        this.db.hashMap("tokenIdsToPasswordChanging", Serializer.UUID, Serializer.JAVA)
             .expireMaxSize(maximumCodesKept).expireAfterCreate().expireAfterGet()
             .expireAfterUpdate().createOrOpen();
 
@@ -145,211 +279,40 @@ public final class DbUserService implements UserService {
     this.signUpConfirmationUrlFormat = getSignUpConfirmationUrlFormat(properties);
     this.passwordSettingConfirmationUrlFormat = getPasswordSettingConfirmationUrlFormat(properties);
 
-    this.userIdsToTokenIds = db.treeMap("userIdsToTokenIds",
-        new SerializerArrayTuple(Serializer.STRING, Serializer.UUID), Serializer.BOOLEAN)
-        .createOrOpen();
+    this.userIdsToTokenIds =
+        this.db
+            .treeMap("userIdsToTokenIds",
+                new SerializerArrayTuple(Serializer.STRING, Serializer.UUID), Serializer.BOOLEAN)
+            .createOrOpen();
 
     createAdminIfNotPresent(properties);
   }
 
-  private static String getPasswordSettingConfirmationUrlFormat(final Properties properties) {
-    final String passwordSettingConfirmationUrlFormat =
-        properties.getProperty(PASSWORD_SETTING_CONFIRMATION_URL_FORMAT_PROPERTY_KEY);
-
-    Preconditions.checkArgument(passwordSettingConfirmationUrlFormat != null,
-        String.format("Missing key %s in the configuration!",
-            PASSWORD_SETTING_CONFIRMATION_URL_FORMAT_PROPERTY_KEY));
-
-    try {
-      formatUrlWithToken(passwordSettingConfirmationUrlFormat, new Token("dummy"));
-    } catch (final IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid password setting confirmation URL format set!");
-    }
-
-    return passwordSettingConfirmationUrlFormat;
-  }
-
-  private static String getSignUpConfirmationUrlFormat(final Properties properties) {
-    final String signUpConfirmationUrlFormat =
-        properties.getProperty(SIGNUP_CONFIRMATION_URL_FORMAT_PROPERTY_KEY);
-
-    Preconditions.checkArgument(signUpConfirmationUrlFormat != null, String.format(
-        "Missing key %s in the configuration!", SIGNUP_CONFIRMATION_URL_FORMAT_PROPERTY_KEY));
-
-    try {
-      formatUrlWithToken(signUpConfirmationUrlFormat, new Token("dummy"));
-    } catch (final IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid sign-up confirmation URL format set!");
-    }
-
-    return signUpConfirmationUrlFormat;
-  }
-
-  private static long getPasswordSettingConfirmationWindowsMinutes(final Properties properties) {
-    final String passwordSettingConfirmationWindowMinutesString =
-        properties.getProperty(PASSWORD_SETTING_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY);
-    Preconditions.checkArgument(passwordSettingConfirmationWindowMinutesString != null,
-        String.format("Missing key %s in the configuration!",
-            PASSWORD_SETTING_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY));
-    final long passwordSettingConfirmationWindowMinutes;
-    try {
-      passwordSettingConfirmationWindowMinutes =
-          Long.parseLong(passwordSettingConfirmationWindowMinutesString);
-    } catch (final NumberFormatException e) {
-      throw new IllegalArgumentException(
-          "Invalid password setting confirmation windows duration value!", e);
-    }
-    return passwordSettingConfirmationWindowMinutes;
-  }
-
-  private static long getSignUpConfirmationWindowMinutes(final Properties properties) {
-    final String signUpConfirmationWindowMinutesString =
-        properties.getProperty(SIGNUP_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY);
-    Preconditions.checkArgument(signUpConfirmationWindowMinutesString != null, String.format(
-        "Missing key %s in the configuration!", SIGNUP_CONFIRMATION_WINDOW_MINUTES_PROPERTY_KEY));
-    try {
-      return Long.parseLong(signUpConfirmationWindowMinutesString);
-    } catch (final NumberFormatException e) {
-      throw new IllegalArgumentException("Invalid sign-up confirmation windows duration value!", e);
-    }
-  }
-
-  private static long getSessionMaximumHours(final Properties properties) {
-    final String sessionMaximumHoursString =
-        properties.getProperty(SESSION_MAXIMUM_HOURS_PROPERTY_KEY);
-    Preconditions.checkArgument(sessionMaximumHoursString != null,
-        String.format("Missing key %s in the configuration!", SESSION_MAXIMUM_HOURS_PROPERTY_KEY));
-
-    try {
-      return Long.parseLong(sessionMaximumHoursString);
-    } catch (final NumberFormatException e) {
-      throw new IllegalArgumentException("Invalid maximum session duration value!", e);
-    }
-  }
-
-  private static int getMaxCodesKept(final Properties properties) {
-    final String maximumCodesKeptString = properties.getProperty(MAXIMUM_CODES_KEPT_PROPERTY_KEY);
-    Preconditions.checkNotNull(maximumCodesKeptString);
-
-    try {
-      return Integer.parseInt(maximumCodesKeptString);
-    } catch (final NumberFormatException e) {
-      throw new IllegalArgumentException("Invalid maximum codes kept value!", e);
-    }
-  }
-
-  private void createAdminIfNotPresent(final Properties properties) {
-    final String adminEmail = properties.getProperty(ADMIN_EMAIL_PROPERTY_KEY);
-    Preconditions.checkArgument(adminEmail != null,
-        String.format("Missing key %s in the configuration!", ADMIN_EMAIL_PROPERTY_KEY));
-
-    final String adminInitialPassword = properties.getProperty(ADMIN_INITIAL_PASSWORD_PROPERTY_KEY);
-    Preconditions.checkArgument(adminInitialPassword != null,
-        String.format("Missing key %s in the configuration!", ADMIN_INITIAL_PASSWORD_PROPERTY_KEY));
-    Preconditions.checkArgument(!adminInitialPassword.isEmpty(),
-        "The initial admin password cannot be empty!");
-
-    if (this.userIdsToUsers.containsKey(adminEmail)) {
-      logger.info("The administrator account already present. Skipping its creation.");
-      return;
-    }
-
-    doCreate(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
-
-    db.commit();
-  }
-
-
   /*
    * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#signUp(cz.cuni.mff.xrg.odalic.users.Credentials)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#activateUser(cz.cuni.mff.xrg.odalic.users.Token)
    */
   @Override
-  public void signUp(final Credentials credentials) {
-    Preconditions.checkNotNull(credentials);
+  public void activateUser(final Token token) {
+    final DecodedToken decodedToken = validateAndDecode(token);
 
-    final Address address = extractAddress(credentials);
+    final Credentials credentials = matchCredentials(decodedToken);
 
-    final Token token = generateSignUpToken(credentials);
-
-    final String message = generateSignUpMessage(token);
-
-    this.mailService.send(ODALIC_SIGN_UP_CONFIRMATION_SUBJECT, message, new Address[] {address});
-
-    db.commit();
-  }
-
-
-  private Token generateSignUpToken(final Credentials credentials) {
-    final UUID tokenId = UUID.randomUUID();
-    final Instant expiration =
-        Instant.now().plus(Duration.ofMinutes(this.signUpConfirmationWindowMinutes));
-
-    final Token token = this.tokenService.create(tokenId, SIGNUP_TOKEN_SUBJECT, expiration);
-    this.tokenIdsToUnconfirmed.put(tokenId, credentials);
-    return token;
-  }
-
-  private static Address extractAddress(final Credentials credentials) {
-    final Address address;
     try {
-      address = new InternetAddress(credentials.getEmail(), true);
-    } catch (final AddressException e) {
-      throw new IllegalArgumentException(e);
+      doCreate(credentials, Role.USER);
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
     }
-    return address;
+
+    this.db.commit();
   }
 
-  private String generateSignUpMessage(final Token token) {
-    final java.net.URL confirmationCodeUrl =
-        formatUrlWithToken(this.signUpConfirmationUrlFormat, token);
-
-    return formatMessageWithUrl(SIGN_UP_MESSAGE_FORMAT, confirmationCodeUrl);
-  }
-
-
-  private static java.net.URL formatUrlWithToken(final String urlFormat, final Token token) {
-    // The token string is to be URL friendly, so no escaping is needed.
-    final String urlString = String.format(urlFormat, token.getToken());
-
-    final java.net.URL confirmationCodeUrl;
-    try {
-      confirmationCodeUrl = new java.net.URL(urlString);
-    } catch (final MalformedURLException e) {
-      throw new IllegalArgumentException("The token cannot be encoded to URL!", e);
-    }
-    return confirmationCodeUrl;
-  }
 
   /*
    * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#create(cz.cuni.mff.xrg.odalic.users.Credentials,
-   * cz.cuni.mff.xrg.odalic.users.Role)
-   */
-  @Override
-  public void create(final Credentials credentials, final Role role) {
-    Preconditions.checkNotNull(credentials);
-    Preconditions.checkNotNull(role);
-
-    doCreate(credentials, role);
-
-    db.commit();
-  }
-
-  private void doCreate(final Credentials credentials, final Role role) {
-    Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()));
-
-    final String email = credentials.getEmail();
-    final String passwordHashed = hash(credentials.getPassword());
-
-    this.userIdsToUsers.put(email, new User(email, passwordHashed, role));
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
+   *
    * @see
    * cz.cuni.mff.xrg.odalic.users.UserService#authenticate(cz.cuni.mff.xrg.odalic.users.Credentials)
    */
@@ -375,109 +338,7 @@ public final class DbUserService implements UserService {
 
   /*
    * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#activateUser(cz.cuni.mff.xrg.odalic.users.Token)
-   */
-  @Override
-  public void activateUser(final Token token) {
-    final DecodedToken decodedToken = validateAndDecode(token);
-
-    final Credentials credentials = matchCredentials(decodedToken);
-
-    try {
-      doCreate(credentials, Role.USER);
-    } catch (final Exception e) {
-      db.rollback();
-      throw e;
-    }
-
-    db.commit();
-  }
-
-  private Credentials matchCredentials(final DecodedToken decodedToken) {
-    final UUID tokenId = decodedToken.getId();
-
-    final Credentials credentials = this.tokenIdsToUnconfirmed.remove(tokenId);
-    if (credentials == null) {
-      logger.warn("Unknown sign-up confirmation token {}!", decodedToken);
-      throw new IllegalArgumentException("Invalid confirmation code!");
-    }
-
-    return credentials;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#issueToken(cz.cuni.mff.xrg.odalic.users.User)
-   */
-  @Override
-  public Token issueToken(User user) {
-    final UUID tokenId = UUID.randomUUID();
-    final String userId = user.getEmail();
-    final Instant expiration = Instant.now().plus(Duration.ofHours(sessionMaximumHours));
-
-    final Token token = this.tokenService.create(tokenId, userId, expiration);
-    this.userIdsToTokenIds.put(new Object[] {userId, tokenId}, true);
-
-    db.commit();
-
-    return token;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#requestPasswordChange(java.net.URL,
-   * java.lang.String, cz.cuni.mff.xrg.odalic.users.User, java.lang.String)
-   */
-  @Override
-  public void requestPasswordChange(User user, String newPassword) {
-    Preconditions.checkNotNull(user);
-    Preconditions.checkNotNull(newPassword);
-    Preconditions.checkNotNull(!newPassword.isEmpty());
-
-    final Address address = extractAddress(user);
-    final UUID tokenId = UUID.randomUUID();
-    final Instant expiration =
-        Instant.now().plus(Duration.ofMinutes(this.passwordSettingConfirmationWindowMinutes));
-
-    final Token token = this.tokenService.create(tokenId, SIGNUP_TOKEN_SUBJECT, expiration);
-
-    this.tokenIdsToPasswordChanging.put(tokenId,
-        new User(user.getEmail(), hash(newPassword), user.getRole()));
-
-    this.mailService.send(ODALIC_PASSWORD_CHANGING_CONFIRMATION_SUBJECT,
-        generatePasswordChangingMessage(token), new Address[] {address});
-
-    db.commit();
-  }
-
-  private static Address extractAddress(User user) {
-    final Address address;
-    try {
-      address = new InternetAddress(user.getEmail(), true);
-    } catch (final AddressException e) {
-      throw new IllegalArgumentException(e);
-    }
-    return address;
-  }
-
-  private String generatePasswordChangingMessage(final Token token) {
-    final java.net.URL confirmationCodeUrl =
-        formatUrlWithToken(this.passwordSettingConfirmationUrlFormat, token);
-
-    return formatMessageWithUrl(PASSWORD_SETTING_MESSAGE_FORMAT, confirmationCodeUrl);
-  }
-
-  private static String formatMessageWithUrl(final String messageFormat,
-      final java.net.URL confirmationCodeUrl) {
-    return String.format(messageFormat, confirmationCodeUrl);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
+   *
    * @see
    * cz.cuni.mff.xrg.odalic.users.UserService#confirmPasswordChange(cz.cuni.mff.xrg.odalic.users.
    * Token)
@@ -492,89 +353,98 @@ public final class DbUserService implements UserService {
     try {
       replaced = replace(newUser);
     } catch (final Exception e) {
-      db.rollback();
+      this.db.rollback();
       throw e;
     }
 
     invalidateTokens(replaced);
 
-    db.commit();
-  }
-
-  private void invalidateTokens(final User user) {
-    this.userIdsToTokenIds.prefixSubMap(new Object[] {user.getEmail()}).clear();
-  }
-
-  private User replace(final User user) {
-    final User replaced = this.userIdsToUsers.replace(user.getEmail(), user);
-    Preconditions.checkState(replaced != null, "Nonexisting user!");
-    return replaced;
-  }
-
-  private User matchPasswordChangingUser(final DecodedToken decodedToken) {
-    final User user = this.tokenIdsToPasswordChanging.remove(decodedToken.getId());
-    if (user == null) {
-      logger.warn("Invalid password setting confirmation token {}!", decodedToken);
-      throw new IllegalArgumentException("Invalid confirmation code!");
-    }
-
-    return user;
-  }
-
-  private String hash(final String password) {
-    return passwordHashingService.hash(password);
-  }
-
-  private boolean check(final String password, final String passwordHash) {
-    return passwordHashingService.check(password, passwordHash);
+    this.db.commit();
   }
 
   /*
    * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#validateToken(cz.cuni.mff.xrg.odalic.users.Token)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#create(cz.cuni.mff.xrg.odalic.users.Credentials,
+   * cz.cuni.mff.xrg.odalic.users.Role)
    */
   @Override
-  public User validateToken(Token token) {
-    final DecodedToken decodedToken = validateAndDecode(token);
+  public void create(final Credentials credentials, final Role role) {
+    Preconditions.checkNotNull(credentials);
+    Preconditions.checkNotNull(role);
 
-    return matchUser(decodedToken);
+    doCreate(credentials, role);
+
+    this.db.commit();
   }
 
-  private User matchUser(final DecodedToken decodedToken) {
-    final String userId = decodedToken.getSubject();
-    final User user = this.userIdsToUsers.get(userId);
-    if (user == null) {
-      logger.warn("Unknown user for token {}!", decodedToken);
-      throw new IllegalArgumentException("Authentication failed!");
+  private void createAdminIfNotPresent(final Properties properties) {
+    final String adminEmail = properties.getProperty(ADMIN_EMAIL_PROPERTY_KEY);
+    Preconditions.checkArgument(adminEmail != null,
+        String.format("Missing key %s in the configuration!", ADMIN_EMAIL_PROPERTY_KEY));
+
+    final String adminInitialPassword = properties.getProperty(ADMIN_INITIAL_PASSWORD_PROPERTY_KEY);
+    Preconditions.checkArgument(adminInitialPassword != null,
+        String.format("Missing key %s in the configuration!", ADMIN_INITIAL_PASSWORD_PROPERTY_KEY));
+    Preconditions.checkArgument(!adminInitialPassword.isEmpty(),
+        "The initial admin password cannot be empty!");
+
+    if (this.userIdsToUsers.containsKey(adminEmail)) {
+      logger.info("The administrator account already present. Skipping its creation.");
+      return;
     }
 
-    checkFreshness(decodedToken, user.getEmail());
+    doCreate(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
 
-    return user;
+    this.db.commit();
   }
 
-  private DecodedToken validateAndDecode(final Token token) {
-    final DecodedToken decodedToken;
-    try {
-      decodedToken = this.tokenService.validate(token);
-    } catch (final IllegalArgumentException e) {
-      logger.warn("Token validation failed!", e);
-      throw new IllegalArgumentException("Authentication failed!");
-    }
-    return decodedToken;
+  @Override
+  public void deleteUser(final String userId) {
+    this.taskService.deleteAll(userId);
+    this.fileService.deleteAll(userId);
+
+    this.userIdsToTokenIds.prefixSubMap(new Object[] {userId}).clear();
+    final User removed = this.userIdsToUsers.remove(userId);
+    Preconditions.checkArgument(removed != null, "No such user exists!");
   }
 
-  private void checkFreshness(final DecodedToken decodedToken, final String userId) {
-    if (!this.userIdsToTokenIds.containsKey(new Object[] {userId, decodedToken.getId()})) {
-      logger.warn("Obsolete token {}!", decodedToken);
-      throw new IllegalArgumentException("Authentication failed!");
-    }
+  private void doCreate(final Credentials credentials, final Role role) {
+    Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()));
+
+    final String email = credentials.getEmail();
+    final String passwordHashed = hash(credentials.getPassword());
+
+    this.userIdsToUsers.put(email, new User(email, passwordHashed, role));
+  }
+
+  private String generatePasswordChangingMessage(final Token token) {
+    final java.net.URL confirmationCodeUrl =
+        formatUrlWithToken(this.passwordSettingConfirmationUrlFormat, token);
+
+    return formatMessageWithUrl(PASSWORD_SETTING_MESSAGE_FORMAT, confirmationCodeUrl);
+  }
+
+  private String generateSignUpMessage(final Token token) {
+    final java.net.URL confirmationCodeUrl =
+        formatUrlWithToken(this.signUpConfirmationUrlFormat, token);
+
+    return formatMessageWithUrl(SIGN_UP_MESSAGE_FORMAT, confirmationCodeUrl);
+  }
+
+  private Token generateSignUpToken(final Credentials credentials) {
+    final UUID tokenId = UUID.randomUUID();
+    final Instant expiration =
+        Instant.now().plus(Duration.ofMinutes(this.signUpConfirmationWindowMinutes));
+
+    final Token token = this.tokenService.create(tokenId, SIGNUP_TOKEN_SUBJECT, expiration);
+    this.tokenIdsToUnconfirmed.put(tokenId, credentials);
+    return token;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.users.UserService#getUser(java.lang.String)
    */
   @Override
@@ -592,13 +462,153 @@ public final class DbUserService implements UserService {
     return ImmutableSortedSet.copyOf(this.userIdsToUsers.values());
   }
 
-  @Override
-  public void deleteUser(final String userId) {
-    this.taskService.deleteAll(userId);
-    this.fileService.deleteAll(userId);
+  private String hash(final String password) {
+    return this.passwordHashingService.hash(password);
+  }
 
-    this.userIdsToTokenIds.prefixSubMap(new Object[] {userId}).clear();
-    final User removed = this.userIdsToUsers.remove(userId);
-    Preconditions.checkArgument(removed != null, "No such user exists!");
+  private boolean check(final String password, final String passwordHash) {
+    return this.passwordHashingService.check(password, passwordHash);
+  }
+
+  private void checkFreshness(final DecodedToken decodedToken, final String userId) {
+    if (!this.userIdsToTokenIds.containsKey(new Object[] {userId, decodedToken.getId()})) {
+      logger.warn("Obsolete token {}!", decodedToken);
+      throw new IllegalArgumentException("Authentication failed!");
+    }
+  }
+
+  private void invalidateTokens(final User user) {
+    this.userIdsToTokenIds.prefixSubMap(new Object[] {user.getEmail()}).clear();
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#issueToken(cz.cuni.mff.xrg.odalic.users.User)
+   */
+  @Override
+  public Token issueToken(final User user) {
+    final UUID tokenId = UUID.randomUUID();
+    final String userId = user.getEmail();
+    final Instant expiration = Instant.now().plus(Duration.ofHours(this.sessionMaximumHours));
+
+    final Token token = this.tokenService.create(tokenId, userId, expiration);
+    this.userIdsToTokenIds.put(new Object[] {userId, tokenId}, true);
+
+    this.db.commit();
+
+    return token;
+  }
+
+  private Credentials matchCredentials(final DecodedToken decodedToken) {
+    final UUID tokenId = decodedToken.getId();
+
+    final Credentials credentials = this.tokenIdsToUnconfirmed.remove(tokenId);
+    if (credentials == null) {
+      logger.warn("Unknown sign-up confirmation token {}!", decodedToken);
+      throw new IllegalArgumentException("Invalid confirmation code!");
+    }
+
+    return credentials;
+  }
+
+  private User matchPasswordChangingUser(final DecodedToken decodedToken) {
+    final User user = this.tokenIdsToPasswordChanging.remove(decodedToken.getId());
+    if (user == null) {
+      logger.warn("Invalid password setting confirmation token {}!", decodedToken);
+      throw new IllegalArgumentException("Invalid confirmation code!");
+    }
+
+    return user;
+  }
+
+  private User matchUser(final DecodedToken decodedToken) {
+    final String userId = decodedToken.getSubject();
+    final User user = this.userIdsToUsers.get(userId);
+    if (user == null) {
+      logger.warn("Unknown user for token {}!", decodedToken);
+      throw new IllegalArgumentException("Authentication failed!");
+    }
+
+    checkFreshness(decodedToken, user.getEmail());
+
+    return user;
+  }
+
+  private User replace(final User user) {
+    final User replaced = this.userIdsToUsers.replace(user.getEmail(), user);
+    Preconditions.checkState(replaced != null, "Nonexisting user!");
+    return replaced;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#requestPasswordChange(java.net.URL,
+   * java.lang.String, cz.cuni.mff.xrg.odalic.users.User, java.lang.String)
+   */
+  @Override
+  public void requestPasswordChange(final User user, final String newPassword) {
+    Preconditions.checkNotNull(user);
+    Preconditions.checkNotNull(newPassword);
+    Preconditions.checkNotNull(!newPassword.isEmpty());
+
+    final Address address = extractAddress(user);
+    final UUID tokenId = UUID.randomUUID();
+    final Instant expiration =
+        Instant.now().plus(Duration.ofMinutes(this.passwordSettingConfirmationWindowMinutes));
+
+    final Token token = this.tokenService.create(tokenId, SIGNUP_TOKEN_SUBJECT, expiration);
+
+    this.tokenIdsToPasswordChanging.put(tokenId,
+        new User(user.getEmail(), hash(newPassword), user.getRole()));
+
+    this.mailService.send(ODALIC_PASSWORD_CHANGING_CONFIRMATION_SUBJECT,
+        generatePasswordChangingMessage(token), new Address[] {address});
+
+    this.db.commit();
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#signUp(cz.cuni.mff.xrg.odalic.users.Credentials)
+   */
+  @Override
+  public void signUp(final Credentials credentials) {
+    Preconditions.checkNotNull(credentials);
+
+    final Address address = extractAddress(credentials);
+
+    final Token token = generateSignUpToken(credentials);
+
+    final String message = generateSignUpMessage(token);
+
+    this.mailService.send(ODALIC_SIGN_UP_CONFIRMATION_SUBJECT, message, new Address[] {address});
+
+    this.db.commit();
+  }
+
+  private DecodedToken validateAndDecode(final Token token) {
+    final DecodedToken decodedToken;
+    try {
+      decodedToken = this.tokenService.validate(token);
+    } catch (final IllegalArgumentException e) {
+      logger.warn("Token validation failed!", e);
+      throw new IllegalArgumentException("Authentication failed!");
+    }
+    return decodedToken;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#validateToken(cz.cuni.mff.xrg.odalic.users.Token)
+   */
+  @Override
+  public User validateToken(final Token token) {
+    final DecodedToken decodedToken = validateAndDecode(token);
+
+    return matchUser(decodedToken);
   }
 }

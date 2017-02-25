@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.users;
 
@@ -10,86 +10,47 @@ import com.google.common.base.Preconditions;
 
 /**
  * Decoded {@link Token}.
- * 
+ *
  * @author Václav Brodec
  *
  */
 public final class DecodedToken {
 
   private final UUID id;
-  
+
   private final String issuer;
-  
+
   private final String subject;
-  
+
   private final Instant expiration;
 
   /**
    * Creates a decoded token representation.
-   * 
+   *
    * @param id ID
    * @param subject subject
    * @param expiration expiration time
    */
-  public DecodedToken(final UUID id, final String issuer, final String subject, final Instant expiration) {
+  public DecodedToken(final UUID id, final String issuer, final String subject,
+      final Instant expiration) {
     Preconditions.checkNotNull(id);
     Preconditions.checkNotNull(issuer);
     Preconditions.checkNotNull(subject);
     Preconditions.checkNotNull(expiration);
-    
+
     this.id = id;
     this.issuer = issuer;
     this.subject = subject;
     this.expiration = expiration;
   }
 
-  /**
-   * @return the ID
-   */
-  public UUID getId() {
-    return id;
-  }
-
-  /**
-   * @return the issuer
-   */
-  public String getIssuer() {
-    return issuer;
-  }
-  
-  /**
-   * @return the subject
-   */
-  public String getSubject() {
-    return subject;
-  }
-
-  /**
-   * @return the expiration time
-   */
-  public Instant getExpiration() {
-    return expiration;
-  }
-
-  /* (non-Javadoc)
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + id.hashCode();
-    result = prime * result + issuer.hashCode();
-    result = prime * result + subject.hashCode();
-    result = prime * result + expiration.hashCode();
-    return result;
-  }
-
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -99,28 +60,74 @@ public final class DecodedToken {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    DecodedToken other = (DecodedToken) obj;
-    if (!id.equals(other.id)) {
+    final DecodedToken other = (DecodedToken) obj;
+    if (!this.id.equals(other.id)) {
       return false;
     }
-    if (!issuer.equals(other.issuer)) {
+    if (!this.issuer.equals(other.issuer)) {
       return false;
     }
-    if (!subject.equals(other.subject)) {
+    if (!this.subject.equals(other.subject)) {
       return false;
     }
-    if (!expiration.equals(other.expiration)) {
+    if (!this.expiration.equals(other.expiration)) {
       return false;
     }
     return true;
   }
 
-  /* (non-Javadoc)
+  /**
+   * @return the expiration time
+   */
+  public Instant getExpiration() {
+    return this.expiration;
+  }
+
+  /**
+   * @return the ID
+   */
+  public UUID getId() {
+    return this.id;
+  }
+
+  /**
+   * @return the issuer
+   */
+  public String getIssuer() {
+    return this.issuer;
+  }
+
+  /**
+   * @return the subject
+   */
+  public String getSubject() {
+    return this.subject;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + this.id.hashCode();
+    result = (prime * result) + this.issuer.hashCode();
+    result = (prime * result) + this.subject.hashCode();
+    result = (prime * result) + this.expiration.hashCode();
+    return result;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "DecodedToken [id=" + id + ", issuer=" + issuer + ", subject=" + subject
-        + ", expiration=" + expiration + "]";
+    return "DecodedToken [id=" + this.id + ", issuer=" + this.issuer + ", subject=" + this.subject
+        + ", expiration=" + this.expiration + "]";
   }
 }

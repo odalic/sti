@@ -16,7 +16,7 @@ import cz.cuni.mff.xrg.odalic.users.User;
 /**
  * Task represents the single unit of work done by the Odalic core. Its configuration is
  * replaceable.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -39,8 +39,20 @@ public final class Task implements Serializable {
   private final Configuration configuration;
 
   /**
+   * Creates the task instance and sets it creation date to now.
+   *
+   * @param id ID of the task
+   * @param description the task description
+   * @param configuration configuration of the task
+   */
+  public Task(final User owner, final String id, final String description,
+      final Configuration configuration) {
+    this(owner, id, description, new Date(), configuration);
+  }
+
+  /**
    * Creates the task instance.
-   * 
+   *
    * @param owner owner
    * @param id ID of the task
    * @param description the task description
@@ -69,74 +81,13 @@ public final class Task implements Serializable {
   }
 
   /**
-   * Creates the task instance and sets it creation date to now.
-   * 
-   * @param id ID of the task
-   * @param description the task description
-   * @param configuration configuration of the task
-   */
-  public Task(final User owner, final String id, final String description,
-      final Configuration configuration) {
-    this(owner, id, description, new Date(), configuration);
-  }
-
-  /**
-   * @return the configuration
-   */
-  public Configuration getConfiguration() {
-    return configuration;
-  }
-
-  /**
-   * @return the owner
-   */
-  public User getOwner() {
-    return owner;
-  }
-
-  /**
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * @return the description
-   */
-  public String getDescription() {
-    return description;
-  }
-
-  /**
-   * @return the created
-   */
-  public Date getCreated() {
-    return created;
-  }
-
-  /**
-   * Computes hash code value for this object based solely on its ID.
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + owner.hashCode();
-    result = prime * result + id.hashCode();
-    return result;
-  }
-
-  /**
    * Compares for equality (comparable to other {@link Task} instances only, based solely on their
    * IDs).
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -146,24 +97,73 @@ public final class Task implements Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    Task other = (Task) obj;
-    if (!owner.equals(other.owner)) {
+    final Task other = (Task) obj;
+    if (!this.owner.equals(other.owner)) {
       return false;
     }
-    if (!id.equals(other.id)) {
+    if (!this.id.equals(other.id)) {
       return false;
     }
     return true;
   }
 
+  /**
+   * @return the configuration
+   */
+  public Configuration getConfiguration() {
+    return this.configuration;
+  }
+
+  /**
+   * @return the created
+   */
+  public Date getCreated() {
+    return this.created;
+  }
+
+  /**
+   * @return the description
+   */
+  public String getDescription() {
+    return this.description;
+  }
+
+  /**
+   * @return the id
+   */
+  public String getId() {
+    return this.id;
+  }
+
+  /**
+   * @return the owner
+   */
+  public User getOwner() {
+    return this.owner;
+  }
+
+  /**
+   * Computes hash code value for this object based solely on its ID.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + this.owner.hashCode();
+    result = (prime * result) + this.id.hashCode();
+    return result;
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "Task [owner=" + owner + ", id=" + id + ", description=" + description + ", created="
-        + created + ", configuration=" + configuration + "]";
+    return "Task [owner=" + this.owner + ", id=" + this.id + ", description=" + this.description
+        + ", created=" + this.created + ", configuration=" + this.configuration + "]";
   }
 }

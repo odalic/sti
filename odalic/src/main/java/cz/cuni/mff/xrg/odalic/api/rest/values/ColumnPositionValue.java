@@ -9,7 +9,7 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 
 /**
  * Domain class {@link ColumnPosition} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -17,13 +17,13 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 public final class ColumnPositionValue {
 
   private int index;
-  
+
   public ColumnPositionValue() {}
-  
+
   /**
    * @param adaptee
    */
-  public ColumnPositionValue(ColumnPosition adaptee) {
+  public ColumnPositionValue(final ColumnPosition adaptee) {
     this.index = adaptee.getIndex();
   }
 
@@ -32,23 +32,25 @@ public final class ColumnPositionValue {
    */
   @XmlElement
   public int getIndex() {
-    return index;
+    return this.index;
   }
 
   /**
    * @param index the index to set
    */
-  public void setIndex(int index) {
+  public void setIndex(final int index) {
     Preconditions.checkArgument(index >= 0);
-    
+
     this.index = index;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "ColumnPositionValue [index=" + index + "]";
+    return "ColumnPositionValue [index=" + this.index + "]";
   }
 }

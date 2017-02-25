@@ -5,7 +5,7 @@ import com.lambdaworks.crypto.SCryptUtil;
 
 /**
  * A {@link PasswordHashingService} implementation using a pure Java Scrypt library underneath.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -19,7 +19,7 @@ public final class ScryptPasswordHashingService implements PasswordHashingServic
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.util.hash.PasswordHashingService#hash(java.lang.String)
    */
   @Override
@@ -34,12 +34,12 @@ public final class ScryptPasswordHashingService implements PasswordHashingServic
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.util.hash.PasswordHashingService#check(java.lang.String,
    * java.lang.String)
    */
   @Override
-  public boolean check(String password, String hash) {
+  public boolean check(final String password, final String hash) {
     Preconditions.checkNotNull(password);
     Preconditions.checkNotNull(hash);
 

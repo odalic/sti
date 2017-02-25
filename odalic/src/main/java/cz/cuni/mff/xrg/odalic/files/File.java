@@ -9,13 +9,14 @@ import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
+
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.FileValueOutputAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.users.User;
 
 /**
  * File description.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -24,7 +25,7 @@ import cz.cuni.mff.xrg.odalic.users.User;
 public final class File implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
-  
+
   public static final Pattern VALID_ID_PATTERN = Pattern.compile("[-a-zA-Z0-9_., ]+");
 
   private final User owner;
@@ -41,7 +42,7 @@ public final class File implements Serializable {
 
   /**
    * Create new file description.
-   * 
+   *
    * @param owner owner
    * @param id file ID
    * @param uploaded time of upload
@@ -60,7 +61,7 @@ public final class File implements Serializable {
     Preconditions.checkArgument(!id.isEmpty(), "The file identifier is empty!");
     Preconditions.checkArgument(VALID_ID_PATTERN.matcher(id).matches(),
         "The file identifier contains illegal characters!");
-    
+
     this.owner = owner;
     this.id = id;
     this.uploaded = uploaded;
@@ -71,7 +72,7 @@ public final class File implements Serializable {
 
   /**
    * Create new file description for a file uploaded now.
-   * 
+   *
    * @param owner owner
    * @param id file ID
    * @param location file location
@@ -85,68 +86,12 @@ public final class File implements Serializable {
 
 
   /**
-   * @return the owner
-   */
-  public User getOwner() {
-    return owner;
-  }
-
-  /**
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * @return the uploaded
-   */
-  public Date getUploaded() {
-    return uploaded;
-  }
-
-  /**
-   * @return the location
-   */
-  public URL getLocation() {
-    return location;
-  }
-
-  /**
-   * @return cached
-   */
-  public boolean isCached() {
-    return cached;
-  }
-
-  /**
-   * @return the format
-   */
-  public Format getFormat() {
-    return format;
-  }
-
-  /**
-   * Computes the hash code based on all components.
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + owner.hashCode();
-    result = prime * result + id.hashCode();
-    return result;
-  }
-
-  /**
    * Compares for equivalence (only other File description with the same components passes).
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -156,24 +101,81 @@ public final class File implements Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    File other = (File) obj;
-    if (!owner.equals(other.owner)) {
+    final File other = (File) obj;
+    if (!this.owner.equals(other.owner)) {
       return false;
     }
-    if (!id.equals(other.id)) {
+    if (!this.id.equals(other.id)) {
       return false;
     }
     return true;
   }
 
+  /**
+   * @return the format
+   */
+  public Format getFormat() {
+    return this.format;
+  }
+
+  /**
+   * @return the id
+   */
+  public String getId() {
+    return this.id;
+  }
+
+  /**
+   * @return the location
+   */
+  public URL getLocation() {
+    return this.location;
+  }
+
+  /**
+   * @return the owner
+   */
+  public User getOwner() {
+    return this.owner;
+  }
+
+  /**
+   * @return the uploaded
+   */
+  public Date getUploaded() {
+    return this.uploaded;
+  }
+
+  /**
+   * Computes the hash code based on all components.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + this.owner.hashCode();
+    result = (prime * result) + this.id.hashCode();
+    return result;
+  }
+
+  /**
+   * @return cached
+   */
+  public boolean isCached() {
+    return this.cached;
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "File [owner=" + owner + ", id=" + id + ", uploaded=" + uploaded + ", location="
-        + location + ", format=" + format + ", cached=" + cached + "]";
+    return "File [owner=" + this.owner + ", id=" + this.id + ", uploaded=" + this.uploaded
+        + ", location=" + this.location + ", format=" + this.format + ", cached=" + this.cached
+        + "]";
   }
 }

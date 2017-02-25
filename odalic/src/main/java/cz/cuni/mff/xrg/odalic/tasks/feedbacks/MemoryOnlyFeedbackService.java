@@ -14,7 +14,7 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 
 /**
  * This {@link FeedbackService} implementation provides no persistence.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -23,12 +23,6 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
   private final ConfigurationService configurationService;
 
   private final Table<String, String, Input> inputSnapshots;
-
-  @Autowired
-  public MemoryOnlyFeedbackService(final ConfigurationService configurationService,
-      final TaskService taskService) {
-    this(configurationService, HashBasedTable.create());
-  }
 
   private MemoryOnlyFeedbackService(final ConfigurationService configurationService,
       final Table<String, String, Input> inputSnapshots) {
@@ -39,39 +33,46 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
     this.inputSnapshots = inputSnapshots;
   }
 
+  @Autowired
+  public MemoryOnlyFeedbackService(final ConfigurationService configurationService,
+      final TaskService taskService) {
+    this(configurationService, HashBasedTable.create());
+  }
+
   @Override
-  public Feedback getForTaskId(String userId, String taskId) {
-    final Configuration configuration = configurationService.getForTaskId(userId, taskId);
+  public Feedback getForTaskId(final String userId, final String taskId) {
+    final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
 
     return configuration.getFeedback();
   }
 
   @Override
-  public void setForTaskId(String userId, String taskId, Feedback feedback) {
-    final Configuration oldConfiguration = configurationService.getForTaskId(userId, taskId);
-    configurationService.setForTaskId(userId, taskId,
-        new Configuration(oldConfiguration.getInput(), oldConfiguration.getUsedBases(),
-            oldConfiguration.getPrimaryBase(), feedback, oldConfiguration.getRowsLimit(),
-            oldConfiguration.isStatistical()));
-  }
-
-  @Override
-  public Input getInputSnapshotForTaskId(String userId, String taskId) {
+  public Input getInputSnapshotForTaskId(final String userId, final String taskId) {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(taskId);
 
-    final Input inputSnapshot = inputSnapshots.get(userId, taskId);
+    final Input inputSnapshot = this.inputSnapshots.get(userId, taskId);
     Preconditions.checkArgument(inputSnapshot != null, "No such task input snapshot present!");
 
     return inputSnapshot;
   }
 
   @Override
-  public void setInputSnapshotForTaskid(String userId, String taskId, Input inputSnapshot) {
+  public void setForTaskId(final String userId, final String taskId, final Feedback feedback) {
+    final Configuration oldConfiguration = this.configurationService.getForTaskId(userId, taskId);
+    this.configurationService.setForTaskId(userId, taskId,
+        new Configuration(oldConfiguration.getInput(), oldConfiguration.getUsedBases(),
+            oldConfiguration.getPrimaryBase(), feedback, oldConfiguration.getRowsLimit(),
+            oldConfiguration.isStatistical()));
+  }
+
+  @Override
+  public void setInputSnapshotForTaskid(final String userId, final String taskId,
+      final Input inputSnapshot) {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(taskId);
     Preconditions.checkNotNull(inputSnapshot);
-    
-    inputSnapshots.put(userId, taskId, inputSnapshot);
+
+    this.inputSnapshots.put(userId, taskId, inputSnapshot);
   }
 }

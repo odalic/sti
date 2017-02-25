@@ -14,7 +14,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 
 /**
  * Domain class {@link DataCubeComponent} adapted for REST API.
- * 
+ *
  * @author Josef Janoušek
  *
  */
@@ -28,28 +28,10 @@ public class DataCubeComponentValue implements Serializable {
   private StatisticalAnnotation annotation;
 
   public DataCubeComponentValue() {}
-  
-  public DataCubeComponentValue(DataCubeComponent adaptee) {
+
+  public DataCubeComponentValue(final DataCubeComponent adaptee) {
     this.position = adaptee.getPosition();
     this.annotation = adaptee.getAnnotation();
-  }
-
-  /**
-   * @return the position
-   */
-  @XmlElement
-  @Nullable
-  public ColumnPosition getPosition() {
-    return position;
-  }
-
-  /**
-   * @param position the position to set
-   */
-  public void setPosition(ColumnPosition position) {
-    Preconditions.checkNotNull(position);
-    
-    this.position = position;
   }
 
   /**
@@ -58,23 +40,44 @@ public class DataCubeComponentValue implements Serializable {
   @XmlElement
   @Nullable
   public StatisticalAnnotation getAnnotation() {
-    return annotation;
+    return this.annotation;
+  }
+
+  /**
+   * @return the position
+   */
+  @XmlElement
+  @Nullable
+  public ColumnPosition getPosition() {
+    return this.position;
   }
 
   /**
    * @param annotation the annotation to set
    */
-  public void setAnnotation(StatisticalAnnotation annotation) {
+  public void setAnnotation(final StatisticalAnnotation annotation) {
     Preconditions.checkNotNull(annotation);
-    
+
     this.annotation = annotation;
   }
 
-  /* (non-Javadoc)
+  /**
+   * @param position the position to set
+   */
+  public void setPosition(final ColumnPosition position) {
+    Preconditions.checkNotNull(position);
+
+    this.position = position;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "DataCubeComponentValue [position=" + position + ", annotation=" + annotation + "]";
+    return "DataCubeComponentValue [position=" + this.position + ", annotation=" + this.annotation
+        + "]";
   }
 }

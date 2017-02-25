@@ -11,7 +11,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.TokenAdapter;
 
 /**
  * Authorization and authentication token string container.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -20,43 +20,18 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.TokenAdapter;
 public final class Token {
 
   private String token;
-  
+
   public Token() {}
-  
+
   public Token(final String token) {
     Preconditions.checkNotNull(token);
-    
+
     this.token = token;
   }
 
-  /**
-   * @return the token
-   */
-  @XmlElement
-  @Nullable
-  public String getToken() {
-    return token;
-  }
-
-  /**
-   * @param token the token to set
-   */
-  public void setToken(String token) {
-    Preconditions.checkNotNull(token);
-    
-    this.token = token;
-  }
-
-  /* (non-Javadoc)
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    return prime * token.hashCode();
-  }
-
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
@@ -71,17 +46,48 @@ public final class Token {
       return false;
     }
     final Token other = (Token) object;
-    if (!token.equals(other.token)) {
+    if (!this.token.equals(other.token)) {
       return false;
     }
     return true;
   }
 
-  /* (non-Javadoc)
+  /**
+   * @return the token
+   */
+  @XmlElement
+  @Nullable
+  public String getToken() {
+    return this.token;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    return prime * this.token.hashCode();
+  }
+
+  /**
+   * @param token the token to set
+   */
+  public void setToken(final String token) {
+    Preconditions.checkNotNull(token);
+
+    this.token = token;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "Token [token=" + token + "]";
+    return "Token [token=" + this.token + "]";
   }
 }

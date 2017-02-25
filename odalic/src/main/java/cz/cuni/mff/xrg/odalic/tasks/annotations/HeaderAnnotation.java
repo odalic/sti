@@ -17,7 +17,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.HeaderAnnotationAdapter;
 
 /**
  * Annotates table header and thus affects the whole column and all relations it takes part in.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -33,13 +33,13 @@ public final class HeaderAnnotation implements Serializable {
 
   /**
    * Creates new annotation.
-   * 
+   *
    * @param candidates all possible candidates for the assigned entity sorted by with their score
    * @param chosen subset of candidates chosen to annotate the element
    */
   public HeaderAnnotation(
-      Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidate>> candidates,
-      Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidate>> chosen) {
+      final Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidate>> candidates,
+      final Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidate>> chosen) {
     Preconditions.checkNotNull(candidates);
     Preconditions.checkNotNull(chosen);
 
@@ -68,28 +68,77 @@ public final class HeaderAnnotation implements Serializable {
   }
 
   /**
+   * Compares for equality (only other annotation of the same kind with equally ordered set of
+   * candidates and the same chosen set passes).
+   *
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final HeaderAnnotation other = (HeaderAnnotation) obj;
+    if (this.candidates == null) {
+      if (other.candidates != null) {
+        return false;
+      }
+    } else if (!this.candidates.equals(other.candidates)) {
+      return false;
+    }
+    if (this.chosen == null) {
+      if (other.chosen != null) {
+        return false;
+      }
+    } else if (!this.chosen.equals(other.chosen)) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * @return the candidates
    */
   public Map<KnowledgeBase, NavigableSet<EntityCandidate>> getCandidates() {
-    return candidates;
+    return this.candidates;
   }
 
   /**
    * @return the chosen
    */
   public Map<KnowledgeBase, Set<EntityCandidate>> getChosen() {
-    return chosen;
+    return this.chosen;
+  }
+
+  /**
+   * Computes hash code based on the candidates and the chosen.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + ((this.candidates == null) ? 0 : this.candidates.hashCode());
+    result = (prime * result) + ((this.chosen == null) ? 0 : this.chosen.hashCode());
+    return result;
   }
 
   /**
    * Merges with the other annotation.
-   * 
+   *
    * @param other annotation based on different set of knowledge bases
    * @return merged annotation
    * @throws IllegalArgumentException If both this and the other annotation have some candidates
    *         from the same knowledge base
    */
-  public HeaderAnnotation merge(HeaderAnnotation other) throws IllegalArgumentException {
+  public HeaderAnnotation merge(final HeaderAnnotation other) throws IllegalArgumentException {
     final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidate>> candidatesBuilder =
         ImmutableMap.builder();
     candidatesBuilder.putAll(this.candidates);
@@ -103,62 +152,13 @@ public final class HeaderAnnotation implements Serializable {
     return new HeaderAnnotation(candidatesBuilder.build(), chosenBuilder.build());
   }
 
-  /**
-   * Computes hash code based on the candidates and the chosen.
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((candidates == null) ? 0 : candidates.hashCode());
-    result = prime * result + ((chosen == null) ? 0 : chosen.hashCode());
-    return result;
-  }
-
-  /**
-   * Compares for equality (only other annotation of the same kind with equally ordered set of
-   * candidates and the same chosen set passes).
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    HeaderAnnotation other = (HeaderAnnotation) obj;
-    if (candidates == null) {
-      if (other.candidates != null) {
-        return false;
-      }
-    } else if (!candidates.equals(other.candidates)) {
-      return false;
-    }
-    if (chosen == null) {
-      if (other.chosen != null) {
-        return false;
-      }
-    } else if (!chosen.equals(other.chosen)) {
-      return false;
-    }
-    return true;
-  }
-
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "HeaderAnnotation [candidates=" + candidates + ", chosen=" + chosen + "]";
+    return "HeaderAnnotation [candidates=" + this.candidates + ", chosen=" + this.chosen + "]";
   }
 }

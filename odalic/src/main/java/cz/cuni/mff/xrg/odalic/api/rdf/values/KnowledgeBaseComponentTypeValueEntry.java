@@ -10,15 +10,16 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
 public class KnowledgeBaseComponentTypeValueEntry {
 
   private KnowledgeBaseValue base;
-  
+
   private ComponentTypeValue value;
-  
+
   public KnowledgeBaseComponentTypeValueEntry() {}
-  
-  public KnowledgeBaseComponentTypeValueEntry(final KnowledgeBaseValue base, final ComponentTypeValue value) {
+
+  public KnowledgeBaseComponentTypeValueEntry(final KnowledgeBaseValue base,
+      final ComponentTypeValue value) {
     Preconditions.checkNotNull(base);
     Preconditions.checkNotNull(value);
-    
+
     this.base = base;
     this.value = value;
   }
@@ -28,16 +29,7 @@ public class KnowledgeBaseComponentTypeValueEntry {
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseConponentTypeValueEntry/base")
   public KnowledgeBaseValue getBase() {
-    return base;
-  }
-
-  /**
-   * @param base the base to set
-   */
-  public void setBase(KnowledgeBaseValue base) {
-    Preconditions.checkNotNull(base);
-    
-    this.base = base;
+    return this.base;
   }
 
   /**
@@ -45,23 +37,35 @@ public class KnowledgeBaseComponentTypeValueEntry {
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseConponentTypeValueEntry/value")
   public ComponentTypeValue getValue() {
-    return value;
+    return this.value;
+  }
+
+  /**
+   * @param base the base to set
+   */
+  public void setBase(final KnowledgeBaseValue base) {
+    Preconditions.checkNotNull(base);
+
+    this.base = base;
   }
 
   /**
    * @param value the value to set
    */
-  public void setValue(ComponentTypeValue value) {
+  public void setValue(final ComponentTypeValue value) {
     Preconditions.checkNotNull(value);
-    
+
     this.value = value;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "KnowledgeBaseConponentTypeValueEntry [base=" + base + ", value=" + value + "]";
+    return "KnowledgeBaseConponentTypeValueEntry [base=" + this.base + ", value=" + this.value
+        + "]";
   }
 }

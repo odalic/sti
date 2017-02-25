@@ -12,7 +12,7 @@ import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
 
 /**
  * Domain class {@link Classification} adapted for RDF serialization.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -26,28 +26,10 @@ public final class ClassificationValue implements Serializable {
   private HeaderAnnotationValue annotation;
 
   public ClassificationValue() {}
-  
-  public ClassificationValue(Classification adaptee) {
+
+  public ClassificationValue(final Classification adaptee) {
     this.position = new ColumnPositionValue(adaptee.getPosition());
     this.annotation = new HeaderAnnotationValue(adaptee.getAnnotation());
-  }
-
-  /**
-   * @return the position
-   */
-  @RdfProperty("http://odalic.eu/internal/Classification/position")
-  @Nullable
-  public ColumnPositionValue getPosition() {
-    return position;
-  }
-
-  /**
-   * @param position the position to set
-   */
-  public void setPosition(ColumnPositionValue position) {
-    Preconditions.checkNotNull(position);
-    
-    this.position = position;
   }
 
   /**
@@ -56,27 +38,49 @@ public final class ClassificationValue implements Serializable {
   @RdfProperty("http://odalic.eu/internal/Classification/annotation")
   @Nullable
   public HeaderAnnotationValue getAnnotation() {
-    return annotation;
+    return this.annotation;
+  }
+
+  /**
+   * @return the position
+   */
+  @RdfProperty("http://odalic.eu/internal/Classification/position")
+  @Nullable
+  public ColumnPositionValue getPosition() {
+    return this.position;
   }
 
   /**
    * @param annotation the annotation to set
    */
-  public void setAnnotation(HeaderAnnotationValue annotation) {
+  public void setAnnotation(final HeaderAnnotationValue annotation) {
     Preconditions.checkNotNull(annotation);
-    
+
     this.annotation = annotation;
   }
-  
-  public Classification toClassification() {
-    return new Classification(position.toColumnPosition(), annotation.toHeaderAnnotation());
+
+  /**
+   * @param position the position to set
+   */
+  public void setPosition(final ColumnPositionValue position) {
+    Preconditions.checkNotNull(position);
+
+    this.position = position;
   }
 
-  /* (non-Javadoc)
+  public Classification toClassification() {
+    return new Classification(this.position.toColumnPosition(),
+        this.annotation.toHeaderAnnotation());
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "ClassificationValue [position=" + position + ", annotation=" + annotation + "]";
+    return "ClassificationValue [position=" + this.position + ", annotation=" + this.annotation
+        + "]";
   }
 }

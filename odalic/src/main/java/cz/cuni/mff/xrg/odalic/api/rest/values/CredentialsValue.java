@@ -12,11 +12,11 @@ import cz.cuni.mff.xrg.odalic.users.Credentials;
 public final class CredentialsValue {
 
   private String email;
-  
+
   private String password;
-  
+
   public CredentialsValue() {}
-  
+
   public CredentialsValue(final Credentials adaptee) {
     this.email = adaptee.getEmail();
     this.password = adaptee.getPassword();
@@ -28,16 +28,7 @@ public final class CredentialsValue {
   @XmlElement
   @Nullable
   public String getEmail() {
-    return email;
-  }
-
-  /**
-   * @param email the email to set
-   */
-  public void setEmail(String email) {
-    Preconditions.checkNotNull(email);
-    
-    this.email = email;
+    return this.email;
   }
 
   /**
@@ -46,23 +37,34 @@ public final class CredentialsValue {
   @XmlElement
   @Nullable
   public String getPassword() {
-    return password;
+    return this.password;
+  }
+
+  /**
+   * @param email the email to set
+   */
+  public void setEmail(final String email) {
+    Preconditions.checkNotNull(email);
+
+    this.email = email;
   }
 
   /**
    * @param password the password to set
    */
-  public void setPassword(String password) {
+  public void setPassword(final String password) {
     Preconditions.checkNotNull(password);
-    
+
     this.password = password;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "CredentialsValue [email=" + email + ", password=****]";
+    return "CredentialsValue [email=" + this.email + ", password=****]";
   }
 }

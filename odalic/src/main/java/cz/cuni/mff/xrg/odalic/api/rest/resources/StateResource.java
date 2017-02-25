@@ -26,7 +26,7 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 
 /**
  * State resource definition.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -43,10 +43,18 @@ public final class StateResource {
   private UriInfo uriInfo;
 
   @Autowired
-  public StateResource(ExecutionService executionService) {
+  public StateResource(final ExecutionService executionService) {
     Preconditions.checkNotNull(executionService);
 
     this.executionService = executionService;
+  }
+
+  @GET
+  @Path("tasks/{taskId}/state")
+  @Secured({Role.ADMINISTRATOR, Role.USER})
+  @Produces({MediaType.APPLICATION_JSON})
+  public Response getStateForTaskId(final @PathParam("taskId") String taskId) {
+    return getStateForTaskId(this.securityContext.getUserPrincipal().getName(), taskId);
   }
 
   @GET
@@ -55,23 +63,15 @@ public final class StateResource {
   @Produces({MediaType.APPLICATION_JSON})
   public Response getStateForTaskId(final @PathParam("userId") String userId,
       final @PathParam("taskId") String taskId) {
-    Security.checkAuthorization(securityContext, userId);
+    Security.checkAuthorization(this.securityContext, userId);
 
     final StateValue state;
     try {
-      state = States.queryStateValue(executionService, userId, taskId);
+      state = States.queryStateValue(this.executionService, userId, taskId);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("The task does not exist!", e);
     }
 
-    return Reply.data(Response.Status.OK, state, uriInfo).toResponse();
-  }
-
-  @GET
-  @Path("tasks/{taskId}/state")
-  @Secured({Role.ADMINISTRATOR, Role.USER})
-  @Produces({MediaType.APPLICATION_JSON})
-  public Response getStateForTaskId(final @PathParam("taskId") String taskId) {
-    return getStateForTaskId(securityContext.getUserPrincipal().getName(), taskId);
+    return Reply.data(Response.Status.OK, state, this.uriInfo).toResponse();
   }
 }

@@ -6,15 +6,15 @@ import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
  * Interface for {@link Result} to CSV export (extended instance of {@link Input}) conversion.
- * 
+ *
  * @author Josef Janoušek
  *
  */
 public interface ResultToCSVExportAdapter {
-  
+
   /**
    * Converts the result to the CSV export (extended input).
-   * 
+   *
    * @param result Odalic result
    * @param input original input
    * @param configuration task configuration

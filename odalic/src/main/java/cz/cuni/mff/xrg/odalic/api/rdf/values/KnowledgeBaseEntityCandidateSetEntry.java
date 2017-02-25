@@ -8,15 +8,16 @@ import com.google.common.base.Preconditions;
 public class KnowledgeBaseEntityCandidateSetEntry {
 
   private KnowledgeBaseValue base;
-  
+
   private EntityCandidateSetWrapper set;
-  
+
   public KnowledgeBaseEntityCandidateSetEntry() {}
-  
-  public KnowledgeBaseEntityCandidateSetEntry(final KnowledgeBaseValue base, EntityCandidateSetWrapper set) {
+
+  public KnowledgeBaseEntityCandidateSetEntry(final KnowledgeBaseValue base,
+      final EntityCandidateSetWrapper set) {
     Preconditions.checkNotNull(base);
     Preconditions.checkNotNull(set);
-    
+
     this.base = base;
     this.set = set;
   }
@@ -26,16 +27,7 @@ public class KnowledgeBaseEntityCandidateSetEntry {
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseEntityCandidateSetEntry/base")
   public KnowledgeBaseValue getBase() {
-    return base;
-  }
-
-  /**
-   * @param base the base to set
-   */
-  public void setBase(KnowledgeBaseValue base) {
-    Preconditions.checkNotNull(base);
-    
-    this.base = base;
+    return this.base;
   }
 
   /**
@@ -43,23 +35,34 @@ public class KnowledgeBaseEntityCandidateSetEntry {
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseEntityCandidateSetEntry/set")
   public EntityCandidateSetWrapper getSet() {
-    return set;
+    return this.set;
+  }
+
+  /**
+   * @param base the base to set
+   */
+  public void setBase(final KnowledgeBaseValue base) {
+    Preconditions.checkNotNull(base);
+
+    this.base = base;
   }
 
   /**
    * @param set the set to set
    */
-  public void setSet(EntityCandidateSetWrapper set) {
+  public void setSet(final EntityCandidateSetWrapper set) {
     Preconditions.checkNotNull(set);
-    
+
     this.set = set;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "KnowledgeBaseEntityCandidateSetEntry [base=" + base + ", set=" + set + "]";
+    return "KnowledgeBaseEntityCandidateSetEntry [base=" + this.base + ", set=" + this.set + "]";
   }
 }

@@ -4,14 +4,14 @@ import org.mapdb.DB;
 
 /**
  * A {@link DB} instance provider.
- * 
+ *
  * @author Václav Brodec
  *
  */
 public interface DbService {
   /**
    * Provides a database.
-   * 
+   *
    * @return a shared {@link DB} instance
    */
   DB getDb();

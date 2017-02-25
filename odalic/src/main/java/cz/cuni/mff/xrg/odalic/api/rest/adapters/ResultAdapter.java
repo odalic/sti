@@ -16,12 +16,12 @@ import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 public final class ResultAdapter extends XmlAdapter<ResultValue, Result> {
 
   @Override
-  public ResultValue marshal(Result bound) throws Exception {
+  public ResultValue marshal(final Result bound) throws Exception {
     return new ResultValue(bound);
   }
 
   @Override
-  public Result unmarshal(ResultValue value) throws Exception {
+  public Result unmarshal(final ResultValue value) throws Exception {
     final ImmutableMap.Builder<ColumnRelationPosition, ColumnRelationAnnotation> columnRelationAnnotationsBuilder =
         ImmutableMap.builder();
     for (final Map.Entry<ColumnPosition, Map<ColumnPosition, ColumnRelationAnnotation>> entry : value

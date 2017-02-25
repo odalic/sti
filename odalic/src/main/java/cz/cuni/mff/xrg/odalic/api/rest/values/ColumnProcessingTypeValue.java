@@ -7,9 +7,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * Representation of column processing type for REST API.
- * 
+ *
  * @author Josef Janoušek
- * 
+ *
  */
 @XmlType
 @XmlEnum(String.class)
@@ -19,12 +19,12 @@ public enum ColumnProcessingTypeValue {
    * processing type for column containing named entity
    */
   @XmlEnumValue("NAMED_ENTITY") NAMED_ENTITY,
-  
+
   /**
    * processing type for column containing other than named entity
    */
   @XmlEnumValue("NON_NAMED_ENTITY") NON_NAMED_ENTITY,
-  
+
   /**
    * processing type for ignored column
    */

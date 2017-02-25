@@ -27,9 +27,9 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 
 /**
  * Definition of the resource providing a part of the result in the form of table annotations.
- * 
+ *
  * @author Václav Brodec
- * 
+ *
  * @see AnnotatedTable format of the annotations
  */
 @Component
@@ -37,44 +37,46 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 public final class AnnotatedTableResource {
 
   private final AnnotatedTableService annotatedTableService;
-  
+
   @Context
   private SecurityContext securityContext;
 
   @Autowired
-  public AnnotatedTableResource(AnnotatedTableService annotatedTableService) {
+  public AnnotatedTableResource(final AnnotatedTableService annotatedTableService) {
     Preconditions.checkNotNull(annotatedTableService);
 
     this.annotatedTableService = annotatedTableService;
   }
 
   @GET
-  @Path("users/{userId}/tasks/{taskId}/result/annotated-table")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Secured({Role.ADMINISTRATOR, Role.USER})
-  public Response getAnnotatedTable(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId)
-      throws InterruptedException, ExecutionException, CancellationException, IOException {
-    Security.checkAuthorization(this.securityContext, userId);
-    
-    final AnnotatedTable table;
-    try {
-      table = annotatedTableService.getAnnotatedTableForTaskId(userId, taskId);
-    } catch (final CancellationException | ExecutionException e) {
-      throw new NotFoundException(
-          "Annotated table is not available, because the processing did not finish. Check the result first!", e);
-    } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The task has not been scheduled or does not exist!", e);
-    }
-
-    return Response.ok(table).build();
-  }
-  
-  @GET
   @Path("tasks/{taskId}/result/annotated-table")
   @Produces(MediaType.APPLICATION_JSON)
   @Secured({Role.ADMINISTRATOR, Role.USER})
   public Response getAnnotatedTable(final @PathParam("taskId") String taskId)
       throws InterruptedException, ExecutionException, CancellationException, IOException {
-    return getAnnotatedTable(securityContext.getUserPrincipal().getName(), taskId);
+    return getAnnotatedTable(this.securityContext.getUserPrincipal().getName(), taskId);
+  }
+
+  @GET
+  @Path("users/{userId}/tasks/{taskId}/result/annotated-table")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Secured({Role.ADMINISTRATOR, Role.USER})
+  public Response getAnnotatedTable(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId)
+      throws InterruptedException, ExecutionException, CancellationException, IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final AnnotatedTable table;
+    try {
+      table = this.annotatedTableService.getAnnotatedTableForTaskId(userId, taskId);
+    } catch (final CancellationException | ExecutionException e) {
+      throw new NotFoundException(
+          "Annotated table is not available, because the processing did not finish. Check the result first!",
+          e);
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException("The task has not been scheduled or does not exist!", e);
+    }
+
+    return Response.ok(table).build();
   }
 }

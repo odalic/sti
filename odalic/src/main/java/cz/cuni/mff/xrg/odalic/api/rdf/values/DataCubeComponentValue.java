@@ -3,6 +3,7 @@ package cz.cuni.mff.xrg.odalic.api.rdf.values;
 import java.io.Serializable;
 
 import javax.annotation.Nullable;
+
 import com.complexible.pinto.annotations.RdfProperty;
 import com.complexible.pinto.annotations.RdfsClass;
 import com.google.common.base.Preconditions;
@@ -11,7 +12,7 @@ import cz.cuni.mff.xrg.odalic.feedbacks.DataCubeComponent;
 
 /**
  * Domain class {@link DataCubeComponent} adapted for RDF serialization.
- * 
+ *
  * @author Josef Janoušek
  *
  */
@@ -25,28 +26,10 @@ public class DataCubeComponentValue implements Serializable {
   private StatisticalAnnotationValue annotation;
 
   public DataCubeComponentValue() {}
-  
-  public DataCubeComponentValue(DataCubeComponent adaptee) {
+
+  public DataCubeComponentValue(final DataCubeComponent adaptee) {
     this.position = new ColumnPositionValue(adaptee.getPosition());
     this.annotation = new StatisticalAnnotationValue(adaptee.getAnnotation());
-  }
-
-  /**
-   * @return the position
-   */
-  @RdfProperty("http://odalic.eu/internal/DataCubeComponent/position")
-  @Nullable
-  public ColumnPositionValue getPosition() {
-    return position;
-  }
-
-  /**
-   * @param position the position to set
-   */
-  public void setPosition(ColumnPositionValue position) {
-    Preconditions.checkNotNull(position);
-    
-    this.position = position;
   }
 
   /**
@@ -55,27 +38,49 @@ public class DataCubeComponentValue implements Serializable {
   @RdfProperty("http://odalic.eu/internal/DataCubeComponent/annotation")
   @Nullable
   public StatisticalAnnotationValue getAnnotation() {
-    return annotation;
+    return this.annotation;
+  }
+
+  /**
+   * @return the position
+   */
+  @RdfProperty("http://odalic.eu/internal/DataCubeComponent/position")
+  @Nullable
+  public ColumnPositionValue getPosition() {
+    return this.position;
   }
 
   /**
    * @param annotation the annotation to set
    */
-  public void setAnnotation(StatisticalAnnotationValue annotation) {
+  public void setAnnotation(final StatisticalAnnotationValue annotation) {
     Preconditions.checkNotNull(annotation);
-    
+
     this.annotation = annotation;
   }
-  
-  public DataCubeComponent toDataCubeComponent() {
-    return new DataCubeComponent(position.toColumnPosition(), annotation.toStatisticalAnnotation());
+
+  /**
+   * @param position the position to set
+   */
+  public void setPosition(final ColumnPositionValue position) {
+    Preconditions.checkNotNull(position);
+
+    this.position = position;
   }
 
-  /* (non-Javadoc)
+  public DataCubeComponent toDataCubeComponent() {
+    return new DataCubeComponent(this.position.toColumnPosition(),
+        this.annotation.toStatisticalAnnotation());
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "DataCubeComponentValue [position=" + position + ", annotation=" + annotation + "]";
+    return "DataCubeComponentValue [position=" + this.position + ", annotation=" + this.annotation
+        + "]";
   }
 }

@@ -13,47 +13,49 @@ import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.TableContext;
 
 /**
  * Domain class {@link TableContext} adapted for REST API.
- * 
+ *
  * @author Josef Janoušek
  *
  */
 @XmlRootElement(name = "tableContext")
 @JsonInclude(Include.NON_NULL)
 public final class TableContextValue implements Serializable {
-  
+
   private static final long serialVersionUID = 6093586476544509692L;
-  
-  private String csvw = "http://www.w3.org/ns/csvw";
-  
+
+  private final String csvw = "http://www.w3.org/ns/csvw";
+
   private Map<String, String> mapping;
-  
+
   public TableContextValue() {}
-  
-  public TableContextValue(TableContext adaptee) {
+
+  public TableContextValue(final TableContext adaptee) {
     this.mapping = adaptee.getMapping();
   }
-  
+
   /**
    * @return the csvw URI
    */
   @XmlElement
   public String getCsvw() {
-    return csvw;
+    return this.csvw;
   }
-  
+
   /**
    * @return the mapping
    */
   @XmlElement
   public Map<String, String> getMapping() {
-    return mapping;
+    return this.mapping;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "TableContextValue [csvw=" + csvw + ", mapping=" + mapping + "]";
+    return "TableContextValue [csvw=" + this.csvw + ", mapping=" + this.mapping + "]";
   }
 }

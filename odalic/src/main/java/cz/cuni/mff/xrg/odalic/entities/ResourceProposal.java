@@ -18,14 +18,15 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 
 /**
  * <p>
- * Model of the proposal for a new entity (representing a disambiguated cell) in the primary base, that the user provides to the server.
+ * Model of the proposal for a new entity (representing a disambiguated cell) in the primary base,
+ * that the user provides to the server.
  * </p>
- * 
+ *
  * <p>
  * Every entity used in the user feedback must already exist in any of the present bases, if it does
  * not, the user is encouraged to enter it first as a proposal.
  * </p>
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -46,7 +47,7 @@ public final class ResourceProposal implements Serializable {
   public ResourceProposal(final String label, final Set<? extends String> alternativeLabels,
       final URI suffix, final Set<? extends Entity> classes) {
     Preconditions.checkNotNull(label);
-    Preconditions.checkArgument(suffix == null || !suffix.isAbsolute(),
+    Preconditions.checkArgument((suffix == null) || !suffix.isAbsolute(),
         "The suffix must be a relative URI!");
 
     this.label = label;
@@ -55,25 +56,38 @@ public final class ResourceProposal implements Serializable {
     this.classes = ImmutableSet.copyOf(classes);
   }
 
-  /**
-   * @return the label
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#equals(java.lang.Object)
    */
-  public String getLabel() {
-    return label;
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final ResourceProposal other = (ResourceProposal) obj;
+    if (this.suffix == null) {
+      if (other.suffix != null) {
+        return false;
+      }
+    } else if (!this.suffix.equals(other.suffix)) {
+      return false;
+    }
+    return true;
   }
 
   /**
    * @return the alternative labels
    */
   public NavigableSet<String> getAlternativeLabels() {
-    return alternativeLabels;
-  }
-
-  /**
-   * @return the URI suffix
-   */
-  public URI getSuffix() {
-    return suffix;
+    return this.alternativeLabels;
   }
 
   /**
@@ -84,48 +98,41 @@ public final class ResourceProposal implements Serializable {
     return this.classes;
   }
 
-  /* (non-Javadoc)
+  /**
+   * @return the label
+   */
+  public String getLabel() {
+    return this.label;
+  }
+
+  /**
+   * @return the URI suffix
+   */
+  public URI getSuffix() {
+    return this.suffix;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((suffix == null) ? 0 : suffix.hashCode());
+    result = (prime * result) + ((this.suffix == null) ? 0 : this.suffix.hashCode());
     return result;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    ResourceProposal other = (ResourceProposal) obj;
-    if (suffix == null) {
-      if (other.suffix != null) {
-        return false;
-      }
-    } else if (!suffix.equals(other.suffix)) {
-      return false;
-    }
-    return true;
-  }
-
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "ResourceProposal [label=" + label + ", alternativeLabels=" + alternativeLabels
-        + ", suffix=" + suffix + ", classes=" + classes + "]";
+    return "ResourceProposal [label=" + this.label + ", alternativeLabels=" + this.alternativeLabels
+        + ", suffix=" + this.suffix + ", classes=" + this.classes + "]";
   }
 }

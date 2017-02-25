@@ -46,7 +46,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 
 /**
  * File resource definition.
- * 
+ *
  * @author Václav Brodec
  */
 @Component
@@ -77,22 +77,62 @@ public final class FilesResource {
     this.fileService = fileService;
   }
 
-  @GET
-  @Path("users/{userId}/files")
+  @DELETE
+  @Path("files/{fileId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getFiles(final @PathParam("userId") String userId) {
-    Security.checkAuthorization(securityContext, userId);
+  public Response deleteFileById(final @PathParam("fileId") String fileId) {
+    return deleteFileById(this.securityContext.getUserPrincipal().getName(), fileId);
+  }
 
-    final List<File> files = fileService.getFiles(userId);
+  @DELETE
+  @Path("users/{userId}/files/{fileId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deleteFileById(final @PathParam("userId") String userId,
+      final @PathParam("fileId") String fileId) {
+    Security.checkAuthorization(this.securityContext, userId);
 
-    return Reply.data(Response.Status.OK, files, uriInfo).toResponse();
+    try {
+      this.fileService.deleteById(userId, fileId);
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException("The file does not exist!", e);
+    } catch (final IllegalStateException e) {
+      throw new WebApplicationException(e.getMessage(), e, Response.Status.CONFLICT);
+    }
+
+    return Message.of("File definition deleted.").toResponse(Response.Status.OK, this.uriInfo);
   }
 
   @GET
-  @Path("files")
+  @Path("files/{fileId}")
+  @Produces(TEXT_CSV_MEDIA_TYPE)
+  public Response getCsvDataById(final @PathParam("fileId") String fileId) throws IOException {
+    return getCsvDataById(this.securityContext.getUserPrincipal().getName(), fileId);
+  }
+
+  @GET
+  @Path("users/{userId}/files/{fileId}")
+  @Produces(TEXT_CSV_MEDIA_TYPE)
+  public Response getCsvDataById(final @PathParam("userId") String userId,
+      final @PathParam("fileId") String fileId) throws IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final String data;
+    try {
+      data = this.fileService.getDataById(userId, fileId);
+    } catch (final IllegalArgumentException e) {
+      LOGGER.error(e.getMessage(), e);
+
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    return Response.ok(data).build();
+  }
+
+  @GET
+  @Path("files/{fileId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getFiles() {
-    return getFiles(securityContext.getUserPrincipal().getName());
+  public Response getFileById(final @PathParam("fileId") String fileId) {
+    return getFileById(this.securityContext.getUserPrincipal().getName(), fileId);
   }
 
   @GET
@@ -100,67 +140,115 @@ public final class FilesResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFileById(final @PathParam("userId") String userId,
       final @PathParam("fileId") String fileId) {
-    Security.checkAuthorization(securityContext, userId);
+    Security.checkAuthorization(this.securityContext, userId);
 
     final File file;
     try {
-      file = fileService.getById(userId, fileId);
+      file = this.fileService.getById(userId, fileId);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("The file does not exist!", e);
     }
 
-    return Reply.data(Response.Status.OK, file, uriInfo).toResponse();
+    return Reply.data(Response.Status.OK, file, this.uriInfo).toResponse();
   }
 
   @GET
-  @Path("files/{fileId}")
+  @Path("files")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getFileById(final @PathParam("fileId") String fileId) {
-    return getFileById(securityContext.getUserPrincipal().getName(), fileId);
+  public Response getFiles() {
+    return getFiles(this.securityContext.getUserPrincipal().getName());
   }
 
-  @PUT
-  @Path("users/{userId}/files/{fileId}")
+  @GET
+  @Path("users/{userId}/files")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getFiles(final @PathParam("userId") String userId) {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final List<File> files = this.fileService.getFiles(userId);
+
+    return Reply.data(Response.Status.OK, files, this.uriInfo).toResponse();
+  }
+
+  private Format getFormatOrDefault(final FileValueInput fileInput) {
+    final @Nullable Format format = fileInput.getFormat();
+    final Format usedFormat;
+    if (format == null) {
+      usedFormat = new Format();
+    } else {
+      usedFormat = format;
+    }
+    return usedFormat;
+  }
+
+  @POST
+  @Path("files")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response putFileById(final @PathParam("userId") String userId,
-      @PathParam("fileId") String fileId, @FormDataParam("input") InputStream fileInputStream)
-      throws IOException {
-    Security.checkAuthorization(securityContext, userId);
+  public Response postFile(final @FormDataParam("input") InputStream fileInputStream,
+      final @FormDataParam("input") FormDataContentDisposition fileDetail) throws IOException {
+    return postFile(this.securityContext.getUserPrincipal().getName(), fileInputStream, fileDetail);
+  }
+
+  @POST
+  @Path("users/{userId}/files")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response postFile(final @PathParam("userId") String userId,
+      final @FormDataParam("input") InputStream fileInputStream,
+      final @FormDataParam("input") FormDataContentDisposition fileDetail) throws IOException {
+    Security.checkAuthorization(this.securityContext, userId);
 
     if (fileInputStream == null) {
       throw new BadRequestException("No input provided!");
     }
 
-    final URL location =
-        cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, fileId);
-    
+    if (fileDetail == null) {
+      throw new BadRequestException("No input detail provided!");
+    }
+
+    final String fileId = fileDetail.getFileName();
+    if (fileId == null) {
+      throw new BadRequestException("No file name provided!");
+    }
+
     final File file;
     try {
-      file = new File(userService.getUser(userId), fileId, location, new Format(), true);
+      file = new File(this.userService.getUser(userId), fileId,
+          cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(this.uriInfo, fileId),
+          new Format(), true);
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }
 
-    if (!fileService.existsFileWithId(userId, fileId)) {
-      fileService.create(file, fileInputStream);
-
-      return Message.of("A new file has been created AT THE STANDARD LOCATION.")
-          .toResponse(Response.Status.CREATED, location, uriInfo);
-    } else {
-      fileService.replace(file);
-      return Message.of("The file you specified has been fully updated AT THE STANDARD LOCATION.")
-          .toResponse(Response.Status.OK, location, uriInfo);
+    if (this.fileService.existsFileWithId(userId, fileId)) {
+      throw new WebApplicationException(
+          "There already exists a file with the same name as you provided.",
+          Response.Status.CONFLICT);
     }
+
+    this.fileService.create(file, fileInputStream);
+    return Message
+        .of("A new file has been registered AT THE LOCATION DERIVED from the name of the one uploaded.")
+        .toResponse(Response.Status.CREATED, file.getLocation(), this.uriInfo);
+  }
+
+  @PUT
+  @Path("files/{fileId}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response putFileById(final @PathParam("fileId") String fileId,
+      final FileValueInput fileInput) throws MalformedURLException {
+    return putFileById(this.securityContext.getUserPrincipal().getName(), fileId, fileInput);
   }
 
   @PUT
   @Path("files/{fileId}")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response putFileById(@PathParam("fileId") String fileId,
-      @FormDataParam("input") InputStream fileInputStream) throws IOException {
-    return putFileById(securityContext.getUserPrincipal().getName(), fileId, fileInputStream);
+  public Response putFileById(@PathParam("fileId") final String fileId,
+      @FormDataParam("input") final InputStream fileInputStream) throws IOException {
+    return putFileById(this.securityContext.getUserPrincipal().getName(), fileId, fileInputStream);
   }
 
   @PUT
@@ -170,7 +258,7 @@ public final class FilesResource {
   public Response putFileById(final @PathParam("userId") String userId,
       final @PathParam("fileId") String fileId, final FileValueInput fileInput)
       throws MalformedURLException {
-    Security.checkAuthorization(securityContext, userId);
+    Security.checkAuthorization(this.securityContext, userId);
 
     if (fileInput == null) {
       throw new BadRequestException("No file description provided!");
@@ -190,138 +278,54 @@ public final class FilesResource {
       throw new BadRequestException(e.getMessage(), e);
     }
 
-    if (!fileService.existsFileWithId(userId, fileId)) {
-      fileService.create(file);
+    if (!this.fileService.existsFileWithId(userId, fileId)) {
+      this.fileService.create(file);
 
       return Message.of("A new remote file has been registered.").toResponse(
           Response.Status.CREATED,
-          cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, fileId), uriInfo);
+          cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(this.uriInfo, fileId),
+          this.uriInfo);
     } else {
-      fileService.replace(file);
+      this.fileService.replace(file);
 
       return Message.of("The file description has been updated.").toResponse(Response.Status.OK,
-          cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, fileId), uriInfo);
+          cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(this.uriInfo, fileId),
+          this.uriInfo);
     }
   }
 
   @PUT
-  @Path("files/{fileId}")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response putFileById(final @PathParam("fileId") String fileId,
-      final FileValueInput fileInput) throws MalformedURLException {
-    return putFileById(securityContext.getUserPrincipal().getName(), fileId, fileInput);
-  }
-
-  private Format getFormatOrDefault(FileValueInput fileInput) {
-    final @Nullable Format format = fileInput.getFormat();
-    final Format usedFormat;
-    if (format == null) {
-      usedFormat = new Format();
-    } else {
-      usedFormat = format;
-    }
-    return usedFormat;
-  }
-
-  @POST
-  @Path("users/{userId}/files")
+  @Path("users/{userId}/files/{fileId}")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response postFile(final @PathParam("userId") String userId,
-      final @FormDataParam("input") InputStream fileInputStream,
-      final @FormDataParam("input") FormDataContentDisposition fileDetail) throws IOException {
-    Security.checkAuthorization(securityContext, userId);
+  public Response putFileById(final @PathParam("userId") String userId,
+      @PathParam("fileId") final String fileId,
+      @FormDataParam("input") final InputStream fileInputStream) throws IOException {
+    Security.checkAuthorization(this.securityContext, userId);
 
     if (fileInputStream == null) {
       throw new BadRequestException("No input provided!");
     }
 
-    if (fileDetail == null) {
-      throw new BadRequestException("No input detail provided!");
-    }
-
-    final String fileId = fileDetail.getFileName();
-    if (fileId == null) {
-      throw new BadRequestException("No file name provided!");
-    }
+    final URL location =
+        cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(this.uriInfo, fileId);
 
     final File file;
     try {
-      file = new File(userService.getUser(userId), fileId,
-          cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(uriInfo, fileId), new Format(),
-          true);
+      file = new File(this.userService.getUser(userId), fileId, location, new Format(), true);
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }
 
-    if (fileService.existsFileWithId(userId, fileId)) {
-      throw new WebApplicationException(
-          "There already exists a file with the same name as you provided.",
-          Response.Status.CONFLICT);
+    if (!this.fileService.existsFileWithId(userId, fileId)) {
+      this.fileService.create(file, fileInputStream);
+
+      return Message.of("A new file has been created AT THE STANDARD LOCATION.")
+          .toResponse(Response.Status.CREATED, location, this.uriInfo);
+    } else {
+      this.fileService.replace(file);
+      return Message.of("The file you specified has been fully updated AT THE STANDARD LOCATION.")
+          .toResponse(Response.Status.OK, location, this.uriInfo);
     }
-
-    fileService.create(file, fileInputStream);
-    return Message
-        .of("A new file has been registered AT THE LOCATION DERIVED from the name of the one uploaded.")
-        .toResponse(Response.Status.CREATED, file.getLocation(), uriInfo);
-  }
-
-  @POST
-  @Path("files")
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response postFile(final @FormDataParam("input") InputStream fileInputStream,
-      final @FormDataParam("input") FormDataContentDisposition fileDetail) throws IOException {
-    return postFile(securityContext.getUserPrincipal().getName(), fileInputStream, fileDetail);
-  }
-
-  @DELETE
-  @Path("users/{userId}/files/{fileId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response deleteFileById(final @PathParam("userId") String userId, final @PathParam("fileId") String fileId) {
-    Security.checkAuthorization(securityContext, userId);
-    
-    try {
-      fileService.deleteById(userId, fileId);
-    } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("The file does not exist!", e);
-    } catch (final IllegalStateException e) {
-      throw new WebApplicationException(e.getMessage(), e, Response.Status.CONFLICT);
-    }
-
-    return Message.of("File definition deleted.").toResponse(Response.Status.OK, uriInfo);
-  }
-  
-  @DELETE
-  @Path("files/{fileId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response deleteFileById(final @PathParam("fileId") String fileId) {
-    return deleteFileById(securityContext.getUserPrincipal().getName(), fileId);
-  }
-
-  @GET
-  @Path("users/{userId}/files/{fileId}")
-  @Produces(TEXT_CSV_MEDIA_TYPE)
-  public Response getCsvDataById(final @PathParam("userId") String userId, final @PathParam("fileId") String fileId) throws IOException {
-    Security.checkAuthorization(securityContext, userId);
-    
-    final String data;
-    try {
-      data = fileService.getDataById(userId, fileId);
-    } catch (final IllegalArgumentException e) {
-      LOGGER.error(e.getMessage(), e);
-
-      return Response.status(Response.Status.NOT_FOUND).build();
-    }
-
-    return Response.ok(data).build();
-  }
-  
-  @GET
-  @Path("files/{fileId}")
-  @Produces(TEXT_CSV_MEDIA_TYPE)
-  public Response getCsvDataById(final @PathParam("fileId") String fileId) throws IOException {
-    return getCsvDataById(securityContext.getUserPrincipal().getName(), fileId);
   }
 }

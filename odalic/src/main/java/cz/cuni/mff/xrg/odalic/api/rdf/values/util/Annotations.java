@@ -3,6 +3,7 @@ package cz.cuni.mff.xrg.odalic.api.rdf.values.util;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
+
 import javax.annotation.concurrent.Immutable;
 
 import com.google.common.base.Preconditions;
@@ -21,14 +22,64 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Annotation conversion utilities.
- * 
+ *
  * @author Václav Brodec
  *
  */
 @Immutable
 public final class Annotations {
 
-  private Annotations() {}
+  public static Set<KnowledgeBaseEntityCandidateNavigableSetEntry> copyNavigableValues(
+      final Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
+    Preconditions.checkNotNull(candidates);
+
+    return ImmutableSet.copyOf(candidates);
+  }
+
+  public static Set<KnowledgeBaseEntityCandidateSetEntry> copyValues(
+      final Set<? extends KnowledgeBaseEntityCandidateSetEntry> chosen) {
+    Preconditions.checkNotNull(chosen);
+
+    return ImmutableSet.copyOf(chosen);
+  }
+
+  public static Map<KnowledgeBase, Set<EntityCandidate>> toDomain(
+      final Set<? extends KnowledgeBaseEntityCandidateSetEntry> candidateValues) {
+    Preconditions.checkNotNull(candidateValues);
+
+    final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> candidatesBuilder =
+        ImmutableMap.builder();
+    for (final KnowledgeBaseEntityCandidateSetEntry entry : candidateValues) {
+      final KnowledgeBase base = entry.getBase().toKnowledgeBase();
+      final Set<EntityCandidateValue> values = entry.getSet().getValue();
+
+      final Set<EntityCandidate> domainValues = values.stream()
+          .map(e -> new EntityCandidate(e.getEntity().toEntity(), e.getScore().toScore()))
+          .collect(ImmutableSet.toImmutableSet());
+
+      candidatesBuilder.put(base, domainValues);
+    }
+    return candidatesBuilder.build();
+  }
+
+  public static Map<KnowledgeBase, NavigableSet<EntityCandidate>> toNavigableDomain(
+      final Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
+    Preconditions.checkNotNull(candidates);
+
+    final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidate>> chosenBuilder =
+        ImmutableMap.builder();
+    for (final KnowledgeBaseEntityCandidateNavigableSetEntry entry : candidates) {
+      final KnowledgeBase base = entry.getBase().toKnowledgeBase();
+      final Set<EntityCandidateValue> values = entry.getSet().getValue();
+
+      final NavigableSet<EntityCandidate> domainValues = values.stream()
+          .map(e -> new EntityCandidate(e.getEntity().toEntity(), e.getScore().toScore())).collect(
+              ImmutableSortedSet.toImmutableSortedSet((first, second) -> first.compareTo(second)));
+
+      chosenBuilder.put(base, domainValues);
+    }
+    return chosenBuilder.build();
+  }
 
   public static Set<KnowledgeBaseEntityCandidateNavigableSetEntry> toNavigableValues(
       final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidate>> candidates) {
@@ -68,56 +119,6 @@ public final class Annotations {
     return chosenBuilder.build();
   }
 
-  public static Set<KnowledgeBaseEntityCandidateNavigableSetEntry> copyNavigableValues(
-      Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
-    Preconditions.checkNotNull(candidates);
-
-    return ImmutableSet.copyOf(candidates);
-  }
-
-  public static Set<KnowledgeBaseEntityCandidateSetEntry> copyValues(
-      Set<? extends KnowledgeBaseEntityCandidateSetEntry> chosen) {
-    Preconditions.checkNotNull(chosen);
-
-    return ImmutableSet.copyOf(chosen);
-  }
-
-  public static Map<KnowledgeBase, NavigableSet<EntityCandidate>> toNavigableDomain(
-      final Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
-    Preconditions.checkNotNull(candidates);
-
-    final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidate>> chosenBuilder =
-        ImmutableMap.builder();
-    for (final KnowledgeBaseEntityCandidateNavigableSetEntry entry : candidates) {
-      final KnowledgeBase base = entry.getBase().toKnowledgeBase();
-      final Set<EntityCandidateValue> values = entry.getSet().getValue();
-
-      final NavigableSet<EntityCandidate> domainValues = values.stream()
-          .map(e -> new EntityCandidate(e.getEntity().toEntity(), e.getScore().toScore())).collect(
-              ImmutableSortedSet.toImmutableSortedSet((first, second) -> first.compareTo(second)));
-
-      chosenBuilder.put(base, domainValues);
-    }
-    return chosenBuilder.build();
-  }
-
-  public static Map<KnowledgeBase, Set<EntityCandidate>> toDomain(
-      final Set<? extends KnowledgeBaseEntityCandidateSetEntry> candidateValues) {
-    Preconditions.checkNotNull(candidateValues);
-
-    final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> candidatesBuilder =
-        ImmutableMap.builder();
-    for (final KnowledgeBaseEntityCandidateSetEntry entry : candidateValues) {
-      final KnowledgeBase base = entry.getBase().toKnowledgeBase();
-      final Set<EntityCandidateValue> values = entry.getSet().getValue();
-
-      final Set<EntityCandidate> domainValues = values.stream()
-          .map(e -> new EntityCandidate(e.getEntity().toEntity(), e.getScore().toScore()))
-          .collect(ImmutableSet.toImmutableSet());
-
-      candidatesBuilder.put(base, domainValues);
-    }
-    return candidatesBuilder.build();
-  }
+  private Annotations() {}
 
 }

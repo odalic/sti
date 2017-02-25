@@ -8,15 +8,16 @@ import com.google.common.base.Preconditions;
 public class KnowledgeBaseColumnPositionEntry {
 
   private KnowledgeBaseValue base;
-  
+
   private ColumnPositionValue value;
-  
+
   public KnowledgeBaseColumnPositionEntry() {}
-  
-  public KnowledgeBaseColumnPositionEntry(final KnowledgeBaseValue base, final ColumnPositionValue value) {
+
+  public KnowledgeBaseColumnPositionEntry(final KnowledgeBaseValue base,
+      final ColumnPositionValue value) {
     Preconditions.checkNotNull(base);
     Preconditions.checkNotNull(value);
-    
+
     this.base = base;
     this.value = value;
   }
@@ -26,16 +27,7 @@ public class KnowledgeBaseColumnPositionEntry {
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseColumnPositionEntry/base")
   public KnowledgeBaseValue getBase() {
-    return base;
-  }
-
-  /**
-   * @param base the base to set
-   */
-  public void setBase(KnowledgeBaseValue base) {
-    Preconditions.checkNotNull(base);
-    
-    this.base = base;
+    return this.base;
   }
 
   /**
@@ -43,23 +35,34 @@ public class KnowledgeBaseColumnPositionEntry {
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseColumnPositionEntry/value")
   public ColumnPositionValue getValue() {
-    return value;
+    return this.value;
+  }
+
+  /**
+   * @param base the base to set
+   */
+  public void setBase(final KnowledgeBaseValue base) {
+    Preconditions.checkNotNull(base);
+
+    this.base = base;
   }
 
   /**
    * @param value the value to set
    */
-  public void setValue(ColumnPositionValue value) {
+  public void setValue(final ColumnPositionValue value) {
     Preconditions.checkNotNull(value);
-    
+
     this.value = value;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "KnowledgeBaseColumnPositionEntry [base=" + base + ", value=" + value + "]";
+    return "KnowledgeBaseColumnPositionEntry [base=" + this.base + ", value=" + this.value + "]";
   }
 }

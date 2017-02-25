@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rdf.values;
 
 import java.util.Set;
+
 import com.complexible.pinto.annotations.RdfProperty;
 import com.complexible.pinto.annotations.RdfsClass;
 import com.google.common.collect.ImmutableSet;
@@ -12,7 +13,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
  * <p>
  * Domain class {@link ColumnRelationAnnotation} adapted for RDF serialization.
  * </p>
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -24,14 +25,14 @@ public final class ColumnRelationAnnotationValue {
   private Set<KnowledgeBaseEntityCandidateSetEntry> chosen;
 
   public ColumnRelationAnnotationValue() {
-    candidates = ImmutableSet.of();
-    chosen = ImmutableSet.of();
+    this.candidates = ImmutableSet.of();
+    this.chosen = ImmutableSet.of();
   }
 
   /**
    * @param entities
    */
-  public ColumnRelationAnnotationValue(ColumnRelationAnnotation adaptee) {
+  public ColumnRelationAnnotationValue(final ColumnRelationAnnotation adaptee) {
     this.candidates = Annotations.toNavigableValues(adaptee.getCandidates());
     this.chosen = Annotations.toValues(adaptee.getChosen());
   }
@@ -41,15 +42,7 @@ public final class ColumnRelationAnnotationValue {
    */
   @RdfProperty("http://odalic.eu/internal/ColumnRelationAnnotation/candidates")
   public Set<KnowledgeBaseEntityCandidateNavigableSetEntry> getCandidates() {
-    return candidates;
-  }
-
-  /**
-   * @param candidates the candidates to set
-   */
-  public void setCandidates(
-      Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
-    this.candidates = Annotations.copyNavigableValues(candidates);
+    return this.candidates;
   }
 
   /**
@@ -57,28 +50,37 @@ public final class ColumnRelationAnnotationValue {
    */
   @RdfProperty("http://odalic.eu/internal/ColumnRelationAnnotation/chosen")
   public Set<KnowledgeBaseEntityCandidateSetEntry> getChosen() {
-    return chosen;
+    return this.chosen;
+  }
+
+  /**
+   * @param candidates the candidates to set
+   */
+  public void setCandidates(
+      final Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
+    this.candidates = Annotations.copyNavigableValues(candidates);
   }
 
   /**
    * @param chosen the chosen to set
    */
-  public void setChosen(
-      Set<? extends KnowledgeBaseEntityCandidateSetEntry> chosen) {
+  public void setChosen(final Set<? extends KnowledgeBaseEntityCandidateSetEntry> chosen) {
     this.chosen = Annotations.copyValues(chosen);
   }
 
   public ColumnRelationAnnotation toColumnRelationAnnotation() {
-    return new ColumnRelationAnnotation(Annotations.toNavigableDomain(candidates), Annotations.toDomain(chosen));
+    return new ColumnRelationAnnotation(Annotations.toNavigableDomain(this.candidates),
+        Annotations.toDomain(this.chosen));
   }
-  
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "ColumnRelationAnnotationValue [candidates=" + candidates + ", chosen=" + chosen + "]";
+    return "ColumnRelationAnnotationValue [candidates=" + this.candidates + ", chosen="
+        + this.chosen + "]";
   }
 }

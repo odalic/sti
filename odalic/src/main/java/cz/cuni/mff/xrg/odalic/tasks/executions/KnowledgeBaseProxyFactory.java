@@ -1,10 +1,9 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
-import uk.ac.shef.dcs.kbproxy.KBProxy;
-
 import java.util.Map;
 
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.PrefixMappingService;
+import uk.ac.shef.dcs.kbproxy.KBProxy;
 
 /**
  * Created by Jan

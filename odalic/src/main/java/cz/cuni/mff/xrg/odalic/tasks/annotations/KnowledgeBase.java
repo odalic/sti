@@ -11,7 +11,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.KnowledgeBaseAdapter;
 
 /**
  * Knowledge base identifier.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -23,39 +23,31 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
 
   private final String name;
 
-  public KnowledgeBase(String name) {
+  public KnowledgeBase(final String name) {
     Preconditions.checkNotNull(name);
 
     this.name = name;
   }
 
   /**
-   * @return the name
-   */
-  public String getName() {
-    return name;
-  }
-
-  /**
-   * Computes hash code (for now) based on the name.
-   * 
-   * @see java.lang.Object#hashCode()
+   * Compares the names.
+   *
+   * @param other other base
+   *
+   * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((name == null) ? 0 : name.hashCode());
-    return result;
+  public int compareTo(final KnowledgeBase other) {
+    return this.name.compareTo(other.name);
   }
 
   /**
    * Compares for equality (only other knowledge base instance with the same name passes, for now).
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -65,37 +57,45 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     if (getClass() != obj.getClass()) {
       return false;
     }
-    KnowledgeBase other = (KnowledgeBase) obj;
-    if (name == null) {
+    final KnowledgeBase other = (KnowledgeBase) obj;
+    if (this.name == null) {
       if (other.name != null) {
         return false;
       }
-    } else if (!name.equals(other.name)) {
+    } else if (!this.name.equals(other.name)) {
       return false;
     }
     return true;
   }
 
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return this.name;
+  }
+
 
   /**
-   * Compares the names.
-   * 
-   * @param other other base
-   * 
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
+   * Computes hash code (for now) based on the name.
+   *
+   * @see java.lang.Object#hashCode()
    */
   @Override
-  public int compareTo(KnowledgeBase other) {
-    return name.compareTo(other.name);
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + ((this.name == null) ? 0 : this.name.hashCode());
+    return result;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "KnowledgeBase [name=" + name + "]";
+    return "KnowledgeBase [name=" + this.name + "]";
   }
 }

@@ -8,17 +8,24 @@ import cz.cuni.mff.xrg.odalic.positions.RowPosition;
 
 /**
  * Input interface.
- * 
+ *
  * @author Václav Brodec
  *
  */
 public interface Input {
   String at(CellPosition position);
-  String headerAt(ColumnPosition position);
-  List<String> rowAt(RowPosition position);
-  int rowsCount();
+
   int columnsCount();
+
+  String headerAt(ColumnPosition position);
+
   List<String> headers();
-  List<List<String>> rows();
+
   String identifier();
+
+  List<String> rowAt(RowPosition position);
+
+  List<List<String>> rows();
+
+  int rowsCount();
 }

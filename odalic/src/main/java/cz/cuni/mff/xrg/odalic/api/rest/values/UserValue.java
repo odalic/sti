@@ -13,32 +13,23 @@ import cz.cuni.mff.xrg.odalic.users.User;
 public final class UserValue {
 
   private String email;
-  
+
   private Role role;
 
   public UserValue() {}
-  
+
   public UserValue(final User adaptee) {
     this.email = adaptee.getEmail();
     this.role = adaptee.getRole();
   }
-  
+
   /**
    * @return the email
    */
   @XmlElement
   @Nullable
   public String getEmail() {
-    return email;
-  }
-
-  /**
-   * @param email the email to set
-   */
-  public void setEmail(String email) {
-    Preconditions.checkNotNull(email);
-    
-    this.email = email;
+    return this.email;
   }
 
   /**
@@ -47,23 +38,34 @@ public final class UserValue {
   @XmlElement
   @Nullable
   public Role getRole() {
-    return role;
+    return this.role;
+  }
+
+  /**
+   * @param email the email to set
+   */
+  public void setEmail(final String email) {
+    Preconditions.checkNotNull(email);
+
+    this.email = email;
   }
 
   /**
    * @param role the role to set
    */
-  public void setRole(Role role) {
+  public void setRole(final Role role) {
     Preconditions.checkNotNull(role);
-    
+
     this.role = role;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "UserValue [email=" + email + ", role=" + role + "]";
+    return "UserValue [email=" + this.email + ", role=" + this.role + "]";
   }
 }

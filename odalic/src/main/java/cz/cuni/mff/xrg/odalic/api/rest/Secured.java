@@ -11,7 +11,7 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 
 /**
  * Secured resource annotation.
- * 
+ *
  * @author Václav Brodec
  *
  */

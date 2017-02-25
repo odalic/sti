@@ -15,8 +15,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -38,7 +38,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 
 /**
  * Sign-up resource definition.
- * 
+ *
  * @author Václav Brodec
  */
 @Component
@@ -68,33 +68,17 @@ public final class UsersResource {
   }
 
   @POST
-  @Path("users")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response signUp(final Credentials credentials) throws MalformedURLException {
-    try {
-      userService.signUp(credentials);
-    } catch (final IllegalArgumentException e) {
-      throw new BadRequestException(e.getMessage(), e);
-    }
-
-    return Message
-        .of("An account created. Please activate via the code sent to the provided e-mail before the first use.")
-        .toResponse(Response.Status.OK, uriInfo);
-  }
-
-  @POST
   @Path("users/confirmations")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response activate(Token token) {
+  public Response activate(final Token token) {
     try {
-      userService.activateUser(token);
+      this.userService.activateUser(token);
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }
 
-    return Message.of("Successfully activated!").toResponse(Response.Status.OK, uriInfo);
+    return Message.of("Successfully activated!").toResponse(Response.Status.OK, this.uriInfo);
   }
 
   @POST
@@ -104,24 +88,28 @@ public final class UsersResource {
   public Response authenticate(final Credentials credentials) {
     final User user;
     try {
-      user = userService.authenticate(credentials);
+      user = this.userService.authenticate(credentials);
     } catch (final Exception e) {
       throw new BadRequestException(e.getMessage(), e);
     }
 
-    final Token token = userService.issueToken(user);
+    final Token token = this.userService.issueToken(user);
 
-    return Reply.data(Response.Status.OK, token, uriInfo).toResponse();
+    return Reply.data(Response.Status.OK, token, this.uriInfo).toResponse();
   }
 
-  @GET
-  @Path("users")
-  @Secured({Role.ADMINISTRATOR})
+  @POST
+  @Path("users/passwords/confirmations")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getUsers() {
-    final NavigableSet<User> users = this.userService.getUsers();
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response confirmPasswordChange(final Token token) {
+    try {
+      this.userService.confirmPasswordChange(token);
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
 
-    return Reply.data(Status.OK, users, uriInfo).toResponse();
+    return Message.of("Password reset!").toResponse(Response.Status.OK, this.uriInfo);
   }
 
   @DELETE
@@ -139,7 +127,7 @@ public final class UsersResource {
       throw new BadRequestException(e.getMessage(), e);
     }
 
-    return Message.of("The user has been deleted.").toResponse(Status.OK, uriInfo);
+    return Message.of("The user has been deleted.").toResponse(Status.OK, this.uriInfo);
   }
 
   @GET
@@ -154,7 +142,17 @@ public final class UsersResource {
       throw new BadRequestException(e.getMessage(), e);
     }
 
-    return Reply.data(Status.OK, user, uriInfo).toResponse();
+    return Reply.data(Status.OK, user, this.uriInfo).toResponse();
+  }
+
+  @GET
+  @Path("users")
+  @Secured({Role.ADMINISTRATOR})
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getUsers() {
+    final NavigableSet<User> users = this.userService.getUsers();
+
+    return Reply.data(Status.OK, users, this.uriInfo).toResponse();
   }
 
   @PUT
@@ -165,34 +163,36 @@ public final class UsersResource {
       final PasswordChangeValue passwordChangeValue) throws MalformedURLException {
     final User user;
     try {
-      user =
-          userService.authenticate(new Credentials(userId, passwordChangeValue.getOldPassword()));
+      user = this.userService
+          .authenticate(new Credentials(userId, passwordChangeValue.getOldPassword()));
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }
 
     try {
-      userService.requestPasswordChange(user, passwordChangeValue.getNewPassword());
+      this.userService.requestPasswordChange(user, passwordChangeValue.getNewPassword());
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }
 
     return Message
         .of("Password change requested. Please confirm via the code sent to the provided e-mail.")
-        .toResponse(Response.Status.OK, uriInfo);
+        .toResponse(Response.Status.OK, this.uriInfo);
   }
 
   @POST
-  @Path("users/passwords/confirmations")
+  @Path("users")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response confirmPasswordChange(final Token token) {
+  public Response signUp(final Credentials credentials) throws MalformedURLException {
     try {
-      userService.confirmPasswordChange(token);
+      this.userService.signUp(credentials);
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }
 
-    return Message.of("Password reset!").toResponse(Response.Status.OK, uriInfo);
+    return Message
+        .of("An account created. Please activate via the code sent to the provided e-mail before the first use.")
+        .toResponse(Response.Status.OK, this.uriInfo);
   }
 }

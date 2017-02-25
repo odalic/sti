@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
@@ -22,7 +23,7 @@ import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
  * This {@link TaskService} implementation persists the files in {@link DB}-backed maps.
- * 
+ *
  * @author Václav Brodec
  * @author Josef Janoušek
  *
@@ -55,73 +56,14 @@ public final class DbTaskService implements TaskService {
 
     this.db = dbService.getDb();
 
-    this.tasks = db.treeMap("tasks")
+    this.tasks = this.db.treeMap("tasks")
         .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
         .valueSerializer(Serializer.JAVA).createOrOpen();
   }
 
   /*
    * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getTasks()
-   */
-  @Override
-  public Set<Task> getTasks(String userId) {
-    return ImmutableSet.copyOf(tasks.prefixSubMap(new Object[] {userId}).values());
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getById(java.lang.String)
-   */
-  @Override
-  public Task getById(String userId, String taskId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
-
-    final Task task = tasks.get(new Object[] {userId, taskId});
-    Preconditions.checkArgument(task != null);
-
-    return task;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#deleteById(java.lang.String)
-   */
-  @Override
-  public void deleteById(String userId, String taskId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
-
-    final Task task = tasks.remove(new Object[] {userId, taskId});
-    Preconditions.checkArgument(task != null);
-
-    final Configuration configuration = task.getConfiguration();
-    fileService.unsubscribe(configuration.getInput(), task);
-
-    db.commit();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#verifyTaskExistenceById(java.lang.String)
-   */
-  @Override
-  @Nullable
-  public Task verifyTaskExistenceById(String userId, String taskId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
-
-    return tasks.get(new Object[] {userId, taskId});
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#create(cz.cuni.mff.xrg.odalic.tasks.Task)
    */
   @Override
@@ -133,24 +75,95 @@ public final class DbTaskService implements TaskService {
     replace(task);
   }
 
+  @Override
+  public void deleteAll(final String userId) {
+    Preconditions.checkNotNull(userId);
+
+    final Map<Object[], Task> taskIdsToTasks = this.tasks.prefixSubMap(new Object[] {userId});
+    taskIdsToTasks.entrySet().stream().forEach(e -> this.fileService
+        .unsubscribe(e.getValue().getConfiguration().getInput(), e.getValue()));
+    taskIdsToTasks.clear();
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
+   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#deleteById(java.lang.String)
+   */
+  @Override
+  public void deleteById(final String userId, final String taskId) {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(taskId);
+
+    final Task task = this.tasks.remove(new Object[] {userId, taskId});
+    Preconditions.checkArgument(task != null);
+
+    final Configuration configuration = task.getConfiguration();
+    this.fileService.unsubscribe(configuration.getInput(), task);
+
+    this.db.commit();
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getById(java.lang.String)
+   */
+  @Override
+  public Task getById(final String userId, final String taskId) {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(taskId);
+
+    final Task task = this.tasks.get(new Object[] {userId, taskId});
+    Preconditions.checkArgument(task != null);
+
+    return task;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getTasks()
+   */
+  @Override
+  public Set<Task> getTasks(final String userId) {
+    return ImmutableSet.copyOf(this.tasks.prefixSubMap(new Object[] {userId}).values());
+  }
+
+  @Override
+  public NavigableSet<Task> getTasksSortedByCreatedInDescendingOrder(final String userId) {
+    return ImmutableSortedSet.copyOf(
+        (final Task first, final Task second) -> -1
+            * first.getCreated().compareTo(second.getCreated()),
+        this.tasks.prefixSubMap(new Object[] {userId}).values());
+  }
+
+  @Override
+  public NavigableSet<Task> getTasksSortedByIdInAscendingOrder(final String userId) {
+    return ImmutableSortedSet.copyOf(
+        (final Task first, final Task second) -> first.getId().compareTo(second.getId()),
+        this.tasks.prefixSubMap(new Object[] {userId}).values());
+  }
+
+  /*
+   * (non-Javadoc)
+   *
    * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#replace(cz.cuni.mff.xrg.odalic.tasks.Task)
    */
   @Override
   public void replace(final Task task) {
     Preconditions.checkNotNull(task);
 
-    final Task previous = tasks.put(new Object[] {task.getOwner().getEmail(), task.getId()}, task);
+    final Task previous =
+        this.tasks.put(new Object[] {task.getOwner().getEmail(), task.getId()}, task);
     if (previous != null) {
       final Configuration previousConfiguration = previous.getConfiguration();
       final File previousInput = previousConfiguration.getInput();
 
       try {
-        fileService.unsubscribe(previousInput, previous);
+        this.fileService.unsubscribe(previousInput, previous);
       } catch (final Exception e) {
-        db.rollback();
+        this.db.rollback();
         throw e;
       }
     }
@@ -159,36 +172,26 @@ public final class DbTaskService implements TaskService {
     final File input = configuration.getInput();
 
     try {
-      fileService.subscribe(input, task);
+      this.fileService.subscribe(input, task);
     } catch (final Exception e) {
-      db.rollback();
+      this.db.rollback();
       throw e;
     }
 
-    db.commit();
+    this.db.commit();
   }
 
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#verifyTaskExistenceById(java.lang.String)
+   */
   @Override
-  public NavigableSet<Task> getTasksSortedByIdInAscendingOrder(String userId) {
-    return ImmutableSortedSet.copyOf(
-        (Task first, Task second) -> first.getId().compareTo(second.getId()),
-        tasks.prefixSubMap(new Object[] {userId}).values());
-  }
-
-  @Override
-  public NavigableSet<Task> getTasksSortedByCreatedInDescendingOrder(String userId) {
-    return ImmutableSortedSet.copyOf(
-        (Task first, Task second) -> -1 * first.getCreated().compareTo(second.getCreated()),
-        tasks.prefixSubMap(new Object[] {userId}).values());
-  }
-
-  @Override
-  public void deleteAll(String userId) {
+  @Nullable
+  public Task verifyTaskExistenceById(final String userId, final String taskId) {
     Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(taskId);
 
-    final Map<Object[], Task> taskIdsToTasks = this.tasks.prefixSubMap(new Object[] { userId });
-    taskIdsToTasks.entrySet().stream().forEach(
-        e -> fileService.unsubscribe(e.getValue().getConfiguration().getInput(), e.getValue()));
-    taskIdsToTasks.clear();
+    return this.tasks.get(new Object[] {userId, taskId});
   }
 }

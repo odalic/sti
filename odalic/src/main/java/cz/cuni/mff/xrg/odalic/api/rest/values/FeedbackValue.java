@@ -28,7 +28,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Domain class {@link Feedback} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -54,25 +54,81 @@ public final class FeedbackValue implements Serializable {
   private Set<DataCubeComponent> dataCubeComponents;
 
   public FeedbackValue() {
-    subjectColumnPositions = ImmutableMap.of();
-    columnIgnores = ImmutableSet.of();
-    columnAmbiguities = ImmutableSet.of();
-    classifications = ImmutableSet.of();
-    columnRelations = ImmutableSet.of();
-    disambiguations = ImmutableSet.of();
-    ambiguities = ImmutableSet.of();
-    dataCubeComponents = ImmutableSet.of();
+    this.subjectColumnPositions = ImmutableMap.of();
+    this.columnIgnores = ImmutableSet.of();
+    this.columnAmbiguities = ImmutableSet.of();
+    this.classifications = ImmutableSet.of();
+    this.columnRelations = ImmutableSet.of();
+    this.disambiguations = ImmutableSet.of();
+    this.ambiguities = ImmutableSet.of();
+    this.dataCubeComponents = ImmutableSet.of();
   }
 
-  public FeedbackValue(Feedback adaptee) {
-    subjectColumnPositions = adaptee.getSubjectColumnPositions();
-    columnIgnores = adaptee.getColumnIgnores();
-    columnAmbiguities = adaptee.getColumnAmbiguities();
-    classifications = adaptee.getClassifications();
-    columnRelations = adaptee.getColumnRelations();
-    disambiguations = adaptee.getDisambiguations();
-    ambiguities = adaptee.getAmbiguities();
-    dataCubeComponents = adaptee.getDataCubeComponents();
+  public FeedbackValue(final Feedback adaptee) {
+    this.subjectColumnPositions = adaptee.getSubjectColumnPositions();
+    this.columnIgnores = adaptee.getColumnIgnores();
+    this.columnAmbiguities = adaptee.getColumnAmbiguities();
+    this.classifications = adaptee.getClassifications();
+    this.columnRelations = adaptee.getColumnRelations();
+    this.disambiguations = adaptee.getDisambiguations();
+    this.ambiguities = adaptee.getAmbiguities();
+    this.dataCubeComponents = adaptee.getDataCubeComponents();
+  }
+
+  /**
+   * @return the ambiguities
+   */
+  @XmlElement
+  public Set<Ambiguity> getAmbiguities() {
+    return this.ambiguities;
+  }
+
+  /**
+   * @return the classifications
+   */
+  @XmlElement
+  public Set<Classification> getClassifications() {
+    return this.classifications;
+  }
+
+  /**
+   * @return the column ambiguities
+   */
+  @XmlElement
+  public Set<ColumnAmbiguity> getColumnAmbiguities() {
+    return this.columnAmbiguities;
+  }
+
+  /**
+   * @return the column ignores
+   */
+  @XmlElement
+  public Set<ColumnIgnore> getColumnIgnores() {
+    return this.columnIgnores;
+  }
+
+  /**
+   * @return the column relations
+   */
+  @XmlElement
+  public Set<ColumnRelation> getColumnRelations() {
+    return this.columnRelations;
+  }
+
+  /**
+   * @return the dataCubeComponents
+   */
+  @XmlElement
+  public Set<DataCubeComponent> getDataCubeComponents() {
+    return this.dataCubeComponents;
+  }
+
+  /**
+   * @return the disambiguations
+   */
+  @XmlElement
+  public Set<Disambiguation> getDisambiguations() {
+    return this.disambiguations;
   }
 
   /**
@@ -82,146 +138,93 @@ public final class FeedbackValue implements Serializable {
   @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
   @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
   public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
-    return subjectColumnPositions;
-  }
-
-  /**
-   * @param subjectColumnPositions the subject column positions to set
-   */
-  public void setSubjectColumnPositions(Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions) {
-    Preconditions.checkNotNull(subjectColumnPositions);
-    
-    this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
-  }
-
-  /**
-   * @return the column ignores
-   */
-  @XmlElement
-  public Set<ColumnIgnore> getColumnIgnores() {
-    return columnIgnores;
-  }
-
-  /**
-   * @param columnIgnores the column ignores to set
-   */
-  public void setColumnIgnores(Set<? extends ColumnIgnore> columnIgnores) {
-    Preconditions.checkNotNull(columnIgnores);
-
-    this.columnIgnores = ImmutableSet.copyOf(columnIgnores);
-  }
-
-  /**
-   * @return the column ambiguities
-   */
-  @XmlElement
-  public Set<ColumnAmbiguity> getColumnAmbiguities() {
-    return columnAmbiguities;
-  }
-
-  /**
-   * @param columnAmbiguities the column ambiguities to set
-   */
-  public void setColumnAmbiguities(Set<? extends ColumnAmbiguity> columnAmbiguities) {
-    Preconditions.checkNotNull(columnAmbiguities);
-
-    this.columnAmbiguities = ImmutableSet.copyOf(columnAmbiguities);
-  }
-
-  /**
-   * @return the classifications
-   */
-  @XmlElement
-  public Set<Classification> getClassifications() {
-    return classifications;
-  }
-
-  /**
-   * @param classifications the classifications to set
-   */
-  public void setClassifications(Set<? extends Classification> classifications) {
-    Preconditions.checkNotNull(classifications);
-
-    this.classifications = ImmutableSet.copyOf(classifications);
-  }
-
-  /**
-   * @return the column relations
-   */
-  @XmlElement
-  public Set<ColumnRelation> getColumnRelations() {
-    return columnRelations;
-  }
-
-  /**
-   * @param columnRelations the column relations to set
-   */
-  public void setColumnRelations(Set<? extends ColumnRelation> columnRelations) {
-    Preconditions.checkNotNull(columnRelations);
-
-    this.columnRelations = ImmutableSet.copyOf(columnRelations);
-  }
-
-  /**
-   * @return the disambiguations
-   */
-  @XmlElement
-  public Set<Disambiguation> getDisambiguations() {
-    return disambiguations;
-  }
-
-  /**
-   * @param disambiguations the disambiguations to set
-   */
-  public void setDisambiguations(Set<? extends Disambiguation> disambiguations) {
-    Preconditions.checkNotNull(disambiguations);
-
-    this.disambiguations = ImmutableSet.copyOf(disambiguations);
-  }
-
-  /**
-   * @return the ambiguities
-   */
-  @XmlElement
-  public Set<Ambiguity> getAmbiguities() {
-    return ambiguities;
+    return this.subjectColumnPositions;
   }
 
   /**
    * @param ambiguities the ambiguities to set
    */
-  public void setAmbiguities(Set<? extends Ambiguity> ambiguities) {
+  public void setAmbiguities(final Set<? extends Ambiguity> ambiguities) {
     Preconditions.checkNotNull(ambiguities);
 
     this.ambiguities = ImmutableSet.copyOf(ambiguities);
   }
 
   /**
-   * @return the dataCubeComponents
+   * @param classifications the classifications to set
    */
-  @XmlElement
-  public Set<DataCubeComponent> getDataCubeComponents() {
-    return dataCubeComponents;
+  public void setClassifications(final Set<? extends Classification> classifications) {
+    Preconditions.checkNotNull(classifications);
+
+    this.classifications = ImmutableSet.copyOf(classifications);
+  }
+
+  /**
+   * @param columnAmbiguities the column ambiguities to set
+   */
+  public void setColumnAmbiguities(final Set<? extends ColumnAmbiguity> columnAmbiguities) {
+    Preconditions.checkNotNull(columnAmbiguities);
+
+    this.columnAmbiguities = ImmutableSet.copyOf(columnAmbiguities);
+  }
+
+  /**
+   * @param columnIgnores the column ignores to set
+   */
+  public void setColumnIgnores(final Set<? extends ColumnIgnore> columnIgnores) {
+    Preconditions.checkNotNull(columnIgnores);
+
+    this.columnIgnores = ImmutableSet.copyOf(columnIgnores);
+  }
+
+  /**
+   * @param columnRelations the column relations to set
+   */
+  public void setColumnRelations(final Set<? extends ColumnRelation> columnRelations) {
+    Preconditions.checkNotNull(columnRelations);
+
+    this.columnRelations = ImmutableSet.copyOf(columnRelations);
   }
 
   /**
    * @param dataCubeComponents the dataCubeComponents to set
    */
-  public void setDataCubeComponents(Set<? extends DataCubeComponent> dataCubeComponents) {
+  public void setDataCubeComponents(final Set<? extends DataCubeComponent> dataCubeComponents) {
     Preconditions.checkNotNull(dataCubeComponents);
 
     this.dataCubeComponents = ImmutableSet.copyOf(dataCubeComponents);
   }
 
-  /* (non-Javadoc)
+  /**
+   * @param disambiguations the disambiguations to set
+   */
+  public void setDisambiguations(final Set<? extends Disambiguation> disambiguations) {
+    Preconditions.checkNotNull(disambiguations);
+
+    this.disambiguations = ImmutableSet.copyOf(disambiguations);
+  }
+
+  /**
+   * @param subjectColumnPositions the subject column positions to set
+   */
+  public void setSubjectColumnPositions(
+      final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions) {
+    Preconditions.checkNotNull(subjectColumnPositions);
+
+    this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "FeedbackValue [subjectColumnPositions=" + subjectColumnPositions + ", columnIgnores="
-        + columnIgnores + ", columnAmbiguities=" + columnAmbiguities + ", classifications="
-        + classifications + ", columnRelations=" + columnRelations + ", disambiguations="
-        + disambiguations + ", ambiguities=" + ambiguities + ", dataCubeComponents="
-        + dataCubeComponents + "]";
+    return "FeedbackValue [subjectColumnPositions=" + this.subjectColumnPositions
+        + ", columnIgnores=" + this.columnIgnores + ", columnAmbiguities=" + this.columnAmbiguities
+        + ", classifications=" + this.classifications + ", columnRelations=" + this.columnRelations
+        + ", disambiguations=" + this.disambiguations + ", ambiguities=" + this.ambiguities
+        + ", dataCubeComponents=" + this.dataCubeComponents + "]";
   }
 }

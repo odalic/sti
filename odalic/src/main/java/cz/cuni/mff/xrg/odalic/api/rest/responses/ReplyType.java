@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * The REST API {@link Reply} type.
- * 
+ *
  * @author Václav Brodec
  *
  * @see Message the message format
@@ -20,7 +20,7 @@ public enum ReplyType {
    * Reply contains actual data.
    */
   @XmlEnumValue("DATA") DATA,
-  
+
   /**
    * Reply contains no actual data, only a message.
    */

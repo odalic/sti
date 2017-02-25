@@ -9,7 +9,7 @@ import cz.cuni.mff.xrg.odalic.positions.RowPosition;
 
 /**
  * Domain class {@link RowPosition} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -17,13 +17,13 @@ import cz.cuni.mff.xrg.odalic.positions.RowPosition;
 public final class RowPositionValue {
 
   private int index;
-  
+
   public RowPositionValue() {}
-  
+
   /**
    * @param adaptee
    */
-  public RowPositionValue(RowPosition adaptee) {
+  public RowPositionValue(final RowPosition adaptee) {
     this.index = adaptee.getIndex();
   }
 
@@ -32,23 +32,25 @@ public final class RowPositionValue {
    */
   @XmlElement
   public int getIndex() {
-    return index;
+    return this.index;
   }
 
   /**
    * @param index the index to set
    */
-  public void setIndex(int index) {
+  public void setIndex(final int index) {
     Preconditions.checkArgument(index >= 0);
-    
+
     this.index = index;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "RowPositionValue [index=" + index + "]";
+    return "RowPositionValue [index=" + this.index + "]";
   }
 }

@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
 import java.util.NavigableSet;
+
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -40,7 +41,7 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 public final class ConfigurationResource {
 
   public static final String TURTLE_MIME_TYPE = "text/turtle";
-  
+
   private final ConfigurationService configurationService;
   private final FileService fileService;
   private final BasesService basesService;
@@ -67,12 +68,46 @@ public final class ConfigurationResource {
     this.executionService = executionService;
   }
 
+  @GET
+  @Path("tasks/{taskId}/configuration")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getConfigurationForTaskId(final @PathParam("taskId") String taskId) {
+    return getConfigurationForTaskId(this.securityContext.getUserPrincipal().getName(), taskId);
+  }
+
+  @GET
+  @Path("users/{userId}/tasks/{taskId}/configuration")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getConfigurationForTaskId(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId) {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final Configuration configurationForTaskId;
+    try {
+      configurationForTaskId = this.configurationService.getForTaskId(userId, taskId);
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException("Configuration for the task does not exist.", e);
+    }
+
+    return Reply.data(Response.Status.OK, configurationForTaskId, this.uriInfo).toResponse();
+  }
+
+  @PUT
+  @Path("tasks/{taskId}/configuration")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response putConfigurationForTaskId(final @PathParam("taskId") String taskId,
+      final ConfigurationValue configurationValue) {
+    return putConfigurationForTaskId(this.securityContext.getUserPrincipal().getName(), taskId,
+        configurationValue);
+  }
+
   @PUT
   @Path("users/{userId}/tasks/{taskId}/configuration")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response putConfigurationForTaskId(final @PathParam("userId") String userId,
-      final @PathParam("taskId") String taskId, ConfigurationValue configurationValue) {
+      final @PathParam("taskId") String taskId, final ConfigurationValue configurationValue) {
     Security.checkAuthorization(this.securityContext, userId);
 
     if (configurationValue == null) {
@@ -89,14 +124,14 @@ public final class ConfigurationResource {
 
     final File input;
     try {
-      input = fileService.getById(userId, configurationValue.getInput());
+      input = this.fileService.getById(userId, configurationValue.getInput());
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException("The configured input file is not registered.", e);
     }
 
     final NavigableSet<KnowledgeBase> usedBases;
     if (configurationValue.getUsedBases() == null) {
-      usedBases = basesService.getBases();
+      usedBases = this.basesService.getBases();
     } else {
       usedBases = configurationValue.getUsedBases();
     }
@@ -111,45 +146,11 @@ public final class ConfigurationResource {
     }
 
     try {
-      executionService.unscheduleForTaskId(userId, taskId);
-      configurationService.setForTaskId(userId, taskId, configuration);
+      this.executionService.unscheduleForTaskId(userId, taskId);
+      this.configurationService.setForTaskId(userId, taskId, configuration);
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException("The configured task does not exist.", e);
     }
-    return Message.of("Configuration set.").toResponse(Response.Status.OK, uriInfo);
-  }
-
-  @PUT
-  @Path("tasks/{taskId}/configuration")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response putConfigurationForTaskId(final @PathParam("taskId") String taskId,
-      ConfigurationValue configurationValue) {
-    return putConfigurationForTaskId(securityContext.getUserPrincipal().getName(), taskId,
-        configurationValue);
-  }
-
-  @GET
-  @Path("users/{userId}/tasks/{taskId}/configuration")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getConfigurationForTaskId(final @PathParam("userId") String userId,
-      final @PathParam("taskId") String taskId) {
-    Security.checkAuthorization(this.securityContext, userId);
-
-    final Configuration configurationForTaskId;
-    try {
-      configurationForTaskId = configurationService.getForTaskId(userId, taskId);
-    } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("Configuration for the task does not exist.", e);
-    }
-
-    return Reply.data(Response.Status.OK, configurationForTaskId, uriInfo).toResponse();
-  }
-
-  @GET
-  @Path("tasks/{taskId}/configuration")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getConfigurationForTaskId(final @PathParam("taskId") String taskId) {
-    return getConfigurationForTaskId(securityContext.getUserPrincipal().getName(), taskId);
+    return Message.of("Configuration set.").toResponse(Response.Status.OK, this.uriInfo);
   }
 }

@@ -8,14 +8,14 @@ import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 /**
  * Converts the complete annotation result provided by the Semantic Table Interpreter to the
  * representation used by Odalic server to facilitate RDF output and user feedback.
- * 
+ *
  * @author Václav Brodec
  *
  */
 public interface AnnotationToResultAdapter {
   /**
    * Converts the annotation formats. Uses the primary base to determine the subject column.
-   * 
+   *
    * @param basesToTableAnnotations map to table annotations from the knowledge bases that were used
    *        to make them
    * @return Odalic result format

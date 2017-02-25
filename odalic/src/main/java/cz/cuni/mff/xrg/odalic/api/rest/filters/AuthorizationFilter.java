@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.api.rest.filters;
 
@@ -15,8 +15,8 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.ext.Provider;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.ext.Provider;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,7 +32,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 
 /**
  * Role authorization filter.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -41,6 +41,17 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 @Priority(Priorities.AUTHORIZATION)
 @Component
 public class AuthorizationFilter implements ContainerRequestFilter {
+
+  private static Set<Role> extractRoles(final AnnotatedElement annotatedElement) {
+    Preconditions.checkNotNull(annotatedElement);
+
+    final Secured secured = annotatedElement.getAnnotation(Secured.class);
+    if (secured == null) {
+      return ImmutableSet.of();
+    }
+
+    return ImmutableSet.copyOf(secured.value());
+  }
 
   @Autowired
   private UserService userService;
@@ -52,17 +63,17 @@ public class AuthorizationFilter implements ContainerRequestFilter {
   private ResourceInfo resourceInfo;
 
   @Override
-  public void filter(ContainerRequestContext requestContext) throws IOException {
+  public void filter(final ContainerRequestContext requestContext) throws IOException {
     final String userId = requestContext.getSecurityContext().getUserPrincipal().getName();
 
-    final Method resourceMethod = resourceInfo.getResourceMethod();
+    final Method resourceMethod = this.resourceInfo.getResourceMethod();
     Preconditions.checkArgument(resourceMethod != null);
 
     final Set<Role> methodRoles = extractRoles(resourceMethod);
 
     try {
       if (methodRoles.isEmpty()) {
-        final Class<?> resourceClass = resourceInfo.getResourceClass();
+        final Class<?> resourceClass = this.resourceInfo.getResourceClass();
         Preconditions.checkArgument(resourceClass != null);
 
         final Set<Role> classRoles = extractRoles(resourceClass);
@@ -76,25 +87,14 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     } catch (final Exception e) {
       requestContext
           .abortWith(Message.of("Authorization failed. Insufficient rights!", e.getMessage())
-              .toResponse(Status.FORBIDDEN, uriInfo));
+              .toResponse(Status.FORBIDDEN, this.uriInfo));
       return;
     }
   }
 
-  private static Set<Role> extractRoles(final AnnotatedElement annotatedElement) {
-    Preconditions.checkNotNull(annotatedElement);
-
-    final Secured secured = annotatedElement.getAnnotation(Secured.class);
-    if (secured == null) {
-      return ImmutableSet.of();
-    }
-
-    return ImmutableSet.copyOf(secured.value());
-  }
-
   private void checkPermissions(final String userId, final Set<? extends Role> allowedRoles)
       throws Exception {
-    final User user = userService.getUser(userId);
+    final User user = this.userService.getUser(userId);
 
     Preconditions.checkArgument(allowedRoles.contains(user.getRole()));
   }

@@ -2,6 +2,7 @@ package cz.cuni.mff.xrg.odalic.util;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+
 import javax.annotation.Nullable;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -12,7 +13,7 @@ import com.google.common.net.UrlEscapers;
 
 /**
  * Utility class for -- you guessed it -- working with URLs.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -21,15 +22,22 @@ public final class URL {
   private static final Escaper urlPathSegmentEscaper = UrlEscapers.urlPathSegmentEscaper();
 
   /**
-   * We want to keep this class uninstantiable, so no visible constructor is available.
+   * Extracts a stamp string from the URI information.
+   *
+   * @param uriInfo request URI information
+   * @param queryParameterName stamp query parameter name
+   * @return the stamp string, {@code null} when not provided
    */
-  private URL() {}
+  @Nullable
+  public static String getStamp(final UriInfo uriInfo, final String queryParameterName) {
+    return uriInfo.getQueryParameters().getFirst(queryParameterName);
+  }
 
   /**
    * One-off function that essentially takes the absolute path of the request URI (encapsulated by
    * the {@link UriInfo} instance) and resolves the sub-resource name against it to get the absolute
    * path of the sub-resource.
-   * 
+   *
    * @param requestUriInfo URI info
    * @param subResource a string to resolve against the URI
    * @return absolute path of the string
@@ -39,7 +47,8 @@ public final class URL {
    * @throws IllegalArgumentException if the sub-resource cannot be properly escaped to become a
    *         path segment in URL
    */
-  public static java.net.URL getSubResourceAbsolutePath(UriInfo requestUriInfo, String subResource)
+  public static java.net.URL getSubResourceAbsolutePath(final UriInfo requestUriInfo,
+      final String subResource)
       throws MalformedURLException, IllegalStateException, IllegalArgumentException {
     return requestUriInfo.getAbsolutePath().resolve(urlPathSegmentEscaper.escape(subResource))
         .toURL();
@@ -47,7 +56,7 @@ public final class URL {
 
   /**
    * Sets the query parameter and return the modified URL.
-   * 
+   *
    * @param url URL
    * @param key query parameter key
    * @param value query parameter value
@@ -68,14 +77,7 @@ public final class URL {
   }
 
   /**
-   * Extracts a stamp string from the URI information.
-   * 
-   * @param uriInfo request URI information
-   * @param queryParameterName stamp query parameter name
-   * @return the stamp string, {@code null} when not provided
+   * We want to keep this class uninstantiable, so no visible constructor is available.
    */
-  @Nullable
-  public static String getStamp(UriInfo uriInfo, String queryParameterName) {
-    return uriInfo.getQueryParameters().getFirst(queryParameterName);
-  }
+  private URL() {}
 }

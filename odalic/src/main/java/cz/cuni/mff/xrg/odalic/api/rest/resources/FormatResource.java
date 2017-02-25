@@ -52,13 +52,48 @@ public final class FormatResource {
     this.fileService = fileService;
   }
 
+  @GET
+  @Path("files/{fileId}/format")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getFormatForFileId(final @PathParam("fileId") String fileId) {
+    return getFormatForFileId(this.securityContext.getUserPrincipal().getName(), fileId);
+  }
+
+  @GET
+  @Path("users/{userId}/files/{fileId}/format")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getFormatForFileId(final @PathParam("userId") String userId,
+      final @PathParam("fileId") String fileId) {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final Format formatForFileId;
+    try {
+      formatForFileId = this.fileService.getFormatForFileId(userId, fileId);
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException("File does not exist.", e);
+    }
+
+    return Reply.data(Response.Status.OK, formatForFileId, this.uriInfo).toResponse();
+  }
+
+  @PUT
+  @Path("files/{fileId}/format")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response putFormatForFileId(final @PathParam("fileId") String fileId,
+      final FormatValue formatValue) {
+    return putFormatForFileId(this.securityContext.getUserPrincipal().getName(), fileId,
+        formatValue);
+  }
+
   @PUT
   @Path("users/{userId}/files/{fileId}/format")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response putFormatForFileId(final @PathParam("userId") String userId, final @PathParam("fileId") String fileId, final FormatValue formatValue) {
-    Security.checkAuthorization(securityContext, userId);
-    
+  public Response putFormatForFileId(final @PathParam("userId") String userId,
+      final @PathParam("fileId") String fileId, final FormatValue formatValue) {
+    Security.checkAuthorization(this.securityContext, userId);
+
     if (formatValue == null) {
       throw new BadRequestException("Format must be provided!");
     }
@@ -79,41 +114,10 @@ public final class FormatResource {
         formatValue.getEscapeCharacter(), formatValue.getCommentMarker());
 
     try {
-      fileService.setFormatForFileId(userId, fileId, format);
+      this.fileService.setFormatForFileId(userId, fileId, format);
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException("The file does not exist.", e);
     }
-    return Message.of("Format set.").toResponse(Response.Status.OK, uriInfo);
-  }
-  
-  @PUT
-  @Path("files/{fileId}/format")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response putFormatForFileId(final @PathParam("fileId") String fileId, final FormatValue formatValue) {
-    return putFormatForFileId(securityContext.getUserPrincipal().getName(), fileId, formatValue);
-  }
-
-  @GET
-  @Path("users/{userId}/files/{fileId}/format")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getFormatForFileId(final @PathParam("userId") String userId, final @PathParam("fileId") String fileId) {
-    Security.checkAuthorization(securityContext, userId);
-    
-    final Format formatForFileId;
-    try {
-      formatForFileId = fileService.getFormatForFileId(userId, fileId);
-    } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("File does not exist.", e);
-    }
-
-    return Reply.data(Response.Status.OK, formatForFileId, uriInfo).toResponse();
-  }
-  
-  @GET
-  @Path("files/{fileId}/format")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getFormatForFileId(final @PathParam("fileId") String fileId) {
-    return getFormatForFileId(securityContext.getUserPrincipal().getName(), fileId);
+    return Message.of("Format set.").toResponse(Response.Status.OK, this.uriInfo);
   }
 }

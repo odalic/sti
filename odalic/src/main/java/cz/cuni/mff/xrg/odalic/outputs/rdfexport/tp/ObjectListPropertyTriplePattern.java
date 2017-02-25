@@ -1,26 +1,28 @@
 package cz.cuni.mff.xrg.odalic.outputs.rdfexport.tp;
 
-import com.google.common.base.Preconditions;
 import org.eclipse.rdf4j.model.IRI;
 
+import com.google.common.base.Preconditions;
+
 /**
- * 
- * 
+ *
+ *
  * @author Josef Janoušek
  *
  */
 public class ObjectListPropertyTriplePattern extends ObjectPropertyTriplePattern {
 
-    private String separator;
+  private final String separator;
 
-    public ObjectListPropertyTriplePattern(String subjectPattern, IRI predicate, String objectPattern, String separator) {
-        super(subjectPattern, predicate, objectPattern, null);
-        Preconditions.checkNotNull(separator);
-        this.separator = separator;
-    }
+  public ObjectListPropertyTriplePattern(final String subjectPattern, final IRI predicate,
+      final String objectPattern, final String separator) {
+    super(subjectPattern, predicate, objectPattern, null);
+    Preconditions.checkNotNull(separator);
+    this.separator = separator;
+  }
 
-    public String getSeparator() {
-      return separator;
-    }
+  public String getSeparator() {
+    return this.separator;
+  }
 
 }

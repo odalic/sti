@@ -6,18 +6,15 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.RowPositionValue;
 import cz.cuni.mff.xrg.odalic.positions.RowPosition;
 
 
-public final class RowPositionAdapter
-    extends XmlAdapter<RowPositionValue, RowPosition> {
+public final class RowPositionAdapter extends XmlAdapter<RowPositionValue, RowPosition> {
 
   @Override
-  public RowPositionValue marshal(RowPosition bound)
-      throws Exception {
+  public RowPositionValue marshal(final RowPosition bound) throws Exception {
     return new RowPositionValue(bound);
   }
 
   @Override
-  public RowPosition unmarshal(RowPositionValue value)
-      throws Exception {
+  public RowPosition unmarshal(final RowPositionValue value) throws Exception {
     return new RowPosition(value.getIndex());
   }
 }

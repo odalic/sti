@@ -11,7 +11,7 @@ import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 
 /**
  * This {@link ConfigurationService} implementation just refers to {@link TaskService}.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -19,15 +19,22 @@ public final class DefaultConfigurationService implements ConfigurationService {
 
   private final TaskService taskService;
 
+  @Autowired
+  public DefaultConfigurationService(final TaskService taskService) {
+    Preconditions.checkNotNull(taskService);
+
+    this.taskService = taskService;
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService#getForTaskId(java.lang.String)
    */
   @Override
-  public Configuration getForTaskId(String userId, String taskId) {
-    final Task task = taskService.getById(userId, taskId);
+  public Configuration getForTaskId(final String userId, final String taskId) {
+    final Task task = this.taskService.getById(userId, taskId);
 
     return task.getConfiguration();
   }
@@ -37,20 +44,15 @@ public final class DefaultConfigurationService implements ConfigurationService {
    * @param configuration
    */
   @Override
-  public void setForTaskId(String userId, final String taskId, final Configuration configuration) {
-    final Task task = taskService.getById(userId, taskId);
+  public void setForTaskId(final String userId, final String taskId,
+      final Configuration configuration) {
+    final Task task = this.taskService.getById(userId, taskId);
 
     try {
-      taskService.replace(new Task(task.getOwner(), task.getId(), task.getDescription(), task.getCreated(), configuration));
+      this.taskService.replace(new Task(task.getOwner(), task.getId(), task.getDescription(),
+          task.getCreated(), configuration));
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e);
     }
-  }
-
-  @Autowired
-  public DefaultConfigurationService(final TaskService taskService) {
-    Preconditions.checkNotNull(taskService);
-
-    this.taskService = taskService;
   }
 }

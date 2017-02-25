@@ -8,15 +8,16 @@ import com.google.common.base.Preconditions;
 public class KnowledgeBaseEntityCandidateNavigableSetEntry {
 
   private KnowledgeBaseValue base;
-  
+
   private EntityCandidateNavigableSetWrapper set;
-  
+
   public KnowledgeBaseEntityCandidateNavigableSetEntry() {}
-  
-  public KnowledgeBaseEntityCandidateNavigableSetEntry(final KnowledgeBaseValue base, EntityCandidateNavigableSetWrapper set) {
+
+  public KnowledgeBaseEntityCandidateNavigableSetEntry(final KnowledgeBaseValue base,
+      final EntityCandidateNavigableSetWrapper set) {
     Preconditions.checkNotNull(base);
     Preconditions.checkNotNull(set);
-    
+
     this.base = base;
     this.set = set;
   }
@@ -26,16 +27,7 @@ public class KnowledgeBaseEntityCandidateNavigableSetEntry {
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseEntityCandidateNavigableSetEntry/base")
   public KnowledgeBaseValue getBase() {
-    return base;
-  }
-
-  /**
-   * @param base the base to set
-   */
-  public void setBase(KnowledgeBaseValue base) {
-    Preconditions.checkNotNull(base);
-    
-    this.base = base;
+    return this.base;
   }
 
   /**
@@ -43,23 +35,35 @@ public class KnowledgeBaseEntityCandidateNavigableSetEntry {
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseEntityCandidateNavigableSetEntry/set")
   public EntityCandidateNavigableSetWrapper getSet() {
-    return set;
+    return this.set;
+  }
+
+  /**
+   * @param base the base to set
+   */
+  public void setBase(final KnowledgeBaseValue base) {
+    Preconditions.checkNotNull(base);
+
+    this.base = base;
   }
 
   /**
    * @param set the set to set
    */
-  public void setSet(EntityCandidateNavigableSetWrapper set) {
+  public void setSet(final EntityCandidateNavigableSetWrapper set) {
     Preconditions.checkNotNull(set);
-    
+
     this.set = set;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "KnowledgeBaseEntityCandidateNavigableSetEntry [base=" + base + ", set=" + set + "]";
+    return "KnowledgeBaseEntityCandidateNavigableSetEntry [base=" + this.base + ", set=" + this.set
+        + "]";
   }
 }

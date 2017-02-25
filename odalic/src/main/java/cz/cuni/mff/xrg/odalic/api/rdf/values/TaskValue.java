@@ -1,7 +1,9 @@
 package cz.cuni.mff.xrg.odalic.api.rdf.values;
 
 import java.io.Serializable;
+
 import javax.annotation.Nullable;
+
 import org.openrdf.model.Resource;
 
 import com.complexible.pinto.Identifiable;
@@ -13,7 +15,7 @@ import cz.cuni.mff.xrg.odalic.tasks.Task;
 
 /**
  * Domain class {@link Task} adapted for RDF serialization.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -30,27 +32,9 @@ public final class TaskValue implements Serializable, Identifiable {
 
   public TaskValue() {}
 
-  public TaskValue(Task adaptee) {
-    description = adaptee.getDescription();
-    configuration = new ConfigurationValue(adaptee.getConfiguration());
-  }
-
-  /**
-   * @return the description
-   */
-  @Nullable
-  @RdfProperty(value = "http://odalic.eu/internal/Task/description", datatype = "http://www.w3.org/2001/XMLSchema#string")
-  public String getDescription() {
-    return description;
-  }
-
-  /**
-   * @param description the task description
-   */
-  public void setDescription(String description) {
-    Preconditions.checkNotNull(description);
-
-    this.description = description;
+  public TaskValue(final Task adaptee) {
+    this.description = adaptee.getDescription();
+    this.configuration = new ConfigurationValue(adaptee.getConfiguration());
   }
 
   /**
@@ -59,19 +43,22 @@ public final class TaskValue implements Serializable, Identifiable {
   @RdfProperty("http://odalic.eu/internal/Task/configuration")
   @Nullable
   public ConfigurationValue getConfiguration() {
-    return configuration;
+    return this.configuration;
   }
 
   /**
-   * @param configuration the configuration to set
+   * @return the description
    */
-  public void setConfiguration(ConfigurationValue configuration) {
-    Preconditions.checkNotNull(configuration);
-
-    this.configuration = configuration;
+  @Nullable
+  @RdfProperty(value = "http://odalic.eu/internal/Task/description",
+      datatype = "http://www.w3.org/2001/XMLSchema#string")
+  public String getDescription() {
+    return this.description;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.complexible.pinto.Identifiable#id()
    */
   @Override
@@ -79,21 +66,42 @@ public final class TaskValue implements Serializable, Identifiable {
     return this.identifiableResource;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.complexible.pinto.Identifiable#id(org.openrdf.model.Resource)
    */
   @Override
   public void id(final Resource resource) {
     this.identifiableResource = resource;
   }
-  
+
+  /**
+   * @param configuration the configuration to set
+   */
+  public void setConfiguration(final ConfigurationValue configuration) {
+    Preconditions.checkNotNull(configuration);
+
+    this.configuration = configuration;
+  }
+
+  /**
+   * @param description the task description
+   */
+  public void setDescription(final String description) {
+    Preconditions.checkNotNull(description);
+
+    this.description = description;
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "TaskValue [description=" + description + ", configuration=" + configuration + "]";
+    return "TaskValue [description=" + this.description + ", configuration=" + this.configuration
+        + "]";
   }
 }

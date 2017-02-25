@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.api.rdf;
 
@@ -35,7 +35,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 
 /**
  * A {@link TaskRdfSerializationService} implementation employing {@link RDFMapper}.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -43,8 +43,67 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
 
   private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V2/%s";
 
+  private static String format(final Model model) {
+    final StringWriter stringWriter = new StringWriter();
+
+    Rio.write(model, stringWriter, RDFFormat.TURTLE);
+
+    return stringWriter.toString();
+  }
+
+  private static IRI getRootObject() {
+    return SimpleValueFactory.getInstance().createIRI("http://odalic.eu/internal/Task");
+  }
+
+  private static Resource getRootResource(final Model model) {
+    final Model rootModel = model.filter((Resource) null, (IRI) null, getRootObject());
+    Preconditions.checkArgument(!rootModel.isEmpty(), "Missing root resource!");
+
+    return rootModel.iterator().next().getSubject();
+  }
+
+  private static IRI getRootSubjectIri(final URI baseUri) {
+    return SimpleValueFactory.getInstance()
+        .createIRI(baseUri
+            .resolve(String.format(VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT, UUID.randomUUID()))
+            .toString());
+  }
+
+  private static Configuration initializeConfiguration(final ConfigurationValue configurationValue,
+      final File input) {
+    return new Configuration(input,
+        configurationValue.getUsedBases().stream().map(e -> e.toKnowledgeBase()).collect(
+            ImmutableSet.toImmutableSet()),
+        configurationValue.getPrimaryBase().toKnowledgeBase(),
+        configurationValue.getFeedback().toFeedback(), configurationValue.getRowsLimit(),
+        configurationValue.isStatistical());
+  }
+
+  private static Model parse(final InputStream taskStream) throws IOException {
+    final Model model;
+    try {
+      model = Rio.parse(taskStream, "http://odalic.eu/internal/", RDFFormat.TURTLE);
+    } catch (final RDFParseException e) {
+      throw new IllegalArgumentException(e.getMessage(), e);
+    }
+    return model;
+  }
+
+  private static void setRootSubjectIdentifier(final URI baseUri, final TaskValue taskValue) {
+    taskValue.id(getRootSubjectIri(baseUri));
+  }
+
+  private static TaskValue toProxy(final Task task) {
+    final TaskValue taskValue = new TaskValue();
+    taskValue.setDescription(task.getDescription());
+    taskValue.setConfiguration(new ConfigurationValue(task.getConfiguration()));
+    return taskValue;
+  }
+
   private final RDFMapper.Builder rdfMapperBuilder;
+
   private final UserService userService;
+
   private final FileService fileService;
 
   public TurtleRdfMappingTaskSerializationService(final RDFMapper.Builder rdfMapperBuilder,
@@ -65,51 +124,9 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
         .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false), userService, fileService);
   }
 
-  @Override
-  public String serialize(final Task task, final URI baseUri) {
-    Preconditions.checkNotNull(task);
-    Preconditions.checkNotNull(baseUri);
-
-    final TaskValue taskValue = toProxy(task);
-
-    setRootSubjectIdentifier(baseUri, taskValue);
-
-    final Model model = toModel(taskValue, baseUri);
-    return format(model);
-  }
-
-  private Model toModel(final TaskValue proxy, final URI baseUri) {
-    return buildMapper(baseUri).writeValue(proxy);
-  }
-
   private RDFMapper buildMapper(final URI baseUri) {
-    return rdfMapperBuilder.namespace("", baseUri.resolve("SerializedTask/Node/").toString()).build();
-  }
-
-  private static String format(final Model model) {
-    final StringWriter stringWriter = new StringWriter();
-
-    Rio.write(model, stringWriter, RDFFormat.TURTLE);
-
-    return stringWriter.toString();
-  }
-
-  private static void setRootSubjectIdentifier(final URI baseUri, final TaskValue taskValue) {
-    taskValue.id(getRootSubjectIri(baseUri));
-  }
-
-  private static IRI getRootSubjectIri(final URI baseUri) {
-    return SimpleValueFactory.getInstance()
-        .createIRI(baseUri
-            .resolve(String.format(VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT, UUID.randomUUID()))
-            .toString());
-  }
-
-  private static TaskValue toProxy(final Task task) {
-    final TaskValue taskValue = new TaskValue();
-    taskValue.setDescription(task.getDescription());
-    taskValue.setConfiguration(new ConfigurationValue(task.getConfiguration()));
-    return taskValue;
+    return this.rdfMapperBuilder.namespace("", baseUri.resolve("SerializedTask/Node/").toString())
+        .build();
   }
 
   @Override
@@ -137,48 +154,34 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
     return task;
   }
 
-  private static Model parse(final InputStream taskStream) throws IOException {
-    final Model model;
-    try {
-      model = Rio.parse(taskStream, "http://odalic.eu/internal/", RDFFormat.TURTLE);
-    } catch (final RDFParseException e) {
-      throw new IllegalArgumentException(e.getMessage(), e);
-    }
-    return model;
-  }
-
-  private Task fromProxies(final String userId, final String taskId, final TaskValue taskValue,
-      final Configuration configuration) {
-    return new Task(userService.getUser(userId), taskId,
-        taskValue.getDescription() == null ? "" : taskValue.getDescription(), configuration);
-  }
-
   private TaskValue fromModel(final URI baseUri, final Model model) {
     return buildMapper(baseUri).readValue(model, TaskValue.class, getRootResource(model));
   }
 
-  private static Resource getRootResource(final Model model) {
-    final Model rootModel = model.filter((Resource) null, (IRI) null, getRootObject());
-    Preconditions.checkArgument(!rootModel.isEmpty(), "Missing root resource!");
-
-    return rootModel.iterator().next().getSubject();
-  }
-
-  private static IRI getRootObject() {
-    return SimpleValueFactory.getInstance().createIRI("http://odalic.eu/internal/Task");
-  }
-
-  private static Configuration initializeConfiguration(final ConfigurationValue configurationValue,
-      final File input) {
-    return new Configuration(input,
-        configurationValue.getUsedBases().stream().map(e -> e.toKnowledgeBase()).collect(
-            ImmutableSet.toImmutableSet()),
-        configurationValue.getPrimaryBase().toKnowledgeBase(),
-        configurationValue.getFeedback().toFeedback(), configurationValue.getRowsLimit(),
-        configurationValue.isStatistical());
+  private Task fromProxies(final String userId, final String taskId, final TaskValue taskValue,
+      final Configuration configuration) {
+    return new Task(this.userService.getUser(userId), taskId,
+        taskValue.getDescription() == null ? "" : taskValue.getDescription(), configuration);
   }
 
   private File getInput(final String userId, final ConfigurationValue configurationValue) {
-    return fileService.getById(userId, configurationValue.getInput());
+    return this.fileService.getById(userId, configurationValue.getInput());
+  }
+
+  @Override
+  public String serialize(final Task task, final URI baseUri) {
+    Preconditions.checkNotNull(task);
+    Preconditions.checkNotNull(baseUri);
+
+    final TaskValue taskValue = toProxy(task);
+
+    setRootSubjectIdentifier(baseUri, taskValue);
+
+    final Model model = toModel(taskValue, baseUri);
+    return format(model);
+  }
+
+  private Model toModel(final TaskValue proxy, final URI baseUri) {
+    return buildMapper(baseUri).writeValue(proxy);
   }
 }

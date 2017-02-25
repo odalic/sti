@@ -1,11 +1,12 @@
 package cz.cuni.mff.xrg.odalic.bases;
 
 import java.util.NavigableSet;
+
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Provides basic capabilities of bases management.
- * 
+ *
  * @author Václav Brodec
  *
  */

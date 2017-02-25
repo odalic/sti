@@ -10,7 +10,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Domain class {@link KnowledgeBase} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -18,36 +18,38 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 public final class KnowledgeBaseValue {
 
   private String name;
-  
+
   public KnowledgeBaseValue() {}
-  
-  public KnowledgeBaseValue(KnowledgeBase adaptee) {
-    name = adaptee.getName();
+
+  public KnowledgeBaseValue(final KnowledgeBase adaptee) {
+    this.name = adaptee.getName();
   }
-  
+
   /**
    * @return the name
    */
   @XmlElement
   @Nullable
   public String getName() {
-    return name;
+    return this.name;
   }
 
   /**
    * @param name the name to set
    */
-  public void setName(String name) {
+  public void setName(final String name) {
     Preconditions.checkNotNull(name);
-    
+
     this.name = name;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "KnowledgeBaseValue [name=" + name + "]";
+    return "KnowledgeBaseValue [name=" + this.name + "]";
   }
 }

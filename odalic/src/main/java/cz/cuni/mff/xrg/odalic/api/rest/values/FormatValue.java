@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rest.values;
 
 import java.io.Serializable;
+
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -11,7 +12,7 @@ import cz.cuni.mff.xrg.odalic.files.formats.Format;
 
 /**
  * Domain class {@link Format} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  */
 @XmlRootElement(name = "format")
@@ -27,108 +28,18 @@ public final class FormatValue implements Serializable {
   private Character commentMarker;
 
 
-  public FormatValue(Format adaptee) {
-    charset = adaptee.getCharset().name();
-    delimiter = adaptee.getDelimiter();
-    emptyLinesIgnored = adaptee.isEmptyLinesIgnored();
-    quoteCharacter = adaptee.getQuoteCharacter();
-    escapeCharacter = adaptee.getEscapeCharacter();
-    commentMarker = adaptee.getCommentMarker();
-  }
-
-
   public FormatValue() {
     this(new Format());
   }
 
 
-  /**
-   * @return the character set
-   */
-  @XmlElement
-  @Nullable
-  public String getCharset() {
-    return charset;
-  }
-
-
-  /**
-   * @param charset the character set to set
-   */
-  public void setCharset(String charset) {
-    Preconditions.checkNotNull(charset);
-
-    this.charset = charset;
-  }
-
-
-  /**
-   * @return the delimiter
-   */
-  @XmlElement
-  public char getDelimiter() {
-    return delimiter;
-  }
-
-
-  /**
-   * @param delimiter the delimiter to set
-   */
-  public void setDelimiter(char delimiter) {
-    this.delimiter = delimiter;
-  }
-
-
-  /**
-   * @return the emptyLinesIgnored
-   */
-  @XmlElement
-  public boolean isEmptyLinesIgnored() {
-    return emptyLinesIgnored;
-  }
-
-
-  /**
-   * @param emptyLinesIgnored the emptyLinesIgnored to set
-   */
-  public void setEmptyLinesIgnored(boolean emptyLinesIgnored) {
-    this.emptyLinesIgnored = emptyLinesIgnored;
-  }
-
-
-  /**
-   * @return the quoteCharacter
-   */
-  @XmlElement
-  @Nullable
-  public Character getQuoteCharacter() {
-    return quoteCharacter;
-  }
-
-
-  /**
-   * @param quoteCharacter the quoteCharacter to set
-   */
-  public void setQuoteCharacter(@Nullable Character quoteCharacter) {
-    this.quoteCharacter = quoteCharacter;
-  }
-
-
-  /**
-   * @return the escapeCharacter
-   */
-  @XmlElement
-  @Nullable
-  public Character getEscapeCharacter() {
-    return escapeCharacter;
-  }
-
-
-  /**
-   * @param escapeCharacter the escapeCharacter to set
-   */
-  public void setEscapeCharacter(@Nullable Character escapeCharacter) {
-    this.escapeCharacter = escapeCharacter;
+  public FormatValue(final Format adaptee) {
+    this.charset = adaptee.getCharset().name();
+    this.delimiter = adaptee.getDelimiter();
+    this.emptyLinesIgnored = adaptee.isEmptyLinesIgnored();
+    this.quoteCharacter = adaptee.getQuoteCharacter();
+    this.escapeCharacter = adaptee.getEscapeCharacter();
+    this.commentMarker = adaptee.getCommentMarker();
   }
 
 
@@ -138,27 +49,118 @@ public final class FormatValue implements Serializable {
   @XmlElement
   @Nullable
   public Character getCommentMarker() {
-    return commentMarker;
+    return this.commentMarker;
+  }
+
+
+  /**
+   * @return the delimiter
+   */
+  @XmlElement
+  public char getDelimiter() {
+    return this.delimiter;
+  }
+
+
+  /**
+   * @return the escapeCharacter
+   */
+  @XmlElement
+  @Nullable
+  public Character getEscapeCharacter() {
+    return this.escapeCharacter;
+  }
+
+
+  /**
+   * @return the character set
+   */
+  @XmlElement
+  @Nullable
+  public String getCharset() {
+    return this.charset;
+  }
+
+
+  /**
+   * @return the quoteCharacter
+   */
+  @XmlElement
+  @Nullable
+  public Character getQuoteCharacter() {
+    return this.quoteCharacter;
+  }
+
+
+  /**
+   * @return the emptyLinesIgnored
+   */
+  @XmlElement
+  public boolean isEmptyLinesIgnored() {
+    return this.emptyLinesIgnored;
   }
 
 
   /**
    * @param commentMarker the commentMarker to set
    */
-  public void setCommentMarker(@Nullable Character commentMarker) {
+  public void setCommentMarker(@Nullable final Character commentMarker) {
     this.commentMarker = commentMarker;
+  }
+
+
+  /**
+   * @param delimiter the delimiter to set
+   */
+  public void setDelimiter(final char delimiter) {
+    this.delimiter = delimiter;
+  }
+
+
+  /**
+   * @param emptyLinesIgnored the emptyLinesIgnored to set
+   */
+  public void setEmptyLinesIgnored(final boolean emptyLinesIgnored) {
+    this.emptyLinesIgnored = emptyLinesIgnored;
+  }
+
+
+  /**
+   * @param escapeCharacter the escapeCharacter to set
+   */
+  public void setEscapeCharacter(@Nullable final Character escapeCharacter) {
+    this.escapeCharacter = escapeCharacter;
+  }
+
+
+  /**
+   * @param charset the character set to set
+   */
+  public void setCharset(final String charset) {
+    Preconditions.checkNotNull(charset);
+
+    this.charset = charset;
+  }
+
+
+  /**
+   * @param quoteCharacter the quoteCharacter to set
+   */
+  public void setQuoteCharacter(@Nullable final Character quoteCharacter) {
+    this.quoteCharacter = quoteCharacter;
   }
 
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "FormatValue [charset=" + charset + ", delimiter=" + delimiter + ", emptyLinesIgnored="
-        + emptyLinesIgnored + ", quoteCharacter=" + quoteCharacter + ", escapeCharacter="
-        + escapeCharacter + ", commentMarker=" + commentMarker + "]";
+    return "FormatValue [charset=" + this.charset + ", delimiter=" + this.delimiter
+        + ", emptyLinesIgnored=" + this.emptyLinesIgnored + ", quoteCharacter="
+        + this.quoteCharacter + ", escapeCharacter=" + this.escapeCharacter + ", commentMarker="
+        + this.commentMarker + "]";
   }
 }

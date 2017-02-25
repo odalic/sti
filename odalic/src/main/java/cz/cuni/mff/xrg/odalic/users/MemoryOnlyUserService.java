@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.users;
 
@@ -19,6 +19,7 @@ import javax.mail.internet.InternetAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -33,7 +34,7 @@ import cz.cuni.mff.xrg.odalic.util.mail.MailService;
 
 /**
  * This {@link UserService} implementation provides no persistence.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -70,13 +71,53 @@ public final class MemoryOnlyUserService implements UserService {
   private static final Logger logger = LoggerFactory.getLogger(MemoryOnlyUserService.class);
 
 
+  private static Address extractAddress(final Credentials credentials) {
+    final Address address;
+    try {
+      address = new InternetAddress(credentials.getEmail(), true);
+    } catch (final AddressException e) {
+      throw new IllegalArgumentException(e);
+    }
+    return address;
+  }
+
+  private static Address extractAddress(final User user) {
+    final Address address;
+    try {
+      address = new InternetAddress(user.getEmail(), true);
+    } catch (final AddressException e) {
+      throw new IllegalArgumentException(e);
+    }
+    return address;
+  }
+
+  private static String formatMessageWithUrl(final String messageFormat,
+      final java.net.URL confirmationCodeUrl) {
+    return String.format(messageFormat, confirmationCodeUrl);
+  }
+
+  private static java.net.URL formatUrlWithToken(final String urlFormat, final Token token) {
+    // The token string is to be URL friendly, so no escaping is needed.
+    final String urlString = String.format(urlFormat, token.getToken());
+
+    final java.net.URL confirmationCodeUrl;
+    try {
+      confirmationCodeUrl = new java.net.URL(urlString);
+    } catch (final MalformedURLException e) {
+      throw new IllegalArgumentException("The token cannot be encoded to URL!", e);
+    }
+    return confirmationCodeUrl;
+  }
+
   private final PasswordHashingService passwordHashingService;
+
   private final MailService mailService;
   private final TokenService tokenService;
   private final TaskService taskService;
-  private final FileService fileService;
 
+  private final FileService fileService;
   private final long signUpConfirmationWindowMinutes;
+
   private final long passwordSettingConfirmationWindowMinutes;
   private final long sessionMaximumHours;
 
@@ -84,9 +125,13 @@ public final class MemoryOnlyUserService implements UserService {
   private final String passwordSettingConfirmationUrlFormat;
 
   private final Map<UUID, Credentials> tokenIdsToUnconfirmed;
+
   private final Map<UUID, User> tokenIdsToPasswordChanging;
 
+
   private final Map<String, User> userIdsToUsers;
+
+
   private final Multimap<String, UUID> userIdsToTokenIds;
 
   @Autowired
@@ -181,107 +226,24 @@ public final class MemoryOnlyUserService implements UserService {
     createAdminIfNotPresent(properties);
   }
 
-  private void createAdminIfNotPresent(final Properties properties) {
-    final String adminEmail = properties.getProperty(ADMIN_EMAIL_PROPERTY_KEY);
-    Preconditions.checkArgument(adminEmail != null,
-        String.format("Missing key %s in the configuration!", ADMIN_EMAIL_PROPERTY_KEY));
-
-    final String adminInitialPassword = properties.getProperty(ADMIN_INITIAL_PASSWORD_PROPERTY_KEY);
-    Preconditions.checkArgument(adminInitialPassword != null,
-        String.format("Missing key %s in the configuration!", ADMIN_INITIAL_PASSWORD_PROPERTY_KEY));
-    Preconditions.checkArgument(!adminInitialPassword.isEmpty(),
-        "The initial admin password cannot be empty!");
-
-    if (this.userIdsToTokenIds.containsKey(adminEmail)) {
-      logger.info("The administrator account already present. Skipping its creation.");
-      return;
-    }
-
-    create(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
-  }
-
-
   /*
    * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#signUp(cz.cuni.mff.xrg.odalic.users.Credentials)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#activateUser(cz.cuni.mff.xrg.odalic.users.Token)
    */
   @Override
-  public void signUp(final Credentials credentials) {
-    Preconditions.checkNotNull(credentials);
+  public void activateUser(final Token token) {
+    final DecodedToken decodedToken = validateAndDecode(token);
 
-    final Address address = extractAddress(credentials);
+    final Credentials credentials = matchCredentials(decodedToken);
 
-    final Token token = generateSignUpToken(credentials);
-
-    final String message = generateSignUpMessage(token);
-
-    this.mailService.send(ODALIC_SIGN_UP_CONFIRMATION_SUBJECT, message, new Address[] {address});
+    create(credentials, Role.USER);
   }
 
-
-  private Token generateSignUpToken(final Credentials credentials) {
-    final UUID tokenId = UUID.randomUUID();
-    final Instant expiration =
-        Instant.now().plus(Duration.ofMinutes(this.signUpConfirmationWindowMinutes));
-
-    final Token token = this.tokenService.create(tokenId, SIGNUP_TOKEN_SUBJECT, expiration);
-    this.tokenIdsToUnconfirmed.put(tokenId, credentials);
-    return token;
-  }
-
-  private static Address extractAddress(final Credentials credentials) {
-    final Address address;
-    try {
-      address = new InternetAddress(credentials.getEmail(), true);
-    } catch (final AddressException e) {
-      throw new IllegalArgumentException(e);
-    }
-    return address;
-  }
-
-  private String generateSignUpMessage(final Token token) {
-    final java.net.URL confirmationCodeUrl =
-        formatUrlWithToken(this.signUpConfirmationUrlFormat, token);
-
-    return formatMessageWithUrl(SIGN_UP_MESSAGE_FORMAT, confirmationCodeUrl);
-  }
-
-
-  private static java.net.URL formatUrlWithToken(final String urlFormat, final Token token) {
-    // The token string is to be URL friendly, so no escaping is needed.
-    final String urlString = String.format(urlFormat, token.getToken());
-
-    final java.net.URL confirmationCodeUrl;
-    try {
-      confirmationCodeUrl = new java.net.URL(urlString);
-    } catch (final MalformedURLException e) {
-      throw new IllegalArgumentException("The token cannot be encoded to URL!", e);
-    }
-    return confirmationCodeUrl;
-  }
 
   /*
    * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#create(cz.cuni.mff.xrg.odalic.users.Credentials,
-   * cz.cuni.mff.xrg.odalic.users.Role)
-   */
-  @Override
-  public void create(final Credentials credentials, final Role role) {
-    Preconditions.checkNotNull(credentials);
-    Preconditions.checkNotNull(role);
-    Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()));
-
-    final String email = credentials.getEmail();
-    final String passwordHashed = hash(credentials.getPassword());
-
-    this.userIdsToUsers.put(email, new User(email, passwordHashed, role));
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
+   *
    * @see
    * cz.cuni.mff.xrg.odalic.users.UserService#authenticate(cz.cuni.mff.xrg.odalic.users.Credentials)
    */
@@ -307,16 +269,147 @@ public final class MemoryOnlyUserService implements UserService {
 
   /*
    * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#activateUser(cz.cuni.mff.xrg.odalic.users.Token)
+   *
+   * @see
+   * cz.cuni.mff.xrg.odalic.users.UserService#confirmPasswordChange(cz.cuni.mff.xrg.odalic.users.
+   * Token)
    */
   @Override
-  public void activateUser(final Token token) {
+  public void confirmPasswordChange(final Token token) {
     final DecodedToken decodedToken = validateAndDecode(token);
 
-    final Credentials credentials = matchCredentials(decodedToken);
+    final User newUser = matchPasswordChangingUser(decodedToken);
 
-    create(credentials, Role.USER);
+    final User replaced = replace(newUser);
+
+    invalidateTokens(replaced);
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#create(cz.cuni.mff.xrg.odalic.users.Credentials,
+   * cz.cuni.mff.xrg.odalic.users.Role)
+   */
+  @Override
+  public void create(final Credentials credentials, final Role role) {
+    Preconditions.checkNotNull(credentials);
+    Preconditions.checkNotNull(role);
+    Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()));
+
+    final String email = credentials.getEmail();
+    final String passwordHashed = hash(credentials.getPassword());
+
+    this.userIdsToUsers.put(email, new User(email, passwordHashed, role));
+  }
+
+  private void createAdminIfNotPresent(final Properties properties) {
+    final String adminEmail = properties.getProperty(ADMIN_EMAIL_PROPERTY_KEY);
+    Preconditions.checkArgument(adminEmail != null,
+        String.format("Missing key %s in the configuration!", ADMIN_EMAIL_PROPERTY_KEY));
+
+    final String adminInitialPassword = properties.getProperty(ADMIN_INITIAL_PASSWORD_PROPERTY_KEY);
+    Preconditions.checkArgument(adminInitialPassword != null,
+        String.format("Missing key %s in the configuration!", ADMIN_INITIAL_PASSWORD_PROPERTY_KEY));
+    Preconditions.checkArgument(!adminInitialPassword.isEmpty(),
+        "The initial admin password cannot be empty!");
+
+    if (this.userIdsToTokenIds.containsKey(adminEmail)) {
+      logger.info("The administrator account already present. Skipping its creation.");
+      return;
+    }
+
+    create(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
+  }
+
+  @Override
+  public void deleteUser(final String userId) {
+    this.taskService.deleteAll(userId);
+    this.fileService.deleteAll(userId);
+
+    this.userIdsToTokenIds.removeAll(userId);
+    final User removed = this.userIdsToUsers.remove(userId);
+    Preconditions.checkArgument(removed != null, "No such user exists!");
+  }
+
+  private String generatePasswordChangingMessage(final Token token) {
+    final java.net.URL confirmationCodeUrl =
+        formatUrlWithToken(this.passwordSettingConfirmationUrlFormat, token);
+
+    return formatMessageWithUrl(PASSWORD_SETTING_MESSAGE_FORMAT, confirmationCodeUrl);
+  }
+
+  private String generateSignUpMessage(final Token token) {
+    final java.net.URL confirmationCodeUrl =
+        formatUrlWithToken(this.signUpConfirmationUrlFormat, token);
+
+    return formatMessageWithUrl(SIGN_UP_MESSAGE_FORMAT, confirmationCodeUrl);
+  }
+
+  private Token generateSignUpToken(final Credentials credentials) {
+    final UUID tokenId = UUID.randomUUID();
+    final Instant expiration =
+        Instant.now().plus(Duration.ofMinutes(this.signUpConfirmationWindowMinutes));
+
+    final Token token = this.tokenService.create(tokenId, SIGNUP_TOKEN_SUBJECT, expiration);
+    this.tokenIdsToUnconfirmed.put(tokenId, credentials);
+    return token;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#getUser(java.lang.String)
+   */
+  @Override
+  public User getUser(final String id) {
+    Preconditions.checkNotNull(id);
+
+    final User user = this.userIdsToUsers.get(id);
+    Preconditions.checkArgument(user != null);
+
+    return user;
+  }
+
+  @Override
+  public NavigableSet<User> getUsers() {
+    return ImmutableSortedSet.copyOf(this.userIdsToUsers.values());
+  }
+
+  private String hash(final String password) {
+    return this.passwordHashingService.hash(password);
+  }
+
+  private boolean check(final String password, final String passwordHash) {
+    return this.passwordHashingService.check(password, passwordHash);
+  }
+
+  private void checkFreshness(final DecodedToken decodedToken, final String userId) {
+    if (!this.userIdsToTokenIds.containsEntry(userId, decodedToken.getId())) {
+      logger.warn("Obsolete token {}!", decodedToken);
+      throw new IllegalArgumentException("Authentication failed!");
+    }
+  }
+
+  private void invalidateTokens(final User user) {
+    this.userIdsToTokenIds.removeAll(user.getEmail());
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#issueToken(cz.cuni.mff.xrg.odalic.users.User)
+   */
+  @Override
+  public Token issueToken(final User user) {
+    final UUID tokenId = UUID.randomUUID();
+    final String userId = user.getEmail();
+    final Instant expiration = Instant.now().plus(Duration.ofHours(this.sessionMaximumHours));
+
+    final Token token = this.tokenService.create(tokenId, userId, expiration);
+    this.userIdsToTokenIds.put(userId, tokenId);
+
+    return token;
   }
 
   private Credentials matchCredentials(final DecodedToken decodedToken) {
@@ -328,31 +421,42 @@ public final class MemoryOnlyUserService implements UserService {
     return credentials;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#issueToken(cz.cuni.mff.xrg.odalic.users.User)
-   */
-  @Override
-  public Token issueToken(User user) {
-    final UUID tokenId = UUID.randomUUID();
-    final String userId = user.getEmail();
-    final Instant expiration = Instant.now().plus(Duration.ofHours(sessionMaximumHours));
+  private User matchPasswordChangingUser(final DecodedToken decodedToken) {
+    final User user = this.tokenIdsToPasswordChanging.remove(decodedToken.getId());
+    if (user == null) {
+      logger.warn("Invalid password setting confirmation token {}!", decodedToken);
+      throw new IllegalArgumentException("Invalid confirmation code!");
+    }
+    return user;
+  }
 
-    final Token token = this.tokenService.create(tokenId, userId, expiration);
-    this.userIdsToTokenIds.put(userId, tokenId);
+  private User matchUser(final DecodedToken decodedToken) {
+    final String userId = decodedToken.getSubject();
+    final User user = this.userIdsToUsers.get(userId);
+    if (user == null) {
+      logger.warn("Unknown user for token {}!", decodedToken);
+      throw new IllegalArgumentException("Authentication failed!");
+    }
 
-    return token;
+    checkFreshness(decodedToken, user.getEmail());
+
+    return user;
+  }
+
+  private User replace(final User user) {
+    final User replaced = this.userIdsToUsers.replace(user.getEmail(), user);
+    Preconditions.checkState(replaced != null, "Nonexisting user!");
+    return replaced;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.users.UserService#requestPasswordChange(java.net.URL,
    * java.lang.String, cz.cuni.mff.xrg.odalic.users.User, java.lang.String)
    */
   @Override
-  public void requestPasswordChange(User user, String newPassword) {
+  public void requestPasswordChange(final User user, final String newPassword) {
     Preconditions.checkNotNull(user);
     Preconditions.checkNotNull(newPassword);
     Preconditions.checkNotNull(!newPassword.isEmpty());
@@ -371,96 +475,22 @@ public final class MemoryOnlyUserService implements UserService {
         generatePasswordChangingMessage(token), new Address[] {address});
   }
 
-  private static Address extractAddress(User user) {
-    final Address address;
-    try {
-      address = new InternetAddress(user.getEmail(), true);
-    } catch (final AddressException e) {
-      throw new IllegalArgumentException(e);
-    }
-    return address;
-  }
-
-  private String generatePasswordChangingMessage(final Token token) {
-    final java.net.URL confirmationCodeUrl =
-        formatUrlWithToken(this.passwordSettingConfirmationUrlFormat, token);
-
-    return formatMessageWithUrl(PASSWORD_SETTING_MESSAGE_FORMAT, confirmationCodeUrl);
-  }
-
-  private static String formatMessageWithUrl(final String messageFormat,
-      final java.net.URL confirmationCodeUrl) {
-    return String.format(messageFormat, confirmationCodeUrl);
-  }
-
   /*
    * (non-Javadoc)
-   * 
-   * @see
-   * cz.cuni.mff.xrg.odalic.users.UserService#confirmPasswordChange(cz.cuni.mff.xrg.odalic.users.
-   * Token)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#signUp(cz.cuni.mff.xrg.odalic.users.Credentials)
    */
   @Override
-  public void confirmPasswordChange(final Token token) {
-    final DecodedToken decodedToken = validateAndDecode(token);
+  public void signUp(final Credentials credentials) {
+    Preconditions.checkNotNull(credentials);
 
-    final User newUser = matchPasswordChangingUser(decodedToken);
+    final Address address = extractAddress(credentials);
 
-    final User replaced = replace(newUser);
+    final Token token = generateSignUpToken(credentials);
 
-    invalidateTokens(replaced);
-  }
+    final String message = generateSignUpMessage(token);
 
-  private void invalidateTokens(final User user) {
-    this.userIdsToTokenIds.removeAll(user.getEmail());
-  }
-
-  private User replace(final User user) {
-    final User replaced = this.userIdsToUsers.replace(user.getEmail(), user);
-    Preconditions.checkState(replaced != null, "Nonexisting user!");
-    return replaced;
-  }
-
-  private User matchPasswordChangingUser(final DecodedToken decodedToken) {
-    final User user = this.tokenIdsToPasswordChanging.remove(decodedToken.getId());
-    if (user == null) {
-      logger.warn("Invalid password setting confirmation token {}!", decodedToken);
-      throw new IllegalArgumentException("Invalid confirmation code!");
-    }
-    return user;
-  }
-
-  private String hash(final String password) {
-    return passwordHashingService.hash(password);
-  }
-
-  private boolean check(final String password, final String passwordHash) {
-    return passwordHashingService.check(password, passwordHash);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#validateToken(cz.cuni.mff.xrg.odalic.users.Token)
-   */
-  @Override
-  public User validateToken(Token token) {
-    final DecodedToken decodedToken = validateAndDecode(token);
-
-    return matchUser(decodedToken);
-  }
-
-  private User matchUser(final DecodedToken decodedToken) {
-    final String userId = decodedToken.getSubject();
-    final User user = this.userIdsToUsers.get(userId);
-    if (user == null) {
-      logger.warn("Unknown user for token {}!", decodedToken);
-      throw new IllegalArgumentException("Authentication failed!");
-    }
-
-    checkFreshness(decodedToken, user.getEmail());
-
-    return user;
+    this.mailService.send(ODALIC_SIGN_UP_CONFIRMATION_SUBJECT, message, new Address[] {address});
   }
 
   private DecodedToken validateAndDecode(final Token token) {
@@ -474,40 +504,15 @@ public final class MemoryOnlyUserService implements UserService {
     return decodedToken;
   }
 
-  private void checkFreshness(final DecodedToken decodedToken, final String userId) {
-    if (!this.userIdsToTokenIds.containsEntry(userId, decodedToken.getId())) {
-      logger.warn("Obsolete token {}!", decodedToken);
-      throw new IllegalArgumentException("Authentication failed!");
-    }
-  }
-
   /*
    * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#getUser(java.lang.String)
+   *
+   * @see cz.cuni.mff.xrg.odalic.users.UserService#validateToken(cz.cuni.mff.xrg.odalic.users.Token)
    */
   @Override
-  public User getUser(final String id) {
-    Preconditions.checkNotNull(id);
+  public User validateToken(final Token token) {
+    final DecodedToken decodedToken = validateAndDecode(token);
 
-    final User user = this.userIdsToUsers.get(id);
-    Preconditions.checkArgument(user != null);
-
-    return user;
-  }
-
-  @Override
-  public NavigableSet<User> getUsers() {
-    return ImmutableSortedSet.copyOf(this.userIdsToUsers.values());
-  }
-
-  @Override
-  public void deleteUser(final String userId) {
-    this.taskService.deleteAll(userId);
-    this.fileService.deleteAll(userId);
-
-    this.userIdsToTokenIds.removeAll(userId);
-    final User removed = this.userIdsToUsers.remove(userId);
-    Preconditions.checkArgument(removed != null, "No such user exists!");
+    return matchUser(decodedToken);
   }
 }

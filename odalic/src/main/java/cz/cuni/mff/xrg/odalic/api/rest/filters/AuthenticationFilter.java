@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.api.rest.filters;
 
@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Set;
 
-import javax.ws.rs.Priorities;
 import javax.annotation.Priority;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
@@ -31,7 +31,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 
 /**
  * Authentication filter.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -56,22 +56,27 @@ public final class AuthenticationFilter implements ContainerRequestFilter {
   private UriInfo uriInfo;
 
   @Override
-  public void filter(ContainerRequestContext requestContext) throws IOException {
+  public void filter(final ContainerRequestContext requestContext) throws IOException {
     final String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
     if (authorizationHeader == null) {
-      requestContext.abortWith(Message.of("Authorization header must be provided!")
-          .toResponseBuilder(Response.Status.UNAUTHORIZED, uriInfo)
-          .header(HttpHeaders.WWW_AUTHENTICATE, String.format(INVALID_REQUEST_CHALLENGE_FORMAT, "Authorization header must be provided!"))
-          .build());
+      requestContext
+          .abortWith(
+              Message.of("Authorization header must be provided!")
+                  .toResponseBuilder(Response.Status.UNAUTHORIZED, this.uriInfo)
+                  .header(HttpHeaders.WWW_AUTHENTICATE, String.format(
+                      INVALID_REQUEST_CHALLENGE_FORMAT, "Authorization header must be provided!"))
+                  .build());
       return;
     }
 
     if (!authorizationHeader.startsWith(AUTHENTICATION_SCHEME + AUTHENTICATION_SCHEME_DELIMITER)) {
       requestContext.abortWith(
           Message.of("Authorization header must specify the supported authentication scheme!")
-          .toResponseBuilder(Response.Status.UNAUTHORIZED, uriInfo)
-          .header(HttpHeaders.WWW_AUTHENTICATE, String.format(INVALID_REQUEST_CHALLENGE_FORMAT, "Authorization header must specify the supported authentication scheme!"))
-          .build());
+              .toResponseBuilder(Response.Status.UNAUTHORIZED, this.uriInfo)
+              .header(HttpHeaders.WWW_AUTHENTICATE,
+                  String.format(INVALID_REQUEST_CHALLENGE_FORMAT,
+                      "Authorization header must specify the supported authentication scheme!"))
+              .build());
       return;
     }
 
@@ -79,11 +84,12 @@ public final class AuthenticationFilter implements ContainerRequestFilter {
 
     final User user;
     try {
-      user = userService.validateToken(new Token(token));
+      user = this.userService.validateToken(new Token(token));
     } catch (final Exception e) {
       requestContext.abortWith(Message.of("Authentication failed!", e.getMessage())
-          .toResponseBuilder(Response.Status.UNAUTHORIZED, uriInfo)
-          .header(HttpHeaders.WWW_AUTHENTICATE, String.format(INVALID_TOKEN_CHALLENGE_FORMAT, e.getMessage()))
+          .toResponseBuilder(Response.Status.UNAUTHORIZED, this.uriInfo)
+          .header(HttpHeaders.WWW_AUTHENTICATE,
+              String.format(INVALID_TOKEN_CHALLENGE_FORMAT, e.getMessage()))
           .build());
       return;
     }
@@ -91,34 +97,29 @@ public final class AuthenticationFilter implements ContainerRequestFilter {
     requestContext.setSecurityContext(new SecurityContext() {
 
       @Override
-      public Principal getUserPrincipal() {
-
-        return new Principal() {
-
-          @Override
-          public String getName() {
-            return user.getEmail();
-          }
-        };
+      public String getAuthenticationScheme() {
+        return AUTHENTICATION_SCHEME;
       }
 
       @Override
-      public boolean isUserInRole(String role) {
-        return user.getRole().toString().equals(role);
+      public Principal getUserPrincipal() {
+
+        return () -> user.getEmail();
       }
 
       @Override
       public boolean isSecure() {
         try {
-          return SECURE_PROTOCOLS_NAMES.contains(uriInfo.getRequestUri().toURL().getProtocol());
+          return SECURE_PROTOCOLS_NAMES
+              .contains(AuthenticationFilter.this.uriInfo.getRequestUri().toURL().getProtocol());
         } catch (final Exception e) {
           return false;
         }
       }
 
       @Override
-      public String getAuthenticationScheme() {
-        return AUTHENTICATION_SCHEME;
+      public boolean isUserInRole(final String role) {
+        return user.getRole().toString().equals(role);
       }
     });
   }

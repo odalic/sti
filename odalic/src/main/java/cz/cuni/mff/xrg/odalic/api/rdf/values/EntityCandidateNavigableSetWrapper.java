@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * Works around the limitation of {@link RDFMapper} in mapping of nested {@link Map}s.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -22,14 +22,14 @@ import com.google.common.collect.ImmutableSortedSet;
 public class EntityCandidateNavigableSetWrapper {
 
   private NavigableSet<EntityCandidateValue> value;
-  
+
   public EntityCandidateNavigableSetWrapper() {
-    value = ImmutableSortedSet.of();
+    this.value = ImmutableSortedSet.of();
   }
-  
+
   public EntityCandidateNavigableSetWrapper(final Set<? extends EntityCandidateValue> value) {
     Preconditions.checkNotNull(value);
-    
+
     this.value = ImmutableSortedSet.copyOf(value);
   }
 
@@ -39,23 +39,25 @@ public class EntityCandidateNavigableSetWrapper {
   @RdfProperty("http://odalic.eu/internal/EntityCandidateNavigableSetWrapper/value")
   @Nullable
   public NavigableSet<EntityCandidateValue> getValue() {
-    return value;
+    return this.value;
   }
 
   /**
    * @param value the value to set
    */
-  public void setValue(Set<? extends EntityCandidateValue> value) {
+  public void setValue(final Set<? extends EntityCandidateValue> value) {
     Preconditions.checkNotNull(value);
-    
+
     this.value = ImmutableSortedSet.copyOf(value);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "EntityCandidateNavigableSetWrapper [value=" + value + "]";
+    return "EntityCandidateNavigableSetWrapper [value=" + this.value + "]";
   }
 }

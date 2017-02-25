@@ -6,18 +6,15 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.ScoreValue;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
 
 
-public final class ScoreAdapter
-    extends XmlAdapter<ScoreValue, Score> {
+public final class ScoreAdapter extends XmlAdapter<ScoreValue, Score> {
 
   @Override
-  public ScoreValue marshal(Score bound)
-      throws Exception {
+  public ScoreValue marshal(final Score bound) throws Exception {
     return new ScoreValue(bound);
   }
 
   @Override
-  public Score unmarshal(ScoreValue value)
-      throws Exception {
+  public Score unmarshal(final ScoreValue value) throws Exception {
     return new Score(value.getValue());
   }
 }

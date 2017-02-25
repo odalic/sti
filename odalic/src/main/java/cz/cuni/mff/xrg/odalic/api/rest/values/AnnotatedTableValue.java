@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rest.values;
 
 import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -17,30 +18,30 @@ import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.TableSchema;
 
 /**
  * Domain class {@link AnnotatedTable} adapted for REST API.
- * 
+ *
  * @author Josef Janoušek
  *
  */
 @XmlRootElement(name = "annotatedTable")
 @JsonInclude(Include.NON_NULL)
 public final class AnnotatedTableValue implements Serializable {
-  
+
   private static final long serialVersionUID = -7973901982616352L;
-  
+
   private TableContext context;
-  
+
   private String url;
-  
+
   private TableSchema tableSchema;
-  
+
   public AnnotatedTableValue() {}
-  
-  public AnnotatedTableValue(AnnotatedTable adaptee) {
+
+  public AnnotatedTableValue(final AnnotatedTable adaptee) {
     this.context = adaptee.getContext();
     this.url = adaptee.getUrl();
     this.tableSchema = adaptee.getTableSchema();
   }
-  
+
   /**
    * @return the context
    */
@@ -48,30 +49,33 @@ public final class AnnotatedTableValue implements Serializable {
   @JsonDeserialize(using = TableContextJsonDeserializer.class)
   @JsonSerialize(using = TableContextJsonSerializer.class)
   public TableContext getContext() {
-    return context;
+    return this.context;
   }
-  
-  /**
-   * @return the url
-   */
-  @XmlElement
-  public String getUrl() {
-    return url;
-  }
-  
+
   /**
    * @return the table schema
    */
   @XmlElement
   public TableSchema getTableSchema() {
-    return tableSchema;
+    return this.tableSchema;
   }
-  
-  /* (non-Javadoc)
+
+  /**
+   * @return the url
+   */
+  @XmlElement
+  public String getUrl() {
+    return this.url;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "AnnotatedTableValue [context=" + context + ", url=" + url + ", tableSchema=" + tableSchema + "]";
+    return "AnnotatedTableValue [context=" + this.context + ", url=" + this.url + ", tableSchema="
+        + this.tableSchema + "]";
   }
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.files;
 
@@ -20,13 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
  * This {@link FileService} implementation persists the files in {@link DB}-backed maps.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -65,13 +66,13 @@ public final class DbFileService implements FileService {
 
     this.db = dbService.getDb();
 
-    this.files = db.treeMap("files")
+    this.files = this.db.treeMap("files")
         .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
         .valueSerializer(Serializer.JAVA).createOrOpen();
-    this.data = db.treeMap("data")
+    this.data = this.db.treeMap("data")
         .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
         .valueSerializer(Serializer.BYTE_ARRAY).createOrOpen();
-    this.utilizingTasks = db.treeMap("utilizingTasks")
+    this.utilizingTasks = this.db.treeMap("utilizingTasks")
         .keySerializer(
             new SerializerArrayTuple(Serializer.STRING, Serializer.STRING, Serializer.STRING))
         .valueSerializer(Serializer.BOOLEAN).createOrOpen();
@@ -79,11 +80,11 @@ public final class DbFileService implements FileService {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.files.FileService#create(cz.cuni.mff.xrg.odalic.files.File)
    */
   @Override
-  public void create(File file) {
+  public void create(final File file) {
     Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
 
     replace(file);
@@ -91,24 +92,37 @@ public final class DbFileService implements FileService {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.files.FileService#create(cz.cuni.mff.xrg.odalic.files.File,
    * java.io.InputStream)
    */
   @Override
-  public void create(File file, InputStream fileInputStream) throws IOException {
+  public void create(final File file, final InputStream fileInputStream) throws IOException {
     Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
 
     replace(file, fileInputStream);
   }
 
+  @Override
+  public void deleteAll(final String userId) {
+    Preconditions.checkNotNull(userId);
+
+    final Object[] userIdKey = new Object[] {userId};
+
+    final Map<Object[], File> fileIdsToFiles = this.files.prefixSubMap(userIdKey);
+    fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
+    fileIdsToFiles.clear();
+
+    this.data.prefixSubMap(userIdKey).clear();
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see cz.cuni.mff.xrg.odalic.files.FileService#deleteById(java.lang.String)
    */
   @Override
-  public void deleteById(String userId, String fileId) {
+  public void deleteById(final String userId, final String fileId) {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(fileId);
 
@@ -119,28 +133,29 @@ public final class DbFileService implements FileService {
 
     this.data.remove(new Object[] {userId, file.getLocation().toString()});
 
-    db.commit();
-  }
-
-  private void checkUtilization(final String userId, final String fileId)
-      throws IllegalStateException {
-    final Set<String> utilizingTaskIds = utilizingTasks.prefixSubMap(new Object[] {userId, fileId})
-        .keySet().stream().map(e -> (String) e[2]).collect(ImmutableSet.toImmutableSet());
-
-    if (!utilizingTaskIds.isEmpty()) {
-      final String jointUtilizingTasksIds = String.join(", ", utilizingTaskIds);
-      throw new IllegalStateException(
-          String.format("Some tasks (%s) still refer to this file!", jointUtilizingTasksIds));
-    }
+    this.db.commit();
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
+   * @see cz.cuni.mff.xrg.odalic.files.FileService#existsFileWithId(java.lang.String)
+   */
+  @Override
+  public boolean existsFileWithId(final String userId, final String fileId) {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(fileId);
+
+    return this.files.containsKey(new Object[] {userId, fileId});
+  }
+
+  /*
+   * (non-Javadoc)
+   *
    * @see cz.cuni.mff.xrg.odalic.files.FileService#getById(java.lang.String)
    */
   @Override
-  public File getById(String userId, String fileId) {
+  public File getById(final String userId, final String fileId) {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(fileId);
 
@@ -150,74 +165,8 @@ public final class DbFileService implements FileService {
     return file;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#getFiles()
-   */
   @Override
-  public List<File> getFiles(String userId) {
-    return ImmutableList.copyOf(this.files.prefixSubMap(new Object[] {userId}).values());
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#replace(cz.cuni.mff.xrg.odalic.files.File)
-   */
-  @Override
-  public void replace(File file) {
-    final String userId = file.getOwner().getEmail();
-    final String fileId = file.getId();
-
-    final Object[] userFileId = new Object[] {userId, fileId};
-
-    final File previous = this.files.get(userFileId);
-    if (previous != null && !previous.getLocation().equals(file.getLocation())) {
-      this.data.remove(new Object[] {userId, previous.getLocation().toString()});
-    }
-
-    this.files.put(userFileId, file);
-
-    db.commit();
-  }
-
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#replace(cz.cuni.mff.xrg.odalic.files.File,
-   * java.io.InputStream)
-   */
-  @Override
-  public void replace(File file, InputStream fileInputStream) throws IOException {
-    Preconditions.checkArgument(file.isCached());
-
-    final String userId = file.getOwner().getEmail();
-    final String fileId = file.getId();
-
-    this.files.put(new Object[] {userId, fileId}, file);
-    this.data.put(new Object[] {userId, file.getLocation().toString()},
-        IOUtils.toByteArray(fileInputStream));
-
-    db.commit();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#existsFileWithId(java.lang.String)
-   */
-  @Override
-  public boolean existsFileWithId(String userId, String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
-
-    return this.files.containsKey(new Object[] {userId, fileId});
-  }
-
-  @Override
-  public String getDataById(String userId, String fileId) throws IOException {
+  public String getDataById(final String userId, final String fileId) throws IOException {
     final File file = getById(userId, fileId);
 
     final byte[] data = this.data.get(new Object[] {userId, file.getLocation().toString()});
@@ -230,34 +179,75 @@ public final class DbFileService implements FileService {
     }
   }
 
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.files.FileService#getFiles()
+   */
   @Override
-  public void subscribe(final File file, final Task task) {
-    final String userId = file.getOwner().getEmail();
-    final String fileId = file.getId();
-
-    Preconditions.checkArgument(files.get(new Object[] {userId, fileId}).equals(file),
-        "The file is not registered!");
-
-    final Boolean previous = utilizingTasks.put(new Object[] {userId, fileId, task.getId()}, true);
-    Preconditions.checkArgument(previous == null,
-        "The task has already been subcscribed to the file!");
-  }
-
-  @Override
-  public void unsubscribe(final File file, final Task task) {
-    final String userId = file.getOwner().getEmail();
-    final String fileId = file.getId();
-
-    Preconditions.checkArgument(files.get(new Object[] {userId, fileId}).equals(file),
-        "The file is not registered!");
-
-    final Boolean removed = utilizingTasks.remove(new Object[] {userId, fileId, task.getId()});
-    Preconditions.checkArgument(removed != null, "The task is not subcscribed to the file!");
+  public List<File> getFiles(final String userId) {
+    return ImmutableList.copyOf(this.files.prefixSubMap(new Object[] {userId}).values());
   }
 
   @Override
   public Format getFormatForFileId(final String userId, final String fileId) {
     return getById(userId, fileId).getFormat();
+  }
+
+  private void checkUtilization(final String userId, final String fileId)
+      throws IllegalStateException {
+    final Set<String> utilizingTaskIds =
+        this.utilizingTasks.prefixSubMap(new Object[] {userId, fileId}).keySet().stream()
+            .map(e -> (String) e[2]).collect(ImmutableSet.toImmutableSet());
+
+    if (!utilizingTaskIds.isEmpty()) {
+      final String jointUtilizingTasksIds = String.join(", ", utilizingTaskIds);
+      throw new IllegalStateException(
+          String.format("Some tasks (%s) still refer to this file!", jointUtilizingTasksIds));
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.files.FileService#replace(cz.cuni.mff.xrg.odalic.files.File)
+   */
+  @Override
+  public void replace(final File file) {
+    final String userId = file.getOwner().getEmail();
+    final String fileId = file.getId();
+
+    final Object[] userFileId = new Object[] {userId, fileId};
+
+    final File previous = this.files.get(userFileId);
+    if ((previous != null) && !previous.getLocation().equals(file.getLocation())) {
+      this.data.remove(new Object[] {userId, previous.getLocation().toString()});
+    }
+
+    this.files.put(userFileId, file);
+
+    this.db.commit();
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see cz.cuni.mff.xrg.odalic.files.FileService#replace(cz.cuni.mff.xrg.odalic.files.File,
+   * java.io.InputStream)
+   */
+  @Override
+  public void replace(final File file, final InputStream fileInputStream) throws IOException {
+    Preconditions.checkArgument(file.isCached());
+
+    final String userId = file.getOwner().getEmail();
+    final String fileId = file.getId();
+
+    this.files.put(new Object[] {userId, fileId}, file);
+    this.data.put(new Object[] {userId, file.getLocation().toString()},
+        IOUtils.toByteArray(fileInputStream));
+
+    this.db.commit();
   }
 
   @Override
@@ -274,19 +264,32 @@ public final class DbFileService implements FileService {
 
     this.files.put(userFileId, newFile);
 
-    db.commit();
+    this.db.commit();
   }
 
   @Override
-  public void deleteAll(String userId) {
-    Preconditions.checkNotNull(userId);
+  public void subscribe(final File file, final Task task) {
+    final String userId = file.getOwner().getEmail();
+    final String fileId = file.getId();
 
-    final Object[] userIdKey = new Object[] {userId};
+    Preconditions.checkArgument(this.files.get(new Object[] {userId, fileId}).equals(file),
+        "The file is not registered!");
 
-    final Map<Object[], File> fileIdsToFiles = this.files.prefixSubMap(userIdKey);
-    fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
-    fileIdsToFiles.clear();
+    final Boolean previous =
+        this.utilizingTasks.put(new Object[] {userId, fileId, task.getId()}, true);
+    Preconditions.checkArgument(previous == null,
+        "The task has already been subcscribed to the file!");
+  }
 
-    this.data.prefixSubMap(userIdKey).clear();
+  @Override
+  public void unsubscribe(final File file, final Task task) {
+    final String userId = file.getOwner().getEmail();
+    final String fileId = file.getId();
+
+    Preconditions.checkArgument(this.files.get(new Object[] {userId, fileId}).equals(file),
+        "The file is not registered!");
+
+    final Boolean removed = this.utilizingTasks.remove(new Object[] {userId, fileId, task.getId()});
+    Preconditions.checkArgument(removed != null, "The task is not subcscribed to the file!");
   }
 }
