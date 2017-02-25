@@ -41,10 +41,11 @@ public final class ListsBackedInput implements Input, Serializable {
   private final String fileIdentifier;
 
   /**
+   * Creates the list-backed input instance.
    *
-   * @param fileIdentifier
-   * @param headers
-   * @param rows Note: Inner lists (concrete rows) can contain null values.
+   * @param fileIdentifier file ID
+   * @param headers list of header
+   * @param rows rows, the inner lists representing the rows can contain {@code null} values
    */
   public ListsBackedInput(final String fileIdentifier, final List<? extends String> headers,
       final List<? extends List<? extends String>> rows) {
@@ -94,7 +95,7 @@ public final class ListsBackedInput implements Input, Serializable {
   }
 
   /**
-   * Note: Inner lists (concrete rows) can contain null values.
+   * Rows. The inner lists representing the rows can contain {@code null} values.
    */
   @Override
   public List<List<String>> rows() {

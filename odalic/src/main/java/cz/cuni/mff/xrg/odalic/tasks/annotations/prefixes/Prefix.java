@@ -29,6 +29,7 @@ public final class Prefix implements Serializable {
    *
    * @param with text to substitute with
    * @param what text to be substituted
+   * @return the prefix
    */
   public static Prefix create(final String with, final String what) {
     return new Prefix(with, what);

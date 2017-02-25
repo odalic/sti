@@ -18,12 +18,6 @@ import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.TableContext;
  */
 public final class TableContextJsonDeserializer extends JsonDeserializer<TableContext> {
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.
-   * JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
-   */
   @SuppressWarnings("unchecked")
   @Override
   public TableContext deserialize(final JsonParser parser, final DeserializationContext ctxt)

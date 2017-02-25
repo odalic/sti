@@ -19,12 +19,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
  */
 public final class CustomDateJsonDeserializer extends JsonDeserializer<Date> {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.
-   * JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
-   */
   @Override
   public Date deserialize(final JsonParser jsonparser, final DeserializationContext context)
       throws IOException, JsonProcessingException {

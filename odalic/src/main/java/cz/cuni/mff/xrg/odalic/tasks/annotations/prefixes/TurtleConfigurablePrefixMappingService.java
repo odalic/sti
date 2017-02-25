@@ -93,6 +93,8 @@ public final class TurtleConfigurablePrefixMappingService implements PrefixMappi
   /**
    * Creates the service, using mapping based on the configuration files.
    *
+   * @param configurationService configuration service
+   *
    * @throws IOException when I/O exception during mapping configuration happens
    * @throws FileNotFoundException when the mapping describing the mapping could not be loaded
    *

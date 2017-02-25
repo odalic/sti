@@ -40,9 +40,6 @@ public final class HeaderAnnotationValue {
     this.chosen = ImmutableMap.of();
   }
 
-  /**
-   * @param entities
-   */
   public HeaderAnnotationValue(final HeaderAnnotation adaptee) {
     this.candidates = Annotations.toNavigableValues(adaptee.getCandidates());
     this.chosen = Annotations.toValues(adaptee.getChosen());

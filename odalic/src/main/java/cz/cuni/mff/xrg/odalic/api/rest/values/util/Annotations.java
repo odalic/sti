@@ -23,6 +23,12 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 @Immutable
 public final class Annotations {
 
+  /**
+   * Makes a copy of the argument. 
+   * 
+   * @param candidates candidates
+   * @return copied candidates
+   */
   public static Map<KnowledgeBase, NavigableSet<EntityCandidateValue>> copyNavigableValues(
       final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidateValue>> candidates) {
     final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidateValue>> candidatesBuilder =
@@ -36,6 +42,12 @@ public final class Annotations {
     return candidatesBuilder.build();
   }
 
+  /**
+   * Makes a copy of the argument. 
+   * 
+   * @param chosen chosen
+   * @return copied chosen
+   */
   public static Map<KnowledgeBase, Set<EntityCandidateValue>> copyValues(
       final Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidateValue>> chosen) {
     final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidateValue>> chosenBuilder =
@@ -48,6 +60,12 @@ public final class Annotations {
     return chosenBuilder.build();
   }
 
+  /**
+   * Converts from values to domain objects.
+   * 
+   * @param chosenValues values
+   * @return domain objects
+   */
   public static Map<KnowledgeBase, Set<EntityCandidate>> toDomain(
       final Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidateValue>> chosenValues) {
     final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> chosenBuilder =
@@ -64,6 +82,12 @@ public final class Annotations {
     return chosen;
   }
 
+  /**
+   * Converts from values to domain objects.
+   * 
+   * @param candidateValues values
+   * @return domain objects
+   */
   public static Map<KnowledgeBase, NavigableSet<EntityCandidate>> toNavigableDomain(
       final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidateValue>> candidateValues) {
     final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidate>> candidatesBuilder =
@@ -80,6 +104,12 @@ public final class Annotations {
     return candidates;
   }
 
+  /**
+   * Converts from domain objects to values.
+   * 
+   * @param candidates domain objects
+   * @return values
+   */
   public static Map<KnowledgeBase, NavigableSet<EntityCandidateValue>> toNavigableValues(
       final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidate>> candidates) {
     final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidateValue>> candidatesBuilder =
@@ -97,6 +127,12 @@ public final class Annotations {
     return candidatesBuilder.build();
   }
 
+  /**
+   * Converts from domain objects to values.
+   * 
+   * @param chosen domain objects
+   * @return values
+   */
   public static Map<KnowledgeBase, Set<EntityCandidateValue>> toValues(
       final Map<KnowledgeBase, Set<EntityCandidate>> chosen) {
     final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidateValue>> chosenBuilder =

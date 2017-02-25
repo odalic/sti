@@ -29,9 +29,6 @@ public final class ColumnRelationAnnotationValue {
     this.chosen = ImmutableSet.of();
   }
 
-  /**
-   * @param entities
-   */
   public ColumnRelationAnnotationValue(final ColumnRelationAnnotation adaptee) {
     this.candidates = Annotations.toNavigableValues(adaptee.getCandidates());
     this.chosen = Annotations.toValues(adaptee.getChosen());

@@ -13,12 +13,6 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
  */
 public final class ColumnPositionKeyJsonDeserializer extends KeyDeserializer {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.fasterxml.jackson.databind.KeyDeserializer#deserializeKey(java.lang.String,
-   * com.fasterxml.jackson.databind.DeserializationContext)
-   */
   @Override
   public Object deserializeKey(final String key, final DeserializationContext ctxt) {
     return new ColumnPosition(Integer.parseInt(key));

@@ -22,12 +22,6 @@ public final class TableToListsBackedInputAdapter implements TableToInputAdapter
     this.builder = builder;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * cz.cuni.mff.xrg.odalic.input.TableToInputAdapter#toInput(uk.ac.shef.dcs.sti.core.model.Table)
-   */
   @Override
   public Input toInput(final Table table) {
     this.builder.clear();

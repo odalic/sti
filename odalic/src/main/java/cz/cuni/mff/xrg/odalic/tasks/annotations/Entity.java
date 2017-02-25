@@ -27,8 +27,9 @@ public final class Entity implements Comparable<Entity>, Serializable {
    * Creates new entity representation.
    *
    * @param prefix resource ID prefix
-   * @param resource entity resource ID
+   * @param resourceId entity resource ID
    * @param label label
+   * @return the newly created entity
    */
   public static Entity of(final @Nullable Prefix prefix, final String resourceId,
       final String label) {
@@ -50,8 +51,9 @@ public final class Entity implements Comparable<Entity>, Serializable {
   /**
    * Creates new entity representation (without prefix).
    *
-   * @param resource entity resource ID
+   * @param resourceId entity resource ID
    * @param label label
+   * @return the newly created entity
    */
   public static Entity of(final String resourceId, final String label) {
     Preconditions.checkNotNull(resourceId);

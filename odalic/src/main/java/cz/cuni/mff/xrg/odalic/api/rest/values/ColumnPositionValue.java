@@ -20,9 +20,6 @@ public final class ColumnPositionValue {
 
   public ColumnPositionValue() {}
 
-  /**
-   * @param adaptee
-   */
   public ColumnPositionValue(final ColumnPosition adaptee) {
     this.index = adaptee.getIndex();
   }

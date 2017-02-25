@@ -40,9 +40,6 @@ public final class CellAnnotationValue {
     this.chosen = ImmutableMap.of();
   }
 
-  /**
-   * @param entities
-   */
   public CellAnnotationValue(final CellAnnotation adaptee) {
     this.candidates = Annotations.toNavigableValues(adaptee.getCandidates());
     this.chosen = Annotations.toValues(adaptee.getChosen());

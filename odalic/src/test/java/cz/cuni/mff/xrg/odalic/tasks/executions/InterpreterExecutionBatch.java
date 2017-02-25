@@ -98,9 +98,6 @@ public class InterpreterExecutionBatch {
       return configuration;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
       return "CoreSnapshot [result=" + result + ", input=" + input + ", configuration=" + configuration + "]";

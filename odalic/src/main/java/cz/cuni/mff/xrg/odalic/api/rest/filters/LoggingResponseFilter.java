@@ -21,12 +21,6 @@ public final class LoggingResponseFilter implements ContainerResponseFilter {
 
   private static final Logger logger = LoggerFactory.getLogger(LoggingResponseFilter.class);
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see javax.ws.rs.container.ContainerResponseFilter#filter(javax.ws.rs.container.
-   * ContainerRequestContext, javax.ws.rs.container.ContainerResponseContext)
-   */
   @Override
   public void filter(final ContainerRequestContext requestContext,
       final ContainerResponseContext responseContext) throws IOException {

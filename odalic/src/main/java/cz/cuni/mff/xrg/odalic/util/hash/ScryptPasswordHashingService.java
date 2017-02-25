@@ -27,12 +27,6 @@ public final class ScryptPasswordHashingService implements PasswordHashingServic
         ScryptPasswordHashingService.SCRYPT_P_PARAMETER);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.util.hash.PasswordHashingService#check(java.lang.String,
-   * java.lang.String)
-   */
   @Override
   public boolean check(final String password, final String hash) {
     Preconditions.checkNotNull(password);

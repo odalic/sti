@@ -13,12 +13,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
  */
 public final class KnowledgeBaseKeyJsonDeserializer extends KeyDeserializer {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.fasterxml.jackson.databind.KeyDeserializer#deserializeKey(java.lang.String,
-   * com.fasterxml.jackson.databind.DeserializationContext)
-   */
   @Override
   public Object deserializeKey(final String key, final DeserializationContext ctxt) {
     return new KnowledgeBase(key);

@@ -34,7 +34,14 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.users.UserService;
 
 /**
+ * <p>
  * A {@link TaskRdfSerializationService} implementation employing {@link RDFMapper}.
+ * </p>
+ * 
+ * <p>
+ * Apart from the equivalent classes for the REST API values, the adapters are not available, so the
+ * conversion from mapped "values" to domain objects and back is unfortunately strictly manual.
+ * </p>
  *
  * @author Václav Brodec
  *

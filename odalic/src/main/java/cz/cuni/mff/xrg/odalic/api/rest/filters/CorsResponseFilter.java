@@ -15,12 +15,6 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 public final class CorsResponseFilter implements ContainerResponseFilter {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see javax.ws.rs.container.ContainerResponseFilter#filter(javax.ws.rs.container.
-   * ContainerRequestContext, javax.ws.rs.container.ContainerResponseContext)
-   */
   @Override
   public void filter(final ContainerRequestContext requestContext,
       final ContainerResponseContext responseContext) throws IOException {

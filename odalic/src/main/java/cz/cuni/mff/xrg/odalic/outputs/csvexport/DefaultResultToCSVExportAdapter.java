@@ -46,13 +46,6 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
     return String.format("%s_alternative_urls", text);
   }
 
-  /**
-   * The default toCSVExport implementation.
-   *
-   * @see cz.cuni.mff.xrg.odalic.outputs.csvexport.ResultToCSVExportAdapter#toCSVExport(cz.cuni.mff.xrg.odalic.results.Result,
-   *      cz.cuni.mff.xrg.odalic.input.Input,
-   *      cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration)
-   */
   @Override
   public Input toCSVExport(final Result result, final Input input,
       final Configuration configuration) {

@@ -25,10 +25,6 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
 
   private final Score score;
 
-  /**
-   * @param entity
-   * @param score
-   */
   public EntityCandidate(final Entity entity, final Score score) {
     Preconditions.checkNotNull(entity);
 
@@ -36,13 +32,7 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
     this.score = score;
   }
 
-  /**
-   * Entity candidates are naturally ordered by their score in ascending order. In case of the equal
-   * score the natural ordering of entities is taken into account.
-   *
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
-   */
-  @Override
+ @Override
   public int compareTo(final EntityCandidate o) {
     final int scoreComparison = this.score.compareTo(o.score);
 
@@ -53,11 +43,6 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
     }
   }
 
-  /**
-   * Compares for equality (only other candidates entity with the same score passes).
-   *
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -101,11 +86,6 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
     return this.score;
   }
 
-  /**
-   * Computes hash code based on the entity and the score.
-   *
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;

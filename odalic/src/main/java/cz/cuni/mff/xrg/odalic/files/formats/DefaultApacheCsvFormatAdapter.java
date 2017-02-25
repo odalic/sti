@@ -17,13 +17,6 @@ import org.apache.commons.csv.CSVFormat;
 @Immutable
 public final class DefaultApacheCsvFormatAdapter implements ApacheCsvFormatAdapter {
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * cz.cuni.mff.xrg.odalic.files.formats.ApacheCsvFormatAdapter#toApacheCsvFormat(cz.cuni.mff.xrg.
-   * odalic.files.formats.Format)
-   */
   @Override
   public CSVFormat toApacheCsvFormat(final Format applicationFormat) {
     CSVFormat format = CSVFormat.newFormat(applicationFormat.getDelimiter())

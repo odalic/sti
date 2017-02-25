@@ -3,7 +3,6 @@
  */
 package cz.cuni.mff.xrg.odalic.entities;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
@@ -20,7 +19,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
 import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
-import uk.ac.shef.dcs.sti.STIException;
 
 /**
  * Default {@link EntitiesService} implementation.
@@ -49,8 +47,7 @@ public final class DefaultEntitiesService implements EntitiesService {
     }
   }
 
-  private KBProxy getKBProxy(final KnowledgeBase base)
-      throws KBProxyException, STIException, IOException {
+  private KBProxy getKBProxy(final KnowledgeBase base) {
     final KBProxy kbProxy = this.knowledgeBaseProxyFactory.getKBProxies().get(base.getName());
 
     if (kbProxy == null) {
@@ -61,16 +58,9 @@ public final class DefaultEntitiesService implements EntitiesService {
     return kbProxy;
   }
 
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.entities.EntitiesService#propose(cz.cuni.mff.xrg.odalic.entities.
-   * ClassProposal)
-   */
   @Override
   public Entity propose(final KnowledgeBase base, final ClassProposal proposal)
-      throws KBProxyException, STIException, IOException {
+      throws KBProxyException {
     final KBProxy kbProxy = getKBProxy(base);
 
     final String superClassUri = getEntityValue(proposal.getSuperClass());
@@ -83,7 +73,7 @@ public final class DefaultEntitiesService implements EntitiesService {
 
   @Override
   public Entity propose(final KnowledgeBase base, final PropertyProposal proposal)
-      throws KBProxyException, STIException, IOException {
+      throws KBProxyException {
     final KBProxy kbProxy = getKBProxy(base);
 
     final String superPropertyUri = getEntityValue(proposal.getSuperProperty());
@@ -95,15 +85,9 @@ public final class DefaultEntitiesService implements EntitiesService {
     return this.entitiesFactory.create(entity.getId(), entity.getLabel());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.entities.EntitiesService#propose(cz.cuni.mff.xrg.odalic.entities.
-   * ResourceProposal)
-   */
   @Override
   public Entity propose(final KnowledgeBase base, final ResourceProposal proposal)
-      throws KBProxyException, STIException, IOException {
+      throws KBProxyException {
     final KBProxy kbProxy = getKBProxy(base);
 
     Collection<String> classes = null;
@@ -117,17 +101,9 @@ public final class DefaultEntitiesService implements EntitiesService {
     return this.entitiesFactory.create(entity.getId(), entity.getLabel());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * cz.cuni.mff.xrg.odalic.entities.EntitiesService#search(cz.cuni.mff.xrg.odalic.tasks.annotations
-   * .KnowledgeBase, java.lang.String, int)
-   */
   @Override
   public NavigableSet<Entity> searchClasses(final KnowledgeBase base, final String query,
-      final int limit)
-      throws IllegalArgumentException, KBProxyException, STIException, IOException {
+      final int limit) throws KBProxyException {
     final KBProxy kbProxy = getKBProxy(base);
 
     final List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
@@ -140,8 +116,7 @@ public final class DefaultEntitiesService implements EntitiesService {
 
   @Override
   public NavigableSet<Entity> searchProperties(final KnowledgeBase base, final String query,
-      final int limit, final URI domain, final URI range)
-      throws IllegalArgumentException, KBProxyException, STIException, IOException {
+      final int limit, final URI domain, final URI range) throws KBProxyException {
     final KBProxy kbProxy = getKBProxy(base);
 
     // TODO: Find only properties, restricted by the domain (the domains of found properties must be
@@ -155,17 +130,9 @@ public final class DefaultEntitiesService implements EntitiesService {
         .collect(Collectors.toCollection(TreeSet::new));
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * cz.cuni.mff.xrg.odalic.entities.EntitiesService#search(cz.cuni.mff.xrg.odalic.tasks.annotations
-   * .KnowledgeBase, java.lang.String, int)
-   */
   @Override
   public NavigableSet<Entity> searchResources(final KnowledgeBase base, final String query,
-      final int limit)
-      throws IllegalArgumentException, KBProxyException, STIException, IOException {
+      final int limit) throws KBProxyException {
     final KBProxy kbProxy = getKBProxy(base);
 
     final List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =

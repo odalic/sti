@@ -29,11 +29,6 @@ public final class PrefixMappingEntitiesFactory implements EntitiesFactory {
     this.prefixMappingService = prefixMappingService;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.entities.EntitiesFactory#create(java.lang.String, java.lang.String)
-   */
   @Override
   public Entity create(final String resourceId, final String label) {
     return Entity.of(this.prefixMappingService.getPrefix(resourceId), resourceId, label);

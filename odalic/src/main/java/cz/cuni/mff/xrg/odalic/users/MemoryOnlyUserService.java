@@ -236,12 +236,6 @@ public final class MemoryOnlyUserService implements UserService {
   }
 
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * cz.cuni.mff.xrg.odalic.users.UserService#authenticate(cz.cuni.mff.xrg.odalic.users.Credentials)
-   */
   @Override
   public User authenticate(final Credentials credentials) {
     Preconditions.checkNotNull(credentials);
@@ -262,13 +256,6 @@ public final class MemoryOnlyUserService implements UserService {
     return user;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * cz.cuni.mff.xrg.odalic.users.UserService#confirmPasswordChange(cz.cuni.mff.xrg.odalic.users.
-   * Token)
-   */
   @Override
   public void confirmPasswordChange(final Token token) {
     final DecodedToken decodedToken = validateAndDecode(token);
@@ -280,12 +267,6 @@ public final class MemoryOnlyUserService implements UserService {
     invalidateTokens(replaced);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#create(cz.cuni.mff.xrg.odalic.users.Credentials,
-   * cz.cuni.mff.xrg.odalic.users.Role)
-   */
   @Override
   public void create(final Credentials credentials, final Role role) {
     Preconditions.checkNotNull(credentials);
@@ -434,12 +415,6 @@ public final class MemoryOnlyUserService implements UserService {
     return replaced;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#requestPasswordChange(java.net.URL,
-   * java.lang.String, cz.cuni.mff.xrg.odalic.users.User, java.lang.String)
-   */
   @Override
   public void requestPasswordChange(final User user, final String newPassword) {
     Preconditions.checkNotNull(user);

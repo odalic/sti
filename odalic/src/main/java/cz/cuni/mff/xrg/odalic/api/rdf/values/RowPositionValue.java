@@ -17,9 +17,6 @@ public final class RowPositionValue {
 
   public RowPositionValue() {}
 
-  /**
-   * @param adaptee
-   */
   public RowPositionValue(final RowPosition adaptee) {
     this.index = adaptee.getIndex();
   }

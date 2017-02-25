@@ -20,7 +20,6 @@ public final class ScoreValue implements Serializable {
 
   private static final long serialVersionUID = -901650058091668104L;
 
-  @XmlElement
   private double value;
 
   public ScoreValue() {
@@ -34,6 +33,7 @@ public final class ScoreValue implements Serializable {
   /**
    * @return the value (negative when not set)
    */
+  @XmlElement
   public double getValue() {
     return this.value;
   }

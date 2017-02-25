@@ -28,6 +28,7 @@ public final class DecodedToken {
    * Creates a decoded token representation.
    *
    * @param id ID
+   * @param issuer issuer
    * @param subject subject
    * @param expiration expiration time
    */

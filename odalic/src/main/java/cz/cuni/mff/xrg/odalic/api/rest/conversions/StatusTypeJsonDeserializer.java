@@ -18,12 +18,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
  */
 public final class StatusTypeJsonDeserializer extends JsonDeserializer<StatusType> {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.
-   * JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
-   */
   @Override
   public StatusType deserialize(final JsonParser jsonparser, final DeserializationContext context)
       throws IOException, JsonProcessingException {

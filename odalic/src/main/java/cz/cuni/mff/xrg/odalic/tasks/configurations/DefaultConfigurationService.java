@@ -26,12 +26,6 @@ public final class DefaultConfigurationService implements ConfigurationService {
     this.taskService = taskService;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService#getForTaskId(java.lang.String)
-   */
   @Override
   public Configuration getForTaskId(final String userId, final String taskId) {
     final Task task = this.taskService.getById(userId, taskId);
@@ -39,10 +33,6 @@ public final class DefaultConfigurationService implements ConfigurationService {
     return task.getConfiguration();
   }
 
-  /**
-   * @param taskId
-   * @param configuration
-   */
   @Override
   public void setForTaskId(final String userId, final String taskId,
       final Configuration configuration) {

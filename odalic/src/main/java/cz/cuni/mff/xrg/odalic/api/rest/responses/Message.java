@@ -38,13 +38,10 @@ public final class Message {
     return new MessageBuilder().text(text).debugContent(debugContent).build();
   }
 
-  @XmlElement
   private final String text;
 
-  @XmlElement
   private final List<URI> additionalResources;
 
-  @XmlElement
   private final String debugContent;
 
   public Message(@Nullable final String text, final List<URI> additionalResources,
@@ -59,6 +56,7 @@ public final class Message {
   /**
    * @return the additional resources
    */
+  @XmlElement
   public List<URI> getAdditionalResources() {
     return this.additionalResources;
   }
@@ -86,7 +84,7 @@ public final class Message {
    * {@link StatusType}.
    *
    * @param statusType status type
-   * @param UriInfo request URI information
+   * @param uriInfo request URI information
    * @return a {@link Reply}
    */
   @XmlTransient
@@ -102,7 +100,7 @@ public final class Message {
    *
    * @param statusType status type
    * @param location location header content
-   * @param UriInfo request URI information
+   * @param uriInfo request URI information
    * @return a {@link Reply}
    */
   @XmlTransient
@@ -120,7 +118,7 @@ public final class Message {
    *
    * @param statusType status type
    * @param uriInfo request URI information
-   * @return a {@link ReplyBuilder}
+   * @return a {@link ResponseBuilder}
    */
   @XmlTransient
   public ResponseBuilder toResponseBuilder(final StatusType statusType, final UriInfo uriInfo) {

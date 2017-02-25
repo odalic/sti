@@ -72,12 +72,6 @@ public final class MemoryOnlyFileService implements FileService {
     replace(file);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#create(cz.cuni.mff.xrg.odalic.files.File,
-   * java.io.InputStream)
-   */
   @Override
   public void create(final File file, final InputStream fileInputStream) throws IOException {
     Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
@@ -177,12 +171,6 @@ public final class MemoryOnlyFileService implements FileService {
     this.files.put(userId, fileId, file);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#replace(cz.cuni.mff.xrg.odalic.files.File,
-   * java.io.InputStream)
-   */
   @Override
   public void replace(final File file, final InputStream fileInputStream) throws IOException {
     Preconditions.checkArgument(file.isCached());

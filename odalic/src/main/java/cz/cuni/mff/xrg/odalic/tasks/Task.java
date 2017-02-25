@@ -41,6 +41,7 @@ public final class Task implements Serializable {
   /**
    * Creates the task instance and sets it creation date to now.
    *
+   * @param owner owner
    * @param id ID of the task
    * @param description the task description
    * @param configuration configuration of the task

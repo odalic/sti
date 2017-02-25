@@ -44,7 +44,7 @@ public final class ColumnRelationPosition implements Serializable {
    * Creates new representation of a position of columns in relation.
    *
    * @param firstIndex first column index
-   * @param second second column index
+   * @param secondIndex second column index
    */
   public ColumnRelationPosition(final int firstIndex, final int secondIndex) {
     this(new ColumnPosition(firstIndex), new ColumnPosition(secondIndex));

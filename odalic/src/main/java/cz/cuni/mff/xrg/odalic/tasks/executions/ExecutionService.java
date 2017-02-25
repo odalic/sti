@@ -19,7 +19,7 @@ public interface ExecutionService {
    *
    * @param userId user ID
    * @param taskId task ID
-   * @param IllegalStateException if the task has already finished
+   * @throws IllegalStateException if the task has already finished
    */
   void cancelForTaskId(String userId, String taskId) throws IllegalStateException;
 

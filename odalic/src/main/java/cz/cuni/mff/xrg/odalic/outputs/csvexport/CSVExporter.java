@@ -18,7 +18,7 @@ public interface CSVExporter {
    * @param content Input content to export
    * @param configuration CSV configuration
    * @return CSV String
-   * @throws IOException
+   * @throws IOException when an I/O error occurs 
    */
   String export(Input content, Format configuration) throws IOException;
 }

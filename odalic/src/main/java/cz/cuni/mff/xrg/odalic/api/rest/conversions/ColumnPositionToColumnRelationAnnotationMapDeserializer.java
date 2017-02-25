@@ -20,12 +20,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 public final class ColumnPositionToColumnRelationAnnotationMapDeserializer
     extends JsonDeserializer<Map<ColumnPosition, ColumnRelationAnnotation>> {
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.
-   * JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
-   */
   @Override
   public Map<ColumnPosition, ColumnRelationAnnotation> deserialize(final JsonParser parser,
       final DeserializationContext ctxt) throws IOException, JsonProcessingException {

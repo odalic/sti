@@ -32,14 +32,6 @@ public class DefaultCSVExporter implements CSVExporter {
     this.apacheCsvFormatAdapter = apacheCsvFormatAdapter;
   }
 
-  /**
-   * The default export implementation.
-   *
-   * @throws IOException
-   *
-   * @see cz.cuni.mff.xrg.odalic.outputs.csvexport.CSVExporter#export(cz.cuni.mff.xrg.odalic.input.Input,
-   *      cz.cuni.mff.xrg.odalic.files.formats.Format)
-   */
   @Override
   public String export(final Input content, final Format configuration) throws IOException {
     final CSVFormat format = this.apacheCsvFormatAdapter.toApacheCsvFormat(configuration);

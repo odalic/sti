@@ -20,16 +20,13 @@ public class CellPositionValue {
 
   public CellPositionValue() {}
 
-  /**
-   * @param adaptee
-   */
   public CellPositionValue(final CellPosition adaptee) {
     this.columnPosition = new ColumnPositionValue(adaptee.getColumnPosition());
     this.rowPosition = new RowPositionValue(adaptee.getRowPosition());
   }
 
   /**
-   * @return the columnPosition
+   * @return the column position
    */
   @Nullable
   public ColumnPositionValue getColumnPosition() {
@@ -37,7 +34,7 @@ public class CellPositionValue {
   }
 
   /**
-   * @return the rowPosition
+   * @return the row position
    */
   @Nullable
   public RowPositionValue getRowPosition() {
@@ -45,7 +42,7 @@ public class CellPositionValue {
   }
 
   /**
-   * @param columnPosition the columnPosition to set
+   * @param columnPosition the column position to set
    */
   public void setColumnPosition(final ColumnPositionValue columnPosition) {
     Preconditions.checkNotNull(columnPosition);
@@ -54,7 +51,7 @@ public class CellPositionValue {
   }
 
   /**
-   * @param rowPosition the rowPosition to set
+   * @param rowPosition the row position to set
    */
   public void setRowPosition(final RowPositionValue rowPosition) {
     Preconditions.checkNotNull(rowPosition);

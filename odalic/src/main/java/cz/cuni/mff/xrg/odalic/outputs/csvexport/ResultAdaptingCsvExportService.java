@@ -17,7 +17,6 @@ import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.Input;
-import cz.cuni.mff.xrg.odalic.outputs.rdfexport.RdfExportService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
@@ -25,8 +24,8 @@ import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
- * Implementation of {@link RdfExportService} that gets the extended CSV data by adapting present
- * {@link Result}, {@link Input} and {@link Format} instances.
+ * Implementation of {@link CsvExportService} that produces the extended CSV data by adapting
+ * present {@link Result}, {@link Input} and {@link Format} instances.
  *
  * @author Václav Brodec
  *
@@ -66,13 +65,6 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
     this.csvExporter = csvExporter;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * cz.cuni.mff.xrg.odalic.outputs.csvexport.CsvExportService#getExtendedCsvForTaskId(java.lang.
-   * String)
-   */
   @Override
   public String getExtendedCsvForTaskId(final String userId, final String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
@@ -84,13 +76,6 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
     return data;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * cz.cuni.mff.xrg.odalic.outputs.csvexport.CsvExportService#getExtendedInputForTaskId(java.lang.
-   * String)
-   */
   @Override
   public Input getExtendedInputForTaskId(final String userId, final String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {

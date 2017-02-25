@@ -18,12 +18,6 @@ import uk.ac.shef.dcs.sti.core.model.Table;
 @Immutable
 public class DefaultInputToTableAdapter implements InputToTableAdapter {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * cz.cuni.mff.xrg.odalic.input.InputToTableAdapter#toTable(cz.cuni.mff.xrg.odalic.input.Input)
-   */
   @Override
   public Table toTable(final Input input) {
     final Table result = new Table(UUID.randomUUID().toString(), input.identifier(),

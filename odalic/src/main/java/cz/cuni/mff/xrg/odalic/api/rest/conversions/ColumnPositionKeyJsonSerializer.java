@@ -17,12 +17,6 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
  */
 public final class ColumnPositionKeyJsonSerializer extends JsonSerializer<ColumnPosition> {
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see com.fasterxml.jackson.databind.JsonSerializer#serialize(java.lang.Object,
-   * com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
-   */
   @Override
   public void serialize(final ColumnPosition value, final JsonGenerator jgen,
       final SerializerProvider provider) throws IOException, JsonProcessingException {

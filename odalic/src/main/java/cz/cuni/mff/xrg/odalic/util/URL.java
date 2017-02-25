@@ -61,7 +61,8 @@ public final class URL {
    * @param key query parameter key
    * @param value query parameter value
    * @return modified URL
-   * @throws MalformedURLException
+   * @throws MalformedURLException if a protocol handler for the URL could not be found, or if some
+   *         other error occurred while constructing the URL
    */
   public static java.net.URL setQueryParameter(final java.net.URL url, final String key,
       final String value) throws MalformedURLException {

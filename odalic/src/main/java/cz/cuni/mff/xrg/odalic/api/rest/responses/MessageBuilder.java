@@ -31,6 +31,8 @@ public final class MessageBuilder {
 
   /**
    * @param additionalResources the additional resources to set
+   * 
+   * @return the message builder
    */
   public MessageBuilder additionalResources(final List<? extends URI> additionalResources) {
     Preconditions.checkNotNull(additionalResources);
@@ -46,6 +48,8 @@ public final class MessageBuilder {
 
   /**
    * @param debugContent the debug content to set
+   * 
+   * @return the message builder
    */
   public MessageBuilder debugContent(final String debugContent) {
     this.debugContent = debugContent;
@@ -87,6 +91,7 @@ public final class MessageBuilder {
 
   /**
    * @param text the text to set
+   * @return the message builder
    */
   public MessageBuilder text(final String text) {
     this.text = text;

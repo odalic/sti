@@ -104,12 +104,6 @@ public final class SmtpMailService implements MailService {
     this.executor = executor;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.util.mail.MailService#send(java.lang.String, java.lang.String,
-   * javax.mail.Address[], javax.mail.Address[])
-   */
   @Override
   public void send(final String subject, final String text, final Address[] to,
       final Address... cc) {

@@ -25,9 +25,6 @@ public class CellPositionValue {
 
   public CellPositionValue() {}
 
-  /**
-   * @param adaptee
-   */
   public CellPositionValue(final CellPosition adaptee) {
     this.columnPosition = adaptee.getColumnPosition();
     this.rowPosition = adaptee.getRowPosition();

@@ -43,9 +43,6 @@ public final class DbTaskService implements TaskService {
    */
   private final BTreeMap<Object[], Task> tasks;
 
-  /**
-   * Creates the task service with no registered tasks.
-   */
   @SuppressWarnings("unchecked")
   @Autowired
   public DbTaskService(final FileService fileService, final DbService dbService) {

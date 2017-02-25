@@ -22,14 +22,14 @@ public interface PrefixMappingService {
    * </p>
    *
    * @param uri Text to look for the prefixed part in
-   * @return The associated prefix
+   * @return the associated prefix
    */
   Prefix getPrefix(String uri);
 
   /**
    * The map from prefixes to URIs.
    * 
-   * @return
+   * @return the map
    */
   Map<String, String> getPrefixToUriMap();
 }

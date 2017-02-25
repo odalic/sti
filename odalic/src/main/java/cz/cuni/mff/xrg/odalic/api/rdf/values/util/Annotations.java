@@ -29,6 +29,12 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 @Immutable
 public final class Annotations {
 
+  /**
+   * Makes a copy of the argument. 
+   * 
+   * @param candidates candidates
+   * @return copied candidates
+   */
   public static Set<KnowledgeBaseEntityCandidateNavigableSetEntry> copyNavigableValues(
       final Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
     Preconditions.checkNotNull(candidates);
@@ -36,6 +42,12 @@ public final class Annotations {
     return ImmutableSet.copyOf(candidates);
   }
 
+  /**
+   * Makes a copy of the argument.
+   * 
+   * @param chosen chosen
+   * @return copied chosen
+   */
   public static Set<KnowledgeBaseEntityCandidateSetEntry> copyValues(
       final Set<? extends KnowledgeBaseEntityCandidateSetEntry> chosen) {
     Preconditions.checkNotNull(chosen);
@@ -43,6 +55,12 @@ public final class Annotations {
     return ImmutableSet.copyOf(chosen);
   }
 
+  /**
+   * Converts from values to domain objects.
+   * 
+   * @param candidateValues values
+   * @return domain objects
+   */
   public static Map<KnowledgeBase, Set<EntityCandidate>> toDomain(
       final Set<? extends KnowledgeBaseEntityCandidateSetEntry> candidateValues) {
     Preconditions.checkNotNull(candidateValues);
@@ -62,13 +80,19 @@ public final class Annotations {
     return candidatesBuilder.build();
   }
 
+  /**
+   * Converts from values to domain objects.
+   * 
+   * @param candidateValues values
+   * @return domain objects
+   */
   public static Map<KnowledgeBase, NavigableSet<EntityCandidate>> toNavigableDomain(
-      final Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
-    Preconditions.checkNotNull(candidates);
+      final Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidateValues) {
+    Preconditions.checkNotNull(candidateValues);
 
     final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidate>> chosenBuilder =
         ImmutableMap.builder();
-    for (final KnowledgeBaseEntityCandidateNavigableSetEntry entry : candidates) {
+    for (final KnowledgeBaseEntityCandidateNavigableSetEntry entry : candidateValues) {
       final KnowledgeBase base = entry.getBase().toKnowledgeBase();
       final Set<EntityCandidateValue> values = entry.getSet().getValue();
 
@@ -81,6 +105,12 @@ public final class Annotations {
     return chosenBuilder.build();
   }
 
+  /**
+   * Converts from domain objects to values.
+   * 
+   * @param candidates domain objects
+   * @return values
+   */
   public static Set<KnowledgeBaseEntityCandidateNavigableSetEntry> toNavigableValues(
       final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidate>> candidates) {
     Preconditions.checkNotNull(candidates);
@@ -101,6 +131,12 @@ public final class Annotations {
     return candidatesBuilder.build();
   }
 
+  /**
+   * Converts from domain objects to values.
+   * 
+   * @param chosen domain objects
+   * @return values
+   */
   public static Set<KnowledgeBaseEntityCandidateSetEntry> toValues(
       final Map<KnowledgeBase, Set<EntityCandidate>> chosen) {
     Preconditions.checkNotNull(chosen);
@@ -120,5 +156,4 @@ public final class Annotations {
   }
 
   private Annotations() {}
-
 }

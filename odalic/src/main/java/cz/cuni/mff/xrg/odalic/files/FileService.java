@@ -62,6 +62,12 @@ public interface FileService {
    */
   String getDataById(String userId, String fileId) throws IOException;
 
+  /**
+   * Lists the user's files.
+   * 
+   * @param userId user ID
+   * @return user's files
+   */
   List<File> getFiles(String userId);
 
   /**
@@ -104,7 +110,7 @@ public interface FileService {
    * @param file utilized file
    * @param task utilizing task
    */
-  void subscribe(File input, Task task);
+  void subscribe(File file, Task task);
 
   /**
    * Unsubscribe the task from utilizing the file.

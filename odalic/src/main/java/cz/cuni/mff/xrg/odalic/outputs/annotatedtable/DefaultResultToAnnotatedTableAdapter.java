@@ -252,13 +252,6 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
     }
   }
 
-  /**
-   * The default toAnnotatedTable implementation.
-   *
-   * @see cz.cuni.mff.xrg.odalic.outputs.annotatedtable.ResultToAnnotatedTableAdapter#toAnnotatedTable(cz.cuni.mff.xrg.odalic.results.Result,
-   *      cz.cuni.mff.xrg.odalic.input.Input,
-   *      cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration)
-   */
   @Override
   public AnnotatedTable toAnnotatedTable(final Result result, final Input input,
       final Configuration configuration) {

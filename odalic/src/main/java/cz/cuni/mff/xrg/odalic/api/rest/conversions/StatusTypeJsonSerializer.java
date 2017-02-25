@@ -19,12 +19,6 @@ public final class StatusTypeJsonSerializer extends JsonSerializer<StatusType> {
 
   public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.fasterxml.jackson.databind.JsonSerializer#serialize(java.lang.Object,
-   * com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
-   */
   @Override
   public void serialize(final StatusType value, final JsonGenerator jgen,
       final SerializerProvider provider) throws IOException, JsonProcessingException {

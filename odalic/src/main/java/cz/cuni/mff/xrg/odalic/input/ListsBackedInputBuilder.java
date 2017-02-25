@@ -42,11 +42,6 @@ public final class ListsBackedInputBuilder implements InputBuilder {
     this.rows.clear();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.input.InputBuilder#insertCell(java.lang.String, int, int)
-   */
   @Override
   public void insertCell(final String value, final int rowIndex, final int columnIndex) {
     while (this.rows.size() <= rowIndex) {
@@ -56,22 +51,11 @@ public final class ListsBackedInputBuilder implements InputBuilder {
     insertToList(this.rows.get(rowIndex), value, columnIndex);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.input.InputBuilder#insertHeader(java.lang.String, int)
-   */
   @Override
   public void insertHeader(final String value, final int position) {
     insertToList(this.headers, value, position);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.input.InputBuilder#insertToList(java.util.List, java.lang.String,
-   * int)
-   */
   @Override
   public void insertToList(final List<String> list, final String value, final int position) {
     while (list.size() <= position) {

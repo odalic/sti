@@ -18,12 +18,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
  */
 public final class RowPositionKeyJsonSerializer extends JsonSerializer<RowPosition> {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.fasterxml.jackson.databind.JsonSerializer#serialize(java.lang.Object,
-   * com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
-   */
   @Override
   public void serialize(final RowPosition value, final JsonGenerator jgen,
       final SerializerProvider provider) throws IOException, JsonProcessingException {

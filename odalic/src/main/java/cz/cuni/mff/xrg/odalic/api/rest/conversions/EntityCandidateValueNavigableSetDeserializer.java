@@ -20,12 +20,6 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.EntityCandidateValue;
 public final class EntityCandidateValueNavigableSetDeserializer
     extends JsonDeserializer<NavigableSet<EntityCandidateValue>> {
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.
-   * JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
-   */
   @Override
   public NavigableSet<EntityCandidateValue> deserialize(final JsonParser parser,
       final DeserializationContext ctxt) throws IOException, JsonProcessingException {
