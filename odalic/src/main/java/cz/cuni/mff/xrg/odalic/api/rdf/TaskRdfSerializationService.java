@@ -18,10 +18,10 @@ import cz.cuni.mff.xrg.odalic.tasks.Task;
 public interface TaskRdfSerializationService {
 
   /**
-   * Serialized the task.
+   * Serializes the task.
    * 
    * @param task serialized task
-   * @param baseUri base URI of the application
+   * @param baseUri base URI of the application (used as prefix to instance specific URIs)
    * @return serialized task
    */
   String serialize(final Task task, final URI baseUri);

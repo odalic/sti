@@ -2,8 +2,7 @@ package cz.cuni.mff.xrg.odalic.api.rest.adapters;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
-import org.apache.jena.ext.com.google.common.collect.ImmutableMap;
-
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.FeedbackValue;

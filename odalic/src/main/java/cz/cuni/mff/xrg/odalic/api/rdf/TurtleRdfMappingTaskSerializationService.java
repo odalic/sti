@@ -65,13 +65,6 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
         .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false), userService, fileService);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * cz.cuni.mff.xrg.odalic.api.rdf.TaskRdfSerializationService#serialize(cz.cuni.mff.xrg.odalic.
-   * tasks.Task, java.net.URI)
-   */
   @Override
   public String serialize(final Task task, final URI baseUri) {
     Preconditions.checkNotNull(task);
@@ -119,13 +112,6 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
     return taskValue;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * cz.cuni.mff.xrg.odalic.api.rdf.TaskRdfSerializationService#deserialize(java.io.InputStream,
-   * java.lang.String, java.lang.String, java.net.URI)
-   */
   @Override
   public Task deserialize(final InputStream taskStream, final String userId, final String taskId,
       final URI baseUri) throws IOException {
