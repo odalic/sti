@@ -214,11 +214,6 @@ public final class FeedbackValue implements Serializable {
     this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "FeedbackValue [subjectColumnPositions=" + this.subjectColumnPositions

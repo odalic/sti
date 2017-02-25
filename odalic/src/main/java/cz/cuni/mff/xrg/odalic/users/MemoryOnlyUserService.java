@@ -226,11 +226,6 @@ public final class MemoryOnlyUserService implements UserService {
     createAdminIfNotPresent(properties);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#activateUser(cz.cuni.mff.xrg.odalic.users.Token)
-   */
   @Override
   public void activateUser(final Token token) {
     final DecodedToken decodedToken = validateAndDecode(token);
@@ -356,11 +351,6 @@ public final class MemoryOnlyUserService implements UserService {
     return token;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#getUser(java.lang.String)
-   */
   @Override
   public User getUser(final String id) {
     Preconditions.checkNotNull(id);
@@ -395,11 +385,6 @@ public final class MemoryOnlyUserService implements UserService {
     this.userIdsToTokenIds.removeAll(user.getEmail());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#issueToken(cz.cuni.mff.xrg.odalic.users.User)
-   */
   @Override
   public Token issueToken(final User user) {
     final UUID tokenId = UUID.randomUUID();
@@ -475,11 +460,6 @@ public final class MemoryOnlyUserService implements UserService {
         generatePasswordChangingMessage(token), new Address[] {address});
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#signUp(cz.cuni.mff.xrg.odalic.users.Credentials)
-   */
   @Override
   public void signUp(final Credentials credentials) {
     Preconditions.checkNotNull(credentials);
@@ -504,11 +484,6 @@ public final class MemoryOnlyUserService implements UserService {
     return decodedToken;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.users.UserService#validateToken(cz.cuni.mff.xrg.odalic.users.Token)
-   */
   @Override
   public User validateToken(final Token token) {
     final DecodedToken decodedToken = validateAndDecode(token);

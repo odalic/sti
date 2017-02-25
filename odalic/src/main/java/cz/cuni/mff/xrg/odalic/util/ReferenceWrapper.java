@@ -34,11 +34,6 @@ public final class ReferenceWrapper<T> {
     this.reference = reference;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -62,11 +57,6 @@ public final class ReferenceWrapper<T> {
     return this.reference;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;

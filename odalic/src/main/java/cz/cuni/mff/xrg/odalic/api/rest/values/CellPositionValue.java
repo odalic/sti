@@ -69,11 +69,6 @@ public class CellPositionValue {
     this.rowPosition = rowPosition;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "CellPositionValue [rowPosition=" + this.rowPosition + ", columnPosition="

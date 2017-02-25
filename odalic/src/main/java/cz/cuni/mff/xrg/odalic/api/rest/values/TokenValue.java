@@ -43,11 +43,6 @@ public final class TokenValue {
     this.token = token;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "TokenValue [token=" + this.token + "]";

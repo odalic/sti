@@ -56,11 +56,6 @@ public final class PasswordChangeValue {
     this.oldPassword = oldPassword;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "PasswordChangeValue [oldPassword=****, newPassword=****]";

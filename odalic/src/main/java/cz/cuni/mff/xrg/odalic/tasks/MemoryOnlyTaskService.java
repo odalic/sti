@@ -51,11 +51,6 @@ public final class MemoryOnlyTaskService implements TaskService {
     this.tasks = tasks;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#create(cz.cuni.mff.xrg.odalic.tasks.Task)
-   */
   @Override
   public void create(final Task task) {
     Preconditions.checkNotNull(task);
@@ -75,11 +70,6 @@ public final class MemoryOnlyTaskService implements TaskService {
     taskIdsToTasks.clear();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#deleteById(java.lang.String)
-   */
   @Override
   public void deleteById(final String userId, final String taskId) {
     Preconditions.checkNotNull(userId);
@@ -92,11 +82,6 @@ public final class MemoryOnlyTaskService implements TaskService {
     this.fileService.unsubscribe(configuration.getInput(), task);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getById(java.lang.String)
-   */
   @Override
   public Task getById(final String userId, final String taskId) {
     Preconditions.checkNotNull(userId);
@@ -108,11 +93,6 @@ public final class MemoryOnlyTaskService implements TaskService {
     return task;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getTasks()
-   */
   @Override
   public Set<Task> getTasks(final String userId) {
     return ImmutableSet.copyOf(this.tasks.row(userId).values());
@@ -134,11 +114,6 @@ public final class MemoryOnlyTaskService implements TaskService {
         this.tasks.row(userId).values());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#replace(cz.cuni.mff.xrg.odalic.tasks.Task)
-   */
   @Override
   public void replace(final Task task) {
     Preconditions.checkNotNull(task);
@@ -156,11 +131,6 @@ public final class MemoryOnlyTaskService implements TaskService {
     this.fileService.subscribe(input, task);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#verifyTaskExistenceById(java.lang.String)
-   */
   @Override
   @Nullable
   public Task verifyTaskExistenceById(final String userId, final String taskId) {

@@ -89,11 +89,6 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "KnowledgeBase [name=" + this.name + "]";

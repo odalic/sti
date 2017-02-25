@@ -61,11 +61,6 @@ public final class DbTaskService implements TaskService {
         .valueSerializer(Serializer.JAVA).createOrOpen();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#create(cz.cuni.mff.xrg.odalic.tasks.Task)
-   */
   @Override
   public void create(final Task task) {
     Preconditions.checkNotNull(task);
@@ -85,11 +80,6 @@ public final class DbTaskService implements TaskService {
     taskIdsToTasks.clear();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#deleteById(java.lang.String)
-   */
   @Override
   public void deleteById(final String userId, final String taskId) {
     Preconditions.checkNotNull(userId);
@@ -104,11 +94,6 @@ public final class DbTaskService implements TaskService {
     this.db.commit();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getById(java.lang.String)
-   */
   @Override
   public Task getById(final String userId, final String taskId) {
     Preconditions.checkNotNull(userId);
@@ -120,11 +105,6 @@ public final class DbTaskService implements TaskService {
     return task;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#getTasks()
-   */
   @Override
   public Set<Task> getTasks(final String userId) {
     return ImmutableSet.copyOf(this.tasks.prefixSubMap(new Object[] {userId}).values());
@@ -145,11 +125,6 @@ public final class DbTaskService implements TaskService {
         this.tasks.prefixSubMap(new Object[] {userId}).values());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#replace(cz.cuni.mff.xrg.odalic.tasks.Task)
-   */
   @Override
   public void replace(final Task task) {
     Preconditions.checkNotNull(task);
@@ -181,11 +156,6 @@ public final class DbTaskService implements TaskService {
     this.db.commit();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.TaskService#verifyTaskExistenceById(java.lang.String)
-   */
   @Override
   @Nullable
   public Task verifyTaskExistenceById(final String userId, final String taskId) {

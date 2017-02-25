@@ -56,21 +56,11 @@ public final class TaskValue implements Serializable, Identifiable {
     return this.description;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.complexible.pinto.Identifiable#id()
-   */
   @Override
   public Resource id() {
     return this.identifiableResource;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.complexible.pinto.Identifiable#id(org.openrdf.model.Resource)
-   */
   @Override
   public void id(final Resource resource) {
     this.identifiableResource = resource;
@@ -94,11 +84,6 @@ public final class TaskValue implements Serializable, Identifiable {
     this.description = description;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "TaskValue [description=" + this.description + ", configuration=" + this.configuration

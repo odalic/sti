@@ -129,11 +129,6 @@ public final class Message {
     return Reply.message(statusType, this, uriInfo).toResponseBuilder();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Message [text=" + this.text + ", additionalResources=" + this.additionalResources

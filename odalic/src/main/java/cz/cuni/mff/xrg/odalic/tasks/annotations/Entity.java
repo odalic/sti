@@ -86,11 +86,6 @@ public final class Entity implements Comparable<Entity>, Serializable {
     return getResource().compareTo(o.getResource());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object object) {
     if (this == object) {
@@ -160,11 +155,6 @@ public final class Entity implements Comparable<Entity>, Serializable {
     return this.tail;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -173,11 +163,6 @@ public final class Entity implements Comparable<Entity>, Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Entity [prefix=" + this.prefix + ", suffix=" + this.tail + ", label=" + this.label

@@ -104,11 +104,6 @@ public class ParsingResult implements Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ParsingResult [input=" + this.input + ", format=" + this.format + "]";

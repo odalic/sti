@@ -56,11 +56,6 @@ public class KnowledgeBaseEntityCandidateSetEntry {
     this.set = set;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "KnowledgeBaseEntityCandidateSetEntry [base=" + this.base + ", set=" + this.set + "]";

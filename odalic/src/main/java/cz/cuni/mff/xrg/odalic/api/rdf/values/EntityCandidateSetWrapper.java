@@ -48,11 +48,6 @@ public class EntityCandidateSetWrapper {
     this.value = ImmutableSortedSet.copyOf(value);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "EntityCandidateSetWrapper [value=" + this.value + "]";

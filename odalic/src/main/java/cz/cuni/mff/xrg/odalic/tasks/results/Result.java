@@ -225,11 +225,6 @@ public class Result implements Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Result [subjectColumnPositions=" + this.subjectColumnPositions + ", headerAnnotations="

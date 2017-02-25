@@ -73,11 +73,6 @@ public final class HeaderAnnotationValue {
         Annotations.toDomain(this.chosen));
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "HeaderAnnotationValue [candidates=" + this.candidates + ", chosen=" + this.chosen + "]";

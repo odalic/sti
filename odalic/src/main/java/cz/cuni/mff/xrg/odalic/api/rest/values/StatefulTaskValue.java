@@ -141,11 +141,6 @@ public final class StatefulTaskValue implements Serializable {
     this.state = state;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "StatefulTaskValue [id=" + this.id + ", description=" + this.description + ", created="

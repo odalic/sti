@@ -94,11 +94,6 @@ public final class MessageBuilder {
     return this;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "MessageBuilder [text=" + this.text + ", additionalResources=" + this.additionalResources

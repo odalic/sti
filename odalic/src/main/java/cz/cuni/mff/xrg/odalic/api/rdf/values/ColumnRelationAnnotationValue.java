@@ -73,11 +73,6 @@ public final class ColumnRelationAnnotationValue {
         Annotations.toDomain(this.chosen));
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ColumnRelationAnnotationValue [candidates=" + this.candidates + ", chosen="

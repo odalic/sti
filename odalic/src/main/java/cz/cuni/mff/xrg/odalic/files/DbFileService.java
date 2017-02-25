@@ -78,11 +78,6 @@ public final class DbFileService implements FileService {
         .valueSerializer(Serializer.BOOLEAN).createOrOpen();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#create(cz.cuni.mff.xrg.odalic.files.File)
-   */
   @Override
   public void create(final File file) {
     Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
@@ -116,11 +111,6 @@ public final class DbFileService implements FileService {
     this.data.prefixSubMap(userIdKey).clear();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#deleteById(java.lang.String)
-   */
   @Override
   public void deleteById(final String userId, final String fileId) {
     Preconditions.checkNotNull(userId);
@@ -136,11 +126,6 @@ public final class DbFileService implements FileService {
     this.db.commit();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#existsFileWithId(java.lang.String)
-   */
   @Override
   public boolean existsFileWithId(final String userId, final String fileId) {
     Preconditions.checkNotNull(userId);
@@ -149,11 +134,6 @@ public final class DbFileService implements FileService {
     return this.files.containsKey(new Object[] {userId, fileId});
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#getById(java.lang.String)
-   */
   @Override
   public File getById(final String userId, final String fileId) {
     Preconditions.checkNotNull(userId);
@@ -179,12 +159,6 @@ public final class DbFileService implements FileService {
     }
   }
 
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#getFiles()
-   */
   @Override
   public List<File> getFiles(final String userId) {
     return ImmutableList.copyOf(this.files.prefixSubMap(new Object[] {userId}).values());
@@ -208,11 +182,6 @@ public final class DbFileService implements FileService {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#replace(cz.cuni.mff.xrg.odalic.files.File)
-   */
   @Override
   public void replace(final File file) {
     final String userId = file.getOwner().getEmail();

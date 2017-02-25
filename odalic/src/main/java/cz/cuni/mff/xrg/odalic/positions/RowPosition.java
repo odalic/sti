@@ -34,11 +34,6 @@ public final class RowPosition implements Serializable, Comparable<RowPosition> 
     this.index = index;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
-   */
   @Override
   public int compareTo(final RowPosition other) {
     return Integer.compare(this.index, other.index);
@@ -87,11 +82,6 @@ public final class RowPosition implements Serializable, Comparable<RowPosition> 
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "[" + this.index + "]";

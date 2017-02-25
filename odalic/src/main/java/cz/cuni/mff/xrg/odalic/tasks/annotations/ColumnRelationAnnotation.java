@@ -153,11 +153,6 @@ public final class ColumnRelationAnnotation implements Serializable {
     return new ColumnRelationAnnotation(candidatesBuilder.build(), chosenBuilder.build());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ColumnRelationAnnotation [candidates=" + this.candidates + ", chosen=" + this.chosen

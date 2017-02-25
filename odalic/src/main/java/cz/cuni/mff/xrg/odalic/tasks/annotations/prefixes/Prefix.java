@@ -49,11 +49,6 @@ public final class Prefix implements Serializable {
     this.what = what;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object object) {
     if (this == object) {
@@ -89,11 +84,6 @@ public final class Prefix implements Serializable {
     return this.with;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -103,11 +93,6 @@ public final class Prefix implements Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Prefix [with=" + this.with + ", what=" + this.what + "]";

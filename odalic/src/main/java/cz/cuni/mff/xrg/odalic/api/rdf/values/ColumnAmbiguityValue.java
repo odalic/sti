@@ -49,11 +49,6 @@ public final class ColumnAmbiguityValue implements Serializable {
     return new ColumnAmbiguity(this.position.toColumnPosition());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ColumnAmbiguityValue [position=" + this.position + "]";

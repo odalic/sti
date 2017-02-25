@@ -56,11 +56,6 @@ public final class ThrowableMapper implements ExceptionMapper<Throwable> {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see javax.ws.rs.ext.ExceptionMapper#toResponse(java.lang.Throwable)
-   */
   @Override
   public Response toResponse(final Throwable throwable) {
     final StatusType statusType = getHttpStatus(throwable);

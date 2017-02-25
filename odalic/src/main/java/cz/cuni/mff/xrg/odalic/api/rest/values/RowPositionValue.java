@@ -44,11 +44,6 @@ public final class RowPositionValue {
     this.index = index;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "RowPositionValue [index=" + this.index + "]";

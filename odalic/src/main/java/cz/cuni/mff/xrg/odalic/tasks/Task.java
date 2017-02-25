@@ -156,11 +156,6 @@ public final class Task implements Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Task [owner=" + this.owner + ", id=" + this.id + ", description=" + this.description

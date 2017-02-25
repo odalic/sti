@@ -70,11 +70,6 @@ public class ClassificationValue implements Serializable {
     this.position = position;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ClassificationValue [position=" + this.position + ", annotation=" + this.annotation

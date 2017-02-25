@@ -138,11 +138,6 @@ public final class TableColumnValue implements Serializable {
     return this.virtual;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "TableColumnValue [name=" + this.name + ", titles=" + this.titles + ", description="

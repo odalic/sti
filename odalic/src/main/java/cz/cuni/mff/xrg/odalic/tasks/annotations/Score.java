@@ -29,11 +29,6 @@ public final class Score implements Comparable<Score>, Serializable {
     this.value = value;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
-   */
   @Override
   public int compareTo(final Score o) {
     return Double.compare(this.value, o.value);
@@ -84,11 +79,6 @@ public final class Score implements Comparable<Score>, Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Score [value=" + this.value + "]";

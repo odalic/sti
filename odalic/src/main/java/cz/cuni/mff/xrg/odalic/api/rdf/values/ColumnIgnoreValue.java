@@ -47,11 +47,6 @@ public final class ColumnIgnoreValue implements Serializable {
     return new ColumnIgnore(getPosition().toColumnPosition());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ColumnIgnoreValue [position=" + this.position + "]";

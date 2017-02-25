@@ -63,22 +63,12 @@ public class RioBackedRdfExportService implements RdfExportService {
     return this.rdfExporter.export(rdfModel, rdfFormat);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.outputs.rdfexport.RdfExportService#exportToJsonLd(java.lang.String)
-   */
   @Override
   public String exportToJsonLd(final String userId, final String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
     return export(userId, taskId, RDFFormat.JSONLD);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.outputs.rdfexport.RdfExportService#exportToTurtle(java.lang.String)
-   */
   @Override
   public String exportToTurtle(final String userId, final String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {

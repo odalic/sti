@@ -65,11 +65,6 @@ public final class ColumnRelationPositionValue {
     this.second = second;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ColumnRelationPositionValue [first=" + this.first + ", second=" + this.second + "]";

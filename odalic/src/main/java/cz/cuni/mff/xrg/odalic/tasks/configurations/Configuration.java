@@ -76,11 +76,6 @@ public final class Configuration implements Serializable {
     this.statistical = statistical == null ? false : statistical;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -149,11 +144,6 @@ public final class Configuration implements Serializable {
     return this.usedBases;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -174,11 +164,6 @@ public final class Configuration implements Serializable {
     return this.statistical;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Configuration [input=" + this.input + ", feedback=" + this.feedback + ", usedBases="

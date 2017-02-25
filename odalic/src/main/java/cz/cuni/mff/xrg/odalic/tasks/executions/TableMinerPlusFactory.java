@@ -104,11 +104,6 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
         this.properties.getProperty(propertyName));
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.executions.SemanticTableInterpreterFactory#getInterpreters()
-   */
   @Override
   public Map<String, SemanticTableInterpreter> getInterpreters() throws STIException, IOException {
     if (this.interpreters == null) {

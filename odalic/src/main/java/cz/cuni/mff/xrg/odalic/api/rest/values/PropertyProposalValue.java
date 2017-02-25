@@ -141,11 +141,6 @@ public final class PropertyProposalValue implements Serializable {
     this.superProperty = superProperty;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "PropertyProposalValue [label=" + this.label + ", alternativeLabels="

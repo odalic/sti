@@ -54,11 +54,6 @@ public final class ClassProposal implements Serializable {
     this.superClass = superClass;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -110,11 +105,6 @@ public final class ClassProposal implements Serializable {
     return this.superClass;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -123,11 +113,6 @@ public final class ClassProposal implements Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ClassProposal [label=" + this.label + ", alternativeLabels=" + this.alternativeLabels

@@ -61,11 +61,6 @@ public final class PropertyProposal implements Serializable {
     this.range = range;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -131,11 +126,6 @@ public final class PropertyProposal implements Serializable {
     return this.superProperty;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -144,11 +134,6 @@ public final class PropertyProposal implements Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "PropertyProposal [label=" + this.label + ", alternativeLabels=" + this.alternativeLabels

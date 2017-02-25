@@ -65,11 +65,6 @@ public final class MemoryOnlyFileService implements FileService {
     this.utilizingTasks = utilizingTasks;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#create(cz.cuni.mff.xrg.odalic.files.File)
-   */
   @Override
   public void create(final File file) {
     Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
@@ -101,11 +96,6 @@ public final class MemoryOnlyFileService implements FileService {
     this.data.row(userId).clear();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#deleteById(java.lang.String)
-   */
   @Override
   public void deleteById(final String userId, final String fileId) {
     Preconditions.checkNotNull(userId);
@@ -119,11 +109,6 @@ public final class MemoryOnlyFileService implements FileService {
     this.data.remove(userId, file.getLocation());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#existsFileWithId(java.lang.String)
-   */
   @Override
   public boolean existsFileWithId(final String userId, final String fileId) {
     Preconditions.checkNotNull(userId);
@@ -132,11 +117,6 @@ public final class MemoryOnlyFileService implements FileService {
     return this.files.contains(userId, fileId);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#getById(java.lang.String)
-   */
   @Override
   public File getById(final String userId, final String fileId) {
     Preconditions.checkNotNull(userId);
@@ -162,12 +142,6 @@ public final class MemoryOnlyFileService implements FileService {
     }
   }
 
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#getFiles()
-   */
   @Override
   public List<File> getFiles(final String userId) {
     return ImmutableList.copyOf(this.files.row(userId).values());
@@ -190,11 +164,6 @@ public final class MemoryOnlyFileService implements FileService {
         String.format("Some tasks (%s) still refer to this file!", jointUtilizingTasksIds));
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.files.FileService#replace(cz.cuni.mff.xrg.odalic.files.File)
-   */
   @Override
   public void replace(final File file) {
     final String userId = file.getOwner().getEmail();

@@ -73,11 +73,6 @@ public final class ColumnRelationValue implements Serializable {
         this.annotation.toColumnRelationAnnotation());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ColumnRelationValue [position=" + this.position + ", annotation=" + this.annotation

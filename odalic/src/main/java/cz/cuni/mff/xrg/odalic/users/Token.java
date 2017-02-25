@@ -29,11 +29,6 @@ public final class Token {
     this.token = token;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object object) {
     if (this == object) {
@@ -61,11 +56,6 @@ public final class Token {
     return this.token;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -81,11 +71,6 @@ public final class Token {
     this.token = token;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Token [token=" + this.token + "]";

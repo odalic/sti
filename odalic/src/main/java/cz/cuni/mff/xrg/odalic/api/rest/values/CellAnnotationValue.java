@@ -88,11 +88,6 @@ public final class CellAnnotationValue {
     this.chosen = Annotations.copyValues(chosen);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "CellAnnotationValue [candidates=" + this.candidates + ", chosen=" + this.chosen + "]";

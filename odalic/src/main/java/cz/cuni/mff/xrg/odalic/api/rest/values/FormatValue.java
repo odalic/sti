@@ -150,12 +150,6 @@ public final class FormatValue implements Serializable {
     this.quoteCharacter = quoteCharacter;
   }
 
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "FormatValue [charset=" + this.charset + ", delimiter=" + this.delimiter

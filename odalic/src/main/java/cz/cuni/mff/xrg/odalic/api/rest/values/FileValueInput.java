@@ -70,11 +70,6 @@ public final class FileValueInput implements Serializable {
     this.location = location;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "FileValueInput [location=" + this.location + ", format=" + this.format + "]";

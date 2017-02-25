@@ -103,12 +103,6 @@ public final class Format implements Serializable {
     this.lineSeparator = lineSeparator;
   }
 
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -216,12 +210,6 @@ public final class Format implements Serializable {
     return this.quoteCharacter;
   }
 
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -246,12 +234,6 @@ public final class Format implements Serializable {
     return this.emptyLinesIgnored;
   }
 
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "CsvConfiguration [charset=" + this.charset + ", delimiter=" + this.delimiter

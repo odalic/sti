@@ -140,11 +140,6 @@ public final class Reply {
     return Response.status(this.status).entity(this).type(MediaType.APPLICATION_JSON);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Reply [status=" + this.status + ", type=" + this.type + ", payload=" + this.payload

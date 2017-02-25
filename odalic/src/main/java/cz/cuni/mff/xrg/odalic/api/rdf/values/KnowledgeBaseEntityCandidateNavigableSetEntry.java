@@ -56,11 +56,6 @@ public class KnowledgeBaseEntityCandidateNavigableSetEntry {
     this.set = set;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "KnowledgeBaseEntityCandidateNavigableSetEntry [base=" + this.base + ", set=" + this.set

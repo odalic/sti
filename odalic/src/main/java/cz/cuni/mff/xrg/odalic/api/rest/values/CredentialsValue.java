@@ -58,11 +58,6 @@ public final class CredentialsValue {
     this.password = password;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "CredentialsValue [email=" + this.email + ", password=****]";

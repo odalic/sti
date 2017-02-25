@@ -40,11 +40,6 @@ public final class TableSchemaValue implements Serializable {
     return this.columns;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "TableSchemaValue [columns=" + this.columns + "]";

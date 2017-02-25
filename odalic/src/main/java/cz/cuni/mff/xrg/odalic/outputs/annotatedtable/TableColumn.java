@@ -260,11 +260,6 @@ public class TableColumn implements Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "TableColumn [name=" + this.name + ", titles=" + this.titles + ", description="

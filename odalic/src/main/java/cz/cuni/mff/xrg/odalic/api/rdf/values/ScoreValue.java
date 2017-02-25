@@ -46,11 +46,6 @@ public final class ScoreValue implements Serializable {
     return new Score(this.value);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ScoreValue [value=" + this.value + "]";

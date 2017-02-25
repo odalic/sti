@@ -68,11 +68,6 @@ public final class CellAnnotation implements Serializable {
     this.chosen = chosenBuilder.build();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {

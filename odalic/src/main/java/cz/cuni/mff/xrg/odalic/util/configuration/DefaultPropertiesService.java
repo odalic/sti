@@ -57,11 +57,6 @@ public class DefaultPropertiesService implements PropertiesService {
     this(loadFromPath(readConfigurationPath(configurationPathSystemPropertyKey)));
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.util.configuration.ConfigurationService#loadMain()
-   */
   @Override
   public Properties get() {
     return this.properties;

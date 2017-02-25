@@ -115,11 +115,6 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "EntityCandidate [entity=" + this.entity + ", score=" + this.score + "]";

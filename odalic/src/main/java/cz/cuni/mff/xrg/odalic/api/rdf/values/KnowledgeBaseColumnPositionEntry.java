@@ -56,11 +56,6 @@ public class KnowledgeBaseColumnPositionEntry {
     this.value = value;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "KnowledgeBaseColumnPositionEntry [base=" + this.base + ", value=" + this.value + "]";

@@ -60,11 +60,6 @@ public final class ColumnProcessingAnnotationValue {
     this.processingType = processingTypeBuilder.build();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ColumnProcessingAnnotationValue [processingType=" + this.processingType + "]";

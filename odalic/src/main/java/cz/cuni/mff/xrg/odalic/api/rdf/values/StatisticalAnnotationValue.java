@@ -81,11 +81,6 @@ public final class StatisticalAnnotationValue {
         Annotations.toDomain(this.predicate));
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "StatisticalAnnotationValue [component=" + this.component + ", predicate="

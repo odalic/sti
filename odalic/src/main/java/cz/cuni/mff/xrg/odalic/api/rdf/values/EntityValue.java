@@ -134,11 +134,6 @@ public final class EntityValue implements Serializable {
         this.prefix == null ? this.resource : this.tail, this.label);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "EntityValue [resource=" + this.resource + ", label=" + this.label + ", prefixed="

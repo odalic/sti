@@ -50,11 +50,6 @@ public final class ExecutionValue implements Serializable {
     this.draft = draft;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ExecutionValue [draft=" + this.draft + "]";

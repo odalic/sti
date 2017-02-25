@@ -36,11 +36,6 @@ public final class EntityCandidateValue implements Serializable, Comparable<Enti
     this.score = adaptee.getScore();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
-   */
   @Override
   public int compareTo(final EntityCandidateValue other) {
     final int likelihoodComparison = -1 * this.score.compareTo(other.score);
@@ -51,11 +46,6 @@ public final class EntityCandidateValue implements Serializable, Comparable<Enti
     return this.entity.compareTo(other.entity);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -90,11 +80,6 @@ public final class EntityCandidateValue implements Serializable, Comparable<Enti
     return this.score;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -121,11 +106,6 @@ public final class EntityCandidateValue implements Serializable, Comparable<Enti
     this.score = score;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "EntityCandidateValue [entity=" + this.entity + ", score=" + this.score + "]";

@@ -100,11 +100,6 @@ public final class Feedback implements Serializable {
     checkConflicts();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -233,11 +228,6 @@ public final class Feedback implements Serializable {
     return this.subjectColumnPositions;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -289,11 +279,6 @@ public final class Feedback implements Serializable {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Feedback [subjectColumnPositions=" + this.subjectColumnPositions + ", columnIgnores="

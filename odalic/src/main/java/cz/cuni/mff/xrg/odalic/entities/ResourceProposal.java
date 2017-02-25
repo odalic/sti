@@ -56,11 +56,6 @@ public final class ResourceProposal implements Serializable {
     this.classes = ImmutableSet.copyOf(classes);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -112,11 +107,6 @@ public final class ResourceProposal implements Serializable {
     return this.suffix;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -125,11 +115,6 @@ public final class ResourceProposal implements Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ResourceProposal [label=" + this.label + ", alternativeLabels=" + this.alternativeLabels

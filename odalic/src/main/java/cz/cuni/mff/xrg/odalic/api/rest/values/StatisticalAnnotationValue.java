@@ -88,11 +88,6 @@ public final class StatisticalAnnotationValue {
     this.predicate = Annotations.copyValues(predicate);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "StatisticalAnnotationValue [component=" + this.component + ", predicate="

@@ -145,11 +145,6 @@ public final class StatisticalAnnotation implements Serializable {
     return new StatisticalAnnotation(componentBuilder.build(), predicateBuilder.build());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "StatisticalAnnotation [component=" + this.component + ", predicate=" + this.predicate

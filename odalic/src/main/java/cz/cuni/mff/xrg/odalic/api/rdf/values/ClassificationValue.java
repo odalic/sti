@@ -73,11 +73,6 @@ public final class ClassificationValue implements Serializable {
         this.annotation.toHeaderAnnotation());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ClassificationValue [position=" + this.position + ", annotation=" + this.annotation

@@ -50,11 +50,6 @@ public final class CellPosition implements Serializable {
     this.columnPosition = columnPosition;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -112,11 +107,6 @@ public final class CellPosition implements Serializable {
     return this.rowPosition;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -127,11 +117,6 @@ public final class CellPosition implements Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "" + this.rowPosition + this.columnPosition;

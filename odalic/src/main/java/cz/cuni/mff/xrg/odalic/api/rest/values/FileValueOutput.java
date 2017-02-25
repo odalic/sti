@@ -159,11 +159,6 @@ public final class FileValueOutput implements Serializable {
     this.uploaded = uploaded;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "FileValueOutput [owner=" + this.owner + ", id=" + this.id + ", uploaded="

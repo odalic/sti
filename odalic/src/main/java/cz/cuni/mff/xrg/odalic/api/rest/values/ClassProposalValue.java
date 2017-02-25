@@ -105,11 +105,6 @@ public final class ClassProposalValue implements Serializable {
     this.superClass = superClass;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ClassProposalValue [label=" + this.label + ", alternativeLabels="

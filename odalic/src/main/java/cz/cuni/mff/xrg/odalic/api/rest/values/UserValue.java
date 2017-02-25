@@ -59,11 +59,6 @@ public final class UserValue {
     this.role = role;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "UserValue [email=" + this.email + ", role=" + this.role + "]";

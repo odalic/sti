@@ -43,11 +43,6 @@ public final class ColumnPositionValue {
     return new ColumnPosition(this.index);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ColumnPositionValue [index=" + this.index + "]";

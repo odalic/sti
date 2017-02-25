@@ -30,21 +30,11 @@ public final class ListsBackedInputBuilder implements InputBuilder {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.input.InputBuilder#build()
-   */
   @Override
   public Input build() {
     return new ListsBackedInput(this.fileIdentifier, this.headers, this.rows);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.input.InputBuilder#clear()
-   */
   @Override
   public void clear() {
     this.fileIdentifier = null;

@@ -29,11 +29,6 @@ public final class Ambiguity implements Serializable {
     this.position = position;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -63,11 +58,6 @@ public final class Ambiguity implements Serializable {
     return this.position;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -76,11 +66,6 @@ public final class Ambiguity implements Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Ambiguity [position=" + this.position + "]";

@@ -103,11 +103,6 @@ public final class TurtleConfigurablePrefixMappingService implements PrefixMappi
     this(readFromConfiguration(configurationService));
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.annotations.PrefixService#getPrefix(java.lang.String)
-   */
   @Override
   public Prefix getPrefix(final String uri) {
     final String prefix = this.urisToPrefixes.longestMatch(uri);
@@ -118,11 +113,6 @@ public final class TurtleConfigurablePrefixMappingService implements PrefixMappi
     return Prefix.create(prefix, this.prefixesToUris.get(prefix));
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see cz.cuni.mff.xrg.odalic.tasks.annotations.PrefixService#getPrefixToUriMap()
-   */
   @Override
   public Map<String, String> getPrefixToUriMap() {
     return ImmutableMap.copyOf(this.prefixesToUris);

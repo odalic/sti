@@ -106,11 +106,6 @@ public final class ResourceProposalValue implements Serializable {
     this.suffix = suffix;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ResourceProposalValue [label=" + this.label + ", alternativeLabels="

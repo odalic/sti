@@ -47,11 +47,6 @@ public final class AmbiguityValue implements Serializable {
     return new Ambiguity(this.position.toCellPosition());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "AmbiguityValue [position=" + this.position + "]";

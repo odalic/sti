@@ -230,11 +230,6 @@ public final class ResultValue implements Serializable {
     this.warnings = ImmutableList.copyOf(warnings);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "ResultValue [subjectColumnPositions=" + this.subjectColumnPositions

@@ -125,11 +125,6 @@ public class AnnotatedTable implements Serializable {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "AnnotatedTable [context=" + this.context + ", url=" + this.url + ", tableSchema="

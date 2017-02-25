@@ -59,11 +59,6 @@ public final class User implements Serializable, Comparable<User> {
     this.role = role;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
-   */
   @Override
   public int compareTo(final User other) {
     final int emailComparison = this.email.compareTo(other.email);
@@ -79,11 +74,6 @@ public final class User implements Serializable, Comparable<User> {
     return this.role.compareTo(other.role);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(final Object object) {
     if (this == object) {
@@ -129,12 +119,6 @@ public final class User implements Serializable, Comparable<User> {
     return this.role;
   }
 
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -145,11 +129,6 @@ public final class User implements Serializable, Comparable<User> {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "User [email=" + this.email + ", passwordHash=" + this.passwordHash + ", role="

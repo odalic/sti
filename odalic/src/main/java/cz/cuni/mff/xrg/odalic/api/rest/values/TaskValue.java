@@ -117,11 +117,6 @@ public final class TaskValue implements Serializable {
     this.id = id;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "TaskValue [id=" + this.id + ", description=" + this.description + ", created="

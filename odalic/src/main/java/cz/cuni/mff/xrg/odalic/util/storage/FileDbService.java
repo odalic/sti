@@ -47,11 +47,6 @@ public final class FileDbService implements DbService {
     this(initializeDb(propertiesService));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cz.cuni.mff.xrg.odalic.util.storage.DbService#getDb()
-   */
   @Override
   public DB getDb() {
     return this.db;

@@ -73,11 +73,6 @@ public class DataCubeComponentValue implements Serializable {
         this.annotation.toStatisticalAnnotation());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "DataCubeComponentValue [position=" + this.position + ", annotation=" + this.annotation

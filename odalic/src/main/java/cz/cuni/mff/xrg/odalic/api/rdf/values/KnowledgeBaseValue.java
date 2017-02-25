@@ -50,11 +50,6 @@ public final class KnowledgeBaseValue {
     return new KnowledgeBase(this.name);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "KnowledgeBaseValue [name=" + this.name + "]";

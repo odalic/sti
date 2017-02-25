@@ -167,11 +167,6 @@ public final class File implements Serializable {
     return this.cached;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "File [owner=" + this.owner + ", id=" + this.id + ", uploaded=" + this.uploaded
