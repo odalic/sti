@@ -8,12 +8,12 @@ import cz.cuni.mff.xrg.odalic.feedbacks.ColumnIgnore;
 public final class ColumnIgnoreAdapter extends XmlAdapter<ColumnIgnoreValue, ColumnIgnore> {
 
   @Override
-  public ColumnIgnoreValue marshal(ColumnIgnore bound) throws Exception {
+  public ColumnIgnoreValue marshal(final ColumnIgnore bound) throws Exception {
     return new ColumnIgnoreValue(bound);
   }
 
   @Override
-  public ColumnIgnore unmarshal(ColumnIgnoreValue value) throws Exception {
+  public ColumnIgnore unmarshal(final ColumnIgnoreValue value) throws Exception {
     return new ColumnIgnore(value.getPosition());
   }
 

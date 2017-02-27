@@ -9,17 +9,17 @@ import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.FeedbackAdapter;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
-import jersey.repackaged.com.google.common.collect.ImmutableMap;
 
 /**
  * User feedback for the result of annotating algorithm. Expresses also input constraints for the
  * next run.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -43,6 +43,8 @@ public final class Feedback implements Serializable {
 
   private final Set<ColumnRelation> columnRelations;
 
+  private final Set<DataCubeComponent> dataCubeComponents;
+
 
   /**
    * Creates empty feedback.
@@ -55,11 +57,12 @@ public final class Feedback implements Serializable {
     this.columnRelations = ImmutableSet.of();
     this.disambiguations = ImmutableSet.of();
     this.ambiguities = ImmutableSet.of();
+    this.dataCubeComponents = ImmutableSet.of();
   }
 
   /**
    * Creates feedback.
-   * 
+   *
    * @param subjectColumnPositions positions of the subject columns
    * @param columnIgnores ignored columns
    * @param columnAmbiguities columns whose cells will not be disambiguated
@@ -67,11 +70,17 @@ public final class Feedback implements Serializable {
    * @param columnRelations hints with relation between columns
    * @param disambiguations custom disambiguations
    * @param ambiguities hints for cells to be left ambiguous
+   * @param dataCubeComponents dataCubeComponents hints for columns
    */
-  public Feedback(Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions,
-      Set<? extends ColumnIgnore> columnIgnores, Set<? extends ColumnAmbiguity> columnAmbiguities,
-      Set<? extends Classification> classifications, Set<? extends ColumnRelation> columnRelations,
-      Set<? extends Disambiguation> disambiguations, Set<? extends Ambiguity> ambiguities) {
+  public Feedback(
+      final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions,
+      final Set<? extends ColumnIgnore> columnIgnores,
+      final Set<? extends ColumnAmbiguity> columnAmbiguities,
+      final Set<? extends Classification> classifications,
+      final Set<? extends ColumnRelation> columnRelations,
+      final Set<? extends Disambiguation> disambiguations,
+      final Set<? extends Ambiguity> ambiguities,
+      final Set<? extends DataCubeComponent> dataCubeComponents) {
     Preconditions.checkNotNull(columnIgnores);
     Preconditions.checkNotNull(columnAmbiguities);
     Preconditions.checkNotNull(classifications);
@@ -86,87 +95,13 @@ public final class Feedback implements Serializable {
     this.columnRelations = ImmutableSet.copyOf(columnRelations);
     this.disambiguations = ImmutableSet.copyOf(disambiguations);
     this.ambiguities = ImmutableSet.copyOf(ambiguities);
+    this.dataCubeComponents = ImmutableSet.copyOf(dataCubeComponents);
 
-    this.checkConflicts();
+    checkConflicts();
   }
 
-  /**
-   * @return the subject column position
-   */
-  @Nullable
-  public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
-    return subjectColumnPositions;
-  }
-
-  /**
-   * @return ignored columns
-   */
-  public Set<ColumnIgnore> getColumnIgnores() {
-    return columnIgnores;
-  }
-
-  /**
-   * @return ambiguous columns
-   */
-  public Set<ColumnAmbiguity> getColumnAmbiguities() {
-    return columnAmbiguities;
-  }
-
-  /**
-   * @return the classifications
-   */
-  public Set<Classification> getClassifications() {
-    return classifications;
-  }
-
-  /**
-   * @return the column relations
-   */
-  public Set<ColumnRelation> getColumnRelations() {
-    return columnRelations;
-  }
-
-  /**
-   * @return the disambiguations
-   */
-  public Set<Disambiguation> getDisambiguations() {
-    return disambiguations;
-  }
-
-  /**
-   * @return the forced ambiguous cells
-   */
-  public Set<Ambiguity> getAmbiguities() {
-    return ambiguities;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((ambiguities == null) ? 0 : ambiguities.hashCode());
-    result = prime * result + ((classifications == null) ? 0 : classifications.hashCode());
-    result = prime * result + ((columnAmbiguities == null) ? 0 : columnAmbiguities.hashCode());
-    result = prime * result + ((columnIgnores == null) ? 0 : columnIgnores.hashCode());
-    result = prime * result + ((columnRelations == null) ? 0 : columnRelations.hashCode());
-    result = prime * result + ((disambiguations == null) ? 0 : disambiguations.hashCode());
-    result =
-        prime * result + ((subjectColumnPositions == null) ? 0 : subjectColumnPositions.hashCode());
-    return result;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -176,98 +111,180 @@ public final class Feedback implements Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    Feedback other = (Feedback) obj;
-    if (ambiguities == null) {
+    final Feedback other = (Feedback) obj;
+    if (this.ambiguities == null) {
       if (other.ambiguities != null) {
         return false;
       }
-    } else if (!ambiguities.equals(other.ambiguities)) {
+    } else if (!this.ambiguities.equals(other.ambiguities)) {
       return false;
     }
-    if (classifications == null) {
+    if (this.classifications == null) {
       if (other.classifications != null) {
         return false;
       }
-    } else if (!classifications.equals(other.classifications)) {
+    } else if (!this.classifications.equals(other.classifications)) {
       return false;
     }
-    if (columnAmbiguities == null) {
+    if (this.columnAmbiguities == null) {
       if (other.columnAmbiguities != null) {
         return false;
       }
-    } else if (!columnAmbiguities.equals(other.columnAmbiguities)) {
+    } else if (!this.columnAmbiguities.equals(other.columnAmbiguities)) {
       return false;
     }
-    if (columnIgnores == null) {
+    if (this.columnIgnores == null) {
       if (other.columnIgnores != null) {
         return false;
       }
-    } else if (!columnIgnores.equals(other.columnIgnores)) {
+    } else if (!this.columnIgnores.equals(other.columnIgnores)) {
       return false;
     }
-    if (columnRelations == null) {
+    if (this.columnRelations == null) {
       if (other.columnRelations != null) {
         return false;
       }
-    } else if (!columnRelations.equals(other.columnRelations)) {
+    } else if (!this.columnRelations.equals(other.columnRelations)) {
       return false;
     }
-    if (disambiguations == null) {
+    if (this.disambiguations == null) {
       if (other.disambiguations != null) {
         return false;
       }
-    } else if (!disambiguations.equals(other.disambiguations)) {
+    } else if (!this.disambiguations.equals(other.disambiguations)) {
       return false;
     }
-    if (subjectColumnPositions == null) {
+    if (this.dataCubeComponents == null) {
+      if (other.dataCubeComponents != null) {
+        return false;
+      }
+    } else if (!this.dataCubeComponents.equals(other.dataCubeComponents)) {
+      return false;
+    }
+    if (this.subjectColumnPositions == null) {
       if (other.subjectColumnPositions != null) {
         return false;
       }
-    } else if (!subjectColumnPositions.equals(other.subjectColumnPositions)) {
+    } else if (!this.subjectColumnPositions.equals(other.subjectColumnPositions)) {
       return false;
     }
     return true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * @return the forced ambiguous cells
    */
+  public Set<Ambiguity> getAmbiguities() {
+    return this.ambiguities;
+  }
+
+  /**
+   * @return the classifications
+   */
+  public Set<Classification> getClassifications() {
+    return this.classifications;
+  }
+
+  /**
+   * @return ambiguous columns
+   */
+  public Set<ColumnAmbiguity> getColumnAmbiguities() {
+    return this.columnAmbiguities;
+  }
+
+  /**
+   * @return ignored columns
+   */
+  public Set<ColumnIgnore> getColumnIgnores() {
+    return this.columnIgnores;
+  }
+
+  /**
+   * @return the column relations
+   */
+  public Set<ColumnRelation> getColumnRelations() {
+    return this.columnRelations;
+  }
+
+  /**
+   * @return the dataCubeComponents
+   */
+  public Set<DataCubeComponent> getDataCubeComponents() {
+    return this.dataCubeComponents;
+  }
+
+  /**
+   * @return the disambiguations
+   */
+  public Set<Disambiguation> getDisambiguations() {
+    return this.disambiguations;
+  }
+
+  /**
+   * @return the subject column position
+   */
+  @Nullable
+  public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
+    return this.subjectColumnPositions;
+  }
+
   @Override
-  public String toString() {
-    return "Feedback [subjectColumnPositions=" + subjectColumnPositions + ", columnIgnores="
-        + columnIgnores + ", columnAmbiguities=" + columnAmbiguities + ", classifications="
-        + classifications + ", columnRelations=" + columnRelations + ", disambiguations="
-        + disambiguations + ", ambiguities=" + ambiguities + "]";
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + ((this.ambiguities == null) ? 0 : this.ambiguities.hashCode());
+    result =
+        (prime * result) + ((this.classifications == null) ? 0 : this.classifications.hashCode());
+    result = (prime * result)
+        + ((this.columnAmbiguities == null) ? 0 : this.columnAmbiguities.hashCode());
+    result = (prime * result) + ((this.columnIgnores == null) ? 0 : this.columnIgnores.hashCode());
+    result =
+        (prime * result) + ((this.columnRelations == null) ? 0 : this.columnRelations.hashCode());
+    result =
+        (prime * result) + ((this.disambiguations == null) ? 0 : this.disambiguations.hashCode());
+    result = (prime * result)
+        + ((this.dataCubeComponents == null) ? 0 : this.dataCubeComponents.hashCode());
+    result = (prime * result)
+        + ((this.subjectColumnPositions == null) ? 0 : this.subjectColumnPositions.hashCode());
+    return result;
   }
 
   private void checkConflicts() {
     // check the conflict when ignore columns contain the subject column
-    if (subjectColumnPositions == null) {
+    if (this.subjectColumnPositions == null) {
       return;
     }
 
-    for (KnowledgeBase base : subjectColumnPositions.keySet()) {
-      ColumnPosition subjCol = subjectColumnPositions.get(base);
+    for (final KnowledgeBase base : this.subjectColumnPositions.keySet()) {
+      final ColumnPosition subjCol = this.subjectColumnPositions.get(base);
       if (subjCol == null) {
         return;
       }
 
-      if (columnIgnores.stream().anyMatch(e -> e.getPosition().getIndex() == subjCol.getIndex())) {
-        throw new IllegalArgumentException("The column (position: " + subjCol.getIndex() +
-            ") which is ignored does not have to be a subject column.");
+      if (this.columnIgnores.stream()
+          .anyMatch(e -> e.getPosition().getIndex() == subjCol.getIndex())) {
+        throw new IllegalArgumentException("The column (position: " + subjCol.getIndex()
+            + ") which is ignored does not have to be a subject column.");
       }
 
-      for (Classification classification : classifications) {
-        if (classification.getPosition().getIndex() == subjCol.getIndex() &&
-            classification.getAnnotation().getChosen().get(base) != null &&
-            classification.getAnnotation().getChosen().get(base).isEmpty()) {
-          throw new IllegalArgumentException("The column (position: " + subjCol.getIndex() +
-              ") which has empty chosen classification set (for " + base.getName() +
-              " KB) does not have to be a subject column (for that KB).");
+      for (final Classification classification : this.classifications) {
+        if ((classification.getPosition().getIndex() == subjCol.getIndex())
+            && (classification.getAnnotation().getChosen().get(base) != null)
+            && classification.getAnnotation().getChosen().get(base).isEmpty()) {
+          throw new IllegalArgumentException("The column (position: " + subjCol.getIndex()
+              + ") which has empty chosen classification set (for " + base.getName()
+              + " KB) does not have to be a subject column (for that KB).");
         }
       }
     }
+  }
+
+  @Override
+  public String toString() {
+    return "Feedback [subjectColumnPositions=" + this.subjectColumnPositions + ", columnIgnores="
+        + this.columnIgnores + ", columnAmbiguities=" + this.columnAmbiguities
+        + ", classifications=" + this.classifications + ", columnRelations=" + this.columnRelations
+        + ", disambiguations=" + this.disambiguations + ", ambiguities=" + this.ambiguities
+        + ", dataCubeComponents=" + this.dataCubeComponents + "]";
   }
 }

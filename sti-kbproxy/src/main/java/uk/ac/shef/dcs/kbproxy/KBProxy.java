@@ -1,5 +1,7 @@
 package uk.ac.shef.dcs.kbproxy;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
@@ -16,11 +18,16 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -28,7 +35,7 @@ import java.util.stream.Collectors;
 public abstract class KBProxy {
 
   private static final String CACHE_VERSION_ID = "9274dff6-c606-4f5d-8bb5-d528c764e655";
-  private static final String CACHE_VERSION = "1.0.14";
+  private static final String CACHE_VERSION = "1.0.18";
 
   protected SolrCache cacheEntity;
   protected SolrCache cacheConcept;
@@ -55,6 +62,7 @@ public abstract class KBProxy {
   protected final Logger log = LoggerFactory.getLogger(getClass());
 
   protected KBDefinition kbDefinition;
+  protected Map<String, String> prefixToUriMap;
 
   /**
    * @param kbDefinition    the knowledge base definition
@@ -67,11 +75,13 @@ public abstract class KBProxy {
    */
   public KBProxy(KBDefinition kbDefinition,
                  Boolean fuzzyKeywords,
-                 String cachesBasePath) throws IOException {
+                 String cachesBasePath,
+                 Map<String, String> prefixToUriMap) throws IOException {
 
     this.kbDefinition = kbDefinition;
     this.cachesBasePath = cachesBasePath;
     this.fuzzyKeywords = fuzzyKeywords;
+    this.prefixToUriMap = ImmutableMap.copyOf(prefixToUriMap);
   }
 
   public void initializeCaches() throws KBProxyException {
@@ -101,6 +111,22 @@ public abstract class KBProxy {
 
     return cacheServer;
   }
+
+  /**
+   * Fetches domain of the gives resource.
+   * @param uri
+   * @return
+   * @throws KBProxyException
+   */
+  public abstract List<String> getPropertyDomains(String uri) throws KBProxyException;
+
+  /**
+   * Fetches range of the gives resource.
+   * @param uri
+   * @return
+   * @throws KBProxyException
+   */
+  public abstract List<String> getPropertyRanges(String uri) throws KBProxyException;
 
   /**
    * Given a string, fetch candidate entities (resources) from the KB based on a fulltext search.
@@ -134,14 +160,32 @@ public abstract class KBProxy {
    * Candidate entities are those resources for which label or part of the label matches the given content
    * @param content
    * @return
-   * @throws IOException
    */
-  public abstract List<Entity> findEntityCandidates(String content) throws KBProxyException;
+  public KBProxyResult<List<Entity>> findEntityCandidates(String content) {
+    return Do(() -> findEntityCandidatesInternal(content), new ArrayList<Entity>());
+  }
+
+  protected abstract List<Entity> findEntityCandidatesInternal(String content) throws KBProxyException;
 
   /**
    * Given a string,  fetch candidate entities (resources) from the KB that only match certain types
    */
-  public abstract List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws KBProxyException;
+  public KBProxyResult<List<Entity>> findEntityCandidatesOfTypes(String content, String... types) {
+    return Do(() -> findEntityCandidatesOfTypesInternal(content, types), new ArrayList<Entity>());
+  }
+
+  protected abstract List<Entity> findEntityCandidatesOfTypesInternal(String content, String... types) throws KBProxyException;
+
+  /**
+   * Loads the entity from the knowledge base.
+   * @param uri The entity uri.
+   * @return The entity or null if no such uri was found in the knowledge base.
+   */
+  public KBProxyResult<Entity> loadEntity(String uri) {
+    return Do(() -> loadEntityInternal(uri), null);
+  }
+
+  protected abstract Entity loadEntityInternal(String uri) throws KBProxyException;
 
   /**
    * Get attributes of the entity candidate
@@ -149,30 +193,49 @@ public abstract class KBProxy {
    *
    * Note: Certain predicates may be blacklisted.
    */
-  public abstract List<Attribute> findAttributesOfEntities(Entity ec) throws KBProxyException;
+  public KBProxyResult<List<Attribute>> findAttributesOfEntities(Entity ec) {
+    return Do(() -> findAttributesOfEntitiesInternal(ec), new ArrayList<Attribute>());
+  }
+
+  protected abstract List<Attribute> findAttributesOfEntitiesInternal(Entity ec) throws KBProxyException;
 
   /**
    * get attributes of the class
    */
-  public abstract List<Attribute> findAttributesOfClazz(String clazzId) throws KBProxyException;
+  public KBProxyResult<List<Attribute>> findAttributesOfClazz(String clazzId) {
+    return Do(() -> findAttributesOfClazzInternal(clazzId), new ArrayList<Attribute>());
+  }
+
+  protected abstract List<Attribute> findAttributesOfClazzInternal(String clazzId) throws KBProxyException;
 
   /**
    * get attributes of the property
    */
-  public abstract List<Attribute> findAttributesOfProperty(String propertyId) throws KBProxyException;
+  public KBProxyResult<List<Attribute>> findAttributesOfProperty(String propertyId) {
+    return Do(() -> findAttributesOfPropertyInternal(propertyId), new ArrayList<Attribute>());
+  }
+
+  protected abstract List<Attribute> findAttributesOfPropertyInternal(String propertyId) throws KBProxyException;
 
   /**
    * @return the granularity of the class in the KB.
-   * @throws KBProxyException if the method is not supported
    */
-  public double findGranularityOfClazz(String clazz) throws KBProxyException {
+  public KBProxyResult<Double> findGranularityOfClazz(String clazz) {
+    return Do(() -> findGranularityOfClazzInternal(clazz), 0.0);
+  }
+
+  protected double findGranularityOfClazzInternal(String clazz) throws KBProxyException {
     return 0;
   }
 
   /**
    * compute the seamntic similarity between an entity and a class
    */
-  public double findEntityClazzSimilarity(String entity_id, String clazz_url) throws KBProxyException {
+  public KBProxyResult<Double> findEntityClazzSimilarity(String entity_id, String clazz_url) {
+    return Do(() -> findEntityClazzSimilarityInternal(entity_id, clazz_url), 0.0);
+  }
+
+  protected double findEntityClazzSimilarityInternal(String entity_id, String clazz_url) throws KBProxyException {
     return 0;
   }
 
@@ -200,7 +263,7 @@ public abstract class KBProxy {
    * save the computed semantic similarity between the entity and class
    */
   public void cacheEntityClazzSimilarity(String entity_id, String clazz_url, double score, boolean biDirectional,
-                                         boolean commit) throws KBProxyException {
+                                         boolean commit) {
     String query = createSolrCacheQuery_findEntityClazzSimilarity(entity_id, clazz_url);
     try {
       cacheSimilarity.cache(query, score, commit);
@@ -268,16 +331,32 @@ public abstract class KBProxy {
      then cache the results in solr. Again you should call these methods to create a query string, which should be
      passed as the id of the record to be added to solr
      */
-  protected String createSolrCacheQuery_fulltextSearchResources(String pattern, int limit) {
-    return "FULLTEXT_RESOURCE_" + limit + "_" + pattern;
+
+  @SuppressWarnings("unchecked")
+  protected <T> T retrieveCachedValue(String queryCache, SolrCache cache) {
+    T result = null;
+    if (!ALWAYS_CALL_REMOTE_SEARCH_API) {
+      //if cache is not disabled, try to examine the cache first
+      try {
+        log.debug("QUERY (" + cache.getServer().getCoreContainer().getSolrHome() + ", cache load)=" + queryCache);
+
+        result = (T) cache.retrieve(queryCache);
+      } catch (Exception ex) {
+        log.error("Error fetching resource from the cache.", ex);
+      }
+    }
+
+    return result;
   }
 
-  protected String createSolrCacheQuery_fulltextSearchClasses(String pattern, int limit) {
-    return "FULLTEXT_CLASS_" + limit + "_" + pattern;
-  }
-
-  protected String createSolrCacheQuery_fulltextSearchPredicates(String pattern, int limit, String domain, String range) {
-    return "FULLTEXT_PREDICATE_" + limit + "_" + pattern + "_" + domain + "_" + range;
+  void cacheValue(String queryCache, Object value, SolrCache cache) {
+    try {
+      log.debug("QUERY (" + cache.getServer().getCoreContainer().getSolrHome() + ", cache save)=" + queryCache);
+      cache.cache(queryCache, value, AUTO_COMMIT);
+    }
+    catch (Exception ex) {
+      log.error("Error saving resource to the cache.", ex);
+    }
   }
 
   protected String createSolrCacheQuery_findResources(String content, String... types) {
@@ -290,6 +369,14 @@ public abstract class KBProxy {
     }
 
     return builder.toString();
+  }
+
+  protected String createSolrCacheQuery_getPropertyValues(String uri, String propertyUri) {
+    return "GET_PROPERTY_VALUES_" + uri + "_" + propertyUri;
+  }
+
+  protected String createSolrCacheQuery_loadResource(String uri) {
+    return "LOAD_RESOURCE_" + uri;
   }
 
   protected String createSolrCacheQuery_findAttributesOfResource(String resource) {
@@ -346,5 +433,57 @@ public abstract class KBProxy {
       log.error(error, e);
       throw new KBProxyException(error, e);
     }
+  }
+
+  private <ResultType> KBProxyResult<ResultType> Do(Func<ResultType> func, ResultType defaultValue) {
+    try {
+      ResultType result = func.Do();
+      return new KBProxyResult<>(result);
+    }
+    catch (Exception ex) {
+      log.error(ex.getLocalizedMessage(), ex);
+      return new KBProxyResult<>(defaultValue, ex.getLocalizedMessage());
+    }
+  }
+
+  protected <ResultType> ResultType retrieveOrTryExecute(String queryCache, SolrCache cache, Func<ResultType> func) throws KBProxyException {
+    ResultType result = retrieveCachedValue(queryCache, cache);
+
+    if (isNullOrEmpty(result)) {
+      try {
+        result = func.Do();
+
+        if (!isNullOrEmpty(result)) {
+          cacheValue(queryCache, result, cache);
+        }
+      }
+      catch (Exception ex) {
+        throw new KBProxyException("Unexpected error during KB access.", ex);
+      }
+    }
+
+    return result;
+  }
+
+  private boolean isNullOrEmpty(Object obj) {
+    if (obj == null) {
+      return true;
+    }
+
+    if (obj instanceof String) {
+      String objString = (String)obj;
+      return objString.isEmpty();
+    }
+
+    if (obj instanceof List<?>) {
+      List<?> objList = (List<?>)obj;
+      return objList.isEmpty();
+    }
+
+    return false;
+  }
+
+  protected interface Func<Type> {
+    Type Do() throws Exception;
   }
 }

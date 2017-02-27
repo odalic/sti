@@ -8,6 +8,7 @@ import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
+import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 
 import java.util.*;
 
@@ -29,8 +30,8 @@ public class SimilarityComputerManager {
         this.scorer=scorer;
     }
     public Map<String, Double> computeSemanticSimilarity(int threads, Collection<Entity> entities,
-                                                          Collection<Clazz> concepts,
-                                                          boolean biDirectional) throws KBProxyException {
+                                                         Collection<Clazz> concepts,
+                                                         boolean biDirectional, List<String> warnings) {
         Map<String, Double> result = new HashMap<>();
         List<Pair<Entity, Clazz>> pairs = new ArrayList<>();
         for (Entity e : entities) {
@@ -100,6 +101,8 @@ public class SimilarityComputerManager {
                     result.put(key[0] + "," + key[1], e.getValue());
                 }
             }
+
+            warnings.addAll(worker.getWarnings());
         }
         if (useCache && doCommit) {
             try {

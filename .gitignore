@@ -133,3 +133,5 @@ classes/*
 /ui/nbproject/private/
 */.idea/*
 target/*
+
+*/rebel.xml

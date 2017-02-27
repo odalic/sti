@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.outputs.csvexport;
 
@@ -14,8 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.files.File;
+import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.files.formats.FormatService;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
@@ -24,9 +24,9 @@ import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
- * Implementation of {@link RdfExportService} that gets the extended CSV data by adapting present
- * {@link Result}, {@link Input} and {@link Format} instances.
- * 
+ * Implementation of {@link CsvExportService} that produces the extended CSV data by adapting
+ * present {@link Result}, {@link Input} and {@link Format} instances.
+ *
  * @author Václav Brodec
  *
  */
@@ -39,7 +39,7 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
 
   private final ConfigurationService configurationService;
 
-  private final FormatService formatService;
+  private final FileService fileService;
 
   private final ResultToCSVExportAdapter resultToCsvExportAdapter;
 
@@ -48,64 +48,50 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
   @Autowired
   public ResultAdaptingCsvExportService(final ExecutionService executionService,
       final FeedbackService feedbackService, final ConfigurationService configurationService,
-      final FormatService formatService, final ResultToCSVExportAdapter resultToCsvExportAdapter,
+      final FileService fileService, final ResultToCSVExportAdapter resultToCsvExportAdapter,
       final CSVExporter csvExporter) {
     Preconditions.checkNotNull(feedbackService);
     Preconditions.checkNotNull(executionService);
     Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(formatService);
+    Preconditions.checkNotNull(fileService);
     Preconditions.checkNotNull(resultToCsvExportAdapter);
     Preconditions.checkNotNull(csvExporter);
 
     this.executionService = executionService;
     this.feedbackService = feedbackService;
     this.configurationService = configurationService;
-    this.formatService = formatService;
+    this.fileService = fileService;
     this.resultToCsvExportAdapter = resultToCsvExportAdapter;
     this.csvExporter = csvExporter;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * cz.cuni.mff.xrg.odalic.outputs.csvexport.CsvExportService#getExtendedCsvForTaskId(java.lang.
-   * String)
-   */
   @Override
-  public String getExtendedCsvForTaskId(String id)
+  public String getExtendedCsvForTaskId(final String userId, final String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
-    final Input output = getExtendedInputForTaskId(id);
-    final Format originalFormat = getOriginalFormat(id);
+    final Input output = getExtendedInputForTaskId(userId, taskId);
+    final Format originalFormat = getOriginalFormat(userId, taskId);
 
-    final String data = csvExporter.export(output, originalFormat);
+    final String data = this.csvExporter.export(output, originalFormat);
 
     return data;
   }
 
-  private Format getOriginalFormat(String taskId) {
-    final Configuration configuration = configurationService.getForTaskId(taskId);
-    final File file = configuration.getInput();
-    final Format format = formatService.getForFileId(file.getId());
-    return format;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * cz.cuni.mff.xrg.odalic.outputs.csvexport.CsvExportService#getExtendedInputForTaskId(java.lang.
-   * String)
-   */
   @Override
-  public Input getExtendedInputForTaskId(String id)
+  public Input getExtendedInputForTaskId(final String userId, final String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
-    final Result result = executionService.getResultForTaskId(id);
-    final Input input = feedbackService.getInputForTaskId(id);
-    final Configuration configuration = configurationService.getForTaskId(id);
+    final Result result = this.executionService.getResultForTaskId(userId, taskId);
+    final Input input = this.feedbackService.getInputSnapshotForTaskId(userId, taskId);
+    final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
 
-    final Input output = resultToCsvExportAdapter.toCSVExport(result, input, configuration);
+    final Input output = this.resultToCsvExportAdapter.toCSVExport(result, input, configuration);
 
     return output;
+  }
+
+  private Format getOriginalFormat(final String userId, final String taskId) {
+    final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
+    final File file = configuration.getInput();
+    final Format format = this.fileService.getFormatForFileId(userId, file.getId());
+    return format;
   }
 }

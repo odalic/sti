@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.KBProxyResult;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentCellRanker;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.stopping.StoppingCriteria;
@@ -59,7 +60,7 @@ public class LEARNINGPreliminaryColumnClassifier {
      * indexes of cells based on the sampler
      * @throws KBProxyException
      */
-    public Pair<Integer, List<List<Integer>>> runPreliminaryColumnClassifier(Table table, TAnnotation tableAnnotation, int column, Constraints constraints, Integer... skipRows) throws KBProxyException, ClassNotFoundException, STIException {
+    public Pair<Integer, List<List<Integer>>> runPreliminaryColumnClassifier(Table table, TAnnotation tableAnnotation, int column, Constraints constraints, Integer... skipRows) throws ClassNotFoundException, STIException {
         StoppingCriteria stopper = StoppingCriteriaInstantiator.instantiate(stopperClassname, stopperParams);
 
         //1. gather list of strings from this column to be interpreted, rank them (for sampling)
@@ -106,14 +107,20 @@ public class LEARNINGPreliminaryColumnClassifier {
                 }
             }
 
-            List<Pair<Entity, Map<String, Double>>> entityScoresForBlock;
+            DisambiguationResult entityScoresForBlock;
             if (skip) {
-                entityScoresForBlock = toScoreMap(tableAnnotation, blockOfRows, column);
+                entityScoresForBlock = new DisambiguationResult(toScoreMap(tableAnnotation, blockOfRows, column));
             } else {
-                List<Entity> candidates = constraints.getDisambChosenForCell(column, blockOfRows.get(0));
+                EntityResult entityResult = constraints.getDisambChosenForCell(column, blockOfRows.get(0), kbSearch);
+                List<Entity> candidates = entityResult.getResult();
+
+                List<String> warnings = entityResult.getWarnings();
 
                 if (candidates.isEmpty()) {
-                  candidates = kbSearch.findEntityCandidates(sample.getText());
+                  KBProxyResult<List<Entity>> candidatesResult = kbSearch.findEntityCandidates(sample.getText());
+
+                  candidates = candidatesResult.getResult();
+                  candidatesResult.appendWarning(warnings);
                 }
 
                 //do cold start disambiguation
@@ -127,7 +134,7 @@ public class LEARNINGPreliminaryColumnClassifier {
 
             //run algorithm to runPreliminaryColumnClassifier column classification; header annotation scores are updated constantly, but supporting rows are not.
             Map<TColumnHeaderAnnotation, Double> scores=columnClassifier.generateCandidateClazz(
-                    entityScoresForBlock, headerClazzScores, table, blockOfRows, column, totalRows
+                    entityScoresForBlock.getResult(), headerClazzScores, table, blockOfRows, column, totalRows
             );
             headerClazzScores.clear();
             headerClazzScores.addAll(scores.keySet());
@@ -166,7 +173,6 @@ public class LEARNINGPreliminaryColumnClassifier {
                 scoreElements.put(TCellAnnotation.SCORE_FINAL, can.getFinalScore());
                 candidates.add(new Pair<>(ec, scoreElements));
             }
-
         }
         return candidates;
     }

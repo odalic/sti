@@ -5,8 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.KBProxyResult;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
+import uk.ac.shef.dcs.sti.core.model.DisambiguationResult;
 import uk.ac.shef.dcs.sti.core.model.TCellAnnotation;
 import uk.ac.shef.dcs.sti.core.scorer.EntityScorer;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
@@ -33,48 +34,54 @@ public class TCellEntityRanker {
     public void rankCandidateNamedEntities(
             TAnnotation tableAnnotations, Table table,
             int row, int column
-    ) throws KBProxyException {
-        List<Pair<Entity, Map<String, Double>>> scores = score(table, row, column);
+    ) {
+        DisambiguationResult scores = score(table, row, column);
         TCell tcc = table.getContentCell(row, column);
-        TCellAnnotation[] annotations = new TCellAnnotation[scores.size()];
+        TCellAnnotation[] annotations = new TCellAnnotation[scores.getResult().size()];
         int i = 0;
-        for (Pair<Entity, Map<String, Double>> oo : scores) {
+        for (Pair<Entity, Map<String, Double>> oo : scores.getResult()) {
             TCellAnnotation ca = new TCellAnnotation(tcc.getText(), oo.getKey(),
                     oo.getValue().get(TCellAnnotation.SCORE_FINAL), oo.getValue());
             annotations[i] = ca;
             i++;
         }
         tableAnnotations.setContentCellAnnotations(row, column, annotations);
-        //return sorted;
+        tableAnnotations.addContentWarnings(row, column, scores.getWarnings());
     }
 
-    public List<Pair<Entity, Map<String, Double>>> score(Table table,
-                                                         int row, int column
-    ) throws KBProxyException {
+    public DisambiguationResult score(
+            Table table,
+            int row,
+            int column) {
         //do disambiguation scoring
         //LOG.info("\t>> Disambiguation-LEARN, position at (" + entity_row + "," + entity_column + ") candidates=" + candidates.size());
         TCell cell = table.getContentCell(row, column);
-        List<Entity> candidates = kbSearch.findEntityCandidates(cell.getText());
+
+        List<String> warnings = new ArrayList<>();
+        KBProxyResult<List<Entity>> candidatesResult = kbSearch.findEntityCandidates(cell.getText());
+        candidatesResult.appendWarning(warnings);
+
         LOG.info("\t\t>> position at (" + row + "," + column + ") " +
-                cell+" has candidates="+candidates.size());
+                cell+" has candidates="+ candidatesResult.getResult().size());
         //each candidate will have a map containing multiple elements of scores. See SMPAdaptedEntityScorer
         List<Pair<Entity, Map<String, Double>>> disambiguationScores =
                 new ArrayList<>();
-        for (Entity c : candidates) {
+        for (Entity c : candidatesResult.getResult()) {
             //find facts of each entity
             if (c.getAttributes() == null || c.getAttributes().size() == 0) {
-                List<Attribute> facts = kbSearch.findAttributesOfEntities(c);
-                c.setAttributes(facts);
+                KBProxyResult<List<Attribute>> factsResult = kbSearch.findAttributesOfEntities(c);
+                factsResult.appendWarning(warnings);
+                c.setAttributes(factsResult.getResult());
             }
             Map<String, Double> scoreMap = entityScorer.
-                    computeElementScores(c, candidates,
+                    computeElementScores(c, candidatesResult.getResult(),
                             column, row, Collections.singletonList(row),
                             table);
             entityScorer.computeFinal(scoreMap, cell.getText());
             Pair<Entity, Map<String, Double>> entry = new Pair<>(c,scoreMap);
             disambiguationScores.add(entry);
         }
-        return disambiguationScores;
+        return new DisambiguationResult(disambiguationScores, warnings);
     }
 
 

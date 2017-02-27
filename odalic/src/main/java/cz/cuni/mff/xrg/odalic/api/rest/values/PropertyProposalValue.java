@@ -18,7 +18,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 
 /**
  * Domain property {@link PropertyProposal} adapted for the REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -36,42 +36,29 @@ public final class PropertyProposalValue implements Serializable {
 
   private Entity superProperty;
 
-  private Entity domain;
+  private String domain;
 
-  private Entity range;
+  private String range;
 
   public PropertyProposalValue() {
     this.alternativeLabels = ImmutableSortedSet.of();
   }
 
   /**
-   * @param label the label to set
+   * @return the alternative labels
    */
-  public void setLabel(String label) {
-    Preconditions.checkNotNull(label);
-
-    this.label = label;
+  @XmlElement
+  public NavigableSet<String> getAlternativeLabels() {
+    return this.alternativeLabels;
   }
 
   /**
-   * @param alternativeLabels the alternativeLabels to set
+   * @return the domain
    */
-  public void setAlternativeLabels(Set<? extends String> alternativeLabels) {
-    this.alternativeLabels = ImmutableSortedSet.copyOf(alternativeLabels);
-  }
-
-  /**
-   * @param suffix the suffix to set
-   */
-  public void setSuffix(URI suffix) {
-    this.suffix = suffix;
-  }
-
-  /**
-   * @param superProperty the superProperty to set
-   */
-  public void setSuperProperty(Entity superProperty) {
-    this.superProperty = superProperty;
+  @Nullable
+  @XmlElement
+  public String getDomain() {
+    return this.domain;
   }
 
   /**
@@ -80,15 +67,16 @@ public final class PropertyProposalValue implements Serializable {
   @Nullable
   @XmlElement
   public String getLabel() {
-    return label;
+    return this.label;
   }
 
   /**
-   * @return the alternative labels
+   * @return the range
    */
+  @Nullable
   @XmlElement
-  public NavigableSet<String> getAlternativeLabels() {
-    return alternativeLabels;
+  public String getRange() {
+    return this.range;
   }
 
   /**
@@ -97,7 +85,7 @@ public final class PropertyProposalValue implements Serializable {
   @Nullable
   @XmlElement
   public URI getSuffix() {
-    return suffix;
+    return this.suffix;
   }
 
   /**
@@ -106,50 +94,57 @@ public final class PropertyProposalValue implements Serializable {
   @Nullable
   @XmlElement
   public Entity getSuperProperty() {
-    return superProperty;
+    return this.superProperty;
   }
 
   /**
-   * @return the domain
+   * @param alternativeLabels the alternativeLabels to set
    */
-  @Nullable
-  @XmlElement
-  public Entity getDomain() {
-    return domain;
+  public void setAlternativeLabels(final Set<? extends String> alternativeLabels) {
+    this.alternativeLabels = ImmutableSortedSet.copyOf(alternativeLabels);
   }
 
   /**
    * @param domain the domain to set
    */
-  public void setDomain(Entity domain) {
+  public void setDomain(final String domain) {
     this.domain = domain;
   }
 
   /**
-   * @return the range
+   * @param label the label to set
    */
-  @Nullable
-  @XmlElement
-  public Entity getRange() {
-    return range;
+  public void setLabel(final String label) {
+    Preconditions.checkNotNull(label);
+
+    this.label = label;
   }
 
   /**
    * @param range the range to set
    */
-  public void setRange(Entity range) {
+  public void setRange(final String range) {
     this.range = range;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * @param suffix the suffix to set
    */
+  public void setSuffix(final URI suffix) {
+    this.suffix = suffix;
+  }
+
+  /**
+   * @param superProperty the superProperty to set
+   */
+  public void setSuperProperty(final Entity superProperty) {
+    this.superProperty = superProperty;
+  }
+
   @Override
   public String toString() {
-    return "PropertyProposalValue [label=" + label + ", alternativeLabels=" + alternativeLabels
-        + ", suffix=" + suffix + ", superProperty=" + superProperty + ", domain=" + domain
-        + ", range=" + range + "]";
+    return "PropertyProposalValue [label=" + this.label + ", alternativeLabels="
+        + this.alternativeLabels + ", suffix=" + this.suffix + ", superProperty="
+        + this.superProperty + ", domain=" + this.domain + ", range=" + this.range + "]";
   }
 }

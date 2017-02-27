@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.outputs.annotatedtable;
 
@@ -23,7 +23,7 @@ import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 /**
  * Implementation of {@link AnnotatedTableService} that gets the {@link AnnotatedTable} by adapting
  * present {@link Result}, {@link Input} and {@link Configuration} instances.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -39,9 +39,9 @@ public final class ResultAdaptingAnnotatedTableService implements AnnotatedTable
   private final ResultToAnnotatedTableAdapter resultToAnnotatedTableAdapter;
 
   @Autowired
-  public ResultAdaptingAnnotatedTableService(ExecutionService executionService,
-      FeedbackService feedbackService, ConfigurationService configurationService,
-      ResultToAnnotatedTableAdapter resultToAnnotatedTableAdapter) {
+  public ResultAdaptingAnnotatedTableService(final ExecutionService executionService,
+      final FeedbackService feedbackService, final ConfigurationService configurationService,
+      final ResultToAnnotatedTableAdapter resultToAnnotatedTableAdapter) {
     Preconditions.checkNotNull(feedbackService);
     Preconditions.checkNotNull(executionService);
     Preconditions.checkNotNull(configurationService);
@@ -53,21 +53,15 @@ public final class ResultAdaptingAnnotatedTableService implements AnnotatedTable
     this.resultToAnnotatedTableAdapter = resultToAnnotatedTableAdapter;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTableService#getAnnotatedTableForTaskId(
-   * java.lang.String)
-   */
   @Override
-  public AnnotatedTable getAnnotatedTableForTaskId(String id)
-      throws IllegalArgumentException, CancellationException, InterruptedException, ExecutionException, IOException {
-    final Result result = executionService.getResultForTaskId(id);
-    final Input input = feedbackService.getInputForTaskId(id);
-    final Configuration configuration = configurationService.getForTaskId(id);
+  public AnnotatedTable getAnnotatedTableForTaskId(final String userId, final String taskId)
+      throws IllegalArgumentException, CancellationException, InterruptedException,
+      ExecutionException, IOException {
+    final Result result = this.executionService.getResultForTaskId(userId, taskId);
+    final Input input = this.feedbackService.getInputSnapshotForTaskId(userId, taskId);
+    final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
 
-    return resultToAnnotatedTableAdapter.toAnnotatedTable(result, input, configuration);
+    return this.resultToAnnotatedTableAdapter.toAnnotatedTable(result, input, configuration);
   }
 
 }

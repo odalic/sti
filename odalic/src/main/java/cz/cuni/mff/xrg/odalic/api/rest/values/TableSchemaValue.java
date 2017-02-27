@@ -14,37 +14,34 @@ import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.TableSchema;
 
 /**
  * Domain class {@link TableSchema} adapted for REST API.
- * 
+ *
  * @author Josef Janoušek
  *
  */
 @XmlRootElement(name = "tableSchema")
 @JsonInclude(Include.NON_NULL)
 public final class TableSchemaValue implements Serializable {
-  
+
   private static final long serialVersionUID = 6093586476544509692L;
-  
+
   private List<TableColumn> columns;
-  
+
   public TableSchemaValue() {}
-  
-  public TableSchemaValue(TableSchema adaptee) {
+
+  public TableSchemaValue(final TableSchema adaptee) {
     this.columns = adaptee.getColumns();
   }
-  
+
   /**
    * @return the columns
    */
   @XmlElement
   public List<TableColumn> getColumns() {
-    return columns;
+    return this.columns;
   }
-  
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
+
   @Override
   public String toString() {
-    return "TableSchemaValue [columns=" + columns + "]";
+    return "TableSchemaValue [columns=" + this.columns + "]";
   }
 }

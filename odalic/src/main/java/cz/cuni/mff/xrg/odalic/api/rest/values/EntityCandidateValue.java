@@ -16,7 +16,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
  * <p>
  * Domain class {@link EntityCandidate} adapted for REST API.
  * </p>
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -31,65 +31,23 @@ public final class EntityCandidateValue implements Serializable, Comparable<Enti
 
   public EntityCandidateValue() {}
 
-  public EntityCandidateValue(EntityCandidate adaptee) {
-    entity = adaptee.getEntity();
-    score = adaptee.getScore();
+  public EntityCandidateValue(final EntityCandidate adaptee) {
+    this.entity = adaptee.getEntity();
+    this.score = adaptee.getScore();
   }
 
-  /**
-   * @return the entity
-   */
-  @XmlElement
-  @Nullable
-  public Entity getEntity() {
-    return entity;
-  }
-
-  /**
-   * @param entity the entity to set
-   */
-  public void setEntity(Entity entity) {
-    Preconditions.checkNotNull(entity);
-
-    this.entity = entity;
-  }
-
-  /**
-   * @return the score
-   */
-  @XmlElement
-  @Nullable
-  public Score getScore() {
-    return score;
-  }
-
-  /**
-   * @param score the score to set
-   */
-  public void setScore(Score score) {
-    Preconditions.checkNotNull(score);
-
-    this.score = score;
-  } 
-  
-  /* (non-Javadoc)
-   * @see java.lang.Object#hashCode()
-   */
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + new EntityCandidate(entity, score).hashCode();
-    return result;
+  public int compareTo(final EntityCandidateValue other) {
+    final int likelihoodComparison = -1 * this.score.compareTo(other.score);
+    if (likelihoodComparison != 0) {
+      return likelihoodComparison;
+    }
+
+    return this.entity.compareTo(other.entity);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -99,32 +57,57 @@ public final class EntityCandidateValue implements Serializable, Comparable<Enti
     if (getClass() != obj.getClass()) {
       return false;
     }
-    EntityCandidateValue other = (EntityCandidateValue) obj;
-    return new EntityCandidate(entity, score).equals(new EntityCandidate(other.entity, other.score));
+    final EntityCandidateValue other = (EntityCandidateValue) obj;
+    return new EntityCandidate(this.entity, this.score)
+        .equals(new EntityCandidate(other.entity, other.score));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
+  /**
+   * @return the entity
    */
+  @XmlElement
+  @Nullable
+  public Entity getEntity() {
+    return this.entity;
+  }
+
+  /**
+   * @return the score
+   */
+  @XmlElement
+  @Nullable
+  public Score getScore() {
+    return this.score;
+  }
+
   @Override
-  public int compareTo(EntityCandidateValue other) {
-    final int likelihoodComparison = -1 * score.compareTo(other.score);
-    if (likelihoodComparison != 0) {
-      return likelihoodComparison;
-    }
-
-    return entity.compareTo(other.entity);
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + new EntityCandidate(this.entity, this.score).hashCode();
+    return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * @param entity the entity to set
    */
+  public void setEntity(final Entity entity) {
+    Preconditions.checkNotNull(entity);
+
+    this.entity = entity;
+  }
+
+  /**
+   * @param score the score to set
+   */
+  public void setScore(final Score score) {
+    Preconditions.checkNotNull(score);
+
+    this.score = score;
+  }
+
   @Override
   public String toString() {
-    return "EntityCandidateValue [entity=" + entity + ", score=" + score + "]";
+    return "EntityCandidateValue [entity=" + this.entity + ", score=" + this.score + "]";
   }
 }

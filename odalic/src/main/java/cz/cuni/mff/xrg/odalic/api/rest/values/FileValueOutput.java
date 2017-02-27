@@ -10,17 +10,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonDeserializer;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonSerializer;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonDeserializer;
+import cz.cuni.mff.xrg.odalic.users.User;
 
 /**
  * Domain class {@link File} adapted for REST API output.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -29,27 +29,36 @@ public final class FileValueOutput implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
+  private User owner;
+
   private String id;
 
   private Date uploaded;
 
-  private String owner;
-  
   private URL location;
-  
+
   private Format format;
-  
+
   private boolean cached;
 
   public FileValueOutput() {}
-  
-  public FileValueOutput(File adaptee) {
-    id = adaptee.getId();
-    uploaded = adaptee.getUploaded();
-    owner = adaptee.getOwner();
-    location = adaptee.getLocation();
-    format = adaptee.getFormat();
-    cached = adaptee.isCached();
+
+  public FileValueOutput(final File adaptee) {
+    this.owner = adaptee.getOwner();
+    this.id = adaptee.getId();
+    this.uploaded = adaptee.getUploaded();
+    this.location = adaptee.getLocation();
+    this.format = adaptee.getFormat();
+    this.cached = adaptee.isCached();
+  }
+
+  /**
+   * @return the format
+   */
+  @XmlElement
+  @Nullable
+  public Format getFormat() {
+    return this.format;
   }
 
   /**
@@ -58,16 +67,25 @@ public final class FileValueOutput implements Serializable {
   @XmlElement
   @Nullable
   public String getId() {
-    return id;
+    return this.id;
   }
 
   /**
-   * @param id the id to set
+   * @return the location
    */
-  public void setId(String id) {
-    Preconditions.checkNotNull(id);
-    
-    this.id = id;
+  @XmlElement
+  @Nullable
+  public URL getLocation() {
+    return this.location;
+  }
+
+  /**
+   * @return the owner
+   */
+  @XmlElement
+  @Nullable
+  public User getOwner() {
+    return this.owner;
   }
 
   /**
@@ -78,70 +96,7 @@ public final class FileValueOutput implements Serializable {
   @XmlElement
   @Nullable
   public Date getUploaded() {
-    return uploaded;
-  }
-
-  /**
-   * @param uploaded the uploaded to set
-   */
-  public void setUploaded(Date uploaded) {
-    Preconditions.checkNotNull(uploaded);
-    
-    this.uploaded = uploaded;
-  }
-
-  /**
-   * @return the owner
-   */
-  @XmlElement
-  @Nullable
-  public String getOwner() {
-    return owner;
-  }
-
-  /**
-   * @param owner the owner to set
-   */
-  public void setOwner(String owner) {
-    Preconditions.checkNotNull(owner);
-    
-    this.owner = owner;
-  }
-
-  /**
-   * @return the location
-   */
-  @XmlElement
-  @Nullable
-  public URL getLocation() {
-    return location;
-  }
-
-  /**
-   * @param location the location to set
-   */
-  public void setLocation(URL location) {
-    Preconditions.checkNotNull(location);
-    
-    this.location = location;
-  }
-  
-  /**
-   * @return the format
-   */
-  @XmlElement
-  @Nullable
-  public Format getFormat() {
-    return format;
-  }
-
-  /**
-   * @param format the format to set
-   */
-  public void setFormat(Format format) {
-    Preconditions.checkNotNull(format);
-    
-    this.format = format;
+    return this.uploaded;
   }
 
   /**
@@ -149,22 +104,65 @@ public final class FileValueOutput implements Serializable {
    */
   @XmlElement
   public boolean isCached() {
-    return cached;
+    return this.cached;
   }
 
   /**
    * @param cached cached
    */
-  public void setCached(boolean cached) {    
+  public void setCached(final boolean cached) {
     this.cached = cached;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
+  /**
+   * @param format the format to set
    */
+  public void setFormat(final Format format) {
+    Preconditions.checkNotNull(format);
+
+    this.format = format;
+  }
+
+  /**
+   * @param id the id to set
+   */
+  public void setId(final String id) {
+    Preconditions.checkNotNull(id);
+
+    this.id = id;
+  }
+
+  /**
+   * @param location the location to set
+   */
+  public void setLocation(final URL location) {
+    Preconditions.checkNotNull(location);
+
+    this.location = location;
+  }
+
+  /**
+   * @param owner the owner to set
+   */
+  public void setOwner(final User owner) {
+    Preconditions.checkNotNull(owner);
+
+    this.owner = owner;
+  }
+
+  /**
+   * @param uploaded the uploaded to set
+   */
+  public void setUploaded(final Date uploaded) {
+    Preconditions.checkNotNull(uploaded);
+
+    this.uploaded = uploaded;
+  }
+
   @Override
   public String toString() {
-    return "FileValueOutput [id=" + id + ", uploaded=" + uploaded + ", owner=" + owner
-        + ", location=" + location + ", format=" + format + ", cached=" + cached + "]";
+    return "FileValueOutput [owner=" + this.owner + ", id=" + this.id + ", uploaded="
+        + this.uploaded + ", location=" + this.location + ", format=" + this.format + ", cached="
+        + this.cached + "]";
   }
 }

@@ -6,18 +6,15 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.ClassificationValue;
 import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
 
 
-public final class ClassificationAdapter
-    extends XmlAdapter<ClassificationValue, Classification> {
+public final class ClassificationAdapter extends XmlAdapter<ClassificationValue, Classification> {
 
   @Override
-  public ClassificationValue marshal(Classification bound)
-      throws Exception {
+  public ClassificationValue marshal(final Classification bound) throws Exception {
     return new ClassificationValue(bound);
   }
 
   @Override
-  public Classification unmarshal(ClassificationValue value)
-      throws Exception {
+  public Classification unmarshal(final ClassificationValue value) throws Exception {
     return new Classification(value.getPosition(), value.getAnnotation());
   }
 }

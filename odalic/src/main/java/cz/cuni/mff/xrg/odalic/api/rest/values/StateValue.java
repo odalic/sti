@@ -10,7 +10,7 @@ import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
 
 /**
  * Explicit {@link Task} execution state representation for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  * @see ExecutionService
@@ -23,22 +23,22 @@ public enum StateValue {
    * Task is specified, but not yet submitted for execution.
    */
   @XmlEnumValue("READY") READY,
-  
+
   /**
    * Task is submitted for execution, but not done or canceled yet.
    */
   @XmlEnumValue("RUNNING") RUNNING,
-  
+
   /**
    * Task execution has ended with success.
    */
   @XmlEnumValue("SUCCESS") SUCCESS,
-  
+
   /**
    * Task execution has ended with warnings.
    */
   @XmlEnumValue("WARNING") WARNING,
-  
+
   /**
    * Task execution has ended with an error.
    */

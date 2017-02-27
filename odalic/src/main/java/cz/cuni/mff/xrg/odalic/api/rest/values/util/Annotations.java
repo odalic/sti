@@ -3,7 +3,6 @@ package cz.cuni.mff.xrg.odalic.api.rest.values.util;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -17,48 +16,21 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Annotation conversion utilities.
- * 
+ *
  * @author Václav Brodec
  *
  */
 @Immutable
 public final class Annotations {
 
-  private Annotations() {}
-
-  public static Map<KnowledgeBase, NavigableSet<EntityCandidateValue>> toNavigableValues(
-      final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidate>> candidates) {
-    final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidateValue>> candidatesBuilder =
-        ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidate>> entry : candidates
-        .entrySet()) {
-      final KnowledgeBase base = entry.getKey();
-      final NavigableSet<? extends EntityCandidate> baseCandidates = entry.getValue();
-
-      final Stream<EntityCandidateValue> stream =
-          baseCandidates.stream().map(e -> new EntityCandidateValue(e));
-      candidatesBuilder.put(base, ImmutableSortedSet.copyOf(stream.iterator()));
-    }
-    return candidatesBuilder.build();
-  }
-
-  public static Map<KnowledgeBase, Set<EntityCandidateValue>> toValues(
-      final Map<KnowledgeBase, Set<EntityCandidate>> chosen) {
-    final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidateValue>> chosenBuilder =
-        ImmutableMap.builder();
-    for (final Map.Entry<KnowledgeBase, Set<EntityCandidate>> entry : chosen.entrySet()) {
-      final KnowledgeBase base = entry.getKey();
-      final Set<EntityCandidate> baseChosen = entry.getValue();
-
-      final Stream<EntityCandidateValue> stream =
-          baseChosen.stream().map(e -> new EntityCandidateValue(e));
-      chosenBuilder.put(base, ImmutableSet.copyOf(stream.iterator()));
-    }
-    return chosenBuilder.build();
-  }
-
+  /**
+   * Makes a copy of the argument. 
+   * 
+   * @param candidates candidates
+   * @return copied candidates
+   */
   public static Map<KnowledgeBase, NavigableSet<EntityCandidateValue>> copyNavigableValues(
-      Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidateValue>> candidates) {
+      final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidateValue>> candidates) {
     final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidateValue>> candidatesBuilder =
         ImmutableMap.builder();
     for (final Map.Entry<? extends KnowledgeBase, ? extends Set<? extends EntityCandidateValue>> candidateEntry : candidates
@@ -70,8 +42,14 @@ public final class Annotations {
     return candidatesBuilder.build();
   }
 
+  /**
+   * Makes a copy of the argument. 
+   * 
+   * @param chosen chosen
+   * @return copied chosen
+   */
   public static Map<KnowledgeBase, Set<EntityCandidateValue>> copyValues(
-      Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidateValue>> chosen) {
+      final Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidateValue>> chosen) {
     final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidateValue>> chosenBuilder =
         ImmutableMap.builder();
     for (final Map.Entry<? extends KnowledgeBase, ? extends Set<? extends EntityCandidateValue>> chosenEntry : chosen
@@ -82,6 +60,12 @@ public final class Annotations {
     return chosenBuilder.build();
   }
 
+  /**
+   * Converts from values to domain objects.
+   * 
+   * @param chosenValues values
+   * @return domain objects
+   */
   public static Map<KnowledgeBase, Set<EntityCandidate>> toDomain(
       final Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidateValue>> chosenValues) {
     final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> chosenBuilder =
@@ -98,6 +82,12 @@ public final class Annotations {
     return chosen;
   }
 
+  /**
+   * Converts from values to domain objects.
+   * 
+   * @param candidateValues values
+   * @return domain objects
+   */
   public static Map<KnowledgeBase, NavigableSet<EntityCandidate>> toNavigableDomain(
       final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidateValue>> candidateValues) {
     final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidate>> candidatesBuilder =
@@ -113,5 +103,51 @@ public final class Annotations {
     final Map<KnowledgeBase, NavigableSet<EntityCandidate>> candidates = candidatesBuilder.build();
     return candidates;
   }
+
+  /**
+   * Converts from domain objects to values.
+   * 
+   * @param candidates domain objects
+   * @return values
+   */
+  public static Map<KnowledgeBase, NavigableSet<EntityCandidateValue>> toNavigableValues(
+      final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidate>> candidates) {
+    final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidateValue>> candidatesBuilder =
+        ImmutableMap.builder();
+    for (final Map.Entry<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidate>> entry : candidates
+        .entrySet()) {
+      final KnowledgeBase base = entry.getKey();
+      final NavigableSet<? extends EntityCandidate> baseCandidates = entry.getValue();
+
+      final NavigableSet<EntityCandidateValue> values =
+          baseCandidates.stream().map(e -> new EntityCandidateValue(e)).collect(
+              ImmutableSortedSet.toImmutableSortedSet((first, second) -> first.compareTo(second)));
+      candidatesBuilder.put(base, ImmutableSortedSet.copyOf(values));
+    }
+    return candidatesBuilder.build();
+  }
+
+  /**
+   * Converts from domain objects to values.
+   * 
+   * @param chosen domain objects
+   * @return values
+   */
+  public static Map<KnowledgeBase, Set<EntityCandidateValue>> toValues(
+      final Map<KnowledgeBase, Set<EntityCandidate>> chosen) {
+    final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidateValue>> chosenBuilder =
+        ImmutableMap.builder();
+    for (final Map.Entry<KnowledgeBase, Set<EntityCandidate>> entry : chosen.entrySet()) {
+      final KnowledgeBase base = entry.getKey();
+      final Set<EntityCandidate> baseChosen = entry.getValue();
+
+      final Set<EntityCandidateValue> values = baseChosen.stream()
+          .map(e -> new EntityCandidateValue(e)).collect(ImmutableSet.toImmutableSet());
+      chosenBuilder.put(base, values);
+    }
+    return chosenBuilder.build();
+  }
+
+  private Annotations() {}
 
 }

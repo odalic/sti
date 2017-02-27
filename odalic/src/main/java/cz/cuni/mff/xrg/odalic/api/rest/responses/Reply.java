@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cz.cuni.mff.xrg.odalic.api.rest.responses;
 
@@ -26,17 +26,17 @@ import cz.cuni.mff.xrg.odalic.util.URL;
  * A wrapper that either contains the actual data returned by the API implementation or any kind of
  * alternative content, typically a {@link Message}.
  * </p>
- * 
+ *
  * <p>
  * It helps the receiver to determine the correct processing workflow by providing a type of the
  * payload in the type attribute.
  * </p>
- * 
- * 
+ *
+ *
  * @author Václav Brodec
  *
  */
-@XmlRootElement
+@XmlRootElement(name = "reply")
 public final class Reply {
 
   /**
@@ -45,53 +45,49 @@ public final class Reply {
    */
   public static final String STAMP_QUERY_PARAMETER_NAME = "stamp";
 
-  @XmlElement
-  @JsonSerialize(using = StatusTypeJsonSerializer.class)
-  @JsonDeserialize(using = StatusTypeJsonDeserializer.class)
-  private final StatusType status;
-
-  @XmlElement
-  private final ReplyType type;
-
-  @XmlElement
-  private final Object payload;
-
-  @XmlElement
-  @Nullable
-  private final String stamp;
-
   @XmlTransient
-  public static Reply of(StatusType status, ReplyType type, Object payload,
-      @Nullable String stamp) {
-    return new Reply(status, type, payload, stamp);
+  public static Reply data(final StatusType status, final Object data, final UriInfo uriInfo) {
+    return new Reply(status, ReplyType.DATA, data,
+        URL.getStamp(uriInfo, STAMP_QUERY_PARAMETER_NAME));
   }
 
   @XmlTransient
-  public static Reply message(StatusType status, Message message, UriInfo uriInfo) {
+  public static Reply message(final StatusType status, final Message message,
+      final UriInfo uriInfo) {
     return new Reply(status, ReplyType.MESSAGE, message,
         URL.getStamp(uriInfo, STAMP_QUERY_PARAMETER_NAME));
   }
 
   @XmlTransient
-  public static Reply data(StatusType status, Object data, UriInfo uriInfo) {
-    return new Reply(status, ReplyType.DATA, data, URL.getStamp(uriInfo, STAMP_QUERY_PARAMETER_NAME));
+  public static Reply of(final StatusType status, final ReplyType type, final Object payload,
+      @Nullable final String stamp) {
+    return new Reply(status, type, payload, stamp);
   }
+
+  private final StatusType status;
+
+  private final ReplyType type;
+
+  private final Object payload;
+
+  private final String stamp;
 
   /**
    * Creates a REST API response.
-   * 
+   *
    * @param status HTTP status code
    * @param type response type
    * @param payload payload containing the kind of response indicated by the {@link ReplyType}
    * @param stamp a client-set string received in the request that originated this reply
    */
-  public Reply(StatusType status, ReplyType type, Object payload, @Nullable String stamp) {
+  public Reply(final StatusType status, final ReplyType type, final Object payload,
+      @Nullable final String stamp) {
     Preconditions.checkNotNull(type);
     Preconditions.checkNotNull(payload);
 
-    Preconditions
-        .checkArgument(Boolean.logicalXor(type == ReplyType.MESSAGE && payload instanceof Message,
-            type != ReplyType.MESSAGE && !(payload instanceof Message)));
+    Preconditions.checkArgument(
+        Boolean.logicalXor((type == ReplyType.MESSAGE) && (payload instanceof Message),
+            (type != ReplyType.MESSAGE) && !(payload instanceof Message)));
 
     this.status = status;
     this.type = type;
@@ -100,37 +96,38 @@ public final class Reply {
   }
 
   /**
-   * @return the status
-   */
-  public StatusType getStatus() {
-    return status;
-  }
-
-  /**
-   * @return the type
-   */
-  public ReplyType getType() {
-    return type;
-  }
-
-  /**
    * @return the payload
    */
+  @XmlElement
   public Object getPayload() {
-    return payload;
+    return this.payload;
   }
 
   /**
    * @return the stamp
    */
+  @XmlElement
   @Nullable
   public Object getStamp() {
-    return stamp;
+    return this.stamp;
   }
 
-  @XmlTransient
-  public ResponseBuilder toResponseBuilder() {
-    return Response.status(status).entity(this).type(MediaType.APPLICATION_JSON);
+  /**
+   * @return the status
+   */
+  @XmlElement
+  @JsonSerialize(using = StatusTypeJsonSerializer.class)
+  @JsonDeserialize(using = StatusTypeJsonDeserializer.class)
+  public StatusType getStatus() {
+    return this.status;
+  }
+
+  /**
+   * @return the type
+   */
+  @XmlElement
+  public ReplyType getType() {
+    return this.type;
   }
 
   @XmlTransient
@@ -138,14 +135,14 @@ public final class Reply {
     return toResponseBuilder().build();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
+  @XmlTransient
+  public ResponseBuilder toResponseBuilder() {
+    return Response.status(this.status).entity(this).type(MediaType.APPLICATION_JSON);
+  }
+
   @Override
   public String toString() {
-    return "Reply [status=" + status + ", type=" + type + ", payload=" + payload + ", stamp="
-        + stamp + "]";
+    return "Reply [status=" + this.status + ", type=" + this.type + ", payload=" + this.payload
+        + ", stamp=" + this.stamp + "]";
   }
 }

@@ -9,12 +9,12 @@ import cz.cuni.mff.xrg.odalic.tasks.Task;
 public final class TaskAdapter extends XmlAdapter<TaskValue, Task> {
 
   @Override
-  public TaskValue marshal(Task bound) throws Exception {
+  public TaskValue marshal(final Task bound) throws Exception {
     return new TaskValue(bound);
   }
 
   @Override
-  public Task unmarshal(TaskValue value) throws Exception {
+  public Task unmarshal(final TaskValue value) throws Exception {
     throw new UnsupportedOperationException();
   }
 }

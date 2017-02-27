@@ -50,8 +50,8 @@ public class SMPInterpreter extends SemanticTableInterpreter {
         this.messagePassingCalculator = messagePassingCalculator;
     }
 
-    public TAnnotation start(Table table, Constraints constraints) throws STIException {
-      return start(table, true);
+    public TAnnotation start(Table table, boolean statistical, Constraints constraints) throws STIException {
+      return start(table, !statistical);
     }
 
     public TAnnotation start(Table table, boolean relationLearning) throws STIException {

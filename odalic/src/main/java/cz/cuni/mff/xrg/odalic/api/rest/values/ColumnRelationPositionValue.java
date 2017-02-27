@@ -11,7 +11,7 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 
 /**
  * Domain class {@link ColumnRelationPosition} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -19,12 +19,12 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 public final class ColumnRelationPositionValue {
 
   private ColumnPosition first;
-  
+
   private ColumnPosition second;
-  
+
   public ColumnRelationPositionValue() {}
-  
-  public ColumnRelationPositionValue(ColumnRelationPosition adaptee) {
+
+  public ColumnRelationPositionValue(final ColumnRelationPosition adaptee) {
     this.first = adaptee.getFirst();
     this.second = adaptee.getSecond();
   }
@@ -35,16 +35,7 @@ public final class ColumnRelationPositionValue {
   @XmlElement
   @Nullable
   public ColumnPosition getFirst() {
-    return first;
-  }
-
-  /**
-   * @param first the first to set
-   */
-  public void setFirst(ColumnPosition first) {
-    Preconditions.checkNotNull(first);
-    
-    this.first = first;
+    return this.first;
   }
 
   /**
@@ -53,23 +44,29 @@ public final class ColumnRelationPositionValue {
   @XmlElement
   @Nullable
   public ColumnPosition getSecond() {
-    return second;
+    return this.second;
+  }
+
+  /**
+   * @param first the first to set
+   */
+  public void setFirst(final ColumnPosition first) {
+    Preconditions.checkNotNull(first);
+
+    this.first = first;
   }
 
   /**
    * @param second the second to set
    */
-  public void setSecond(ColumnPosition second) {
+  public void setSecond(final ColumnPosition second) {
     Preconditions.checkNotNull(second);
-    
+
     this.second = second;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
-    return "ColumnRelationPositionValue [first=" + first + ", second=" + second + "]";
+    return "ColumnRelationPositionValue [first=" + this.first + ", second=" + this.second + "]";
   }
 }

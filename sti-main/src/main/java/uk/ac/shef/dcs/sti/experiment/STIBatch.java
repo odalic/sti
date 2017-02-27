@@ -250,11 +250,13 @@ public abstract class STIBatch {
 
   void initKB() throws STIException {
     KBProxyFactory factory = new KBProxyFactory();
+
     try {
       kbSearch = factory.createInstances(
           properties.getProperty(PROPERTY_KBSEARCH_PROP_FILE),
           properties.getProperty(PROPERTY_CACHE_FOLDER),
-          properties.getProperty(PROPERTY_HOME)).iterator().next();
+          properties.getProperty(PROPERTY_HOME),
+          null).iterator().next();
       kbSearch.initializeCaches();
     } catch (Exception e) {
       e.printStackTrace();

@@ -28,8 +28,9 @@ public class DBpediaProxy extends SPARQLProxy {
    */
   public DBpediaProxy(KBDefinition kbDefinition,
                       Boolean fuzzyKeywords,
-                      String cachesBasePath) throws IOException, KBProxyException {
-    super(kbDefinition, fuzzyKeywords, cachesBasePath);
+                      String cachesBasePath,
+                      Map<String, String> prefixToUriMap) throws IOException, KBProxyException {
+    super(kbDefinition, fuzzyKeywords, cachesBasePath, prefixToUriMap);
     String ontologyURL = kbDefinition.getOntologyUri();
     if (ontologyURL != null) {
       ontology = loadModel(ontologyURL);

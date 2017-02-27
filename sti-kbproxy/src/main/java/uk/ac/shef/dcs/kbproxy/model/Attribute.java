@@ -10,6 +10,7 @@ import java.io.Serializable;
  */
 public abstract class Attribute implements Serializable{
 
+    protected String relationLabel;
     protected String relationURI;
     protected String value;
     protected String valueURI; //in case 'value' is a resource, define its URI if available
@@ -38,6 +39,14 @@ public abstract class Attribute implements Serializable{
 
     public void setRelationURI(String relationURI) {
         this.relationURI = relationURI;
+    }
+
+    public void setRelationLabel(String value) {
+        this.relationLabel = fixValue(value);
+    }
+
+    public String getRelationLabel() {
+        return relationLabel;
     }
 
     public String getValue() {

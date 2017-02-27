@@ -27,10 +27,21 @@ public class FreebaseSearch extends KBProxy {
 
   public FreebaseSearch(Properties properties,
                         Boolean fuzzyKeywords,
-                        String cachesPath) throws IOException {
-    super(null, fuzzyKeywords, cachesPath);
+                        String cachesPath,
+                        Map<String, String> prefixToUriMap) throws IOException {
+    super(null, fuzzyKeywords, cachesPath, prefixToUriMap);
     searcher = new FreebaseQueryProxy(properties);
     resultFilter = new FreebaseSearchResultFilter(properties.getProperty(KB_SEARCH_RESULT_STOP_LIST));
+  }
+
+  @Override
+  public List<String> getPropertyDomains(String uri) throws KBProxyException{
+    throw new KBProxyException("Getting domains in freebase is not supported.");
+  }
+
+  @Override
+  public List<String> getPropertyRanges(String uri) throws KBProxyException{
+    throw new KBProxyException("Getting ranges in freebase is not supported.");
   }
 
   @Override
@@ -49,22 +60,27 @@ public class FreebaseSearch extends KBProxy {
   }
 
   @Override
-  public List<Entity> findEntityCandidates(String content) throws KBProxyException {
+  public List<Entity> findEntityCandidatesInternal(String content) throws KBProxyException {
     return find_matchingEntitiesForTextAndType(content);
   }
 
   @Override
-  public List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws KBProxyException {
+  public List<Entity> findEntityCandidatesOfTypesInternal(String content, String... types) throws KBProxyException {
     return find_matchingEntitiesForTextAndType(content, types);
   }
 
   @Override
-  public List<Attribute> findAttributesOfEntities(Entity ec) throws KBProxyException {
+  public Entity loadEntityInternal(String uri) throws KBProxyException {
+    throw new KBProxyException("Not supported in Freebase.");
+  }
+
+  @Override
+  public List<Attribute> findAttributesOfEntitiesInternal(Entity ec) throws KBProxyException {
     return find_attributes(ec.getId(), cacheEntity);
   }
 
   @Override
-  public List<Attribute> findAttributesOfProperty(String propertyId) throws KBProxyException {
+  public List<Attribute> findAttributesOfPropertyInternal(String propertyId) throws KBProxyException {
     return find_attributes(propertyId, cacheProperty);
   }
 
@@ -103,7 +119,7 @@ public class FreebaseSearch extends KBProxy {
         log.debug("(FB QUERY =" + topics.size() + " results)");
         for (FreebaseTopic ec : topics) {
           //Next get attributes for each topic
-          List<Attribute> attributes = findAttributesOfEntities(ec);
+          List<Attribute> attributes = findAttributesOfEntitiesInternal(ec);
           ec.setAttributes(attributes);
           for (Attribute attr : attributes) {
             if (attr.getRelationURI().equals(FreebaseEnum.RELATION_HASTYPE.getString()) &&
@@ -179,7 +195,7 @@ public class FreebaseSearch extends KBProxy {
    */
   @Override
   @SuppressWarnings("unchecked")
-  public List<Attribute> findAttributesOfClazz(String clazz) throws KBProxyException {
+  public List<Attribute> findAttributesOfClazzInternal(String clazz) throws KBProxyException {
     //return find_triplesForEntity(conceptId);
     boolean forceQuery = false;
     if (ALWAYS_CALL_REMOTE_TOPICAPI)
@@ -224,7 +240,7 @@ public class FreebaseSearch extends KBProxy {
             String propertyId = f.getValueURI();
             if (propertyId == null) continue;
 
-            List<Attribute> attrOfProperty = findAttributesOfProperty(propertyId);
+            List<Attribute> attrOfProperty = findAttributesOfPropertyInternal(propertyId);
             for (Attribute t : attrOfProperty) {
               if (t.getRelationURI().equals(FreebaseEnum.RELATION_RANGEOFPROPERTY.getString())) {
                 String rangeLabel = t.getValue();
@@ -253,7 +269,7 @@ public class FreebaseSearch extends KBProxy {
   }
 
   @Override
-  public double findGranularityOfClazz(String clazz) throws KBProxyException {
+  public double findGranularityOfClazzInternal(String clazz) throws KBProxyException {
         /*if(clazz.equals("/location/citytown"))
             System.out.println();*/
     String query = createSolrCacheQuery_findGranularityOfClazz(clazz);
@@ -289,7 +305,7 @@ public class FreebaseSearch extends KBProxy {
 
 
   @Override
-  public double findEntityClazzSimilarity(String id1, String clazz_url) {
+  public double findEntityClazzSimilarityInternal(String id1, String clazz_url) {
     String query = createSolrCacheQuery_findEntityClazzSimilarity(id1, clazz_url);
     Object result = null;
     try {

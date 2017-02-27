@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Reporting message with extra details for developers.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -28,27 +28,24 @@ public final class Message {
 
   private static final String LOCATION_HEADER_NAME = "Location";
 
-  @XmlElement
-  private final String text;
-
-  @XmlElement
-  private final List<URI> additionalResources;
-
-  @XmlElement
-  private final String debugContent;
-
   @XmlTransient
-  public static Message of(String text, String debugContent) {
-    return new MessageBuilder().text(text).debugContent(debugContent).build();
-  }
-
-  @XmlTransient
-  public static Message of(String text) {
+  public static Message of(final String text) {
     return new MessageBuilder().text(text).build();
   }
 
-  public Message(@Nullable String text, List<URI> additionalResources,
-      @Nullable String debugContent) {
+  @XmlTransient
+  public static Message of(final String text, final String debugContent) {
+    return new MessageBuilder().text(text).debugContent(debugContent).build();
+  }
+
+  private final String text;
+
+  private final List<URI> additionalResources;
+
+  private final String debugContent;
+
+  public Message(@Nullable final String text, final List<URI> additionalResources,
+      @Nullable final String debugContent) {
     Preconditions.checkNotNull(additionalResources);
 
     this.text = text;
@@ -57,19 +54,11 @@ public final class Message {
   }
 
   /**
-   * @return the text
-   */
-  @XmlElement
-  @Nullable
-  public String getText() {
-    return text;
-  }
-
-  /**
    * @return the additional resources
    */
+  @XmlElement
   public List<URI> getAdditionalResources() {
-    return additionalResources;
+    return this.additionalResources;
   }
 
   /**
@@ -78,34 +67,28 @@ public final class Message {
   @XmlElement
   @Nullable
   public String getDebugContent() {
-    return debugContent;
+    return this.debugContent;
   }
 
   /**
-   * Utility method that wraps the message into a JSON response builder and assigns it the provided
-   * {@link StatusType}.
-   * 
-   * @param statusType status type
-   * @param uriInfo request URI information
-   * @return a {@link ReplyBuilder}
+   * @return the text
    */
-  @XmlTransient
-  public ResponseBuilder toResponseBuilder(StatusType statusType, UriInfo uriInfo) {
-    Preconditions.checkNotNull(statusType);
-
-    return Reply.message(statusType, this, uriInfo).toResponseBuilder();
+  @XmlElement
+  @Nullable
+  public String getText() {
+    return this.text;
   }
 
   /**
    * Utility method that wraps the message into a JSON response and assigns it the provided
    * {@link StatusType}.
-   * 
+   *
    * @param statusType status type
-   * @param UriInfo request URI information
+   * @param uriInfo request URI information
    * @return a {@link Reply}
    */
   @XmlTransient
-  public Response toResponse(StatusType statusType, UriInfo uriInfo) {
+  public Response toResponse(final StatusType statusType, final UriInfo uriInfo) {
     Preconditions.checkNotNull(statusType);
 
     return Reply.message(statusType, this, uriInfo).toResponse();
@@ -114,17 +97,39 @@ public final class Message {
   /**
    * Utility method that wraps the message into a JSON response and assigns it the provided
    * {@link StatusType} and location header content.
-   * 
+   *
    * @param statusType status type
    * @param location location header content
-   * @param UriInfo request URI information
+   * @param uriInfo request URI information
    * @return a {@link Reply}
    */
   @XmlTransient
-  public Response toResponse(StatusType statusType, URL location, UriInfo uriInfo) {
+  public Response toResponse(final StatusType statusType, final URL location,
+      final UriInfo uriInfo) {
     Preconditions.checkNotNull(statusType);
     Preconditions.checkNotNull(location);
 
     return toResponseBuilder(statusType, uriInfo).header(LOCATION_HEADER_NAME, location).build();
+  }
+
+  /**
+   * Utility method that wraps the message into a JSON response builder and assigns it the provided
+   * {@link StatusType}.
+   *
+   * @param statusType status type
+   * @param uriInfo request URI information
+   * @return a {@link ResponseBuilder}
+   */
+  @XmlTransient
+  public ResponseBuilder toResponseBuilder(final StatusType statusType, final UriInfo uriInfo) {
+    Preconditions.checkNotNull(statusType);
+
+    return Reply.message(statusType, this, uriInfo).toResponseBuilder();
+  }
+
+  @Override
+  public String toString() {
+    return "Message [text=" + this.text + ", additionalResources=" + this.additionalResources
+        + ", debugContent=" + this.debugContent + "]";
   }
 }

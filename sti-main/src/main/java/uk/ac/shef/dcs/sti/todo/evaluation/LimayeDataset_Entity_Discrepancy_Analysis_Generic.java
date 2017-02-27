@@ -230,7 +230,7 @@ public class LimayeDataset_Entity_Discrepancy_Analysis_Generic {
             String gs_entity_annotation_folder,
             String out_folder,
             FreebaseSearch searcher,
-            Map<String, String> result_annotation_folders_to_consider) throws IOException, KBProxyException, ParserConfigurationException, SAXException {
+            Map<String, String> result_annotation_folders_to_consider) throws IOException, ParserConfigurationException, SAXException {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -325,7 +325,7 @@ public class LimayeDataset_Entity_Discrepancy_Analysis_Generic {
                     line.append("\t" + reference_entity_annotation_folder_identifier + "=").
                             append(reference_entity_annotation + "|").append(
                             extractName(
-                                    searcher.findAttributesOfEntities(new Entity(reference_entity_annotation, reference_entity_annotation)))
+                                    searcher.findAttributesOfEntities(new Entity(reference_entity_annotation, reference_entity_annotation)).getResult())
                     );
 
                     for (Map.Entry<String, Map<String, String>> e : map_method_id_to_entity_annotations.entrySet()) {
@@ -341,7 +341,7 @@ public class LimayeDataset_Entity_Discrepancy_Analysis_Generic {
                             line.append("\t").append(methodKey).append("=").append(ann).append("|null");
                         } else {
                             line.append("\t").append(methodKey).append("=").append(ann).append("|").append(
-                                    extractName(searcher.findAttributesOfEntities(new Entity(ann, ann)))
+                                    extractName(searcher.findAttributesOfEntities(new Entity(ann, ann)).getResult())
 
                             );
                         }

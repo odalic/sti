@@ -9,12 +9,12 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 public final class ConfigurationAdapter extends XmlAdapter<ConfigurationValue, Configuration> {
 
   @Override
-  public ConfigurationValue marshal(Configuration bound) throws Exception {
+  public ConfigurationValue marshal(final Configuration bound) throws Exception {
     return new ConfigurationValue(bound);
   }
 
   @Override
-  public Configuration unmarshal(ConfigurationValue value) throws Exception {
+  public Configuration unmarshal(final ConfigurationValue value) throws Exception {
     throw new UnsupportedOperationException();
   }
 }

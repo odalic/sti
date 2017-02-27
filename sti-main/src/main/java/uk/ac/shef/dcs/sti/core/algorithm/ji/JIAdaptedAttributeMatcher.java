@@ -4,6 +4,7 @@ import org.simmetrics.StringMetric;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.KBProxyResult;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Resource;
 import uk.ac.shef.dcs.sti.core.scorer.AttributeValueMatcher;
@@ -36,6 +37,16 @@ public class JIAdaptedAttributeMatcher extends AttributeValueMatcher {
             this.objectAnnotations = objectAnnotations;
             this.score = score;
             this.attribute = attribute;
+        }
+    }
+
+    class MatchResults {
+        public List<MatchResult> results;
+        public List<String> warnings;
+
+        public MatchResults(List<MatchResult> results, List<String> warnings) {
+            this.results = results;
+            this.warnings = warnings;
         }
     }
 
@@ -91,10 +102,11 @@ public class JIAdaptedAttributeMatcher extends AttributeValueMatcher {
     }//if block checking whether the potential subject-object cell pairs are valid
 
 
-    protected List<MatchResult> matchColumnAnnotations(List<TColumnHeaderAnnotation> subjectColumnClazz,
+    protected MatchResults matchColumnAnnotations(List<TColumnHeaderAnnotation> subjectColumnClazz,
                                                        List<TColumnHeaderAnnotation> objectColumnAnnotations,
                                                        DataTypeClassifier.DataType objectColumnDataType,
-                                                       KBProxy kbSearch) throws KBProxyException {
+                                                       KBProxy kbSearch) {
+        List<String> warnings = new ArrayList<>();
         List<MatchResult> output = new ArrayList<>();
         List<Resource> objectColumnClazz = new ArrayList<>();
         for (TColumnHeaderAnnotation c : objectColumnAnnotations)
@@ -103,7 +115,11 @@ public class JIAdaptedAttributeMatcher extends AttributeValueMatcher {
         if (subjectColumnClazz.size() > 0 && objectColumnAnnotations.size() > 0) {
             for (int s = 0; s < subjectColumnClazz.size(); s++) {
                 TColumnHeaderAnnotation sbjColumnAnnotation = subjectColumnClazz.get(s);
-                List<Attribute> sbjClazzAttributes = kbSearch.findAttributesOfClazz(sbjColumnAnnotation.getAnnotation().getId());
+                KBProxyResult<List<Attribute>> sbjClazzAttributesResult = kbSearch.findAttributesOfClazz(sbjColumnAnnotation.getAnnotation().getId());
+
+                List<Attribute> sbjClazzAttributes = sbjClazzAttributesResult.getResult();
+                sbjClazzAttributesResult.appendWarning(warnings);
+
                 Map<Integer, DataTypeClassifier.DataType> sbjClazzAttrValueDataTypes = classifyAttributeValueDataType(
                         sbjClazzAttributes
                 );
@@ -130,7 +146,7 @@ public class JIAdaptedAttributeMatcher extends AttributeValueMatcher {
                 }
             }//each subjectNE
         }//if block checking whether the potential subject-object cell pairs are valid
-        return output;
+        return new MatchResults(output, warnings);
     }
 
 

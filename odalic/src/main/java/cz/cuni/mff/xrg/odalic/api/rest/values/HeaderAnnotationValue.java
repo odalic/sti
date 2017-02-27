@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import com.google.common.collect.ImmutableMap;
 
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.EntityCandidateValueNavigableSetDeserializer;
@@ -25,7 +24,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
  * <p>
  * Domain class {@link HeaderAnnotation} adapted for REST API.
  * </p>
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -37,14 +36,11 @@ public final class HeaderAnnotationValue {
   private Map<KnowledgeBase, Set<EntityCandidateValue>> chosen;
 
   public HeaderAnnotationValue() {
-    candidates = ImmutableMap.of();
-    chosen = ImmutableMap.of();
+    this.candidates = ImmutableMap.of();
+    this.chosen = ImmutableMap.of();
   }
 
-  /**
-   * @param entities
-   */
-  public HeaderAnnotationValue(HeaderAnnotation adaptee) {
+  public HeaderAnnotationValue(final HeaderAnnotation adaptee) {
     this.candidates = Annotations.toNavigableValues(adaptee.getCandidates());
     this.chosen = Annotations.toValues(adaptee.getChosen());
   }
@@ -58,15 +54,7 @@ public final class HeaderAnnotationValue {
   @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class,
       contentUsing = EntityCandidateValueSetSerializer.class)
   public Map<KnowledgeBase, NavigableSet<EntityCandidateValue>> getCandidates() {
-    return candidates;
-  }
-
-  /**
-   * @param candidates the candidates to set
-   */
-  public void setCandidates(
-      Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidateValue>> candidates) {
-    this.candidates = Annotations.copyNavigableValues(candidates);
+    return this.candidates;
   }
 
   /**
@@ -78,24 +66,27 @@ public final class HeaderAnnotationValue {
   @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class,
       contentUsing = EntityCandidateValueSetSerializer.class)
   public Map<KnowledgeBase, Set<EntityCandidateValue>> getChosen() {
-    return chosen;
+    return this.chosen;
+  }
+
+  /**
+   * @param candidates the candidates to set
+   */
+  public void setCandidates(
+      final Map<? extends KnowledgeBase, ? extends NavigableSet<? extends EntityCandidateValue>> candidates) {
+    this.candidates = Annotations.copyNavigableValues(candidates);
   }
 
   /**
    * @param chosen the chosen to set
    */
   public void setChosen(
-      Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidateValue>> chosen) {
+      final Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidateValue>> chosen) {
     this.chosen = Annotations.copyValues(chosen);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
-    return "HeaderAnnotationValue [candidates=" + candidates + ", chosen=" + chosen + "]";
+    return "HeaderAnnotationValue [candidates=" + this.candidates + ", chosen=" + this.chosen + "]";
   }
 }

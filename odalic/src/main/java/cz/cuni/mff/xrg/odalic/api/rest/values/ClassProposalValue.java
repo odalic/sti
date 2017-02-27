@@ -18,7 +18,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 
 /**
  * Domain class {@link ClassProposal} adapted for the REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -41,33 +41,11 @@ public final class ClassProposalValue implements Serializable {
   }
 
   /**
-   * @param label the label to set
+   * @return the alternative labels
    */
-  public void setLabel(String label) {
-    Preconditions.checkNotNull(label);
-    
-    this.label = label;
-  }
-
-  /**
-   * @param alternativeLabels the alternativeLabels to set
-   */
-  public void setAlternativeLabels(Set<? extends String> alternativeLabels) {
-    this.alternativeLabels = ImmutableSortedSet.copyOf(alternativeLabels);
-  }
-
-  /**
-   * @param suffix the suffix to set
-   */
-  public void setSuffix(URI suffix) {
-    this.suffix = suffix;
-  }
-
-  /**
-   * @param superClass the superClass to set
-   */
-  public void setSuperClass(Entity superClass) {
-    this.superClass = superClass;
+  @XmlElement
+  public NavigableSet<String> getAlternativeLabels() {
+    return this.alternativeLabels;
   }
 
   /**
@@ -76,15 +54,7 @@ public final class ClassProposalValue implements Serializable {
   @Nullable
   @XmlElement
   public String getLabel() {
-    return label;
-  }
-
-  /**
-   * @return the alternative labels
-   */
-  @XmlElement
-  public NavigableSet<String> getAlternativeLabels() {
-    return alternativeLabels;
+    return this.label;
   }
 
   /**
@@ -93,7 +63,7 @@ public final class ClassProposalValue implements Serializable {
   @Nullable
   @XmlElement
   public URI getSuffix() {
-    return suffix;
+    return this.suffix;
   }
 
   /**
@@ -102,15 +72,43 @@ public final class ClassProposalValue implements Serializable {
   @Nullable
   @XmlElement
   public Entity getSuperClass() {
-    return superClass;
+    return this.superClass;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
+  /**
+   * @param alternativeLabels the alternativeLabels to set
    */
+  public void setAlternativeLabels(final Set<? extends String> alternativeLabels) {
+    this.alternativeLabels = ImmutableSortedSet.copyOf(alternativeLabels);
+  }
+
+  /**
+   * @param label the label to set
+   */
+  public void setLabel(final String label) {
+    Preconditions.checkNotNull(label);
+
+    this.label = label;
+  }
+
+  /**
+   * @param suffix the suffix to set
+   */
+  public void setSuffix(final URI suffix) {
+    this.suffix = suffix;
+  }
+
+  /**
+   * @param superClass the superClass to set
+   */
+  public void setSuperClass(final Entity superClass) {
+    this.superClass = superClass;
+  }
+
   @Override
   public String toString() {
-    return "ClassProposalValue [label=" + label + ", alternativeLabels=" + alternativeLabels
-        + ", suffix=" + suffix + ", superClass=" + superClass + "]";
+    return "ClassProposalValue [label=" + this.label + ", alternativeLabels="
+        + this.alternativeLabels + ", suffix=" + this.suffix + ", superClass=" + this.superClass
+        + "]";
   }
 }

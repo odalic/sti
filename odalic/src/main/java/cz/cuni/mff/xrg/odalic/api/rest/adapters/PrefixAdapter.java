@@ -9,12 +9,12 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
 public final class PrefixAdapter extends XmlAdapter<PrefixValue, Prefix> {
 
   @Override
-  public PrefixValue marshal(Prefix bound) throws Exception {
+  public PrefixValue marshal(final Prefix bound) throws Exception {
     return new PrefixValue(bound);
   }
 
   @Override
-  public Prefix unmarshal(PrefixValue value) throws Exception {
+  public Prefix unmarshal(final PrefixValue value) throws Exception {
     return Prefix.create(value.getWith(), value.getWhat());
   }
 }

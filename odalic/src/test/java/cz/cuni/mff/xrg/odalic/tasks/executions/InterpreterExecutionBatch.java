@@ -1,18 +1,15 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Paths;
-
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
 import cz.cuni.mff.xrg.odalic.outputs.csvexport.CSVExportTest;
 import cz.cuni.mff.xrg.odalic.outputs.rdfexport.RDFExportTest;
-import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
@@ -27,44 +24,33 @@ public class InterpreterExecutionBatch {
    * @param args command line arguments
    * 
    * @author Josef Janoušek
-   * @throws IOException 
-   * @throws FileNotFoundException 
    * 
    */
-  public static void main(String[] args) throws FileNotFoundException, IOException {
+  public static void main(String[] args) {
 
     final String propertyFilePath = args[0];
     final String testInputFilePath = args[1];
 
-    // Core settings
-    final Task task = CoreExecutionBatch.testCoreSettings(Paths.get(testInputFilePath));
-
-    if (task == null) {
-      log.warn("Task was not set correctly, so execution cannot be launched.");
-      return;
-    }
-
     // Core execution
-    final Result odalicResult = CoreExecutionBatch.testCoreExecution(propertyFilePath, task);
+    final CoreSnapshot coreSnapshot = CoreExecutionBatch.testCoreExecution(propertyFilePath, testInputFilePath);
 
-    if (odalicResult == null) {
+    if (coreSnapshot == null) {
       log.warn("Result of core algorithm is null, so exports cannot be launched.");
       return;
     }
 
     // settings for export
-    final Input input = CoreExecutionBatch.getInput();
-    final Configuration config = task.getConfiguration();
     final String baseExportPath = FilenameUtils.getFullPath(testInputFilePath)
         + FilenameUtils.getBaseName(testInputFilePath) + "-export";
+    final KnowledgeBaseProxyFactory kbf = CoreExecutionBatch.getKnowledgeBaseProxyFactory();
 
     // JSON export
-    AnnotatedTable annotatedTable = CSVExportTest.testExportToAnnotatedTable(odalicResult, input,
-        config, baseExportPath + ".json");
+    AnnotatedTable annotatedTable = CSVExportTest.testExportToAnnotatedTable(coreSnapshot.getResult(),
+        coreSnapshot.getInput(), coreSnapshot.getConfiguration(), baseExportPath + ".json", kbf);
 
     // CSV export
-    Input extendedInput =
-        CSVExportTest.testExportToCSVFile(odalicResult, input, config, baseExportPath + ".csv");
+    Input extendedInput = CSVExportTest.testExportToCSVFile(coreSnapshot.getResult(),
+        coreSnapshot.getInput(), coreSnapshot.getConfiguration(), baseExportPath + ".csv", kbf);
 
     // RDF export
     if (annotatedTable == null || extendedInput == null) {
@@ -72,5 +58,49 @@ public class InterpreterExecutionBatch {
       return;
     }
     RDFExportTest.testExportToRDFFile(annotatedTable, extendedInput, baseExportPath + ".rdf");
+  }
+
+  public static final class CoreSnapshot {
+    private final Result result;
+
+    private final Input input;
+
+    private final Configuration configuration;
+
+    public CoreSnapshot(final Result result, final Input input, final Configuration configuration) {
+      Preconditions.checkNotNull(result);
+      Preconditions.checkNotNull(input);
+      Preconditions.checkNotNull(configuration);
+
+      this.input = input;
+      this.result = result;
+      this.configuration = configuration;
+    }
+
+    /**
+     * @return the result
+     */
+    public Result getResult() {
+      return result;
+    }
+
+    /**
+     * @return the input
+     */
+    public Input getInput() {
+      return input;
+    }
+
+    /**
+     * @return the configuration
+     */
+    public Configuration getConfiguration() {
+      return configuration;
+    }
+
+    @Override
+    public String toString() {
+      return "CoreSnapshot [result=" + result + ", input=" + input + ", configuration=" + configuration + "]";
+    }
   }
 }

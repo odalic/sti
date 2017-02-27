@@ -8,16 +8,16 @@ import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.ConfigurationAdapter;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
-import jersey.repackaged.com.google.common.collect.ImmutableSet;
 
 /**
  * Task configuration.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -41,27 +41,31 @@ public final class Configuration implements Serializable {
   private final KnowledgeBase primaryBase;
 
   private final int rowsLimit;
+
+  private final boolean statistical;
+
   /**
    * Creates configuration with provided feedback, which serves as hint for the processing
    * algorithm.
-   * 
+   *
    * @param input input specification
    * @param usedBases bases selected for the task
    * @param primaryBase primary knowledge base
    * @param feedback constraints for the algorithm, when {@code null}, a default empty
    *        {@link Feedback} is used
    * @param rowsLimit maximum number of rows to let the algorithm process
-   * 
+   * @param statistical true for processing of statistical data
+   *
    * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number or zero
    */
   public Configuration(final File input, final Set<? extends KnowledgeBase> usedBases,
       final KnowledgeBase primaryBase, final @Nullable Feedback feedback,
-      @Nullable final Integer rowsLimit) {
+      @Nullable final Integer rowsLimit, @Nullable final Boolean statistical) {
     Preconditions.checkNotNull(input);
     Preconditions.checkNotNull(usedBases);
     Preconditions.checkNotNull(primaryBase);
 
-    Preconditions.checkArgument(rowsLimit == null || rowsLimit > 0);
+    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0));
     Preconditions.checkArgument(usedBases.contains(primaryBase));
 
     this.input = input;
@@ -69,67 +73,11 @@ public final class Configuration implements Serializable {
     this.primaryBase = primaryBase;
     this.feedback = feedback == null ? new Feedback() : feedback;
     this.rowsLimit = rowsLimit == null ? MAXIMUM_ROWS_LIMIT : rowsLimit;
+    this.statistical = statistical == null ? false : statistical;
   }
 
-  /**
-   * @return the input
-   */
-  public File getInput() {
-    return input;
-  }
-
-  /**
-   * @return the feedback
-   */
-  public Feedback getFeedback() {
-    return feedback;
-  }
-
-  /**
-   * @return the bases selected for the task
-   */
-  public Set<KnowledgeBase> getUsedBases() {
-    return usedBases;
-  }
-
-  /**
-   * @return the primary knowledge base
-   */
-  public KnowledgeBase getPrimaryBase() {
-    return primaryBase;
-  }
-
-  /**
-   * @return the maximum number of rows for the algorithm to process
-   */
-  public int getRowsLimit() {
-    return rowsLimit;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + feedback.hashCode();
-    result = prime * result + input.hashCode();
-    result = prime * result + usedBases.hashCode();
-    result = prime * result + primaryBase.hashCode();
-    result = prime * result + rowsLimit;
-    return result;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -139,33 +87,87 @@ public final class Configuration implements Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    Configuration other = (Configuration) obj;
-    if (!feedback.equals(other.feedback)) {
+    final Configuration other = (Configuration) obj;
+    if (!this.feedback.equals(other.feedback)) {
       return false;
     }
-    if (!input.equals(other.input)) {
+    if (!this.input.equals(other.input)) {
       return false;
     }
-    if (!usedBases.equals(other.usedBases)) {
+    if (!this.usedBases.equals(other.usedBases)) {
       return false;
     }
-    if (!primaryBase.equals(other.primaryBase)) {
+    if (!this.primaryBase.equals(other.primaryBase)) {
       return false;
     }
-    if (rowsLimit != other.rowsLimit) {
+    if (this.rowsLimit != other.rowsLimit) {
+      return false;
+    }
+    if (this.statistical != other.statistical) {
       return false;
     }
     return true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * @return the feedback
    */
+  public Feedback getFeedback() {
+    return this.feedback;
+  }
+
+  /**
+   * @return the input
+   */
+  public File getInput() {
+    return this.input;
+  }
+
+  /**
+   * @return the primary knowledge base
+   */
+  public KnowledgeBase getPrimaryBase() {
+    return this.primaryBase;
+  }
+
+  /**
+   * @return the maximum number of rows for the algorithm to process
+   */
+  public int getRowsLimit() {
+    return this.rowsLimit;
+  }
+
+  /**
+   * @return the bases selected for the task
+   */
+  public Set<KnowledgeBase> getUsedBases() {
+    return this.usedBases;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + this.feedback.hashCode();
+    result = (prime * result) + this.input.hashCode();
+    result = (prime * result) + this.usedBases.hashCode();
+    result = (prime * result) + this.primaryBase.hashCode();
+    result = (prime * result) + this.rowsLimit;
+    result = (prime * result) + (this.statistical ? 1231 : 1237);
+    return result;
+  }
+
+  /**
+   * @return true for processing of statistical data
+   */
+  public boolean isStatistical() {
+    return this.statistical;
+  }
+
   @Override
   public String toString() {
-    return "Configuration [input=" + input + ", feedback=" + feedback + ", usedBases=" + usedBases
-        + ", primaryBase=" + primaryBase + ", rowsLimit=" + rowsLimit + "]";
+    return "Configuration [input=" + this.input + ", feedback=" + this.feedback + ", usedBases="
+        + this.usedBases + ", primaryBase=" + this.primaryBase + ", rowsLimit=" + this.rowsLimit
+        + ", statistical=" + this.statistical + "]";
   }
 }

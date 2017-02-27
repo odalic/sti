@@ -14,7 +14,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
 
 /**
  * Domain class {@link Disambiguation} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -24,32 +24,14 @@ public final class DisambiguationValue implements Serializable {
   private static final long serialVersionUID = -9087389821835847372L;
 
   private CellPosition position;
-  
+
   private CellAnnotation annotation;
-  
+
   public DisambiguationValue() {}
-  
-  public DisambiguationValue(Disambiguation adaptee) {
+
+  public DisambiguationValue(final Disambiguation adaptee) {
     this.position = adaptee.getPosition();
     this.annotation = adaptee.getAnnotation();
-  }
-
-  /**
-   * @return the position
-   */
-  @XmlElement
-  @Nullable
-  public CellPosition getPosition() {
-    return position;
-  }
-
-  /**
-   * @param position the position to set
-   */
-  public void setPosition(CellPosition position) {
-    Preconditions.checkNotNull(position);
-    
-    this.position = position;
   }
 
   /**
@@ -58,23 +40,39 @@ public final class DisambiguationValue implements Serializable {
   @XmlElement
   @Nullable
   public CellAnnotation getAnnotation() {
-    return annotation;
+    return this.annotation;
+  }
+
+  /**
+   * @return the position
+   */
+  @XmlElement
+  @Nullable
+  public CellPosition getPosition() {
+    return this.position;
   }
 
   /**
    * @param annotation the annotation to set
    */
-  public void setAnnotation(CellAnnotation annotation) {
+  public void setAnnotation(final CellAnnotation annotation) {
     Preconditions.checkNotNull(annotation);
-    
+
     this.annotation = annotation;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
+  /**
+   * @param position the position to set
    */
+  public void setPosition(final CellPosition position) {
+    Preconditions.checkNotNull(position);
+
+    this.position = position;
+  }
+
   @Override
   public String toString() {
-    return "DisambiguationValue [position=" + position + ", annotation=" + annotation + "]";
+    return "DisambiguationValue [position=" + this.position + ", annotation=" + this.annotation
+        + "]";
   }
 }

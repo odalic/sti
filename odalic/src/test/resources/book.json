@@ -1,6 +1,11 @@
 {
-  "context": "http://www.w3.org/ns/csvw",
-  "url": "Books.csv",
+  "@context" : [ "http://www.w3.org/ns/csvw", {
+    "owl" : "http://www.w3.org/2002/07/owl#",
+    "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "xsd" : "http://www.w3.org/2001/XMLSchema#",
+    "dcterms" : "http://purl.org/dc/terms/"
+  } ],
+  "url": "book-input.csv",
   "tableSchema": {
     "columns": [
       {
@@ -8,13 +13,13 @@
         "titles": [
           "Book"
         ],
-        "dataType": "string",
+        "dataType": "xsd:string",
         "aboutUrl": "{Book_url}",
         "propertyUrl": "dcterms:title"
       },
       {
         "name": "Book_url",
-        "dataType": "anyURI",
+        "dataType": "xsd:anyURI",
         "suppressOutput": true,
         "valueUrl": "{Book_url}"
       },
@@ -30,13 +35,13 @@
         "titles": [
           "Author"
         ],
-        "dataType": "string",
+        "dataType": "xsd:string",
         "aboutUrl": "{Author_url}",
         "propertyUrl": "dcterms:title"
       },
       {
         "name": "Author_url",
-        "dataType": "anyURI",
+        "dataType": "xsd:anyURI",
         "suppressOutput": true,
         "valueUrl": "{Author_url}"
       },
@@ -52,13 +57,13 @@
         "titles": [
           "Series"
         ],
-        "dataType": "string",
+        "dataType": "xsd:string",
         "aboutUrl": "{Series_url}",
         "propertyUrl": "dcterms:title"
       },
       {
         "name": "Series_url",
-        "dataType": "anyURI",
+        "dataType": "xsd:anyURI",
         "suppressOutput": true,
         "valueUrl": "{Series_url}"
       },

@@ -12,7 +12,7 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 
 /**
  * Hint to leave the cells in column ambiguous.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -21,43 +21,22 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 public final class ColumnAmbiguity implements Serializable {
 
   private static final long serialVersionUID = -6608929731300596230L;
-  
+
   private final ColumnPosition position;
 
   /**
    * Creates a new hint to leave the cells in column ambiguous.
-   * 
+   *
    * @param position column position
    */
-  public ColumnAmbiguity(ColumnPosition position) {
+  public ColumnAmbiguity(final ColumnPosition position) {
     Preconditions.checkNotNull(position);
-    
+
     this.position = position;
   }
 
-  /**
-   * @return the position
-   */
-  public ColumnPosition getPosition() {
-    return position;
-  }
-
-  /* (non-Javadoc)
-   * @see java.lang.Object#hashCode()
-   */
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((position == null) ? 0 : position.hashCode());
-    return result;
-  }
-
-  /* (non-Javadoc)
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -67,22 +46,34 @@ public final class ColumnAmbiguity implements Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    ColumnAmbiguity other = (ColumnAmbiguity) obj;
-    if (position == null) {
+    final ColumnAmbiguity other = (ColumnAmbiguity) obj;
+    if (this.position == null) {
       if (other.position != null) {
         return false;
       }
-    } else if (!position.equals(other.position)) {
+    } else if (!this.position.equals(other.position)) {
       return false;
     }
     return true;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
+  /**
+   * @return the position
    */
+  public ColumnPosition getPosition() {
+    return this.position;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + ((this.position == null) ? 0 : this.position.hashCode());
+    return result;
+  }
+
   @Override
   public String toString() {
-    return "ColumnAmbiguity [position=" + position + "]";
+    return "ColumnAmbiguity [position=" + this.position + "]";
   }
 }

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.KBProxyResult;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.model.*;
 
@@ -24,7 +25,7 @@ public class TCellDisambiguatorNameMatch extends TCellDisambiguator {
     }
 
     protected Map<Integer, List<Pair<Entity, Map<String, Double>>>> disambiguate(
-            Table table, TAnnotation table_annotation, int column, Integer... skipRows) throws KBProxyException {
+            Table table, TAnnotation table_annotation, int column, Integer... skipRows) {
         Map<Integer, List<Pair<Entity, Map<String, Double>>>> rowIndex_and_entities =
                 new HashMap<>();
 
@@ -49,9 +50,11 @@ public class TCellDisambiguatorNameMatch extends TCellDisambiguator {
             if (skip) {
                 collectExistingAnnotations(table_annotation, row_index, column);
             } else {
-                List<Entity> candidates = kbSearch.findEntityCandidates(tcc.getText());
+                KBProxyResult<List<Entity>> candidatesResult = kbSearch.findEntityCandidates(tcc.getText());
+                table_annotation.addContentWarning(row_index, column, candidatesResult.getWarning());
+
                 disambResult =
-                        disambiguate(candidates, table, row_index, column);
+                        disambiguate(candidatesResult.getResult(), table, row_index, column);
                 if (disambResult != null && disambResult.size() > 0) {
                     rowIndex_and_entities.put(row_index, disambResult);
                 }

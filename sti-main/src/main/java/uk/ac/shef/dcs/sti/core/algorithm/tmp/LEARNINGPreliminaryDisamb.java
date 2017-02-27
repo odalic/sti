@@ -1,11 +1,10 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
-import javafx.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.KBProxyResult;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
@@ -38,7 +37,7 @@ public class LEARNINGPreliminaryDisamb {
             TAnnotation tableAnnotation,
             int column,
             Constraints constraints,
-            Integer... skipRows) throws KBProxyException, STIException {
+            Integer... skipRows) throws STIException {
 
         LOG.info("\t>> (LEARNING) Preliminary Disambiguation begins");
         List<TColumnHeaderAnnotation> winningColumnClazz = tableAnnotation.getWinningHeaderAnnotations(column);
@@ -74,7 +73,7 @@ public class LEARNINGPreliminaryDisamb {
                 continue;
             }
 
-            List<Pair<Entity, Map<String, Double>>> entity_and_scoreMap =
+            DisambiguationResult entity_and_scoreMap =
                     constrainedDisambiguate(sample,
                             table,
                             winningColumnClazzIds,
@@ -82,10 +81,15 @@ public class LEARNINGPreliminaryDisamb {
                             constraints
                     );
 
-            if (entity_and_scoreMap.size() > 0) {
+            if (entity_and_scoreMap.getResult().size() > 0) {
                 disambiguator.addCellAnnotation(table, tableAnnotation, rows, column,
                         entity_and_scoreMap);
                 updated.addAll(rows);
+            }
+            else {
+                for (int row : rows) {
+                    tableAnnotation.addContentWarnings(row, column, entity_and_scoreMap.getWarnings());
+                }
             }
         }
 
@@ -132,29 +136,39 @@ public class LEARNINGPreliminaryDisamb {
     //search candidates for the cell;
     //computeElementScores candidates for the cell;
     //create annotation and update supportin header and header computeElementScores (depending on the two params updateHeader_blah
-    private List<Pair<Entity, Map<String, Double>>> constrainedDisambiguate(TCell tcc,
+    private DisambiguationResult constrainedDisambiguate(TCell tcc,
                                                                             Table table,
                                                                             Set<String> winningColumnClazz,
                                                                             List<Integer> rowBlock,
                                                                             int column,
                                                                             int totalRowBlocks,
-                                                                            Constraints constraints) throws KBProxyException {
-        List<Pair<Entity, Map<String, Double>>> entity_and_scoreMap;
+                                                                            Constraints constraints) {
+        DisambiguationResult entity_and_scoreMap;
 
-        List<Entity> candidates = constraints.getDisambChosenForCell(column, rowBlock.get(0));
+        EntityResult entityResult = constraints.getDisambChosenForCell(column, rowBlock.get(0), kbSearch);;
+        List<Entity> candidates = entityResult.getResult();
+        List<String> warnings = entityResult.getWarnings();
 
         if (candidates.isEmpty()) {
-          candidates = kbSearch.findEntityCandidatesOfTypes(tcc.getText(), winningColumnClazz.toArray(new String[0]));
+            KBProxyResult<List<Entity>> candidatesResult = kbSearch.findEntityCandidatesOfTypes(tcc.getText(), winningColumnClazz.toArray(new String[0]));
+
+            candidates = candidatesResult.getResult();
+            candidatesResult.appendWarning(warnings);
         }
 
-        if (candidates != null && candidates.size() != 0) {
-        } else
-            candidates = kbSearch.findEntityCandidatesOfTypes(tcc.getText());
+        if (candidates.isEmpty()) {
+            KBProxyResult<List<Entity>> candidatesResult = kbSearch.findEntityCandidatesOfTypes(tcc.getText());
+
+            candidates = candidatesResult.getResult();
+            candidatesResult.appendWarning(warnings);
+        }
 
         //now each candidate is given scores
         entity_and_scoreMap =
                 disambiguator.constrainedDisambiguate
                         (candidates, table, rowBlock, column,totalRowBlocks, true);
+
+        entity_and_scoreMap.getWarnings().addAll(warnings);
 
         return entity_and_scoreMap;
     }

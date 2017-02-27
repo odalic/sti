@@ -66,8 +66,8 @@ public class JIInterpreter extends SemanticTableInterpreter {
         this.debugMode = debugMode;
     }
 
-    public TAnnotation start(Table table, Constraints constraints) throws STIException {
-      return start(table, true);
+    public TAnnotation start(Table table, boolean statistical, Constraints constraints) throws STIException {
+      return start(table, !statistical);
     }
 
     public TAnnotation start(Table table, boolean relationLearning) throws STIException {
@@ -195,7 +195,7 @@ public class JIInterpreter extends SemanticTableInterpreter {
 
     protected boolean generateEntityCandidates(Table table,
                                                TAnnotation tableAnnotations,
-                                               Collection<Integer> ignoreColumns) throws KBProxyException {
+                                               Collection<Integer> ignoreColumns) {
         boolean graphNonEmpty = false;
         for (int col = 0; col < table.getNumCols(); col++) {
             if (getMustdoColumns().contains(col)) {
