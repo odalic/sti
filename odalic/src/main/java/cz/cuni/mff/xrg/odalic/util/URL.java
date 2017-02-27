@@ -55,7 +55,7 @@ public final class URL {
   }
 
   /**
-   * Sets the query parameter and return the modified URL.
+   * Sets the query parameter and returns the modified URL.
    *
    * @param url URL
    * @param key query parameter key
