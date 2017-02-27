@@ -7,56 +7,56 @@ import java.io.Serializable;
  */
 public class TStatisticalAnnotation implements Serializable, Comparable<TStatisticalAnnotation> {
 
-    private static final long serialVersionUID = -1208912663212074692L;
+  public enum TComponentType implements Serializable {
+    DIMENSION, MEASURE, NONE
+  }
 
-    private TComponentType component;
+  private static final long serialVersionUID = -1208912663212074692L;
 
-    private String predicateURI;
-    private String predicateLabel;
+  private final TComponentType component;
+  private final String predicateURI;
 
-    private double score;
+  private final String predicateLabel;
 
-    public TStatisticalAnnotation(TComponentType component, String predicateURI, String predicateLabel, double score) {
-        this.component = component;
-        this.predicateURI = predicateURI;
-        this.predicateLabel = predicateLabel;
-        this.score = score;
+  private final double score;
+
+  public TStatisticalAnnotation(final TComponentType component, final String predicateURI,
+      final String predicateLabel, final double score) {
+    this.component = component;
+    this.predicateURI = predicateURI;
+    this.predicateLabel = predicateLabel;
+    this.score = score;
+  }
+
+  @Override
+  public int compareTo(final TStatisticalAnnotation o) {
+    return new Double(o.getScore()).compareTo(getScore());
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (o instanceof TStatisticalAnnotation) {
+      final TStatisticalAnnotation hbr = (TStatisticalAnnotation) o;
+      return hbr.getComponent().equals(getComponent())
+          && hbr.getPredicateURI().equals(getPredicateURI())
+          && hbr.getPredicateLabel().equals(getPredicateLabel());
     }
+    return false;
+  }
 
-    public TComponentType getComponent() {
-        return component;
-    }
+  public TComponentType getComponent() {
+    return this.component;
+  }
 
-    public String getPredicateURI() {
-        return predicateURI;
-    }
+  public String getPredicateLabel() {
+    return this.predicateLabel;
+  }
 
-    public String getPredicateLabel() {
-        return predicateLabel;
-    }
+  public String getPredicateURI() {
+    return this.predicateURI;
+  }
 
-    public double getScore() {
-        return score;
-    }
-
-    @Override
-    public int compareTo(TStatisticalAnnotation o) {
-        return new Double(o.getScore()).compareTo(getScore());
-    }
-
-    public boolean equals(Object o) {
-        if(o instanceof TStatisticalAnnotation) {
-            TStatisticalAnnotation hbr = (TStatisticalAnnotation) o;
-            return hbr.getComponent().equals(getComponent()) &&
-                   hbr.getPredicateURI().equals(getPredicateURI()) &&
-                   hbr.getPredicateLabel().equals(getPredicateLabel());
-        }
-        return false;
-    }
-
-    public enum TComponentType implements Serializable {
-        DIMENSION,
-        MEASURE,
-        NONE
-    }
+  public double getScore() {
+    return this.score;
+  }
 }

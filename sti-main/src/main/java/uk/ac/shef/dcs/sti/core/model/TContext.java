@@ -5,68 +5,68 @@ import java.io.Serializable;
 /**
  * An TContext could be any textual content around an Table object.
  */
-public class TContext implements Serializable, Comparable<TContext>{
-    private static final long serialVersionUID = -8136777654860405913L;
+public class TContext implements Serializable, Comparable<TContext> {
+  public enum TableContextType implements Serializable {
 
-    private String text;
-    private double rankScore; //how relevant is this context to the table
-    private TableContextType type;
+    CAPTION("Caption"), PAGETITLE("PageTitle"), // title of the page containing the table
+    PARAGRAPH_BEFORE("Before"), // context occuring before table
+    PARAGRAPH_AFTER("After"); // context occurring after table
 
 
-    public TContext(String text, TableContextType type, double score){
-        this.text=text;
-        this.rankScore=score;
-        this.type=type;
-    }
-    public String getText() {
-        return text;
+    private String type;
+
+    TableContextType(final String type) {
+      this.type = type;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public String getType() {
+      return this.type;
     }
 
-    public double getImportanceScore() {
-        return rankScore;
+    public void setType(final String type) {
+      this.type = type;
     }
+  }
 
-    public void setRankScore(double rankScore) {
-        this.rankScore = rankScore;
-    }
-
-    @Override
-    public int compareTo(TContext o) {
-        return new Double(getImportanceScore()).compareTo(o.getImportanceScore());
-    }
-
-    public TableContextType getType() {
-        return type;
-    }
-
-    public void setType(TableContextType type) {
-        this.type = type;
-    }
-
-    public enum TableContextType implements Serializable{
-
-        CAPTION("Caption"),
-        PAGETITLE("PageTitle"),//title of the page containing the table
-        PARAGRAPH_BEFORE("Before"),//context occuring before table
-        PARAGRAPH_AFTER("After");  //context occurring after table
+  private static final long serialVersionUID = -8136777654860405913L;
+  private String text;
+  private double rankScore; // how relevant is this context to the table
 
 
-        private String type;
+  private TableContextType type;
 
-        TableContextType(String type) {
-            this.type = type;
-        }
+  public TContext(final String text, final TableContextType type, final double score) {
+    this.text = text;
+    this.rankScore = score;
+    this.type = type;
+  }
 
-        public String getType() {
-            return type;
-        }
+  @Override
+  public int compareTo(final TContext o) {
+    return new Double(getImportanceScore()).compareTo(o.getImportanceScore());
+  }
 
-        public void setType(String type) {
-            this.type = type;
-        }
-    }
+  public double getImportanceScore() {
+    return this.rankScore;
+  }
+
+  public String getText() {
+    return this.text;
+  }
+
+  public TableContextType getType() {
+    return this.type;
+  }
+
+  public void setRankScore(final double rankScore) {
+    this.rankScore = rankScore;
+  }
+
+  public void setText(final String text) {
+    this.text = text;
+  }
+
+  public void setType(final TableContextType type) {
+    this.type = type;
+  }
 }

@@ -12,27 +12,29 @@ import uk.ac.shef.dcs.kbproxy.model.Attribute;
  */
 public class SPARQLAttribute extends Attribute {
 
-    public SPARQLAttribute(String relationURI, String value) {
-        super(relationURI, value);
-    }
+  private static final long serialVersionUID = -1365433077663956951L;
 
-    @Override
-    public boolean isAlias(KBDefinition definition) {
-        return KBProxyUtils.contains(definition.getPredicateLabel(), getRelationURI());
-    }
+  public SPARQLAttribute(String relationURI, String value) {
+    super(relationURI, value);
+  }
 
-    @Override
-    public boolean isDescription(KBDefinition definition) {
-        return KBProxyUtils.contains(definition.getPredicateDescription(), getRelationURI());
-    }
+  @Override
+  public boolean isAlias(KBDefinition definition) {
+    return KBProxyUtils.contains(definition.getPredicateLabel(), getRelationURI());
+  }
 
-    @Override
-    public String getValueURI() {
-        return valueURI;
-    }
+  @Override
+  public boolean isDescription(KBDefinition definition) {
+    return KBProxyUtils.contains(definition.getPredicateDescription(), getRelationURI());
+  }
 
-    @Override
-    public void setValueURI(String valueURI) {
-        this.valueURI = valueURI;
-    }
+  @Override
+  public String getValueURI() {
+    return valueURI;
+  }
+
+  @Override
+  public void setValueURI(String valueURI) {
+    this.valueURI = valueURI;
+  }
 }

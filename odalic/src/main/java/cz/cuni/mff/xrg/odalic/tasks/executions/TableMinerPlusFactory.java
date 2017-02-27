@@ -40,8 +40,8 @@ import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentTContentRowRankerIm
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPClazzScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPEntityScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPRelationScorer;
-import uk.ac.shef.dcs.sti.core.feature.FreebaseConceptBoWCreator;
-import uk.ac.shef.dcs.sti.core.feature.FreebaseRelationBoWCreator;
+import uk.ac.shef.dcs.sti.core.feature.ConceptBoWCreatorImpl;
+import uk.ac.shef.dcs.sti.core.feature.RelationBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.scorer.AttributeValueMatcher;
 import uk.ac.shef.dcs.sti.core.scorer.RelationScorer;
 import uk.ac.shef.dcs.sti.core.subjectcol.SubjectColumnDetector;
@@ -130,7 +130,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   private TColumnClassifier initClassifier() throws STIException {
     try {
       return new TColumnClassifier(
-          new TMPClazzScorer(getNLPResourcesDir(), new FreebaseConceptBoWCreator(), getStopwords(),
+          new TMPClazzScorer(getNLPResourcesDir(), new ConceptBoWCreatorImpl(), getStopwords(),
               STIConstantProperty.SCORER_CLAZZ_CONTEXT_WEIGHT) // all 1.0
       ); // header, column, out trivial, out important
     } catch (final Exception e) {
@@ -221,7 +221,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     try {
       // object to computeElementScores relations between columns
       final RelationScorer relationScorer =
-          new TMPRelationScorer(getNLPResourcesDir(), new FreebaseRelationBoWCreator(),
+          new TMPRelationScorer(getNLPResourcesDir(), new RelationBoWCreatorImpl(),
               getStopwords(), STIConstantProperty.SCORER_RELATION_CONTEXT_WEIGHT
           // new double[]{1.0, 1.0, 0.0, 0.0, 1.0}
           );

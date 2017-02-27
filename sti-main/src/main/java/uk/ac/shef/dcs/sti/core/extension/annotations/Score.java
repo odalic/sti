@@ -8,7 +8,7 @@ import com.google.common.base.Preconditions;
 
 /**
  * Score value for annotation.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -19,41 +19,29 @@ public final class Score implements Comparable<Score>, Serializable {
 
   private final double value;
 
-  public Score(double value) {
+  public Score(final double value) {
     Preconditions.checkArgument(value >= 0);
 
     this.value = value;
   }
 
-  /**
-   * @return the value
-   */
-  public double getValue() {
-    return value;
-  }
-
-  /**
-   * Computes hash code based on the value.
-   * 
-   * @see java.lang.Object#hashCode()
+  /*
+   * (non-Javadoc)
+   *
+   * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    long temp;
-    temp = Double.doubleToLongBits(value);
-    result = prime * result + (int) (temp ^ (temp >>> 32));
-    return result;
+  public int compareTo(final Score o) {
+    return Double.compare(this.value, o.value);
   }
 
   /**
    * Compares for equality (only other Score with the same values passes).
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -63,29 +51,43 @@ public final class Score implements Comparable<Score>, Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    Score other = (Score) obj;
-    if (Double.doubleToLongBits(value) != Double.doubleToLongBits(other.value)) {
+    final Score other = (Score) obj;
+    if (Double.doubleToLongBits(this.value) != Double.doubleToLongBits(other.value)) {
       return false;
     }
     return true;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
+  /**
+   * @return the value
+   */
+  public double getValue() {
+    return this.value;
+  }
+
+  /**
+   * Computes hash code based on the value.
+   *
+   * @see java.lang.Object#hashCode()
    */
   @Override
-  public int compareTo(Score o) {
-    return Double.compare(value, o.value);
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    long temp;
+    temp = Double.doubleToLongBits(this.value);
+    result = (prime * result) + (int) (temp ^ (temp >>> 32));
+    return result;
   }
-  
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "Score [value=" + value + "]";
+    return "Score [value=" + this.value + "]";
   }
 
 }

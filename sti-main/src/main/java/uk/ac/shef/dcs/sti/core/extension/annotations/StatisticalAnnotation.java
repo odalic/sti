@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableSet;
 
 /**
  * Annotates column in a table for statistical data processing.
- * 
+ *
  * @author Josef Janoušek
  *
  */
@@ -22,56 +22,27 @@ public final class StatisticalAnnotation {
 
   /**
    * Creates new annotation.
-   * 
+   *
    * @param component type of statistical component
    * @param predicate predicate for statistical component
    */
-  public StatisticalAnnotation(
-      ComponentTypeValue component,
-      Set<? extends EntityCandidate> predicate) {
+  public StatisticalAnnotation(final ComponentTypeValue component,
+      final Set<? extends EntityCandidate> predicate) {
     Preconditions.checkNotNull(component);
     Preconditions.checkNotNull(predicate);
-    
+
     this.component = component;
     this.predicate = ImmutableSet.copyOf(predicate);
   }
 
   /**
-   * @return the component
-   */
-  public ComponentTypeValue getComponent() {
-    return component;
-  }
-
-  /**
-   * @return the predicate
-   */
-  public Set<EntityCandidate> getPredicate() {
-    return predicate;
-  }
-
-  /**
-   * Computes hash code based on the component and the predicate.
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((component == null) ? 0 : component.hashCode());
-    result = prime * result + ((predicate == null) ? 0 : predicate.hashCode());
-    return result;
-  }
-
-  /**
-   * Compares for equality (only other annotation of the same component type
-   * and the same predicate set passes).
-   * 
+   * Compares for equality (only other annotation of the same component type and the same predicate
+   * set passes).
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -81,31 +52,60 @@ public final class StatisticalAnnotation {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    StatisticalAnnotation other = (StatisticalAnnotation) obj;
-    if (component == null) {
+    final StatisticalAnnotation other = (StatisticalAnnotation) obj;
+    if (this.component == null) {
       if (other.component != null) {
         return false;
       }
-    } else if (!component.equals(other.component)) {
+    } else if (!this.component.equals(other.component)) {
       return false;
     }
-    if (predicate == null) {
+    if (this.predicate == null) {
       if (other.predicate != null) {
         return false;
       }
-    } else if (!predicate.equals(other.predicate)) {
+    } else if (!this.predicate.equals(other.predicate)) {
       return false;
     }
     return true;
   }
 
+  /**
+   * @return the component
+   */
+  public ComponentTypeValue getComponent() {
+    return this.component;
+  }
+
+  /**
+   * @return the predicate
+   */
+  public Set<EntityCandidate> getPredicate() {
+    return this.predicate;
+  }
+
+  /**
+   * Computes hash code based on the component and the predicate.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + ((this.component == null) ? 0 : this.component.hashCode());
+    result = (prime * result) + ((this.predicate == null) ? 0 : this.predicate.hashCode());
+    return result;
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "StatisticalAnnotation [component=" + component + ", predicate=" + predicate + "]";
+    return "StatisticalAnnotation [component=" + this.component + ", predicate=" + this.predicate
+        + "]";
   }
 }

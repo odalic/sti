@@ -6,142 +6,143 @@ import java.io.Serializable;
  */
 public class TColumnFeature implements Serializable {
 
-    private static final long serialVersionUID = -1208225814300474918L;
+  private static final long serialVersionUID = -1208225814300474918L;
 
-    private int colId;
-    private int numRows;
+  private int colId;
+  private int numRows;
 
-    private TColumnDataType mostFrequentDataType;
-    private boolean isFirstNEColumn;
-    private boolean isOnlyNEColumn;
-    private boolean isOnlyNonEmptyNEColumn;
-    private boolean isOnlyNonDuplicateNEColumn;
-    private double cellValueDiversity;
-    private double tokenValueDiversity;
-    private double contextMatchScore;
-    private double webSearchScore;
-    private int emptyCells;
-    private boolean isIvalidPOS;
-    private boolean isCode_or_Acronym;
+  private TColumnDataType mostFrequentDataType;
+  private boolean isFirstNEColumn;
+  private boolean isOnlyNEColumn;
+  private boolean isOnlyNonEmptyNEColumn;
+  private boolean isOnlyNonDuplicateNEColumn;
+  private double cellValueDiversity;
+  private double tokenValueDiversity;
+  private double contextMatchScore;
+  private double webSearchScore;
+  private int emptyCells;
+  private boolean isIvalidPOS;
+  private boolean isCode_or_Acronym;
 
-    public TColumnFeature(int colId, int numRows){
-        this.colId=colId;
-        this.numRows=numRows;
-    }
+  public TColumnFeature(final int colId, final int numRows) {
+    this.colId = colId;
+    this.numRows = numRows;
+  }
 
-    public int getColId() {
-        return colId;
-    }
+  public double getCMScore() {
+    return this.contextMatchScore;
+  }
 
-    public void setColId(int colId) {
-        this.colId = colId;
-    }
+  public int getColId() {
+    return this.colId;
+  }
 
-    public int getNumRows() {
-        return numRows;
-    }
+  public int getEmptyCellCount() {
+    return this.emptyCells;
+  }
 
-    public void setNumRows(int numRows) {
-        this.numRows = numRows;
-    }
+  public TColumnDataType getMostFrequentDataType() {
+    return this.mostFrequentDataType;
+  }
 
-    public TColumnDataType getMostFrequentDataType() {
-        return mostFrequentDataType;
-    }
+  public int getNumRows() {
+    return this.numRows;
+  }
 
-    public void setMostFrequentDataType(TColumnDataType mostFrequentDataType) {
-        this.mostFrequentDataType = mostFrequentDataType;
-    }
+  public double getUniqueCellCount() {
+    return this.cellValueDiversity;
+  }
 
-    public boolean isFirstNEColumn() {
-        return isFirstNEColumn;
-    }
+  public double getUniqueTokenCount() {
+    return this.tokenValueDiversity;
+  }
 
-    public void setFirstNEColumn(boolean firstNEColumn) {
-        isFirstNEColumn = firstNEColumn;
-    }
+  public double getWSScore() {
+    return this.webSearchScore;
+  }
 
-    public double getUniqueCellCount() {
-        return cellValueDiversity;
-    }
+  public boolean isAcronymColumn() {
+    return this.isCode_or_Acronym;
+  }
 
-    public void setUniqueCellCount(double valueDiversity) {
-        this.cellValueDiversity = valueDiversity;
-    }
+  public boolean isFirstNEColumn() {
+    return this.isFirstNEColumn;
+  }
 
-    public double getCMScore() {
-        return contextMatchScore;
-    }
+  public boolean isInvalidPOS() {
+    return this.isIvalidPOS;
+  }
 
-    public void setContextMatchScore(double contextMatchScore) {
-        this.contextMatchScore = contextMatchScore;
-    }
+  public boolean isOnlyNEColumn() {
+    return this.isOnlyNEColumn;
+  }
 
-    public double getWSScore() {
-        return webSearchScore;
-    }
+  public boolean isOnlyNonDuplicateNEColumn() {
+    return this.isOnlyNonDuplicateNEColumn;
+  }
 
-    public void setWebSearchScore(double webSearchScore) {
-        this.webSearchScore = webSearchScore;
-    }
+  public boolean isOnlyNonEmptyNEColumn() {
+    return this.isOnlyNonEmptyNEColumn;
+  }
 
-    public boolean isOnlyNEColumn() {
-        return isOnlyNEColumn;
-    }
+  public void setAcronymColumn(final boolean code_or_Acronym) {
+    this.isCode_or_Acronym = code_or_Acronym;
+  }
 
-    public void setOnlyNEColumn(boolean onlyNEColumn) {
-        isOnlyNEColumn = onlyNEColumn;
-    }
+  public void setColId(final int colId) {
+    this.colId = colId;
+  }
 
-    public int getEmptyCellCount() {
-        return emptyCells;
-    }
+  public void setContextMatchScore(final double contextMatchScore) {
+    this.contextMatchScore = contextMatchScore;
+  }
 
-    public void setEmptyCellCount(int emptyCells) {
-        this.emptyCells = emptyCells;
-    }
+  public void setEmptyCellCount(final int emptyCells) {
+    this.emptyCells = emptyCells;
+  }
 
-    public boolean isInvalidPOS() {
-        return isIvalidPOS;
-    }
+  public void setFirstNEColumn(final boolean firstNEColumn) {
+    this.isFirstNEColumn = firstNEColumn;
+  }
 
-    public void setInvalidPOS(boolean ivalidPOS) {
-        isIvalidPOS = ivalidPOS;
-    }
+  public void setInvalidPOS(final boolean ivalidPOS) {
+    this.isIvalidPOS = ivalidPOS;
+  }
 
-    public boolean isAcronymColumn() {
-        return isCode_or_Acronym;
-    }
+  public void setIsOnlyNonDuplicateNEColumn(final boolean isOnlyNonDuplicateNEColumn) {
+    this.isOnlyNonDuplicateNEColumn = isOnlyNonDuplicateNEColumn;
+  }
 
-    public void setAcronymColumn(boolean code_or_Acronym) {
-        isCode_or_Acronym = code_or_Acronym;
-    }
+  public void setIsOnlyNonEmptyNEColumn(final boolean isOnlyNonEmptyNEColumn) {
+    this.isOnlyNonEmptyNEColumn = isOnlyNonEmptyNEColumn;
+  }
 
-    public String toString(){
-        return String.valueOf(colId);
-    }
+  public void setMostFrequentDataType(final TColumnDataType mostFrequentDataType) {
+    this.mostFrequentDataType = mostFrequentDataType;
+  }
 
-    public double getUniqueTokenCount() {
-        return tokenValueDiversity;
-    }
+  public void setNumRows(final int numRows) {
+    this.numRows = numRows;
+  }
 
-    public void setUniqueTokenCount(double tokenValueDiversity) {
-        this.tokenValueDiversity = tokenValueDiversity;
-    }
+  public void setOnlyNEColumn(final boolean onlyNEColumn) {
+    this.isOnlyNEColumn = onlyNEColumn;
+  }
 
-    public boolean isOnlyNonEmptyNEColumn() {
-        return isOnlyNonEmptyNEColumn;
-    }
+  public void setUniqueCellCount(final double valueDiversity) {
+    this.cellValueDiversity = valueDiversity;
+  }
 
-    public void setIsOnlyNonEmptyNEColumn(boolean isOnlyNonEmptyNEColumn) {
-        this.isOnlyNonEmptyNEColumn = isOnlyNonEmptyNEColumn;
-    }
+  public void setUniqueTokenCount(final double tokenValueDiversity) {
+    this.tokenValueDiversity = tokenValueDiversity;
+  }
 
-    public boolean isOnlyNonDuplicateNEColumn() {
-        return isOnlyNonDuplicateNEColumn;
-    }
+  public void setWebSearchScore(final double webSearchScore) {
+    this.webSearchScore = webSearchScore;
+  }
 
-    public void setIsOnlyNonDuplicateNEColumn(boolean isOnlyNonDuplicateNEColumn) {
-        this.isOnlyNonDuplicateNEColumn = isOnlyNonDuplicateNEColumn;
-    }
+  @Override
+  public String toString() {
+    return String.valueOf(this.colId);
+  }
 }

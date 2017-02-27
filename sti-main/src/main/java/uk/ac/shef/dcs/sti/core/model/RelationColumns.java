@@ -5,45 +5,48 @@ import java.io.Serializable;
 /**
  */
 public class RelationColumns implements Serializable {
-    private static final long serialVersionUID = -7136525814010415943L;
+  private static final long serialVersionUID = -7136525814010415943L;
 
-    private int subjectCol;
-    private int objectCol;
+  private int subjectCol;
+  private int objectCol;
 
-    public RelationColumns(int subjectCol, int objectCol) {
-        this.subjectCol=subjectCol;
-        this.objectCol=objectCol;
+  public RelationColumns(final int subjectCol, final int objectCol) {
+    this.subjectCol = subjectCol;
+    this.objectCol = objectCol;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (o instanceof RelationColumns) {
+      final RelationColumns k = (RelationColumns) o;
+      return (k.getSubjectCol() == getSubjectCol()) && (k.getObjectCol() == getObjectCol());
     }
+    return false;
+  }
 
-    public int getSubjectCol() {
-        return subjectCol;
-    }
+  public int getObjectCol() {
+    return this.objectCol;
+  }
 
-    public void setSubjectCol(int subjectCol) {
-        this.subjectCol = subjectCol;
-    }
+  public int getSubjectCol() {
+    return this.subjectCol;
+  }
 
-    public int getObjectCol() {
-        return objectCol;
-    }
+  @Override
+  public int hashCode() {
+    return (this.subjectCol * 19) + (this.objectCol * 29);
+  }
 
-    public void setObjectCol(int objectCol) {
-        this.objectCol = objectCol;
-    }
+  public void setObjectCol(final int objectCol) {
+    this.objectCol = objectCol;
+  }
 
-    public boolean equals(Object o){
-        if(o instanceof RelationColumns){
-            RelationColumns k = (RelationColumns)o;
-            return k.getSubjectCol()==getSubjectCol()&& k.getObjectCol()==getObjectCol();
-        }
-        return false;
-    }
+  public void setSubjectCol(final int subjectCol) {
+    this.subjectCol = subjectCol;
+  }
 
-    public int hashCode(){
-        return subjectCol*19+objectCol*29;
-    }
-
-    public String toString(){
-        return getSubjectCol()+"-"+getObjectCol();
-    }
+  @Override
+  public String toString() {
+    return getSubjectCol() + "-" + getObjectCol();
+  }
 }
