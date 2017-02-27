@@ -1,6 +1,11 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
-import javafx.util.Pair;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,10 +13,10 @@ import com.google.common.base.Preconditions;
 
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
-import uk.ac.shef.dcs.sti.core.extension.constraints.Classification;
 import uk.ac.shef.dcs.sti.core.extension.annotations.ComponentTypeValue;
 import uk.ac.shef.dcs.sti.core.extension.annotations.EntityCandidate;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Ambiguity;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Classification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.extension.constraints.DataCubeComponent;
 import uk.ac.shef.dcs.sti.core.extension.positions.CellPosition;
@@ -23,27 +28,22 @@ import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation.TComponentType;
 import uk.ac.shef.dcs.sti.core.model.Table;
 import uk.ac.shef.dcs.sti.core.subjectcol.SubjectColumnDetector;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import uk.ac.shef.dcs.util.Pair;
 
 public class TMPOdalicInterpreter extends SemanticTableInterpreter {
-  
-  private SubjectColumnDetector subjectColumnDetector;
-  private LEARNING learning;
-  private LiteralColumnTagger literalColumnTagger;
-  private TColumnColumnRelationEnumerator relationEnumerator;
-  private UPDATE update;
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(TMPOdalicInterpreter.class.getName());
-  
-  public TMPOdalicInterpreter(SubjectColumnDetector subjectColumnDetector,
-      LEARNING learning, UPDATE update,
-      TColumnColumnRelationEnumerator relationEnumerator,
-      LiteralColumnTagger literalColumnTagger) {
+  private final SubjectColumnDetector subjectColumnDetector;
+  private final LEARNING learning;
+  private final LiteralColumnTagger literalColumnTagger;
+  private final TColumnColumnRelationEnumerator relationEnumerator;
+
+  private final UPDATE update;
+
+  public TMPOdalicInterpreter(final SubjectColumnDetector subjectColumnDetector,
+      final LEARNING learning, final UPDATE update,
+      final TColumnColumnRelationEnumerator relationEnumerator,
+      final LiteralColumnTagger literalColumnTagger) {
     super(new int[0], new int[0]);
     this.subjectColumnDetector = subjectColumnDetector;
     this.learning = learning;
@@ -51,61 +51,115 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
     this.relationEnumerator = relationEnumerator;
     this.update = update;
   }
-  
-  public TAnnotation start(Table table, boolean relationLearning) throws STIException {
+
+  private TComponentType convert(final ComponentTypeValue componentType) {
+    switch (componentType) {
+      case DIMENSION:
+        return TComponentType.DIMENSION;
+      case MEASURE:
+        return TComponentType.MEASURE;
+      case NONE:
+        return TComponentType.NONE;
+      default:
+        return TComponentType.NONE;
+    }
+  }
+
+  private void setStatisticalAnnotations(final List<Integer> annotatedColumns, final Table table,
+      final TAnnotation tableAnnotations, final Constraints constraints) {
+    // set data cube components suggested by user
+    for (final DataCubeComponent dataCubeComponent : constraints.getDataCubeComponents()) {
+      if (dataCubeComponent.getAnnotation().getPredicate().isEmpty()) {
+        tableAnnotations.setStatisticalAnnotation(dataCubeComponent.getPosition().getIndex(),
+            new TStatisticalAnnotation(TComponentType.NONE, null, null, 0));
+      } else {
+        final EntityCandidate suggestion =
+            dataCubeComponent.getAnnotation().getPredicate().iterator().next();
+        tableAnnotations.setStatisticalAnnotation(dataCubeComponent.getPosition().getIndex(),
+            new TStatisticalAnnotation(convert(dataCubeComponent.getAnnotation().getComponent()),
+                suggestion.getEntity().getResource(), suggestion.getEntity().getLabel(),
+                suggestion.getScore().getValue()));
+      }
+    }
+
+    // set data cube components for other columns (without user suggestions)
+    for (int col = 0; col < table.getNumCols(); col++) {
+      if (tableAnnotations.getStatisticalAnnotation(col) == null) {
+        if (!annotatedColumns.contains(col)) {
+          tableAnnotations.setStatisticalAnnotation(col,
+              new TStatisticalAnnotation(TComponentType.NONE, null, null, 0));
+        } else {
+          if (table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType()
+              .equals(DataTypeClassifier.DataType.NAMED_ENTITY)) {
+            tableAnnotations.setStatisticalAnnotation(col,
+                new TStatisticalAnnotation(TComponentType.DIMENSION, null, null, 0));
+          } else {
+            tableAnnotations.setStatisticalAnnotation(col,
+                new TStatisticalAnnotation(TComponentType.MEASURE, null, null, 0));
+          }
+        }
+      }
+    }
+  }
+
+  @Override
+  public TAnnotation start(final Table table, final boolean relationLearning) throws STIException {
     return start(table, !relationLearning, new Constraints());
   }
-  
-  public TAnnotation start(Table table, boolean statistical, Constraints constraints) throws STIException {
+
+  @Override
+  public TAnnotation start(final Table table, final boolean statistical, Constraints constraints)
+      throws STIException {
     Preconditions.checkNotNull(constraints);
-    
-    Set<Integer> ignoreCols = constraints.getColumnIgnores().stream()
+
+    final Set<Integer> ignoreCols = constraints.getColumnIgnores().stream()
         .map(e -> e.getPosition().getIndex()).collect(Collectors.toSet());
-    
-    for (Classification classification : constraints.getClassifications()) {
+
+    for (final Classification classification : constraints.getClassifications()) {
       // if the chosen classification is empty, we also want to ignore this column
       if (classification.getAnnotation().getChosen().isEmpty()) {
         ignoreCols.add(classification.getPosition().getIndex());
       }
     }
-    
+
     setIgnoreColumns(ignoreCols);
-    
-    int[] ignoreColumnsArray = getIgnoreColumns().stream().mapToInt(e -> e.intValue()).sorted().toArray();
-    literalColumnTagger.setIgnoreColumns(ignoreColumnsArray);
-    
+
+    final int[] ignoreColumnsArray =
+        getIgnoreColumns().stream().mapToInt(e -> e.intValue()).sorted().toArray();
+    this.literalColumnTagger.setIgnoreColumns(ignoreColumnsArray);
+
     try {
-      TAnnotation tableAnnotations = new TAnnotation(table.getNumRows(), table.getNumCols());
-      
+      final TAnnotation tableAnnotations = new TAnnotation(table.getNumRows(), table.getNumCols());
+
       // 1. find the main subject column of this table
       LOG.info("\t> PHASE: Detecting subject column ...");
-      List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnScores = subjectColumnDetector
-          .compute(table, constraints.getSubjectColumnPosition(), ignoreColumnsArray);
+      final List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnScores =
+          this.subjectColumnDetector.compute(table, constraints.getSubjectColumnPosition(),
+              ignoreColumnsArray);
       tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
-      
+
       // set column processing annotations:
       // 1) when the column is ignored, set processing type to IGNORED
       // 2) when the column's most frequent data type is Named entity,
       // set processing type to NAMED_ENTITY
-      // 3) otherwise (i.e. the column does not contain Named entity as the most frequent data type),
+      // 3) otherwise (i.e. the column does not contain Named entity as the most frequent data
+      // type),
       // set processing type to NON_NAMED_ENTITY and in this case
       // we will not disambiguate (and so classify) them, except for
       // the user defined constraints
-      Set<Ambiguity> newAmbiguities = new HashSet<>(constraints.getAmbiguities());
+      final Set<Ambiguity> newAmbiguities = new HashSet<>(constraints.getAmbiguities());
       for (int col = 0; col < table.getNumCols(); col++) {
         if (getIgnoreColumns().contains(col)) {
           tableAnnotations.setColumnProcessingAnnotation(col,
               new TColumnProcessingAnnotation(TColumnProcessingType.IGNORED));
-        }
-        else if (table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType().equals(
-            DataTypeClassifier.DataType.NAMED_ENTITY)) {
+        } else if (table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType()
+            .equals(DataTypeClassifier.DataType.NAMED_ENTITY)) {
           tableAnnotations.setColumnProcessingAnnotation(col,
               new TColumnProcessingAnnotation(TColumnProcessingType.NAMED_ENTITY));
-        }
-        else {
+        } else {
           tableAnnotations.setColumnProcessingAnnotation(col,
               new TColumnProcessingAnnotation(TColumnProcessingType.NON_NAMED_ENTITY));
-          
+
           for (int row = 0; row < table.getNumRows(); row++) {
             if (!constraints.existDisambChosenForCell(col, row)) {
               newAmbiguities.add(new Ambiguity(new CellPosition(row, col)));
@@ -116,91 +170,46 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       constraints = new Constraints(constraints.getSubjectColumnPosition(),
           constraints.getColumnIgnores(), constraints.getColumnAmbiguities(),
           constraints.getClassifications(), constraints.getColumnRelations(),
-          constraints.getDisambiguations(), newAmbiguities,
-          constraints.getDataCubeComponents());
-      
-      List<Integer> annotatedColumns = new ArrayList<>();
+          constraints.getDisambiguations(), newAmbiguities, constraints.getDataCubeComponents());
+
+      final List<Integer> annotatedColumns = new ArrayList<>();
       LOG.info("\t> PHASE: LEARNING ...");
       for (int col = 0; col < table.getNumCols(); col++) {
         if (getIgnoreColumns().contains(col)) {
           continue;
         }
         annotatedColumns.add(col);
-        
+
         LOG.info("\t>> Column=" + col);
-        learning.learn(table, tableAnnotations, col, constraints);
+        this.learning.learn(table, tableAnnotations, col, constraints);
       }
-      
-      if (update != null) {
+
+      if (this.update != null) {
         LOG.info("\t> PHASE: UPDATE phase ...");
-        update.update(annotatedColumns, table, tableAnnotations, constraints);
+        this.update.update(annotatedColumns, table, tableAnnotations, constraints);
       }
-      
+
       if (statistical) {
         LOG.info("\t> PHASE: Statistical annotation enumeration ...");
         setStatisticalAnnotations(annotatedColumns, table, tableAnnotations, constraints);
-      }
-      else {
-        LOG.info("\t> PHASE: RELATION ENUMERATION ...");
-        new RELATIONENUMERATION().enumerate(subjectColumnScores, getIgnoreColumns(), relationEnumerator,
-            tableAnnotations, table, annotatedColumns, update, constraints);
-        
-        // 4. consolidation - for columns that have relation with main subject column, if the column is
-        // entity column, do column typing and disambiguation; otherwise, simply create header annotation
-        LOG.info("\t\t>> Annotate literal-columns in relation with main column");
-        literalColumnTagger.annotate(table, tableAnnotations, annotatedColumns.toArray(new Integer[0]));
-      }
-      
-      return tableAnnotations;
-    } catch (Exception e) {
-      throw new STIException(e);
-    }
-  }
-  
-  private void setStatisticalAnnotations(List<Integer> annotatedColumns, Table table,
-      TAnnotation tableAnnotations, Constraints constraints) {
-    // set data cube components suggested by user
-    for (DataCubeComponent dataCubeComponent : constraints.getDataCubeComponents()) {
-      if (dataCubeComponent.getAnnotation().getPredicate().isEmpty()) {
-        tableAnnotations.setStatisticalAnnotation(dataCubeComponent.getPosition().getIndex(),
-            new TStatisticalAnnotation(TComponentType.NONE, null, null, 0));
       } else {
-        EntityCandidate suggestion = dataCubeComponent.getAnnotation().getPredicate().iterator().next();
-        tableAnnotations.setStatisticalAnnotation(dataCubeComponent.getPosition().getIndex(),
-            new TStatisticalAnnotation(convert(dataCubeComponent.getAnnotation().getComponent()),
-                suggestion.getEntity().getResource(), suggestion.getEntity().getLabel(), suggestion.getScore().getValue()));
+        LOG.info("\t> PHASE: RELATION ENUMERATION ...");
+        new RELATIONENUMERATION().enumerate(subjectColumnScores, getIgnoreColumns(),
+            this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
+            constraints);
+
+        // 4. consolidation - for columns that have relation with main subject column, if the column
+        // is
+        // entity column, do column typing and disambiguation; otherwise, simply create header
+        // annotation
+        LOG.info("\t\t>> Annotate literal-columns in relation with main column");
+        this.literalColumnTagger.annotate(table, tableAnnotations,
+            annotatedColumns.toArray(new Integer[0]));
       }
-    }
-    
-    // set data cube components for other columns (without user suggestions)
-    for (int col = 0; col < table.getNumCols(); col++) {
-      if (tableAnnotations.getStatisticalAnnotation(col) == null) {
-        if (!annotatedColumns.contains(col)) {
-          tableAnnotations.setStatisticalAnnotation(col, new TStatisticalAnnotation(TComponentType.NONE, null, null, 0));
-        }
-        else {
-          if (table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType().equals(
-              DataTypeClassifier.DataType.NAMED_ENTITY)) {
-            tableAnnotations.setStatisticalAnnotation(col, new TStatisticalAnnotation(TComponentType.DIMENSION, null, null, 0));
-          }
-          else {
-            tableAnnotations.setStatisticalAnnotation(col, new TStatisticalAnnotation(TComponentType.MEASURE, null, null, 0));
-          }
-        }
-      }
-    }
-  }
-  
-  private TComponentType convert(ComponentTypeValue componentType) {
-    switch (componentType) {
-      case DIMENSION:
-        return TComponentType.DIMENSION;
-      case MEASURE:
-        return TComponentType.MEASURE;
-      case NONE:
-        return TComponentType.NONE;
-      default:
-        return TComponentType.NONE;
+
+      return tableAnnotations;
+    } catch (final Exception e) {
+      throw new STIException(e);
     }
   }
 }

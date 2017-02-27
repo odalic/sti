@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * Annotates relation between two columns in a table.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -19,62 +19,34 @@ import com.google.common.collect.ImmutableSortedSet;
 public final class ColumnRelationAnnotation {
 
   private final NavigableSet<EntityCandidate> candidates;
-  
+
   private final Set<EntityCandidate> chosen;
 
   /**
    * Creates new annotation.
-   * 
+   *
    * @param candidates all possible candidates for the assigned entity sorted by with their
    *        likelihood
    * @param chosen subset of candidates chosen to annotate the element
    */
-  public ColumnRelationAnnotation(Set<? extends EntityCandidate> candidates,
-      Set<? extends EntityCandidate> chosen) {
+  public ColumnRelationAnnotation(final Set<? extends EntityCandidate> candidates,
+      final Set<? extends EntityCandidate> chosen) {
     Preconditions.checkNotNull(candidates);
     Preconditions.checkNotNull(chosen);
     Preconditions.checkArgument(candidates.containsAll(chosen));
-    
+
     this.candidates = ImmutableSortedSet.copyOf(candidates);
     this.chosen = ImmutableSet.copyOf(chosen);
   }
 
   /**
-   * @return the candidates
-   */
-  public NavigableSet<EntityCandidate> getCandidates() {
-    return candidates;
-  }
-  
-  /**
-   * @return the chosen
-   */
-  public Set<EntityCandidate> getChosen() {
-    return chosen;
-  }
-    
-  /**
-   * Computes hash code based on the candidates and the chosen.
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((candidates == null) ? 0 : candidates.hashCode());
-    result = prime * result + ((chosen == null) ? 0 : chosen.hashCode());
-    return result;
-  }
-
-  /**
    * Compares for equality (only other annotation of the same kind with equally ordered set of
    * candidates and the same chosen set passes).
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -84,29 +56,60 @@ public final class ColumnRelationAnnotation {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    ColumnRelationAnnotation other = (ColumnRelationAnnotation) obj;
-    if (candidates == null) {
+    final ColumnRelationAnnotation other = (ColumnRelationAnnotation) obj;
+    if (this.candidates == null) {
       if (other.candidates != null) {
         return false;
       }
-    } else if (!candidates.equals(other.candidates)) {
+    } else if (!this.candidates.equals(other.candidates)) {
       return false;
     }
-    if (chosen == null) {
+    if (this.chosen == null) {
       if (other.chosen != null) {
         return false;
       }
-    } else if (!chosen.equals(other.chosen)) {
+    } else if (!this.chosen.equals(other.chosen)) {
       return false;
     }
     return true;
   }
 
-  /* (non-Javadoc)
+  /**
+   * @return the candidates
+   */
+  public NavigableSet<EntityCandidate> getCandidates() {
+    return this.candidates;
+  }
+
+  /**
+   * @return the chosen
+   */
+  public Set<EntityCandidate> getChosen() {
+    return this.chosen;
+  }
+
+  /**
+   * Computes hash code based on the candidates and the chosen.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + ((this.candidates == null) ? 0 : this.candidates.hashCode());
+    result = (prime * result) + ((this.chosen == null) ? 0 : this.chosen.hashCode());
+    return result;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "ColumnRelationAnnotation [candidates=" + candidates + ", chosen=" + chosen + "]";
+    return "ColumnRelationAnnotation [candidates=" + this.candidates + ", chosen=" + this.chosen
+        + "]";
   }
 }

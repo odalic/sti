@@ -6,6 +6,6 @@ import java.util.Map;
  */
 public abstract class StoppingCriteria {
 
-    public abstract boolean stop(Map<Object, Double> state, int max);
+  public abstract boolean stop(Map<Object, Double> state, int max);
 
 }

@@ -6,5 +6,5 @@ import java.util.List;
  */
 public interface OntologyBasedBoWCreator {
 
-    List<String> create(String uri);
+  List<String> create(String uri);
 }
