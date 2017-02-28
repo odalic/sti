@@ -1,10 +1,10 @@
 package uk.ac.shef.dcs.sti.core.model;
 
-import uk.ac.shef.dcs.sti.core.subjectcol.TColumnDataType;
-import uk.ac.shef.dcs.sti.core.subjectcol.TColumnFeature;
-
 import java.io.Serializable;
 import java.util.List;
+
+import uk.ac.shef.dcs.sti.core.subjectcol.TColumnDataType;
+import uk.ac.shef.dcs.sti.core.subjectcol.TColumnFeature;
 
 /**
  */
@@ -12,46 +12,46 @@ public class TColumnHeader implements Serializable
 
 {
 
-    private static final long serialVersionUID = -1638925814000405913L;
+  private static final long serialVersionUID = -1638925814000405913L;
 
-    private String headerText;    //the raw text found in the table cell
-    private String xPath; //xpath that extracts this value
-    private List<TColumnDataType> type;
-    private TColumnFeature feature;
+  private String headerText; // the raw text found in the table cell
+  private String xPath; // xpath that extracts this value
+  private List<TColumnDataType> type;
+  private TColumnFeature feature;
 
-    public TColumnHeader(String text){
-        this.headerText=text;
-    }
+  public TColumnHeader(final String text) {
+    this.headerText = text;
+  }
 
-    public String getHeaderText() {
-        return headerText;
-    }
+  public TColumnFeature getFeature() {
+    return this.feature;
+  }
 
-    public void setHeaderText(String text) {
-        this.headerText = text;
-    }
+  public String getHeaderText() {
+    return this.headerText;
+  }
 
-    public String getHeaderXPath() {
-        return xPath;
-    }
+  public String getHeaderXPath() {
+    return this.xPath;
+  }
 
-    public void setHeaderXPath(String xPath) {
-        this.xPath = xPath;
-    }
+  public List<TColumnDataType> getTypes() {
+    return this.type;
+  }
 
-    public List<TColumnDataType> getTypes() {
-        return type;
-    }
+  public void setFeature(final TColumnFeature feature) {
+    this.feature = feature;
+  }
 
-    public void setType(List<TColumnDataType> type) {
-        this.type = type;
-    }
+  public void setHeaderText(final String text) {
+    this.headerText = text;
+  }
 
-    public TColumnFeature getFeature() {
-        return feature;
-    }
+  public void setHeaderXPath(final String xPath) {
+    this.xPath = xPath;
+  }
 
-    public void setFeature(TColumnFeature feature) {
-        this.feature = feature;
-    }
+  public void setType(final List<TColumnDataType> type) {
+    this.type = type;
+  }
 }

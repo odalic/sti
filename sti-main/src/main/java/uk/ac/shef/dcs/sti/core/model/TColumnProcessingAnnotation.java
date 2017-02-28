@@ -7,29 +7,28 @@ import java.io.Serializable;
  */
 public class TColumnProcessingAnnotation implements Serializable {
 
-    private static final long serialVersionUID = -1208912663212074692L;
+  public enum TColumnProcessingType implements Serializable {
+    NAMED_ENTITY, NON_NAMED_ENTITY, IGNORED
+  }
 
-    private TColumnProcessingType processingType;
+  private static final long serialVersionUID = -1208912663212074692L;
 
-    public TColumnProcessingAnnotation(TColumnProcessingType processingType) {
-        this.processingType = processingType;
+  private final TColumnProcessingType processingType;
+
+  public TColumnProcessingAnnotation(final TColumnProcessingType processingType) {
+    this.processingType = processingType;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (o instanceof TColumnProcessingAnnotation) {
+      final TColumnProcessingAnnotation hbr = (TColumnProcessingAnnotation) o;
+      return hbr.getProcessingType().equals(getProcessingType());
     }
+    return false;
+  }
 
-    public TColumnProcessingType getProcessingType() {
-        return processingType;
-    }
-
-    public boolean equals(Object o) {
-        if(o instanceof TColumnProcessingAnnotation) {
-            TColumnProcessingAnnotation hbr = (TColumnProcessingAnnotation) o;
-            return hbr.getProcessingType().equals(getProcessingType());
-        }
-        return false;
-    }
-
-    public enum TColumnProcessingType implements Serializable {
-        NAMED_ENTITY,
-        NON_NAMED_ENTITY,
-        IGNORED
-    }
+  public TColumnProcessingType getProcessingType() {
+    return this.processingType;
+  }
 }

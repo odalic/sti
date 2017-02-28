@@ -1,6 +1,5 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
-import javafx.util.Pair;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.util.Asserts;
 import org.apache.jena.arq.querybuilder.AskBuilder;
@@ -22,6 +21,7 @@ import uk.ac.shef.dcs.kbproxy.KBProxyUtils;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
+import uk.ac.shef.dcs.util.Pair;
 import uk.ac.shef.dcs.util.SolrCache;
 import uk.ac.shef.dcs.util.StringUtils;
 
@@ -665,7 +665,6 @@ public class SPARQLProxy extends KBProxy {
     return string == null || string.isEmpty();
   }
 
-  @SuppressWarnings("unchecked")
   private List<Entity> queryEntityCandidates(final String content, String... types)
       throws KBProxyException {
 
@@ -748,9 +747,8 @@ public class SPARQLProxy extends KBProxy {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private void adjustValueOfURLResource(Attribute attr) throws KBProxyException {
-    // TODO: This is a mess, refactor in #256.
+    // TODO: This is a mess, re-factor!
     String valueLabel = getResourceLabel(attr.getValue());
     String relationLabel = getResourceLabel(attr.getRelationURI());
 
@@ -759,7 +757,6 @@ public class SPARQLProxy extends KBProxy {
     attr.setRelationLabel(relationLabel);
   }
 
-  @SuppressWarnings("unchecked")
   private String getResourceLabel(String uri) throws KBProxyException {
     if (uri.startsWith("http")) {
       String queryCache = createSolrCacheQuery_findLabelForResource(uri);
@@ -782,7 +779,6 @@ public class SPARQLProxy extends KBProxy {
     return findAttributes(ec.getId(), cacheEntity);
   }
 
-  @SuppressWarnings("unchecked")
   private List<Attribute> findAttributes(String id, SolrCache cache) throws KBProxyException {
     if (id.length() == 0)
       return new ArrayList<>();

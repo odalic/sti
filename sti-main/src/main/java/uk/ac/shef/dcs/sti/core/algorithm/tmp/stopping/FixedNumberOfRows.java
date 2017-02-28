@@ -6,20 +6,21 @@ import java.util.Map;
  */
 public class FixedNumberOfRows extends StoppingCriteria {
 
-    private int stop_at_row_counter=0;
-    private int current_iteration;
+  private int stop_at_row_counter = 0;
+  private int current_iteration;
 
-    public FixedNumberOfRows(int rows){
-        stop_at_row_counter=rows;
+  public FixedNumberOfRows(final int rows) {
+    this.stop_at_row_counter = rows;
+  }
+
+  @Override
+  public boolean stop(final Map<Object, Double> state, final int max) {
+    this.current_iteration++;
+
+    if (this.current_iteration < this.stop_at_row_counter) {
+      return false;
     }
 
-    @Override
-    public boolean stop(Map<Object, Double> state, int max) {
-        current_iteration++;
-
-        if (current_iteration < stop_at_row_counter)
-            return false;
-
-        return true;
-    }
+    return true;
+  }
 }
