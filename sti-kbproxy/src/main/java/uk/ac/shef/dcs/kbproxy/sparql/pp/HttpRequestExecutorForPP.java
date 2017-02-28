@@ -44,6 +44,8 @@ public class HttpRequestExecutorForPP {
     /**
      * Creates concept
      *
+     * http://adequate-project-pp.semantic-web.at/PoolParty/api?method=createConcept
+     *
      * @return HTTP response
      * @throws Exception
      *             if request execution fails
@@ -53,9 +55,10 @@ public class HttpRequestExecutorForPP {
         try {
 
             URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/thesaurus/" + ConnectionConfig.projectId + "/createConcept");
-            //uriBuilder.addParameter("parent",ConnectionConfig.conceptSchemaProposedUrl);
             //TODO TEMP hack to add everything under "top"
+            //uriBuilder.addParameter("parent",ConnectionConfig.conceptSchemaProposedUrl);
             uriBuilder.addParameter("parent","http://adequate-project-pp.semantic-web.at/ADEQUATe_KB/9bcc103d-77b6-4d2d-a006-f69f3192025c");
+
             uriBuilder.addParameter("prefLabel",createdEntityDesc.getLabel());
 
             HttpPost request = new HttpPost(uriBuilder.build().normalize());
@@ -171,7 +174,7 @@ public class HttpRequestExecutorForPP {
     /**
      * Add literal
      *
-     * http://<server-url>/PoolParty/api/thesaurus/APItests/addLiteral?concept=http://test.info/glossary/2614&label=New label&language=en&property=alternativeLabel
+     * http://<server-url>/PoolParty/api/thesaurus/APItests/applyType?resource=http://test.info/glossary/2614&type=http://vocabulary.poolparty.biz/PoolParty/schema/Geonames/Continent
      *
      * @return HTTP response
      * @throws Exception
@@ -326,6 +329,129 @@ public class HttpRequestExecutorForPP {
             throw new PPRestApiCallException(errorMsg, ex);
         }
     }
+
+
+    /**
+     * Creates class
+     *
+     * http://adequate-project-pp.semantic-web.at/PoolParty/!/api?method=createClass
+     *
+     * Sample:
+     * {
+     "schemaUri": {
+     "uri": "http://localhost:8080/some"
+     },
+     "uri": {
+     "uri": "http://localhost:8080/some/sf"
+     },
+     "label": {
+     "label" : "Test"
+     },
+     "addToCustomScheme" : [
+     {
+     "uri" : "http://localhost:8080/testdf"
+     }]
+     }
+     *
+     *
+     * @return HTTP response
+     * @throws Exception
+     *             if request execution fails
+     */
+    public String createRelationRequest(RelationDesc createdEntityDesc) throws PPRestApiCallException {
+        CloseableHttpResponse response = null;
+        try {
+
+            JSONObject json = new JSONObject();
+
+            JSONObject schemaUri = new JSONObject();
+            schemaUri.put("uri", ConnectionConfig.ontologyUrl);
+            json.put("schemaUri", schemaUri);
+
+            JSONObject targetUri = new JSONObject();
+            targetUri.put("uri",createdEntityDesc.getClassUrl());
+            json.put("uri", targetUri);
+
+            JSONObject label = new JSONObject();
+            label.put("label",createdEntityDesc.getLabel());
+            json.put("label", label);
+
+            JSONObject addToCustomSchema = new JSONObject();
+            addToCustomSchema.put("uri", ConnectionConfig.customSchemaUrl);
+            JSONArray array = new JSONArray();
+            array.add(addToCustomSchema);
+
+            json.put("addToCustomScheme", array);
+
+            //domain
+            JSONObject domain = new JSONObject();
+            domain.put("uri", createdEntityDesc.getDomain());
+            JSONArray arrayDomains = new JSONArray();
+            arrayDomains.add(domain);
+
+            json.put("domain", arrayDomains);
+
+            //range
+            JSONObject range = new JSONObject();
+            range.put("uri", createdEntityDesc.getRange());
+            JSONArray arrayRanges = new JSONArray();
+            arrayRanges.add(range);
+
+            json.put("range", arrayRanges);
+
+            //single
+//            JSONObject singleBoolean = new JSONObject();
+//            singleBoolean.put("boolean","false");
+            json.put("single", "false");
+
+
+
+            URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/schema/createDirectedRelation");
+
+            HttpPost request = new HttpPost(uriBuilder.build().normalize());
+            request.addHeader("content-type", "application/json");
+
+            StringEntity params = new StringEntity(json.toString());
+            params.setContentType("application/json");
+            request.setEntity(params);
+
+            addBasiAuthenticationForHttpRequest(request, ConnectionConfig.ppUser, ConnectionConfig.ppPassword);
+
+            response = client.execute(request);
+
+            //process response
+            //checkHttpResponseStatus(response);
+
+            //get response
+            HttpEntity responseHttpEntity = response.getEntity();
+            InputStream content = responseHttpEntity.getContent();
+            BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+            String line;
+            String responseString = "";
+
+            while ((line = buffer.readLine()) != null) {
+                responseString += line;
+            }
+
+            try {
+                //release all resources held by the responseHttpEntity
+                EntityUtils.consume(responseHttpEntity);
+
+                //close the stream
+                response.close();
+            } finally {
+                response.close();
+            }
+
+            return responseString;
+
+        } catch (URISyntaxException | IllegalStateException | IOException ex) {
+            String errorMsg = String.format("Failed to execute HTTP raw POST request to URL %s", "xx");
+            LOG.error(errorMsg);
+            throw new PPRestApiCallException(errorMsg, ex);
+        }
+    }
+
 
 
 

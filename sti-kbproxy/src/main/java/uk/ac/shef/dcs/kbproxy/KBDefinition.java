@@ -19,6 +19,7 @@ import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
  */
 public class KBDefinition {
 
+  //see also STRUCTURE_CLASS and RESOURCE_CLASS below
   public enum SEARCH_CLASS_TYPE_MODE_VALUE {
     DIRECT,
     INDIRECT
@@ -48,7 +49,10 @@ public class KBDefinition {
   private static final String PREDICATE_DESCRIPTION_PROPERTY_NAME = "kb.predicate.description";
   private static final String PREDICATE_TYPE_PROPERTY_NAME = "kb.predicate.type";
 
+  //it is used during searching for classes (classifications for the columns) during auto/manual search. It is also used to restrict search over instances in a way that ?resource a X; X a <StructureClass>.
   private static final String STRUCTURE_CLASS = "kb.structure.class";
+  //this is used to restrict search over instances in a way that ?resource a <ResourceClass> (e.g. those which are instance of skos:Concept)
+  private static final String RESOURCE_CLASS = "kb.resource.class";
   private static final String STRUCTURE_PROPERTY = "kb.structure.property";
 
   private static final String INSERT_SUPPORTED = "kb.insert.supported";
@@ -202,6 +206,11 @@ public class KBDefinition {
     return structure.get(STRUCTURE_CLASS);
   }
 
+  public Set<String> getResouceClass() {
+    return structure.get(RESOURCE_CLASS);
+  }
+
+
   public Set<String> getStructureProperty() {
     return structure.get(STRUCTURE_PROPERTY);
   }
@@ -329,6 +338,7 @@ public class KBDefinition {
     structure.put(PREDICATE_TYPE_PROPERTY_NAME, new HashSet<>());
     structure.put(STRUCTURE_CLASS, new HashSet<>());
     structure.put(STRUCTURE_PROPERTY, new HashSet<>());
+    structure.put(RESOURCE_CLASS,new HashSet<>());
   }
 
   //endregion

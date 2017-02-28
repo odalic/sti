@@ -951,7 +951,7 @@ public class SPARQLProxy extends KBProxy {
           //kbDefinition.getSearchClassTypeMode().equals(SEARCH_CLASS_TYPE_MODE_VALUE.DIRECT)
           builder = addUnion(
                   builder,
-                  kbDefinition.getStructureClass(),
+                  kbDefinition.getResouceClass(),
                   (subBuilder, value) -> subBuilder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(kbDefinition.getStructureInstanceOf()), createSPARQLResource(value)),
                   SPARQL_VARIABLE_SUBJECT);
         }

@@ -14,6 +14,7 @@ import uk.ac.shef.dcs.kbproxy.sparql.SPARQLProxy;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Created by tomasknap on 20/12/16.
@@ -34,8 +35,8 @@ public class PPProxy extends SPARQLProxy {
      * @param cachesBasePath Base path for the initialized solr caches.
      * @throws IOException
      */
-    public PPProxy(KBDefinition kbDefinition, Boolean fuzzyKeywords, String cachesBasePath) throws IOException, KBProxyException {
-        super(kbDefinition, fuzzyKeywords, cachesBasePath);
+    public PPProxy(KBDefinition kbDefinition, Boolean fuzzyKeywords, String cachesBasePath, Map<String, String> prefixToUriMap) throws IOException, KBProxyException {
+        super(kbDefinition, fuzzyKeywords, cachesBasePath, prefixToUriMap);
 
         this.helper = new HttpRequestExecutorForPP();
 
@@ -52,19 +53,28 @@ public class PPProxy extends SPARQLProxy {
         return ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF, base);
     }
 
+    /**
+     * Inserts class to the ontology and custom schema.
+     *
+     * See: https://grips.semantic-web.at/pages/editpage.action?pageId=75563973
+     *
+     *  TODO Should it also create concept? Otherwise not able to use alternative labels!, also PPX is using only concepts
+     *  TODO Add subclass superclass relation if available
+     *
+     * @param uri
+     * @param label
+     * @param alternativeLabels
+     * @param superClass
+     * @return
+     * @throws KBProxyException
+     */
     @Override
     public Entity insertClass(URI uri, String label, Collection<String> alternativeLabels, String superClass) throws KBProxyException {
 
-        //It creates class in the ontology
-        //TODO Should it also create concept? Otherwise not able to use alternative labels, also PPX is using only concepts
 
         performInsertChecks(label);
 
         String url = checkOrGenerateUrl(kbDefinition.getInsertSchemaElementPrefix(), uri);
-
-        if (isNullOrEmpty(superClass)){
-            superClass = kbDefinition.getInsertRootClass();
-        }
 
         //prepare new entity description - the entity being created
         ResourceDesc resourceToBeCreatedDesc = new ResourceDesc(url, label);
@@ -72,7 +82,6 @@ public class PPProxy extends SPARQLProxy {
 
         //Step: Add class as well (not just the concept) and add that class also to custom schema at the same time (required)
         try {
-            //TODO Add subclass superclass relation if available
             helper.createClassRequest(resourceToBeCreatedDesc);
         } catch (PPRestApiCallException ex) {
             throw new KBProxyException(ex);
@@ -82,12 +91,26 @@ public class PPProxy extends SPARQLProxy {
 
     }
 
+    /**
+     *
+     * Inserts new concept to the taxonomy.
+     *
+     * See: https://grips.semantic-web.at/pages/editpage.action?pageId=75563973
+     *
+     * @param uri
+     * @param label
+     * @param alternativeLabels
+     * @param classes
+     * @return
+     * @throws KBProxyException
+     */
     @Override
     public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels, Collection<String> classes) throws KBProxyException {
 
         performInsertChecks(label);
 
-        //String url = checkOrGenerateUrl(kbDefinition.getInsertDataElementPrefix(), uri);
+        //TODO such url is never used, it is always generated
+        String url = checkOrGenerateUrl(kbDefinition.getInsertDataElementPrefix(), uri);
 
         //prepare new entity description - the entity being created
         ResourceDesc resourceToBeCreatedDesc = new ResourceDesc(label);
@@ -136,6 +159,32 @@ public class PPProxy extends SPARQLProxy {
         return new Entity(urlCreated, label);
     }
 
+    /**
+     *
+     * Inserts predicate to the ontology and custom schema.
+     *
+     * See: https://grips.semantic-web.at/pages/editpage.action?pageId=75563973
+     *
+     *
+     * http://adequate-project-pp.semantic-web.at/PoolParty/api?method=createDirectedRelation
+     *
+     *  TODO Differentiate Object and DataProperties (ObjectProperties in this method, DataProperties have to be added as attributes)
+     *      http://adequate-project-pp.semantic-web.at/PoolParty/api?method=createAttribute
+     *
+     *  TODO Properties are instance of swc:DirectedProperty!
+     *
+     *  TODO How to handle alternative labels?
+     *  TODO Add sub-super property relation
+     *
+     * @param uri
+     * @param label
+     * @param alternativeLabels
+     * @param superProperty
+     * @param domain
+     * @param range
+     * @return
+     * @throws KBProxyException
+     */
     @Override
     public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range) throws KBProxyException {
         performInsertChecks(label);
@@ -143,6 +192,17 @@ public class PPProxy extends SPARQLProxy {
         String url = checkOrGenerateUrl(kbDefinition.getInsertSchemaElementPrefix(), uri);
 
         //TODO properties
+
+        //prepare new entity description - the entity being created
+        RelationDesc resourceToBeCreatedDesc = new RelationDesc(url.toString(), label, domain, range);
+
+
+        //Step: Add class as well (not just the concept) and add that class also to custom schema at the same time (required)
+        try {
+            helper.createRelationRequest(resourceToBeCreatedDesc);
+        } catch (PPRestApiCallException ex) {
+            throw new KBProxyException(ex);
+        }
 
 //        String url = checkOrGenerateUrl(kbDefinition.getInsertSchemaElementPrefix(), uri);
 //
@@ -155,6 +215,8 @@ public class PPProxy extends SPARQLProxy {
 //        appendValueIfNotEmpty(tripleDefinition, kbDefinition.getInsertRange(), range, false);
 //
 //        insert(tripleDefinition.toString());
+
+
         return new Entity(url, label);
     }
 

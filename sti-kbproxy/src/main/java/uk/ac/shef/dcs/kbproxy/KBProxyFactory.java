@@ -2,6 +2,7 @@ package uk.ac.shef.dcs.kbproxy;
 
 import uk.ac.shef.dcs.kbproxy.freebase.FreebaseSearch;
 import uk.ac.shef.dcs.kbproxy.sparql.DBpediaProxy;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.PPProxy;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -55,6 +56,18 @@ public class KBProxyFactory {
                           Map.class).
                   newInstance(definition,
                           fuzzyKeywords, cachesBasePath, prefixToUriMap));
+        } else if (className.equals(PPProxy.class.getName())) {
+          KBDefinition definition = new KBDefinition();
+          definition.load(properties, workingDirectory);
+
+          result.add((KBProxy) Class.forName(className).
+                  getDeclaredConstructor(KBDefinition.class,
+                          Boolean.class,
+                          String.class,
+                          Map.class).
+                  newInstance(definition,
+                          fuzzyKeywords, cachesBasePath, prefixToUriMap));
+
         } else {
           throw new KBProxyException("Class:" + className + " not supported");
         }

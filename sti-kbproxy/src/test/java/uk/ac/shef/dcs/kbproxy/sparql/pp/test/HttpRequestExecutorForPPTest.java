@@ -1,8 +1,9 @@
 package uk.ac.shef.dcs.kbproxy.sparql.pp.test;
 
-import org.junit.Before;
 import org.junit.Test;
+
 import uk.ac.shef.dcs.kbproxy.sparql.pp.HttpRequestExecutorForPP;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.RelationDesc;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.ResourceDesc;
 
 public class HttpRequestExecutorForPPTest {
@@ -83,6 +84,19 @@ public class HttpRequestExecutorForPPTest {
         executor.createClassRequest(ed);
     }
 
+
+    //create relation
+    @Test
+    public void POSTCreateRelation() throws Exception {
+
+        HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();
+        RelationDesc ed = new RelationDesc("http://example.org/class/relation02", "relation", "http://example.org/class/test03","http://example.org/class/test04"); //the url is the class URL
+        //String url = executor.createConceptRequest(ed);
+        //ed.setConceptUrl(url);
+        executor.createRelationRequest(ed);
+    }
+
+
     //create concept
     //@Test
     public void POSTCreateConcept() throws Exception {
@@ -106,7 +120,9 @@ public class HttpRequestExecutorForPPTest {
     }
 
 
-    @Before
+
+
+    //@Before
     public void createClass() {
         HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();
         ResourceDesc ed = new ResourceDesc("http://example.org/class/test04", "test04"); //the url is the class URL
@@ -114,7 +130,7 @@ public class HttpRequestExecutorForPPTest {
     }
 
     //create concept and apply to it class http://example.org/class/test03
-    @Test
+    //@Test
     public void POSTCreateConceptApplyClassToThat() throws Exception {
 
         HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();

@@ -6,15 +6,6 @@ package uk.ac.shef.dcs.kbproxy.sparql.pp;
 public class ResourceDesc {
 
     private String classUrl;
-
-    public String getClassUrl() {
-        return classUrl;
-    }
-
-    public void setClassUrl(String classUrl) {
-        this.classUrl = classUrl;
-    }
-
     private String conceptUrl;
     private String label;
 
@@ -25,6 +16,14 @@ public class ResourceDesc {
 
     public ResourceDesc(String classUrl, String label) {
         this(label);
+        this.classUrl = classUrl;
+    }
+
+    public String getClassUrl() {
+        return classUrl;
+    }
+
+    public void setClassUrl(String classUrl) {
         this.classUrl = classUrl;
     }
 
