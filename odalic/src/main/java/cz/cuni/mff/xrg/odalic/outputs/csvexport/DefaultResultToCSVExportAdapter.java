@@ -121,7 +121,7 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
     if (configuration.isStatistical()) {
       final URI kbUri = this.knowledgeBaseProxyFactory.getKBProxies()
           .get(configuration.getPrimaryBase().getName()).getKbDefinition()
-          .getInsertDataElementPrefix();
+          .getInsertPrefixData();
 
       builder.insertHeader(urlFormat(OBSERVATION), newPosition);
 

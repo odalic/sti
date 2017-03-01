@@ -332,7 +332,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
       final int obsIndex = this.headers.size() - 1;
       this.isDisambiguated[obsIndex] = true;
 
-      final URI kbUri = this.kbProxy.getKbDefinition().getInsertSchemaElementPrefix();
+      final URI kbUri = this.kbProxy.getKbDefinition().getInsertPrefixSchema();
       final Entity datasetEntity =
           Entity.of(String.format("%sdataset/%s", kbUri, generateStringUUID()), "");
       final Entity dsdEntity =

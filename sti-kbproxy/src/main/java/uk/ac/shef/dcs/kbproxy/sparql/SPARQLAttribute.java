@@ -20,12 +20,20 @@ public class SPARQLAttribute extends Attribute {
 
   @Override
   public boolean isAlias(KBDefinition definition) {
-    return KBProxyUtils.contains(definition.getPredicateLabel(), getRelationURI());
+    if (definition instanceof SPARQLDefinition) {
+      return KBProxyUtils.contains(((SPARQLDefinition)definition).getStructurePredicateLabel(), getRelationURI());
+    }
+
+    return false;
   }
 
   @Override
   public boolean isDescription(KBDefinition definition) {
-    return KBProxyUtils.contains(definition.getPredicateDescription(), getRelationURI());
+    if (definition instanceof SPARQLDefinition) {
+      return KBProxyUtils.contains(((SPARQLDefinition)definition).getStructurePredicateDescription(), getRelationURI());
+    }
+
+    return false;
   }
 
   @Override

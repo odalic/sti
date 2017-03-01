@@ -1,5 +1,8 @@
 package uk.ac.shef.dcs.kbproxy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
 
 import java.io.FileInputStream;
@@ -16,6 +19,7 @@ import uk.ac.shef.dcs.kbproxy.sparql.DBpediaProxy;
  */
 public class KBProxyFactory {
   private static final String PROPERTIES_SEPARATOR = "\\|";
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public Collection<KBProxy> createInstances(final String kbPropertyFiles, String cachesBasePath,
       final String workingDirectory, final Map<String, String> prefixToUriMap)
@@ -27,24 +31,19 @@ public class KBProxyFactory {
       cachesBasePath = combinePaths(workingDirectory, cachesBasePath);
 
       for (final String kbProxyPropertyFile : kbProxyPropertyFilesArray) {
-        final Properties properties = new Properties();
-        properties.load(new FileInputStream(combinePaths(workingDirectory, kbProxyPropertyFile)));
+        try {
+          final Properties properties = new Properties();
+          properties.load(new FileInputStream(combinePaths(workingDirectory, kbProxyPropertyFile)));
 
-        final String className = properties.getProperty(KBProxy.KB_SEARCH_CLASS);
-        final boolean fuzzyKeywords =
-            Boolean.valueOf(properties.getProperty(KBProxy.KB_SEARCH_TRY_FUZZY_KEYWORD, "false"));
+          final String className = KBDefinition.getKBClass(properties);
+          final KBProxy proxy = (KBProxy) Class.forName(className)
+                .getDeclaredConstructor(Properties.class, String.class, String.class, Map.class)
+                .newInstance(properties, workingDirectory, cachesBasePath, prefixToUriMap);
 
-        if (className.equals(DBpediaProxy.class.getName())) {
-          final KBDefinition definition = new KBDefinition();
-          definition.load(properties, workingDirectory);
-
-          result
-              .add((KBProxy) Class.forName(className)
-                  .getDeclaredConstructor(KBDefinition.class, Boolean.class, String.class,
-                      Map.class)
-                  .newInstance(definition, fuzzyKeywords, cachesBasePath, prefixToUriMap));
-        } else {
-          throw new KBProxyException("Class:" + className + " not supported");
+          result.add(proxy);
+        }
+        catch (Exception e) {
+          log.error("Error loading knowledge base \"" + kbProxyPropertyFile + "\".", e);
         }
       }
 
