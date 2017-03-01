@@ -697,7 +697,7 @@ public class SPARQLProxy extends KBProxyGeneric<SPARQLDefinition> {
 
       //2. if result is empty, try regex (if allowed)
       //the same for type/non-type restrictions ??
-      if (resourceAndType.size() == 0 && fuzzyKeywords) {
+      if (resourceAndType.size() == 0 && kbDefinition.isFulltextEnabled()) {
         log.debug("(query by regex. This can take a long time)");
         sparqlQuery = createFulltextQueryForResources(unescapedContent, null, false,  types);
         queryResult = queryReturnTuples(sparqlQuery, unescapedContent);

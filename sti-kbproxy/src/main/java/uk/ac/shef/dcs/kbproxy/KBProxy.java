@@ -51,7 +51,6 @@ public abstract class KBProxy {
   protected SolrCache cacheProperty;
 
   protected SolrCache cacheSimilarity;
-  protected boolean fuzzyKeywords;
 
   private final String cachesBasePath;
 
@@ -401,7 +400,7 @@ public abstract class KBProxy {
       Collection<String> classes) throws KBProxyException;
 
   /**
-   * Inserts a new propety into the knowledge base
+   * Inserts a new property into the knowledge base
    */
   public abstract Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels,
       String superProperty, String domain, String range) throws KBProxyException;
