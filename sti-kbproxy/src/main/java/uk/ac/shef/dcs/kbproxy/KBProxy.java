@@ -2,6 +2,7 @@ package uk.ac.shef.dcs.kbproxy;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -26,8 +28,6 @@ import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.util.SolrCache;
 
-/**
- */
 public abstract class KBProxy {
 
   protected interface Func<Type> {
@@ -38,9 +38,6 @@ public abstract class KBProxy {
 
   private static final String CACHE_VERSION = "1.0.18";
   private static final Map<String, CoreContainer> cacheCores = new HashMap<>();
-  protected static final String KB_SEARCH_RESULT_STOP_LIST = "kb.search.result.stoplistfile";
-  protected static final String KB_SEARCH_CLASS = "kb.search.class";
-  protected static final String KB_SEARCH_TRY_FUZZY_KEYWORD = "kb.search.tryfuzzykeyword";
   private static final String ENTITY_CACHE = "entity";
   private static final String PROPERTY_CACHE = "property";
 
@@ -54,31 +51,22 @@ public abstract class KBProxy {
   protected SolrCache cacheProperty;
 
   protected SolrCache cacheSimilarity;
-  protected boolean fuzzyKeywords;
 
   private final String cachesBasePath;
 
   protected KBSearchResultFilter resultFilter;
 
   protected final Logger log = LoggerFactory.getLogger(getClass());
-  protected KBDefinition kbDefinition;
 
   protected Map<String, String> prefixToUriMap;
 
   /**
-   * @param kbDefinition the knowledge base definition
-   * @param fuzzyKeywords given a query string, kbproxy will firstly try to fetch results matching
-   *        the exact query. when no match is found, you can set fuzzyKeywords to true, to let
-   *        kbproxy to break the query string based on conjunective words. So if the query string is
-   *        "tom and jerry", it will try "tom" and "jerry"
    * @param cachesBasePath Base path for the initialized solr caches.
+   * @param prefixToUriMap Map of user defined prefixes.
    */
-  public KBProxy(final KBDefinition kbDefinition, final Boolean fuzzyKeywords,
-      final String cachesBasePath, final Map<String, String> prefixToUriMap) throws IOException {
+  public KBProxy(String cachesBasePath, final Map<String, String> prefixToUriMap) throws IOException, URISyntaxException, KBProxyException {
 
-    this.kbDefinition = kbDefinition;
     this.cachesBasePath = cachesBasePath;
-    this.fuzzyKeywords = fuzzyKeywords;
     this.prefixToUriMap = ImmutableMap.copyOf(prefixToUriMap);
   }
 
@@ -311,12 +299,10 @@ public abstract class KBProxy {
   public abstract List<Entity> findResourceByFulltext(String pattern, int limit)
       throws KBProxyException;
 
-  public KBDefinition getKbDefinition() {
-    return this.kbDefinition;
-  }
+  public abstract KBDefinition getKbDefinition();
 
   public String getName() {
-    return this.kbDefinition.getName();
+    return this.getKbDefinition().getName();
   }
 
 
@@ -353,12 +339,12 @@ public abstract class KBProxy {
   public abstract List<String> getPropertyRanges(String uri) throws KBProxyException;
 
   public EmbeddedSolrServer getSolrServer(final String cacheIdentifier) throws KBProxyException {
-    final Path cachePath = Paths.get(this.cachesBasePath, this.kbDefinition.getName());
+    final Path cachePath = Paths.get(this.cachesBasePath, this.getKbDefinition().getName());
     EmbeddedSolrServer cacheServer;
 
     if (!cacheCores.containsKey(cachePath.toString())) {
       cacheServer = initializeSolrServer(cacheIdentifier, cachePath,
-          this.kbDefinition.getCacheTemplatePath());
+          this.getKbDefinition().getCacheTemplatePath());
       cacheCores.put(cachePath.toString(), cacheServer.getCoreContainer());
     } else {
       cacheServer = new EmbeddedSolrServer(cacheCores.get(cachePath.toString()), cacheIdentifier);
@@ -414,7 +400,7 @@ public abstract class KBProxy {
       Collection<String> classes) throws KBProxyException;
 
   /**
-   * Inserts a new propety into the knowledge base
+   * Inserts a new property into the knowledge base
    */
   public abstract Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels,
       String superProperty, String domain, String range) throws KBProxyException;
