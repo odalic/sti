@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,23 +26,37 @@ public class KBDefinition {
   private static final String INSERT_PREFIX_DATA = "kb.insert.prefix.data";
   private static final String INSERT_PREFIX_SCHEMA = "kb.insert.prefix.schema";
 
-  //endregion
+  // endregion
 
   // region Fields
 
-  protected final Logger log = LoggerFactory.getLogger(getClass());
+  public static String getKBClass(final Properties properties) throws KBProxyException {
+    return getMandatoryValue(properties, KB_SEARCH_CLASS);
+  }
 
+  protected static String getMandatoryValue(final Properties properties, final String propertyName)
+      throws KBProxyException {
+    if (!properties.containsKey(propertyName)) {
+      throw new KBProxyException("Property " + propertyName + " is mandatory.");
+    }
+
+    return properties.getProperty(propertyName);
+  }
+
+  protected final Logger log = LoggerFactory.getLogger(getClass());
   private String name;
+
   private String stopListFile;
   private String cacheTemplatePath;
-
   private boolean insertSupported;
-  private URI insertPrefixData;
-  private URI insertPrefixSchema;
 
   // endregion
 
   // region Properties and Methods
+
+  private URI insertPrefixData;
+
+  private URI insertPrefixSchema;
 
   public String getCacheTemplatePath() {
     return this.cacheTemplatePath;
@@ -55,10 +70,6 @@ public class KBDefinition {
     return this.insertPrefixSchema;
   }
 
-  public static String getKBClass(Properties properties) throws KBProxyException {
-    return getMandatoryValue(properties, KB_SEARCH_CLASS);
-  }
-
   /**
    * Returns the name of the knowledge base
    *
@@ -66,6 +77,17 @@ public class KBDefinition {
    */
   public String getName() {
     return this.name;
+  }
+
+  protected String getOptionalValue(final Properties properties, final String propertyName,
+      final String defaultValue) {
+    if (!properties.containsKey(propertyName)) {
+      this.log.warn("Configuration does not contain the " + propertyName
+          + " setting. Setting to the default \"" + defaultValue + "\".");
+      return defaultValue;
+    }
+
+    return properties.getProperty(propertyName);
   }
 
   public String getStopListFile() {
@@ -85,52 +107,27 @@ public class KBDefinition {
    * @throws IOException
    * @throws URISyntaxException
    */
-  public void load(
-          final Properties kbProperties,
-          final String workingDirectory,
-          final String cacheDirectory)
-          throws IOException, URISyntaxException, KBProxyException {
+  public void load(final Properties kbProperties, final String workingDirectory,
+      final String cacheDirectory) throws IOException, URISyntaxException, KBProxyException {
     // Name
-    setName(getMandatoryValue(kbProperties,NAME_PROPERTY_NAME));
+    setName(getMandatoryValue(kbProperties, NAME_PROPERTY_NAME));
 
     // Stoplist definition
     setStopListFile(combinePaths(workingDirectory,
-            getMandatoryValue(kbProperties, STOP_LIST_FILE_PROPERTY_NAME)));
+        getMandatoryValue(kbProperties, STOP_LIST_FILE_PROPERTY_NAME)));
 
     // Cache template
     setCacheTemplatePath(combinePaths(cacheDirectory,
-            getMandatoryValue(kbProperties, CACHE_TEMPLATE_PATH_PROPERTY_NAME)));
+        getMandatoryValue(kbProperties, CACHE_TEMPLATE_PATH_PROPERTY_NAME)));
 
     // SPARQL insert
-    setInsertSupported(Boolean.parseBoolean(
-            getOptionalValue(kbProperties, INSERT_SUPPORTED, DEFAULT_INSERT_SUPPORTED)));
+    setInsertSupported(Boolean
+        .parseBoolean(getOptionalValue(kbProperties, INSERT_SUPPORTED, DEFAULT_INSERT_SUPPORTED)));
 
     if (isInsertSupported()) {
       setInsertPrefixData(new URI(getMandatoryValue(kbProperties, INSERT_PREFIX_DATA)));
       setInsertPrefixSchema(new URI(getMandatoryValue(kbProperties, INSERT_PREFIX_SCHEMA)));
     }
-  }
-
-  protected static String getMandatoryValue(
-          Properties properties,
-          final String propertyName) throws KBProxyException {
-    if (!properties.containsKey(propertyName)) {
-      throw new KBProxyException("Property " + propertyName + " is mandatory.");
-    }
-
-    return properties.getProperty(propertyName);
-  }
-
-  protected String getOptionalValue(
-          Properties properties,
-          final String propertyName,
-          final String defaultValue) {
-    if (!properties.containsKey(propertyName)) {
-      log.warn("Configuration does not contain the " + propertyName + " setting. Setting to the default \"" + defaultValue + "\".");
-      return defaultValue;
-    }
-
-    return properties.getProperty(propertyName);
   }
 
   private void setCacheTemplatePath(final String cacheTemplatePath) {

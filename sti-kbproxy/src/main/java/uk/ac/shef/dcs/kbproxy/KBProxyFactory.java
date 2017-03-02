@@ -1,8 +1,5 @@
 package uk.ac.shef.dcs.kbproxy;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
 
 import java.io.FileInputStream;
@@ -11,6 +8,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by - on 17/03/2016.
@@ -35,13 +35,12 @@ public class KBProxyFactory {
 
           final String className = KBDefinition.getKBClass(properties);
           final KBProxy proxy = (KBProxy) Class.forName(className)
-                .getDeclaredConstructor(Properties.class, String.class, String.class, Map.class)
-                .newInstance(properties, workingDirectory, cachesBasePath, prefixToUriMap);
+              .getDeclaredConstructor(Properties.class, String.class, String.class, Map.class)
+              .newInstance(properties, workingDirectory, cachesBasePath, prefixToUriMap);
 
           result.add(proxy);
-        }
-        catch (Exception e) {
-          log.error("Error loading knowledge base \"" + kbProxyPropertyFile + "\".", e);
+        } catch (final Exception e) {
+          this.log.error("Error loading knowledge base \"" + kbProxyPropertyFile + "\".", e);
         }
       }
 

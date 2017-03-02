@@ -14,11 +14,13 @@ public abstract class KBProxyGeneric<KBDefinitionType extends KBDefinition> exte
    * @param cachesBasePath Base path for the initialized solr caches.
    * @param prefixToUriMap Map of user defined prefixes.
    */
-  public KBProxyGeneric(final Properties properties, String workingDirectory, String cachesBasePath, final Map<String, String> prefixToUriMap) throws IOException, URISyntaxException, KBProxyException {
+  public KBProxyGeneric(final Properties properties, final String workingDirectory,
+      final String cachesBasePath, final Map<String, String> prefixToUriMap)
+      throws IOException, URISyntaxException, KBProxyException {
     super(cachesBasePath, prefixToUriMap);
 
-    kbDefinition = createKBDefinition();
-    kbDefinition.load(properties, workingDirectory, cachesBasePath);
+    this.kbDefinition = createKBDefinition();
+    this.kbDefinition.load(properties, workingDirectory, cachesBasePath);
   }
 
   @SuppressWarnings("unchecked")
@@ -26,6 +28,7 @@ public abstract class KBProxyGeneric<KBDefinitionType extends KBDefinition> exte
     return (KBDefinitionType) new KBDefinition();
   }
 
+  @Override
   public KBDefinition getKbDefinition() {
     return this.kbDefinition;
   }

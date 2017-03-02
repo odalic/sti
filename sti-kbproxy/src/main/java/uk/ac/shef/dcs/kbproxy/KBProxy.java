@@ -63,7 +63,8 @@ public abstract class KBProxy {
    * @param cachesBasePath Base path for the initialized solr caches.
    * @param prefixToUriMap Map of user defined prefixes.
    */
-  public KBProxy(String cachesBasePath, final Map<String, String> prefixToUriMap) throws IOException, URISyntaxException, KBProxyException {
+  public KBProxy(final String cachesBasePath, final Map<String, String> prefixToUriMap)
+      throws IOException, URISyntaxException, KBProxyException {
 
     this.cachesBasePath = cachesBasePath;
     this.prefixToUriMap = ImmutableMap.copyOf(prefixToUriMap);
@@ -301,7 +302,7 @@ public abstract class KBProxy {
   public abstract KBDefinition getKbDefinition();
 
   public String getName() {
-    return this.getKbDefinition().getName();
+    return getKbDefinition().getName();
   }
 
 
@@ -338,12 +339,12 @@ public abstract class KBProxy {
   public abstract List<String> getPropertyRanges(String uri) throws KBProxyException;
 
   public EmbeddedSolrServer getSolrServer(final String cacheIdentifier) throws KBProxyException {
-    final Path cachePath = Paths.get(this.cachesBasePath, this.getKbDefinition().getName());
+    final Path cachePath = Paths.get(this.cachesBasePath, getKbDefinition().getName());
     EmbeddedSolrServer cacheServer;
 
     if (!cacheCores.containsKey(cachePath.toString())) {
       cacheServer = initializeSolrServer(cacheIdentifier, cachePath,
-          this.getKbDefinition().getCacheTemplatePath());
+          getKbDefinition().getCacheTemplatePath());
       cacheCores.put(cachePath.toString(), cacheServer.getCoreContainer());
     } else {
       cacheServer = new EmbeddedSolrServer(cacheCores.get(cachePath.toString()), cacheIdentifier);
