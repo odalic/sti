@@ -26,6 +26,3 @@ Soon at https://grips.semantic-web.at/ .
 
 ### Installation guide
 Soon at https://grips.semantic-web.at/ .
-
-### Quick Start
-TODO
