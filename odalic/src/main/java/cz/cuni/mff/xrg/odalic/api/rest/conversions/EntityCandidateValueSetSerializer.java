@@ -12,7 +12,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.EntityCandidateValue;
 
 /**
  * A custom JSON serializer of a set of entity candidates.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -20,8 +20,8 @@ public final class EntityCandidateValueSetSerializer
     extends JsonSerializer<Set<EntityCandidateValue>> {
 
   @Override
-  public void serialize(Set<EntityCandidateValue> value, JsonGenerator jgen,
-      SerializerProvider provider) throws IOException, JsonProcessingException {
+  public void serialize(final Set<EntityCandidateValue> value, final JsonGenerator jgen,
+      final SerializerProvider provider) throws IOException, JsonProcessingException {
     jgen.writeStartArray();
     for (final EntityCandidateValue entry : value) {
       jgen.writeObject(entry);

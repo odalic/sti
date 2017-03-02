@@ -17,12 +17,12 @@ public final class HeaderAnnotationAdapter
     extends XmlAdapter<HeaderAnnotationValue, HeaderAnnotation> {
 
   @Override
-  public HeaderAnnotationValue marshal(HeaderAnnotation bound) throws Exception {
+  public HeaderAnnotationValue marshal(final HeaderAnnotation bound) throws Exception {
     return new HeaderAnnotationValue(bound);
   }
 
   @Override
-  public HeaderAnnotation unmarshal(HeaderAnnotationValue value) throws Exception {
+  public HeaderAnnotation unmarshal(final HeaderAnnotationValue value) throws Exception {
     final Map<KnowledgeBase, NavigableSet<EntityCandidate>> candidates =
         Annotations.toNavigableDomain(value.getCandidates());
     final Map<KnowledgeBase, Set<EntityCandidate>> chosen = Annotations.toDomain(value.getChosen());

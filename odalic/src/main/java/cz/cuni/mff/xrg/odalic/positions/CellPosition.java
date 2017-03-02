@@ -11,7 +11,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.CellPositionAdapter;
 
 /**
  * Position of a common cell in a table. Headers do not count.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -20,81 +20,38 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.CellPositionAdapter;
 public final class CellPosition implements Serializable {
 
   private static final long serialVersionUID = 7955615617737637528L;
-  
+
   private final RowPosition rowPosition;
-  
+
   private final ColumnPosition columnPosition;
-  
-  
+
+
   /**
    * Creates new representation of cell position in a table.
-   * 
-   * @param rowPosition row position
-   * @param columnPosition column position
-   */
-  public CellPosition(RowPosition rowPosition, ColumnPosition columnPosition) {
-    Preconditions.checkNotNull(rowPosition);
-    Preconditions.checkNotNull(columnPosition);
-    
-    this.rowPosition = rowPosition;
-    this.columnPosition = columnPosition;
-  }
-  
-  /**
-   * Creates new representation of cell position in a table.
-   * 
+   *
    * @param rowIndex row index
    * @param columnIndex column index
    */
-  public CellPosition(int rowIndex, int columnIndex) {
+  public CellPosition(final int rowIndex, final int columnIndex) {
     this(new RowPosition(rowIndex), new ColumnPosition(columnIndex));
   }
-  
+
   /**
-   * @return the row position
+   * Creates new representation of cell position in a table.
+   *
+   * @param rowPosition row position
+   * @param columnPosition column position
    */
-  public RowPosition getRowPosition() {
-    return rowPosition;
+  public CellPosition(final RowPosition rowPosition, final ColumnPosition columnPosition) {
+    Preconditions.checkNotNull(rowPosition);
+    Preconditions.checkNotNull(columnPosition);
+
+    this.rowPosition = rowPosition;
+    this.columnPosition = columnPosition;
   }
-  
-  /**
-   * @return the column position
-   */
-  public ColumnPosition getColumnPosition() {
-    return columnPosition;
-  }
-  
-  /**
-   * @return the row index
-   */
-  public int getRowIndex() {
-    return rowPosition.getIndex();
-  }
-  
-  /**
-   * @return the column index
-   */
-  public int getColumnIndex() {
-    return columnPosition.getIndex();
-  }
-  
-  /* (non-Javadoc)
-   * @see java.lang.Object#hashCode()
-   */
+
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((columnPosition == null) ? 0 : columnPosition.hashCode());
-    result = prime * result + ((rowPosition == null) ? 0 : rowPosition.hashCode());
-    return result;
-  }
-  
-  /* (non-Javadoc)
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -104,29 +61,64 @@ public final class CellPosition implements Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    CellPosition other = (CellPosition) obj;
-    if (columnPosition == null) {
+    final CellPosition other = (CellPosition) obj;
+    if (this.columnPosition == null) {
       if (other.columnPosition != null) {
         return false;
       }
-    } else if (!columnPosition.equals(other.columnPosition)) {
+    } else if (!this.columnPosition.equals(other.columnPosition)) {
       return false;
     }
-    if (rowPosition == null) {
+    if (this.rowPosition == null) {
       if (other.rowPosition != null) {
         return false;
       }
-    } else if (!rowPosition.equals(other.rowPosition)) {
+    } else if (!this.rowPosition.equals(other.rowPosition)) {
       return false;
     }
     return true;
   }
-  
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
+
+  /**
+   * @return the column index
    */
+  public int getColumnIndex() {
+    return this.columnPosition.getIndex();
+  }
+
+  /**
+   * @return the column position
+   */
+  public ColumnPosition getColumnPosition() {
+    return this.columnPosition;
+  }
+
+  /**
+   * @return the row index
+   */
+  public int getRowIndex() {
+    return this.rowPosition.getIndex();
+  }
+
+  /**
+   * @return the row position
+   */
+  public RowPosition getRowPosition() {
+    return this.rowPosition;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result =
+        (prime * result) + ((this.columnPosition == null) ? 0 : this.columnPosition.hashCode());
+    result = (prime * result) + ((this.rowPosition == null) ? 0 : this.rowPosition.hashCode());
+    return result;
+  }
+
   @Override
   public String toString() {
-    return "" + rowPosition + columnPosition;
+    return "" + this.rowPosition + this.columnPosition;
   }
 }

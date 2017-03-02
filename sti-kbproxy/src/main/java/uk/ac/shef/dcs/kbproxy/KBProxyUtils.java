@@ -8,12 +8,17 @@ import java.util.Set;
 public class KBProxyUtils {
   /**
    * This is a little hack for inconsistent http and https in predicate links.
+   *
    * @param set The set to search.
    * @param value The value to find.
    * @return True if the set contains the specified value.
    */
-  public static boolean contains(Set<String> set, String value) {
-    //value = value.toLowerCase();
-    return set.contains(value) || set.contains(value.replace("http://", "https://")) || set.contains(value.replace("https://", "http://"));
+  public static boolean contains(final Set<String> set, final String value) {
+    if (set.size() == 0) {
+      return false;
+    }
+
+    return set.contains(value) || set.contains(value.replace("http://", "https://"))
+        || set.contains(value.replace("https://", "http://"));
   }
 }

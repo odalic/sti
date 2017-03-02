@@ -13,39 +13,39 @@ import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.TableColumn;
 
 /**
  * Domain class {@link TableColumn} adapted for REST API.
- * 
+ *
  * @author Josef Janoušek
  *
  */
 @XmlRootElement(name = "tableColumn")
 @JsonInclude(Include.NON_NULL)
 public final class TableColumnValue implements Serializable {
-  
+
   private static final long serialVersionUID = -4987474937531923887L;
-  
+
   private String name;
-  
+
   private List<String> titles;
-  
+
   private String description;
-  
+
   private String dataType;
-  
+
   private Boolean virtual;
-  
+
   private Boolean suppressOutput;
-  
+
   private String aboutUrl;
-  
+
   private String separator;
-  
+
   private String propertyUrl;
-  
+
   private String valueUrl;
-  
+
   public TableColumnValue() {}
-  
-  public TableColumnValue(TableColumn adaptee) {
+
+  public TableColumnValue(final TableColumn adaptee) {
     this.name = adaptee.getName();
     this.titles = adaptee.getTitles();
     this.description = adaptee.getDescription();
@@ -57,94 +57,93 @@ public final class TableColumnValue implements Serializable {
     this.propertyUrl = adaptee.getPropertyUrl();
     this.valueUrl = adaptee.getValueUrl();
   }
-  
-  /**
-   * @return the name
-   */
-  @XmlElement
-  public String getName() {
-    return name;
-  }
-  
-  /**
-   * @return the titles
-   */
-  @XmlElement
-  public List<String> getTitles() {
-    return titles;
-  }
-  
-  /**
-   * @return the description
-   */
-  @XmlElement
-  public String getDescription() {
-    return description;
-  }
-  
-  /**
-   * @return the dataType
-   */
-  @XmlElement
-  public String getDataType() {
-    return dataType;
-  }
-  
-  /**
-   * @return the virtual
-   */
-  @XmlElement
-  public Boolean getVirtual() {
-    return virtual;
-  }
-  
-  /**
-   * @return the suppressOutput
-   */
-  @XmlElement
-  public Boolean getSuppressOutput() {
-    return suppressOutput;
-  }
-  
+
   /**
    * @return the aboutUrl
    */
   @XmlElement
   public String getAboutUrl() {
-    return aboutUrl;
+    return this.aboutUrl;
   }
-  
+
   /**
-   * @return the separator
+   * @return the dataType
    */
   @XmlElement
-  public String getSeparator() {
-    return separator;
+  public String getDataType() {
+    return this.dataType;
   }
-  
+
+  /**
+   * @return the description
+   */
+  @XmlElement
+  public String getDescription() {
+    return this.description;
+  }
+
+  /**
+   * @return the name
+   */
+  @XmlElement
+  public String getName() {
+    return this.name;
+  }
+
   /**
    * @return the propertyUrl
    */
   @XmlElement
   public String getPropertyUrl() {
-    return propertyUrl;
+    return this.propertyUrl;
   }
-  
+
+  /**
+   * @return the separator
+   */
+  @XmlElement
+  public String getSeparator() {
+    return this.separator;
+  }
+
+  /**
+   * @return the suppressOutput
+   */
+  @XmlElement
+  public Boolean getSuppressOutput() {
+    return this.suppressOutput;
+  }
+
+  /**
+   * @return the titles
+   */
+  @XmlElement
+  public List<String> getTitles() {
+    return this.titles;
+  }
+
   /**
    * @return the valueUrl
    */
   @XmlElement
   public String getValueUrl() {
-    return valueUrl;
+    return this.valueUrl;
   }
-  
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
+
+  /**
+   * @return the virtual
    */
+  @XmlElement
+  public Boolean getVirtual() {
+    return this.virtual;
+  }
+
   @Override
   public String toString() {
-    return "TableColumnValue [name=" + name + ", titles=" + titles + ", description=" + description + ", dataType="
-        + dataType + ", virtual=" + virtual + ", suppressOutput=" + suppressOutput + ", aboutUrl=" + aboutUrl
-        + ", separator=" + separator + ", propertyUrl=" + propertyUrl + ", valueUrl=" + valueUrl + "]";
+    return "TableColumnValue [name=" + this.name + ", titles=" + this.titles + ", description="
+        + this.description + ", dataType=" + this.dataType + ", virtual=" + this.virtual
+        + ", suppressOutput=" + this.suppressOutput + ", aboutUrl=" + this.aboutUrl + ", separator="
+        + this.separator + ", propertyUrl=" + this.propertyUrl + ", valueUrl=" + this.valueUrl
+        + "]";
   }
 }

@@ -1,50 +1,45 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
-import javafx.util.Pair;
+import java.util.List;
+import java.util.Set;
 
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
-
-import java.util.*;
+import uk.ac.shef.dcs.util.Pair;
 
 /**
  * Represents the LEARNING phase, creates preliminary column classification and cell disambiguation
  */
 public class LEARNING {
 
-    private LEARNINGPreliminaryColumnClassifier columnTagger;
-    private LEARNINGPreliminaryDisamb cellTagger;
+  private final LEARNINGPreliminaryColumnClassifier columnTagger;
+  private final LEARNINGPreliminaryDisamb cellTagger;
 
 
-    public LEARNING(LEARNINGPreliminaryColumnClassifier columnTagger, LEARNINGPreliminaryDisamb cellTagger) {
-        this.columnTagger = columnTagger;
-        this.cellTagger = cellTagger;
-    }
+  public LEARNING(final LEARNINGPreliminaryColumnClassifier columnTagger,
+      final LEARNINGPreliminaryDisamb cellTagger) {
+    this.columnTagger = columnTagger;
+    this.cellTagger = cellTagger;
+  }
 
-    public void learn(Table table, TAnnotation tableAnnotation, int column) throws KBProxyException, ClassNotFoundException, STIException {
-      learn(table, tableAnnotation, column, new Constraints());
-    }
+  public void learn(final Table table, final TAnnotation tableAnnotation, final int column)
+      throws ClassNotFoundException, STIException {
+    learn(table, tableAnnotation, column, new Constraints());
+  }
 
-    public void learn(Table table, TAnnotation tableAnnotation, int column, Constraints constraints) throws KBProxyException, ClassNotFoundException, STIException {
-      Set<Integer> skipRows = constraints.getSkipRowsForColumn(column, table.getNumRows());
+  public void learn(final Table table, final TAnnotation tableAnnotation, final int column,
+      final Constraints constraints) throws ClassNotFoundException, STIException {
+    final Set<Integer> skipRows = constraints.getSkipRowsForColumn(column, table.getNumRows());
 
-      Integer[] skipRowsArray = skipRows.toArray(new Integer[skipRows.size()]);
+    final Integer[] skipRowsArray = skipRows.toArray(new Integer[skipRows.size()]);
 
-        Pair<Integer, List<List<Integer>>> stopPosition =
-                columnTagger.runPreliminaryColumnClassifier(table, tableAnnotation, column,
-                    constraints, skipRowsArray);
+    final Pair<Integer, List<List<Integer>>> stopPosition = this.columnTagger
+        .runPreliminaryColumnClassifier(table, tableAnnotation, column, constraints, skipRowsArray);
 
-        cellTagger.runPreliminaryDisamb(
-                stopPosition.getKey(),
-                stopPosition.getValue(),
-                table,
-                tableAnnotation,
-                column,
-                constraints,
-                skipRowsArray);
-    }
+    this.cellTagger.runPreliminaryDisamb(stopPosition.getKey(), stopPosition.getValue(), table,
+        tableAnnotation, column, constraints, skipRowsArray);
+  }
 
 }

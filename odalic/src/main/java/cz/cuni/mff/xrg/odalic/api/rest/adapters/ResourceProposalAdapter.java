@@ -11,16 +11,15 @@ public final class ResourceProposalAdapter
     extends XmlAdapter<ResourceProposalValue, ResourceProposal> {
 
   @Override
-  public ResourceProposalValue marshal(ResourceProposal bound)
-      throws Exception {
+  public ResourceProposalValue marshal(final ResourceProposal bound) throws Exception {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public ResourceProposal unmarshal(ResourceProposalValue value)
-      throws Exception {
+  public ResourceProposal unmarshal(final ResourceProposalValue value) throws Exception {
     try {
-      return new ResourceProposal(value.getLabel(), value.getAlternativeLabels(), value.getSuffix(), value.getClasses());
+      return new ResourceProposal(value.getLabel(), value.getAlternativeLabels(), value.getSuffix(),
+          value.getClasses());
     } catch (final IllegalArgumentException | NullPointerException e) {
       throw new BadRequestException(e);
     }

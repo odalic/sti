@@ -12,7 +12,7 @@ import cz.cuni.mff.xrg.odalic.positions.RowPosition;
 
 /**
  * Domain class {@link CellPosition} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -20,35 +20,14 @@ import cz.cuni.mff.xrg.odalic.positions.RowPosition;
 public class CellPositionValue {
 
   private RowPosition rowPosition;
-  
+
   private ColumnPosition columnPosition;
-  
+
   public CellPositionValue() {}
-  
-  /**
-   * @param adaptee
-   */
-  public CellPositionValue(CellPosition adaptee) {
+
+  public CellPositionValue(final CellPosition adaptee) {
     this.columnPosition = adaptee.getColumnPosition();
     this.rowPosition = adaptee.getRowPosition();
-  }
-
-  /**
-   * @return the rowPosition
-   */
-  @XmlElement
-  @Nullable
-  public RowPosition getRowPosition() {
-    return rowPosition;
-  }
-
-  /**
-   * @param rowPosition the rowPosition to set
-   */
-  public void setRowPosition(RowPosition rowPosition) {
-    Preconditions.checkNotNull(rowPosition);
-    
-    this.rowPosition = rowPosition;
   }
 
   /**
@@ -57,24 +36,39 @@ public class CellPositionValue {
   @XmlElement
   @Nullable
   public ColumnPosition getColumnPosition() {
-    return columnPosition;
+    return this.columnPosition;
+  }
+
+  /**
+   * @return the rowPosition
+   */
+  @XmlElement
+  @Nullable
+  public RowPosition getRowPosition() {
+    return this.rowPosition;
   }
 
   /**
    * @param columnPosition the columnPosition to set
    */
-  public void setColumnPosition(ColumnPosition columnPosition) {
+  public void setColumnPosition(final ColumnPosition columnPosition) {
     Preconditions.checkNotNull(columnPosition);
-    
+
     this.columnPosition = columnPosition;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
+  /**
+   * @param rowPosition the rowPosition to set
    */
+  public void setRowPosition(final RowPosition rowPosition) {
+    Preconditions.checkNotNull(rowPosition);
+
+    this.rowPosition = rowPosition;
+  }
+
   @Override
   public String toString() {
-    return "CellPositionValue [rowPosition=" + rowPosition + ", columnPosition=" + columnPosition
-        + "]";
+    return "CellPositionValue [rowPosition=" + this.rowPosition + ", columnPosition="
+        + this.columnPosition + "]";
   }
 }

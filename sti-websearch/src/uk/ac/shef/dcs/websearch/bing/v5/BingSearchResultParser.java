@@ -55,6 +55,10 @@ public final class BingSearchResultParser extends SearchResultParser {
     final List<WebSearchResultDoc> result = new ArrayList<>();
 
     final WebAnswer webAnswer = searchResponse.webPages;
+    if (webAnswer == null) {
+      throw new IllegalArgumentException("The stream does not contain an answer!");
+    }
+    
     for (final WebPage webPage : webAnswer.value) {
       result.add(
           /*

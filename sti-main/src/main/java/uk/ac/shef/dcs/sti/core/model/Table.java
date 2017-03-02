@@ -1,12 +1,14 @@
 package uk.ac.shef.dcs.sti.core.model;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import cern.colt.matrix.ObjectMatrix1D;
 import cern.colt.matrix.ObjectMatrix2D;
 import cern.colt.matrix.impl.SparseObjectMatrix1D;
 import cern.colt.matrix.impl.SparseObjectMatrix2D;
-
-import java.io.Serializable;
-import java.util.*;
 
 
 /**
@@ -14,144 +16,149 @@ import java.util.*;
  *
  *
  *
- * Author: Ziqi Zhang (z.zhang@dcs.shef.ac.uk)
- * Date: 01/10/12
- * Time: 15:06
+ * Author: Ziqi Zhang (z.zhang@dcs.shef.ac.uk) Date: 01/10/12 Time: 15:06
  */
 public class Table implements Serializable {
-    private static final long serialVersionUID = -3422675814777405913L;
-    private String sourceId;
-    private String tableId;
+  private static final long serialVersionUID = -3422675814777405913L;
+  private String sourceId;
+  private String tableId;
 
-    private String tableXPath;
-    private Map<Integer, String> rowXPaths;
+  private String tableXPath;
+  private final Map<Integer, String> rowXPaths;
 
-    private ObjectMatrix1D headers; //an object can only be a TColumnHeader object
-    private ObjectMatrix2D contents;//an object can only be a TCell object
-
-
-    private int rows; //# of rows in the table (excluding header)
-    private int cols; //# of columns in the table
-
-    //private List<CellBinaryRelationAnnotation> relations = new ArrayList<CellBinaryRelationAnnotation>();
-    private java.util.List<TContext> contexts = new ArrayList<>();
-
-    private TAnnotation tableAnnotations;
+  private final ObjectMatrix1D headers; // an object can only be a TColumnHeader object
+  private final ObjectMatrix2D contents;// an object can only be a TCell object
 
 
-    public Table(String id, String sourceId, int rows, int cols) {
-        this.tableId = id;
-        this.sourceId = sourceId;
+  private int rows; // # of rows in the table (excluding header)
+  private int cols; // # of columns in the table
 
-        this.rows = rows;
-        this.cols = cols;
-        contents = new SparseObjectMatrix2D(rows, cols);
-        headers = new SparseObjectMatrix1D(cols);
+  // private List<CellBinaryRelationAnnotation> relations = new
+  // ArrayList<CellBinaryRelationAnnotation>();
+  private final java.util.List<TContext> contexts = new ArrayList<>();
 
-        rowXPaths = new LinkedHashMap<Integer, String>();
-        tableAnnotations = new TAnnotation(rows, cols);
+  private TAnnotation tableAnnotations;
+
+
+  public Table(final String id, final String sourceId, final int rows, final int cols) {
+    this.tableId = id;
+    this.sourceId = sourceId;
+
+    this.rows = rows;
+    this.cols = cols;
+    this.contents = new SparseObjectMatrix2D(rows, cols);
+    this.headers = new SparseObjectMatrix1D(cols);
+
+    this.rowXPaths = new LinkedHashMap<Integer, String>();
+    this.tableAnnotations = new TAnnotation(rows, cols);
+  }
+
+  public void addContext(final TContext context) {
+    this.contexts.add(context);
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (o instanceof Table) {
+      final Table t = (Table) o;
+      return t.getTableId().equals(getTableId()) && t.getSourceId().equals(getSourceId());
+    }
+    return false;
+  }
+
+  public TColumnHeader getColumnHeader(final int c) {
+    final Object o = this.headers.get(c);
+    if (o == null) {
+      return null;
     }
 
-    public int getNumRows() {
-        return rows;
-    }
+    return (TColumnHeader) o;
+  }
 
-    public void setNumRows(int row){
-        this.rows=row;
-    }
+  public TCell getContentCell(final int r, final int c) {
+    return (TCell) this.contents.get(r, c);
+  }
 
-    public int getNumCols() {
-        return cols;
-    }
-    public void setNumCols(int col){
-        this.cols=col;
-    }
+  public java.util.List<TContext> getContexts() {
+    return this.contexts;
+  }
 
-      //single header/cell
-    public void setColumnHeader(int c,TColumnHeader header){
-        headers.set(c, header);
-    }
-    public TColumnHeader getColumnHeader(int c){
-        Object o = headers.get(c);
-        if(o==null)
-            return null;
+  public int getNumCols() {
+    return this.cols;
+  }
 
-        return (TColumnHeader)o;
-    }
+  public int getNumHeaders() {
+    return this.headers.size();
+  }
 
-    public void setContentCell(int r, int c, TCell cell) {
-        contents.set(r, c, cell);
-    }
-
-    public TCell getContentCell(int r, int c) {
-        return (TCell)contents.get(r, c);
-    }
+  public int getNumRows() {
+    return this.rows;
+  }
 
 
-    //headers and content cells;
+  // headers and content cells;
 
-    public String getTableId() {
-        return tableId;
-    }
+  public Map<Integer, String> getRowXPaths() {
+    return this.rowXPaths;
+  }
 
-    public void setTableId(String tableId) {
-        this.tableId = tableId;
-    }
-
-
-    public java.util.List<TContext> getContexts() {
-        return contexts;
-    }
-
-    public void addContext(TContext context) {
-        contexts.add(context);
-    }
-
-    public boolean equals(Object o) {
-        if (o instanceof Table) {
-            Table t = (Table) o;
-            return t.getTableId().equals(getTableId()) && t.getSourceId().equals(getSourceId());
-        }
-        return false;
-    }
-
-    public String getSourceId() {
-        return sourceId;
-    }
-
-    public void setSourceId(String sourceId) {
-        this.sourceId = sourceId;
-    }
-
-    public String toString() {
-        return getSourceId() + "," + getTableId();
-    }
-
-    public String getTableXPath() {
-        return tableXPath;
-    }
-    public void setTableXPath(String tableXPath) {
-        this.tableXPath = tableXPath;
-    }
-
-    public Map<Integer, String> getRowXPaths() {
-        return rowXPaths;
-    }
+  public String getSourceId() {
+    return this.sourceId;
+  }
 
 
-    public TAnnotation getTableAnnotations() {
-        return tableAnnotations;
-    }
+  public TAnnotation getTableAnnotations() {
+    return this.tableAnnotations;
+  }
 
-    public void setTableAnnotations(TAnnotation tableAnnotations) {
-        this.tableAnnotations = tableAnnotations;
-    }
+  public String getTableId() {
+    return this.tableId;
+  }
 
-    public int size(){
-        return contents.size();
-    }
+  public String getTableXPath() {
+    return this.tableXPath;
+  }
 
-    public int getNumHeaders() {
-        return headers.size();
-    }
+  // single header/cell
+  public void setColumnHeader(final int c, final TColumnHeader header) {
+    this.headers.set(c, header);
+  }
+
+  public void setContentCell(final int r, final int c, final TCell cell) {
+    this.contents.set(r, c, cell);
+  }
+
+  public void setNumCols(final int col) {
+    this.cols = col;
+  }
+
+  public void setNumRows(final int row) {
+    this.rows = row;
+  }
+
+  public void setSourceId(final String sourceId) {
+    this.sourceId = sourceId;
+  }
+
+  public void setTableAnnotations(final TAnnotation tableAnnotations) {
+    this.tableAnnotations = tableAnnotations;
+  }
+
+
+  public void setTableId(final String tableId) {
+    this.tableId = tableId;
+  }
+
+  public void setTableXPath(final String tableXPath) {
+    this.tableXPath = tableXPath;
+  }
+
+  public int size() {
+    return this.contents.size();
+  }
+
+  @Override
+  public String toString() {
+    return getSourceId() + "," + getTableId();
+  }
 }

@@ -6,15 +6,15 @@ import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
  * Interface for {@link Result} to {@link AnnotatedTable} conversion.
- * 
+ *
  * @author Josef Janoušek
  *
  */
 public interface ResultToAnnotatedTableAdapter {
-  
+
   /**
    * Converts the result to the annotated table.
-   * 
+   *
    * @param result Odalic result
    * @param input original input
    * @param configuration task configuration

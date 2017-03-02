@@ -4,7 +4,7 @@ import uk.ac.shef.dcs.sti.core.model.Table;
 
 /**
  * Interface for {@link Table} to {@link Input} conversion.
- * 
+ *
  * @author Václav Brodec
  *
  */

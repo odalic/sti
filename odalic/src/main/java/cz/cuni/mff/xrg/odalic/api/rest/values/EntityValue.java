@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rest.values;
 
 import java.io.Serializable;
+
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -8,10 +9,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
 
 /**
  * Domain class {@link Entity} adapted for REST API.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -24,29 +26,20 @@ public final class EntityValue implements Serializable {
 
   private String label;
 
+  private String prefixed;
+
+  private Prefix prefix;
+
+  private String tail;
+
   public EntityValue() {}
 
-  public EntityValue(Entity adaptee) {
+  public EntityValue(final Entity adaptee) {
     this.resource = adaptee.getResource();
     this.label = adaptee.getLabel();
-  }
-
-  /**
-   * @return the resource ID
-   */
-  @XmlElement
-  @Nullable
-  public String getResource() {
-    return resource;
-  }
-
-  /**
-   * @param resource the resource ID to set
-   */
-  public void setResource(String resource) {
-    Preconditions.checkNotNull(resource);
-    
-    this.resource = resource;
+    this.prefixed = adaptee.getPrefixed();
+    this.prefix = adaptee.getPrefix();
+    this.tail = adaptee.getTail();
   }
 
   /**
@@ -55,23 +48,87 @@ public final class EntityValue implements Serializable {
   @XmlElement
   @Nullable
   public String getLabel() {
-    return label;
+    return this.label;
+  }
+
+  /**
+   * @return the prefix
+   */
+  @XmlElement
+  @Nullable
+  public Prefix getPrefix() {
+    return this.prefix;
+  }
+
+  /**
+   * @return the prefixed form of the resource
+   */
+  @XmlElement
+  @Nullable
+  public String getPrefixed() {
+    return this.prefixed;
+  }
+
+  /**
+   * @return the resource ID
+   */
+  @XmlElement
+  @Nullable
+  public String getResource() {
+    return this.resource;
+  }
+
+  /**
+   * @return the tail
+   */
+  @XmlElement
+  @Nullable
+  public String getTail() {
+    return this.tail;
   }
 
   /**
    * @param label the label to set
    */
-  public void setLabel(String label) {
+  public void setLabel(final String label) {
     Preconditions.checkNotNull(label);
-    
+
     this.label = label;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
+  /**
+   * @param prefix the prefix to set
    */
+  public void setPrefix(final Prefix prefix) {
+    this.prefix = prefix;
+  }
+
+  /**
+   * @param prefixed the prefixed form of the resource to set
+   */
+  public void setPrefixed(final String prefixed) {
+    this.prefixed = prefixed;
+  }
+
+  /**
+   * @param resource the resource ID to set
+   */
+  public void setResource(final String resource) {
+    Preconditions.checkNotNull(resource);
+
+    this.resource = resource;
+  }
+
+  /**
+   * @param tail the tail to set
+   */
+  public void setTail(final String tail) {
+    this.tail = tail;
+  }
+
   @Override
   public String toString() {
-    return "EntityValue [resource=" + resource + ", label=" + label + "]";
+    return "EntityValue [resource=" + this.resource + ", label=" + this.label + ", prefixed="
+        + this.prefixed + ", prefix=" + this.prefix + ", tail=" + this.tail + "]";
   }
 }

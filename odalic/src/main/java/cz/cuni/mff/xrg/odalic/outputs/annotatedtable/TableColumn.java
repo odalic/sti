@@ -14,39 +14,39 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.TableColumnAdapter;
  * <p>
  * This class represents a column of the annotated table.
  * </p>
- * 
+ *
  * @author Josef Janoušek
  *
  */
 @Immutable
 @XmlJavaTypeAdapter(TableColumnAdapter.class)
 public class TableColumn implements Serializable {
-  
+
   private static final long serialVersionUID = 4108201271318916447L;
-  
+
   private final String name;
-  
+
   private final List<String> titles;
-  
+
   private final String description;
-  
+
   private final String dataType;
-  
+
   private final Boolean virtual;
-  
+
   private final Boolean suppressOutput;
-  
+
   private final String aboutUrl;
-  
+
   private final String separator;
-  
+
   private final String propertyUrl;
-  
+
   private final String valueUrl;
-  
+
   /**
    * Creates new annotated table column representation.
-   * 
+   *
    * @param name column name
    * @param titles column header titles
    * @param description column header description
@@ -58,11 +58,12 @@ public class TableColumn implements Serializable {
    * @param propertyUrl column value propertyUrl
    * @param valueUrl column value valueUrl
    */
-  public TableColumn(String name, List<String> titles, String description,
-      String dataType, Boolean virtual, Boolean suppressOutput,
-      String aboutUrl, String separator, String propertyUrl, String valueUrl) {
+  public TableColumn(final String name, final List<String> titles, final String description,
+      final String dataType, final Boolean virtual, final Boolean suppressOutput,
+      final String aboutUrl, final String separator, final String propertyUrl,
+      final String valueUrl) {
     Preconditions.checkNotNull(name);
-    
+
     this.name = name;
     this.titles = titles;
     this.description = description;
@@ -74,106 +75,15 @@ public class TableColumn implements Serializable {
     this.propertyUrl = propertyUrl;
     this.valueUrl = valueUrl;
   }
-  
+
   /**
-   * @return the name
-   */
-  public String getName() {
-    return name;
-  }
-  
-  /**
-   * @return the titles
-   */
-  public List<String> getTitles() {
-    return titles;
-  }
-  
-  /**
-   * @return the description
-   */
-  public String getDescription() {
-    return description;
-  }
-  
-  /**
-   * @return the dataType
-   */
-  public String getDataType() {
-    return dataType;
-  }
-  
-  /**
-   * @return the virtual
-   */
-  public Boolean getVirtual() {
-    return virtual;
-  }
-  
-  /**
-   * @return the suppressOutput
-   */
-  public Boolean getSuppressOutput() {
-    return suppressOutput;
-  }
-  
-  /**
-   * @return the aboutUrl
-   */
-  public String getAboutUrl() {
-    return aboutUrl;
-  }
-  
-  /**
-   * @return the separator
-   */
-  public String getSeparator() {
-    return separator;
-  }
-  
-  /**
-   * @return the propertyUrl
-   */
-  public String getPropertyUrl() {
-    return propertyUrl;
-  }
-  
-  /**
-   * @return the valueUrl
-   */
-  public String getValueUrl() {
-    return valueUrl;
-  }
-  
-  /**
-   * Computes hash code based on all its parts.
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((titles == null) ? 0 : titles.hashCode());
-    result = prime * result + ((description == null) ? 0 : description.hashCode());
-    result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
-    result = prime * result + ((virtual == null) ? 0 : virtual.hashCode());
-    result = prime * result + ((suppressOutput == null) ? 0 : suppressOutput.hashCode());
-    result = prime * result + ((aboutUrl == null) ? 0 : aboutUrl.hashCode());
-    result = prime * result + ((separator == null) ? 0 : separator.hashCode());
-    result = prime * result + ((propertyUrl == null) ? 0 : propertyUrl.hashCode());
-    result = prime * result + ((valueUrl == null) ? 0 : valueUrl.hashCode());
-    return result;
-  }
-  
-  /**
-   * Compares to another object for equality (only another TableColumn composed from equal parts passes).
-   * 
+   * Compares to another object for equality (only another TableColumn composed from equal parts
+   * passes).
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -183,87 +93,179 @@ public class TableColumn implements Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    TableColumn other = (TableColumn) obj;
-    if (name == null) {
+    final TableColumn other = (TableColumn) obj;
+    if (this.name == null) {
       if (other.name != null) {
         return false;
       }
-    } else if (!name.equals(other.name)) {
+    } else if (!this.name.equals(other.name)) {
       return false;
     }
-    if (titles == null) {
+    if (this.titles == null) {
       if (other.titles != null) {
         return false;
       }
-    } else if (!titles.equals(other.titles)) {
+    } else if (!this.titles.equals(other.titles)) {
       return false;
     }
-    if (description == null) {
+    if (this.description == null) {
       if (other.description != null) {
         return false;
       }
-    } else if (!description.equals(other.description)) {
+    } else if (!this.description.equals(other.description)) {
       return false;
     }
-    if (dataType == null) {
+    if (this.dataType == null) {
       if (other.dataType != null) {
         return false;
       }
-    } else if (!dataType.equals(other.dataType)) {
+    } else if (!this.dataType.equals(other.dataType)) {
       return false;
     }
-    if (virtual == null) {
+    if (this.virtual == null) {
       if (other.virtual != null) {
         return false;
       }
-    } else if (!virtual.equals(other.virtual)) {
+    } else if (!this.virtual.equals(other.virtual)) {
       return false;
     }
-    if (suppressOutput == null) {
+    if (this.suppressOutput == null) {
       if (other.suppressOutput != null) {
         return false;
       }
-    } else if (!suppressOutput.equals(other.suppressOutput)) {
+    } else if (!this.suppressOutput.equals(other.suppressOutput)) {
       return false;
     }
-    if (aboutUrl == null) {
+    if (this.aboutUrl == null) {
       if (other.aboutUrl != null) {
         return false;
       }
-    } else if (!aboutUrl.equals(other.aboutUrl)) {
+    } else if (!this.aboutUrl.equals(other.aboutUrl)) {
       return false;
     }
-    if (separator == null) {
+    if (this.separator == null) {
       if (other.separator != null) {
         return false;
       }
-    } else if (!separator.equals(other.separator)) {
+    } else if (!this.separator.equals(other.separator)) {
       return false;
     }
-    if (propertyUrl == null) {
+    if (this.propertyUrl == null) {
       if (other.propertyUrl != null) {
         return false;
       }
-    } else if (!propertyUrl.equals(other.propertyUrl)) {
+    } else if (!this.propertyUrl.equals(other.propertyUrl)) {
       return false;
     }
-    if (valueUrl == null) {
+    if (this.valueUrl == null) {
       if (other.valueUrl != null) {
         return false;
       }
-    } else if (!valueUrl.equals(other.valueUrl)) {
+    } else if (!this.valueUrl.equals(other.valueUrl)) {
       return false;
     }
     return true;
   }
-  
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
+
+  /**
+   * @return the aboutUrl
+   */
+  public String getAboutUrl() {
+    return this.aboutUrl;
+  }
+
+  /**
+   * @return the dataType
+   */
+  public String getDataType() {
+    return this.dataType;
+  }
+
+  /**
+   * @return the description
+   */
+  public String getDescription() {
+    return this.description;
+  }
+
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return this.name;
+  }
+
+  /**
+   * @return the propertyUrl
+   */
+  public String getPropertyUrl() {
+    return this.propertyUrl;
+  }
+
+  /**
+   * @return the separator
+   */
+  public String getSeparator() {
+    return this.separator;
+  }
+
+  /**
+   * @return the suppressOutput
+   */
+  public Boolean getSuppressOutput() {
+    return this.suppressOutput;
+  }
+
+  /**
+   * @return the titles
+   */
+  public List<String> getTitles() {
+    return this.titles;
+  }
+
+  /**
+   * @return the valueUrl
+   */
+  public String getValueUrl() {
+    return this.valueUrl;
+  }
+
+  /**
+   * @return the virtual
+   */
+  public Boolean getVirtual() {
+    return this.virtual;
+  }
+
+  /**
+   * Computes hash code based on all its parts.
+   *
+   * @see java.lang.Object#hashCode()
    */
   @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + ((this.name == null) ? 0 : this.name.hashCode());
+    result = (prime * result) + ((this.titles == null) ? 0 : this.titles.hashCode());
+    result = (prime * result) + ((this.description == null) ? 0 : this.description.hashCode());
+    result = (prime * result) + ((this.dataType == null) ? 0 : this.dataType.hashCode());
+    result = (prime * result) + ((this.virtual == null) ? 0 : this.virtual.hashCode());
+    result =
+        (prime * result) + ((this.suppressOutput == null) ? 0 : this.suppressOutput.hashCode());
+    result = (prime * result) + ((this.aboutUrl == null) ? 0 : this.aboutUrl.hashCode());
+    result = (prime * result) + ((this.separator == null) ? 0 : this.separator.hashCode());
+    result = (prime * result) + ((this.propertyUrl == null) ? 0 : this.propertyUrl.hashCode());
+    result = (prime * result) + ((this.valueUrl == null) ? 0 : this.valueUrl.hashCode());
+    return result;
+  }
+
+  @Override
   public String toString() {
-    return "TableColumn [name=" + name + ", titles=" + titles + ", description=" + description + ", dataType="
-        + dataType + ", virtual=" + virtual + ", suppressOutput=" + suppressOutput + ", aboutUrl=" + aboutUrl
-        + ", separator=" + separator + ", propertyUrl=" + propertyUrl + ", valueUrl=" + valueUrl + "]";
+    return "TableColumn [name=" + this.name + ", titles=" + this.titles + ", description="
+        + this.description + ", dataType=" + this.dataType + ", virtual=" + this.virtual
+        + ", suppressOutput=" + this.suppressOutput + ", aboutUrl=" + this.aboutUrl + ", separator="
+        + this.separator + ", propertyUrl=" + this.propertyUrl + ", valueUrl=" + this.valueUrl
+        + "]";
   }
 }

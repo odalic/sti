@@ -8,17 +8,14 @@ import cz.cuni.mff.xrg.odalic.positions.RowPosition;
 
 /**
  * Map key JSON deserializer for {@link ColumnPosition} instances.
- * 
+ *
  * @author Václav Brodec
  *
  */
 public final class RowPositionKeyJsonDeserializer extends KeyDeserializer {
 
-    /* (non-Javadoc)
-     * @see com.fasterxml.jackson.databind.KeyDeserializer#deserializeKey(java.lang.String, com.fasterxml.jackson.databind.DeserializationContext)
-     */
-    @Override
-    public Object deserializeKey(String key, DeserializationContext ctxt) {
-      return new RowPosition(Integer.parseInt(key));
-    }
+  @Override
+  public Object deserializeKey(final String key, final DeserializationContext ctxt) {
+    return new RowPosition(Integer.parseInt(key));
+  }
 }

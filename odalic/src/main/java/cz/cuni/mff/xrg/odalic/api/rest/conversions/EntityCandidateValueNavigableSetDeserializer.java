@@ -13,24 +13,18 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.EntityCandidateValue;
 
 /**
  * A custom JSON deserializer of a navigable set with entity candidates.
- * 
+ *
  * @author Václav Brodec
  *
  */
 public final class EntityCandidateValueNavigableSetDeserializer
     extends JsonDeserializer<NavigableSet<EntityCandidateValue>> {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.
-   * JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
-   */
   @Override
-  public NavigableSet<EntityCandidateValue> deserialize(JsonParser parser,
-      DeserializationContext ctxt) throws IOException, JsonProcessingException {
+  public NavigableSet<EntityCandidateValue> deserialize(final JsonParser parser,
+      final DeserializationContext ctxt) throws IOException, JsonProcessingException {
     final EntityCandidateValue[] array = ctxt.readValue(parser, EntityCandidateValue[].class);
-    
+
     return ImmutableSortedSet.copyOf(array);
   }
 }

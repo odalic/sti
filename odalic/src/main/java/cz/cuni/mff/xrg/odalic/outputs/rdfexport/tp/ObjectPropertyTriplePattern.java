@@ -1,26 +1,35 @@
 package cz.cuni.mff.xrg.odalic.outputs.rdfexport.tp;
 
-import com.google.common.base.Preconditions;
 import org.eclipse.rdf4j.model.IRI;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Created by tomasknap on 18/08/16.
- * 
+ *
  * @author Tomáš Knap
  *
  */
 public class ObjectPropertyTriplePattern extends TriplePattern {
 
-    private String objectPattern;
+  private final String objectPattern;
 
-    public ObjectPropertyTriplePattern(String subjectPattern, IRI predicate, String objectPattern) {
-        super(subjectPattern, predicate);
-        Preconditions.checkNotNull(objectPattern);
-        this.objectPattern = objectPattern;
-    }
+  private final String dataType;
 
-    public String getObjectPattern() {
-        return objectPattern;
-    }
+  public ObjectPropertyTriplePattern(final String subjectPattern, final IRI predicate,
+      final String objectPattern, final String dataType) {
+    super(subjectPattern, predicate);
+    Preconditions.checkNotNull(objectPattern);
+    this.objectPattern = objectPattern;
+    this.dataType = dataType;
+  }
+
+  public String getDataType() {
+    return this.dataType;
+  }
+
+  public String getObjectPattern() {
+    return this.objectPattern;
+  }
 
 }

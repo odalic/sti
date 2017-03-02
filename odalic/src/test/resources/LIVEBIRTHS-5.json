@@ -1,0 +1,433 @@
+{
+  "@context" : [ "http://www.w3.org/ns/csvw", {
+    "geo" : "http://www.w3.org/2003/01/geo/wgs84_pos#",
+    "qb" : "http://purl.org/linked-data/cube#",
+    "dbpedia-owl" : "http://dbpedia.org/ontology/",
+    "sdmx-measure" : "http://purl.org/linked-data/sdmx/2009/measure#",
+    "owl" : "http://www.w3.org/2002/07/owl#",
+    "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "xsd" : "http://www.w3.org/2001/XMLSchema#",
+    "yago" : "http://dbpedia.org/class/yago/",
+    "dcterms" : "http://purl.org/dc/terms/",
+    "schema-org" : "http://schema.org/",
+    "rdfs" : "http://www.w3.org/2000/01/rdf-schema#"
+  } ],
+  "url" : "LIVEBIRTHS-5.csv",
+  "tableSchema" : {
+    "columns" : [ {
+      "name" : "NUTS1",
+      "titles" : [ "NUTS1" ],
+      "dataType" : "xsd:string",
+      "aboutUrl" : "{NUTS1_url}",
+      "propertyUrl" : "dcterms:title"
+    }, {
+      "name" : "NUTS1_url",
+      "dataType" : "xsd:anyURI",
+      "suppressOutput" : true,
+      "valueUrl" : "{NUTS1_url}"
+    }, {
+      "name" : "NUTS1_alternative_urls",
+      "aboutUrl" : "{NUTS1_url}",
+      "separator" : " ",
+      "propertyUrl" : "owl:sameAs",
+      "valueUrl" : "{NUTS1_alternative_urls}"
+    }, {
+      "name" : "NUTS1_type",
+      "virtual" : true,
+      "aboutUrl" : "{NUTS1_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "http://www.wikidata.org/ontology#Item"
+    }, {
+      "name" : "NUTS1_type",
+      "virtual" : true,
+      "aboutUrl" : "{NUTS1_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "dbpedia-owl:Place"
+    }, {
+      "name" : "NUTS1_type",
+      "virtual" : true,
+      "aboutUrl" : "{NUTS1_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "geo:SpatialThing"
+    }, {
+      "name" : "NUTS2",
+      "titles" : [ "NUTS2" ],
+      "dataType" : "xsd:string",
+      "aboutUrl" : "{NUTS2_url}",
+      "propertyUrl" : "dcterms:title"
+    }, {
+      "name" : "NUTS2_url",
+      "dataType" : "xsd:anyURI",
+      "suppressOutput" : true,
+      "valueUrl" : "{NUTS2_url}"
+    }, {
+      "name" : "NUTS2_alternative_urls",
+      "aboutUrl" : "{NUTS2_url}",
+      "separator" : " ",
+      "propertyUrl" : "owl:sameAs",
+      "valueUrl" : "{NUTS2_alternative_urls}"
+    }, {
+      "name" : "NUTS2_type",
+      "virtual" : true,
+      "aboutUrl" : "{NUTS2_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "http://www.wikidata.org/ontology#Item"
+    }, {
+      "name" : "NUTS3",
+      "titles" : [ "NUTS3" ],
+      "dataType" : "xsd:string",
+      "aboutUrl" : "{NUTS3_url}",
+      "propertyUrl" : "dcterms:title"
+    }, {
+      "name" : "NUTS3_url",
+      "dataType" : "xsd:anyURI",
+      "suppressOutput" : true,
+      "valueUrl" : "{NUTS3_url}"
+    }, {
+      "name" : "NUTS3_alternative_urls",
+      "aboutUrl" : "{NUTS3_url}",
+      "separator" : " ",
+      "propertyUrl" : "owl:sameAs",
+      "valueUrl" : "{NUTS3_alternative_urls}"
+    }, {
+      "name" : "NUTS3_type",
+      "virtual" : true,
+      "aboutUrl" : "{NUTS3_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "http://www.wikidata.org/ontology#Item"
+    }, {
+      "name" : "DISTRICT_CODE",
+      "titles" : [ "DISTRICT_CODE" ],
+      "dataType" : "xsd:string"
+    }, {
+      "name" : "DISTRICT_NAME",
+      "titles" : [ "DISTRICT_NAME" ],
+      "dataType" : "xsd:string",
+      "aboutUrl" : "{DISTRICT_NAME_url}",
+      "propertyUrl" : "dcterms:title"
+    }, {
+      "name" : "DISTRICT_NAME_url",
+      "dataType" : "xsd:anyURI",
+      "suppressOutput" : true,
+      "valueUrl" : "{DISTRICT_NAME_url}"
+    }, {
+      "name" : "DISTRICT_NAME_alternative_urls",
+      "aboutUrl" : "{DISTRICT_NAME_url}",
+      "separator" : " ",
+      "propertyUrl" : "owl:sameAs",
+      "valueUrl" : "{DISTRICT_NAME_alternative_urls}"
+    }, {
+      "name" : "DISTRICT_NAME_type",
+      "virtual" : true,
+      "aboutUrl" : "{DISTRICT_NAME_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "yago:District108552138"
+    }, {
+      "name" : "DISTRICT_NAME_type",
+      "virtual" : true,
+      "aboutUrl" : "{DISTRICT_NAME_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "dbpedia-owl:Article"
+    }, {
+      "name" : "DISTRICT_NAME_type",
+      "virtual" : true,
+      "aboutUrl" : "{DISTRICT_NAME_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "dbpedia-owl:Location"
+    }, {
+      "name" : "LAU_CODE",
+      "titles" : [ "LAU_CODE" ],
+      "dataType" : "xsd:string"
+    }, {
+      "name" : "LAU_NAME",
+      "titles" : [ "LAU_NAME" ],
+      "dataType" : "xsd:string",
+      "aboutUrl" : "{LAU_NAME_url}",
+      "propertyUrl" : "dcterms:title"
+    }, {
+      "name" : "LAU_NAME_url",
+      "dataType" : "xsd:anyURI",
+      "suppressOutput" : true,
+      "valueUrl" : "{LAU_NAME_url}"
+    }, {
+      "name" : "LAU_NAME_alternative_urls",
+      "aboutUrl" : "{LAU_NAME_url}",
+      "separator" : " ",
+      "propertyUrl" : "owl:sameAs",
+      "valueUrl" : "{LAU_NAME_alternative_urls}"
+    }, {
+      "name" : "LAU_NAME_type",
+      "virtual" : true,
+      "aboutUrl" : "{LAU_NAME_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "schema-org:Place"
+    }, {
+      "name" : "LAU_NAME_type",
+      "virtual" : true,
+      "aboutUrl" : "{LAU_NAME_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "dbpedia-owl:Settlement"
+    }, {
+      "name" : "LAU_NAME_type",
+      "virtual" : true,
+      "aboutUrl" : "{LAU_NAME_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "geo:SpatialThing"
+    }, {
+      "name" : "LIVEBIRTHS",
+      "titles" : [ "LIVEBIRTHS" ],
+      "dataType" : "xsd:string"
+    }, {
+      "name" : "YEAR",
+      "titles" : [ "YEAR" ],
+      "dataType" : "xsd:string"
+    }, {
+      "name" : "dataset_type",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dataset/92d9c478-a5ba-4f4a-b470-ca2a5c224570",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "qb:DataSet"
+    }, {
+      "name" : "dataset_title",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dataset/92d9c478-a5ba-4f4a-b470-ca2a5c224570",
+      "propertyUrl" : "dcterms:title",
+      "valueUrl" : "LIVEBIRTHS-5.csv"
+    }, {
+      "name" : "dataset_structure",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dataset/92d9c478-a5ba-4f4a-b470-ca2a5c224570",
+      "propertyUrl" : "qb:structure",
+      "valueUrl" : "http://odalic.eu/schema/dsd/e3bcf204-e957-40f2-a572-b4398e1e8806"
+    }, {
+      "name" : "dsd_type",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dsd/e3bcf204-e957-40f2-a572-b4398e1e8806",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "qb:DataStructureDefinition"
+    }, {
+      "name" : "OBSERVATION_url",
+      "dataType" : "xsd:anyURI",
+      "suppressOutput" : true,
+      "valueUrl" : "{OBSERVATION_url}"
+    }, {
+      "name" : "OBSERVATION_type",
+      "virtual" : true,
+      "aboutUrl" : "{OBSERVATION_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "qb:Observation"
+    }, {
+      "name" : "OBSERVATION_dataset",
+      "virtual" : true,
+      "aboutUrl" : "{OBSERVATION_url}",
+      "propertyUrl" : "qb:dataSet",
+      "valueUrl" : "http://odalic.eu/schema/dataset/92d9c478-a5ba-4f4a-b470-ca2a5c224570"
+    }, {
+      "name" : "dsd_component",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dsd/e3bcf204-e957-40f2-a572-b4398e1e8806",
+      "propertyUrl" : "qb:component",
+      "valueUrl" : "http://odalic.eu/schema/dimension/e2107000-19a5-4f37-8683-7276f8d94772"
+    }, {
+      "name" : "component_kind",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dimension/e2107000-19a5-4f37-8683-7276f8d94772",
+      "propertyUrl" : "qb:dimension",
+      "valueUrl" : "http://odalic.eu/schema/nuts3"
+    }, {
+      "name" : "http://odalic.eu/schema/nuts3_type",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/nuts3",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "rdf:Property"
+    }, {
+      "name" : "http://odalic.eu/schema/nuts3_type",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/nuts3",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "qb:DimensionProperty"
+    }, {
+      "name" : "http://odalic.eu/schema/nuts3_label",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/nuts3",
+      "propertyUrl" : "rdfs:label",
+      "valueUrl" : "NUTS 3"
+    }, {
+      "name" : "http://odalic.eu/schema/nuts3",
+      "virtual" : true,
+      "aboutUrl" : "{OBSERVATION_url}",
+      "propertyUrl" : "http://odalic.eu/schema/nuts3",
+      "valueUrl" : "{NUTS3_url}"
+    }, {
+      "name" : "dsd_component",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dsd/e3bcf204-e957-40f2-a572-b4398e1e8806",
+      "propertyUrl" : "qb:component",
+      "valueUrl" : "http://odalic.eu/schema/dimension/3f9228aa-b55f-4b05-bcd4-2573a9a2a6fd"
+    }, {
+      "name" : "component_kind",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dimension/3f9228aa-b55f-4b05-bcd4-2573a9a2a6fd",
+      "propertyUrl" : "qb:dimension",
+      "valueUrl" : "http://odalic.eu/schema/districtName"
+    }, {
+      "name" : "http://odalic.eu/schema/districtName_type",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/districtName",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "rdf:Property"
+    }, {
+      "name" : "http://odalic.eu/schema/districtName_type",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/districtName",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "qb:DimensionProperty"
+    }, {
+      "name" : "http://odalic.eu/schema/districtName_label",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/districtName",
+      "propertyUrl" : "rdfs:label",
+      "valueUrl" : "District name"
+    }, {
+      "name" : "http://odalic.eu/schema/districtName_concept",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/districtName",
+      "propertyUrl" : "qb:concept",
+      "valueUrl" : "dbpedia-owl:Article"
+    }, {
+      "name" : "http://odalic.eu/schema/districtName",
+      "virtual" : true,
+      "aboutUrl" : "{OBSERVATION_url}",
+      "propertyUrl" : "http://odalic.eu/schema/districtName",
+      "valueUrl" : "{DISTRICT_NAME_url}"
+    }, {
+      "name" : "dsd_component",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dsd/e3bcf204-e957-40f2-a572-b4398e1e8806",
+      "propertyUrl" : "qb:component",
+      "valueUrl" : "http://odalic.eu/schema/dimension/320814db-a85b-4dc6-a499-b930f702b1d1"
+    }, {
+      "name" : "component_kind",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dimension/320814db-a85b-4dc6-a499-b930f702b1d1",
+      "propertyUrl" : "qb:dimension",
+      "valueUrl" : "http://odalic.eu/schema/lauName"
+    }, {
+      "name" : "http://odalic.eu/schema/lauName_type",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/lauName",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "rdf:Property"
+    }, {
+      "name" : "http://odalic.eu/schema/lauName_type",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/lauName",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "qb:DimensionProperty"
+    }, {
+      "name" : "http://odalic.eu/schema/lauName_label",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/lauName",
+      "propertyUrl" : "rdfs:label",
+      "valueUrl" : "Lau name"
+    }, {
+      "name" : "http://odalic.eu/schema/lauName_concept",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/lauName",
+      "propertyUrl" : "qb:concept",
+      "valueUrl" : "dbpedia-owl:Settlement"
+    }, {
+      "name" : "http://odalic.eu/schema/lauName",
+      "virtual" : true,
+      "aboutUrl" : "{OBSERVATION_url}",
+      "propertyUrl" : "http://odalic.eu/schema/lauName",
+      "valueUrl" : "{LAU_NAME_url}"
+    }, {
+      "name" : "dsd_component",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dsd/e3bcf204-e957-40f2-a572-b4398e1e8806",
+      "propertyUrl" : "qb:component",
+      "valueUrl" : "http://odalic.eu/schema/measure/fcb19448-cce0-404d-b3f3-4b83c9d087af"
+    }, {
+      "name" : "component_kind",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/measure/fcb19448-cce0-404d-b3f3-4b83c9d087af",
+      "propertyUrl" : "qb:measure",
+      "valueUrl" : "http://odalic.eu/schema/livebirths"
+    }, {
+      "name" : "http://odalic.eu/schema/livebirths_type",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/livebirths",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "rdf:Property"
+    }, {
+      "name" : "http://odalic.eu/schema/livebirths_type",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/livebirths",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "qb:MeasureProperty"
+    }, {
+      "name" : "http://odalic.eu/schema/livebirths_label",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/livebirths",
+      "propertyUrl" : "rdfs:label",
+      "valueUrl" : "Livebirths"
+    }, {
+      "name" : "http://odalic.eu/schema/livebirths_subprop",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/livebirths",
+      "propertyUrl" : "rdfs:subPropertyOf",
+      "valueUrl" : "sdmx-measure:obsValue"
+    }, {
+      "name" : "http://odalic.eu/schema/livebirths",
+      "dataType" : "xsd:nonNegativeInteger",
+      "virtual" : true,
+      "aboutUrl" : "{OBSERVATION_url}",
+      "propertyUrl" : "http://odalic.eu/schema/livebirths",
+      "valueUrl" : "{LIVEBIRTHS}"
+    }, {
+      "name" : "dsd_component",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/dsd/e3bcf204-e957-40f2-a572-b4398e1e8806",
+      "propertyUrl" : "qb:component",
+      "valueUrl" : "http://odalic.eu/schema/measure/24515e28-abb0-404f-8b16-d44b8fa1f2cc"
+    }, {
+      "name" : "component_kind",
+      "virtual" : true,
+      "aboutUrl" : "http://odalic.eu/schema/measure/24515e28-abb0-404f-8b16-d44b8fa1f2cc",
+      "propertyUrl" : "qb:measure",
+      "valueUrl" : "dbpedia-owl:year"
+    }, {
+      "name" : "http://dbpedia.org/ontology/year_type",
+      "virtual" : true,
+      "aboutUrl" : "dbpedia-owl:year",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "rdf:Property"
+    }, {
+      "name" : "http://dbpedia.org/ontology/year_type",
+      "virtual" : true,
+      "aboutUrl" : "dbpedia-owl:year",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "qb:MeasureProperty"
+    }, {
+      "name" : "http://dbpedia.org/ontology/year_label",
+      "virtual" : true,
+      "aboutUrl" : "dbpedia-owl:year",
+      "propertyUrl" : "rdfs:label",
+      "valueUrl" : "Year"
+    }, {
+      "name" : "http://dbpedia.org/ontology/year_subprop",
+      "virtual" : true,
+      "aboutUrl" : "dbpedia-owl:year",
+      "propertyUrl" : "rdfs:subPropertyOf",
+      "valueUrl" : "sdmx-measure:obsValue"
+    }, {
+      "name" : "http://dbpedia.org/ontology/year",
+      "dataType" : "xsd:gYear",
+      "virtual" : true,
+      "aboutUrl" : "{OBSERVATION_url}",
+      "propertyUrl" : "dbpedia-owl:year",
+      "valueUrl" : "{YEAR}"
+    } ]
+  }
+}

@@ -1,441 +1,158 @@
 package uk.ac.shef.dcs.kbproxy;
 
+import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-
-import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
-
 /**
- * Information about the knowledge base.
- * Created by Jan
+ * Information about the knowledge base. Created by Jan
  */
 public class KBDefinition {
 
-  public enum SEARCH_CLASS_TYPE_MODE_VALUE {
-    DIRECT,
-    INDIRECT
+  // region Consts
+  private static final String NAME_PROPERTY_NAME = "kb.name";
+  private static final String KB_SEARCH_CLASS = "kb.class";
+  private static final String CACHE_TEMPLATE_PATH_PROPERTY_NAME = "kb.cacheTemplatePath";
+  private static final String STOP_LIST_FILE_PROPERTY_NAME = "kb.stopListFile";
+  private static final String INSERT_SUPPORTED = "kb.insert.supported";
+
+  private static final String DEFAULT_INSERT_SUPPORTED = "false";
+  private static final String INSERT_PREFIX_DATA = "kb.insert.prefix.data";
+  private static final String INSERT_PREFIX_SCHEMA = "kb.insert.prefix.schema";
+
+  // endregion
+
+  // region Fields
+
+  public static String getKBClass(final Properties properties) throws KBProxyException {
+    return getMandatoryValue(properties, KB_SEARCH_CLASS);
   }
 
+  protected static String getMandatoryValue(final Properties properties, final String propertyName)
+      throws KBProxyException {
+    if (!properties.containsKey(propertyName)) {
+      throw new KBProxyException("Property " + propertyName + " is mandatory.");
+    }
 
-  //region Consts
-  private static final String PATH_SEPARATOR = "\\|";
-  private static final String URL_SEPARATOR = " ";
+    return properties.getProperty(propertyName);
+  }
 
-  private static final String NAME_PROPERTY_NAME = "kb.name";
-
-  private static final String SPARQL_ENDPOINT_PROPERTY_NAME = "kb.endpoint";
-  private static final String ONTOLOGY_URI_PROPERTY_NAME = "kb.ontologyURI";
-  private static final String STOP_LIST_FILE_PROPERTY_NAME = "kb.stopListFile";
-
-  private static final String CACHE_TEMPLATE_PATH_PROPERTY_NAME = "kb.cacheTemplatePath";
-
-  private static final String STRUCTURE_PROPERTY_NAME = "kb.structure";
-  private static final String LANGUAGE_SUFFIX = "kb.languageSuffix";
-  private static final String SEARCH_CLASS_TYPE_MODE = "kb.search.class.type.mode";
-  private static final String USE_BIF_CONTAINS = "kb.useBifContains";
-  private static final String TREAT_URL_AS_LABEL = "kb.treatUrlAsLabel";
-
-  private static final String PREDICATE_NAME_PROPERTY_NAME = "kb.predicate.name";
-  private static final String PREDICATE_LABEL_PROPERTY_NAME = "kb.predicate.label";
-  private static final String PREDICATE_DESCRIPTION_PROPERTY_NAME = "kb.predicate.description";
-  private static final String PREDICATE_TYPE_PROPERTY_NAME = "kb.predicate.type";
-
-  private static final String STRUCTURE_CLASS = "kb.structure.class";
-  private static final String STRUCTURE_PROPERTY = "kb.structure.property";
-
-  private static final String INSERT_SUPPORTED = "kb.insert.supported";
-  private static final String INSERT_PREFIX_SCHEMA_ELEMENT = "kb.insert.prefix.schema.element";
-  private static final String INSERT_PREFIX_DATA_ELEMENT = "kb.insert.prefix.data.element";
-  private static final String INSERT_ROOT_CLASS = "kb.insert.root.class";
-  private static final String INSERT_LABEL = "kb.insert.label";
-  private static final String INSERT_ALTERNATIVE_LABEL = "kb.insert.alternative.label";
-  private static final String INSERT_SUBCLASS_OF = "kb.insert.subclass.of";
-  private static final String INSERT_INSTANCE_OF = "kb.insert.instance.of";
-  private static final String INSERT_CLASS_TYPE = "kb.insert.class.type";
-  private static final String INSERT_GRAPH = "kb.insert.graph";
-  private static final String INSERT_PROPERTY_TYPE = "kb.insert.property.type";
-  private static final String INSERT_SUB_PROPERTY = "kb.insert.sub.property";
-  private static final String INSERT_DOMAIN = "kb.insert.domain";
-  private static final String INSERT_RANGE = "kb.insert.range";
-
-  //endregion
-
-  //region Fields
-
-  private final Map<String, Set<String>> structure = new HashMap<>();
   protected final Logger log = LoggerFactory.getLogger(getClass());
-
   private String name;
-  private String sparqlEndpoint;
-  private String ontologyUri;
+
   private String stopListFile;
-
-  private String languageSuffix;
-  private SEARCH_CLASS_TYPE_MODE_VALUE searchClassTypeMode;
-  private boolean useBifContains;
-
   private String cacheTemplatePath;
-
   private boolean insertSupported;
-  private URI insertSchemaElementPrefix;
-  private URI insertDataElementPrefix;
-  private String insertRootClass;
-  private String insertLabel;
-  private String insertAlternativeLabel;
-  private String insertSubclassOf;
-  private String insertInstanceOf;
-  private String insertClassType;
-  private String insertGraph;
-  private String insertPropertyType;
-  private String insertSubProperty;
-  private String insertDomain;
-  private String insertRange;
 
-//endregion
+  // endregion
 
-  //region Properties
+  // region Properties and Methods
+
+  private URI insertPrefixData;
+
+  private URI insertPrefixSchema;
+
+  public String getCacheTemplatePath() {
+    return this.cacheTemplatePath;
+  }
+
+  public URI getInsertPrefixData() {
+    return this.insertPrefixData;
+  }
+
+  public URI getInsertPrefixSchema() {
+    return this.insertPrefixSchema;
+  }
 
   /**
    * Returns the name of the knowledge base
+   *
    * @return
    */
   public String getName() {
-    return name;
+    return this.name;
   }
 
-  private void setName(String name) {
-    this.name = name;
-  }
+  protected String getOptionalValue(final Properties properties, final String propertyName,
+      final String defaultValue) {
+    if (!properties.containsKey(propertyName)) {
+      this.log.warn("Configuration does not contain the " + propertyName
+          + " setting. Setting to the default \"" + defaultValue + "\".");
+      return defaultValue;
+    }
 
-  /**
-   * Returns the SPARQL endpoint used for connecting to the knowledge base
-   * @return
-   */
-  public String getSparqlEndpoint() {
-    return sparqlEndpoint;
-  }
-
-  private void setSparqlEndpoint(String sparqlEndpoint) {
-    this.sparqlEndpoint = sparqlEndpoint;
-  }
-
-  public String getOntologyUri() {
-    return ontologyUri;
-  }
-
-  private void setOntologyUri(String ontologyUri) {
-    this.ontologyUri = ontologyUri;
+    return properties.getProperty(propertyName);
   }
 
   public String getStopListFile() {
-    return stopListFile;
-  }
-
-  private void setStopListFile(String stopListFile) {
-    this.stopListFile = stopListFile;
-  }
-
-  public String getLanguageSuffix() {
-    return languageSuffix;
-  }
-
-  private void setLanguageSuffix(String languageSuffix) {
-    this.languageSuffix = languageSuffix;
-  }
-
-  public SEARCH_CLASS_TYPE_MODE_VALUE getSearchClassTypeMode() {
-    return searchClassTypeMode;
-  }
-
-  public void setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE searchClassTypeMode) {
-    this.searchClassTypeMode = searchClassTypeMode;
-  }
-
-
-  public String getCacheTemplatePath() {
-    return cacheTemplatePath;
-  }
-
-  private void setCacheTemplatePath(String cacheTemplatePath) {
-    this.cacheTemplatePath = cacheTemplatePath;
-  }
-
-  public boolean getUseBifContains() {
-    return useBifContains;
-  }
-
-  private void setUseBifContains(boolean useBifContains) {
-    this.useBifContains = useBifContains;
-  }
-
-  public Set<String> getPredicateName() {
-    return structure.get(PREDICATE_NAME_PROPERTY_NAME);
-  }
-
-  public Set<String> getPredicateLabel() {
-    return structure.get(PREDICATE_LABEL_PROPERTY_NAME);
-  }
-
-  public Set<String> getPredicateDescription() {
-    return structure.get(PREDICATE_DESCRIPTION_PROPERTY_NAME);
-  }
-
-  public Set<String> getPredicateType() {
-    return structure.get(PREDICATE_TYPE_PROPERTY_NAME);
-  }
-
-  public Set<String> getStructureClass() {
-    return structure.get(STRUCTURE_CLASS);
-  }
-
-  public Set<String> getStructureProperty() {
-    return structure.get(STRUCTURE_PROPERTY);
+    return this.stopListFile;
   }
 
   public boolean isInsertSupported() {
-    return insertSupported;
+    return this.insertSupported;
   }
-
-  private void setInsertSupported(boolean insertSupported) {
-    this.insertSupported = insertSupported;
-  }
-
-  public URI getInsertSchemaElementPrefix() {
-    return insertSchemaElementPrefix;
-  }
-
-  private void setInsertSchemaElementPrefix(URI insertSchemaElementPrefix) {
-    this.insertSchemaElementPrefix = insertSchemaElementPrefix;
-  }
-
-  public URI getInsertDataElementPrefix() {
-    return insertDataElementPrefix;
-  }
-
-  private void setInsertDataElementPrefix(URI insertDataElementPrefix) {
-    this.insertDataElementPrefix = insertDataElementPrefix;
-  }
-
-  public String getInsertRootClass() {
-    return insertRootClass;
-  }
-
-  private void setInsertRootClass(String insertRootClass) {
-    this.insertRootClass = insertRootClass;
-  }
-
-  public String getInsertLabel() {
-    return insertLabel;
-  }
-
-  private void setInsertLabel(String insertLabel) {
-    this.insertLabel = insertLabel;
-  }
-
-  public String getInsertAlternativeLabel() {
-    return insertAlternativeLabel;
-  }
-
-  private void setInsertAlternativeLabel(String insertAlternativeLabel) {
-    this.insertAlternativeLabel = insertAlternativeLabel;
-  }
-
-  public String getInsertSubclassOf() {
-    return insertSubclassOf;
-  }
-
-  private void setInsertSubclassOf(String insertSubclassOf) {
-    this.insertSubclassOf = insertSubclassOf;
-  }
-
-  public String getInsertInstanceOf() {
-    return insertInstanceOf;
-  }
-
-  private void setInsertInstanceOf(String insertInstanceOf) {
-    this.insertInstanceOf = insertInstanceOf;
-  }
-
-  public String getInsertClassType() {
-    return insertClassType;
-  }
-
-  private void setInsertClassType(String insertClassType) {
-    this.insertClassType = insertClassType;
-  }
-
-  public String getInsertGraph() {
-    return insertGraph;
-  }
-
-  private void setInsertGraph(String insertGraph) {
-    this.insertGraph = insertGraph;
-  }
-
-  public String getInsertPropertyType() {
-    return insertPropertyType;
-  }
-
-  private void setInsertPropertyType(String insertPropertyType) {
-    this.insertPropertyType = insertPropertyType;
-  }
-
-  public String getInsertSubProperty() {
-    return insertSubProperty;
-  }
-
-  private void setInsertSubProperty(String insertSubProperty) {
-    this.insertSubProperty = insertSubProperty;
-  }
-
-  public String getInsertDomain() {
-    return insertDomain;
-  }
-
-  private void setInsertDomain(String insertDomain) {
-    this.insertDomain = insertDomain;
-  }
-
-  public String getInsertRange() {
-    return insertRange;
-  }
-
-  private void setInsertRange(String insertRange) {
-    this.insertRange = insertRange;
-  }
-
-  //endregion
-
-  //region constructor
-
-  public KBDefinition() {
-    structure.put(PREDICATE_NAME_PROPERTY_NAME, new HashSet<>());
-    structure.put(PREDICATE_LABEL_PROPERTY_NAME, new HashSet<>());
-    structure.put(PREDICATE_DESCRIPTION_PROPERTY_NAME, new HashSet<>());
-    structure.put(PREDICATE_TYPE_PROPERTY_NAME, new HashSet<>());
-    structure.put(STRUCTURE_CLASS, new HashSet<>());
-    structure.put(STRUCTURE_PROPERTY, new HashSet<>());
-  }
-
-  //endregion
-
-  //region Methods
 
   /**
    * Loads KB definition from the knowledge base properties.
+   *
    * @param kbProperties Properties of the knowledge base.
+   * @param workingDirectory Current working directory.
+   * @param cacheDirectory Current cache directory.
    * @throws IOException
    * @throws URISyntaxException
    */
-  public void load(Properties kbProperties, String workingDirectory) throws IOException, URISyntaxException {
+  public void load(final Properties kbProperties, final String workingDirectory,
+      final String cacheDirectory) throws IOException, URISyntaxException, KBProxyException {
     // Name
-    setName(kbProperties.getProperty(NAME_PROPERTY_NAME));
+    setName(getMandatoryValue(kbProperties, NAME_PROPERTY_NAME));
 
-    // Endpoint and ontology
-    setSparqlEndpoint(kbProperties.getProperty(SPARQL_ENDPOINT_PROPERTY_NAME));
-    setOntologyUri(kbProperties.getProperty(ONTOLOGY_URI_PROPERTY_NAME));
-    setStopListFile(combinePaths(workingDirectory, kbProperties.getProperty(STOP_LIST_FILE_PROPERTY_NAME)));
+    // Stoplist definition
+    setStopListFile(combinePaths(workingDirectory,
+        getMandatoryValue(kbProperties, STOP_LIST_FILE_PROPERTY_NAME)));
 
-    setCacheTemplatePath(combinePaths(workingDirectory, kbProperties.getProperty(CACHE_TEMPLATE_PATH_PROPERTY_NAME)));
-
-    // Language preferences
-    if (kbProperties.containsKey(LANGUAGE_SUFFIX)) {
-      setLanguageSuffix(kbProperties.getProperty(LANGUAGE_SUFFIX));
-    }
-
-    if (kbProperties.containsKey(SEARCH_CLASS_TYPE_MODE)) {
-      setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE.valueOf(kbProperties.getProperty(SEARCH_CLASS_TYPE_MODE).toUpperCase()));
-      //check the value is correct
-      if (!getSearchClassTypeMode().equals(SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT) && !getSearchClassTypeMode().equals(SEARCH_CLASS_TYPE_MODE_VALUE.DIRECT)) {
-        log.warn("Incorect value for kb.search.class.type.mode: {}", getSearchClassTypeMode());
-        setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
-        log.info("Using default value for kb.search.class.type.mode: ", SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT.toString());
-      }
-    }
-    else {
-      //set default choice
-      log.warn("Option kb.search.class.type.mode not available in KB config file, setting to default value: indirect");
-      setSearchClassTypeMode(SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
-    }
-
-    // Vistuoso specific settings
-    if (kbProperties.containsKey(USE_BIF_CONTAINS)) {
-      setUseBifContains(Boolean.parseBoolean(kbProperties.getProperty(USE_BIF_CONTAINS)));
-    }
-
-    // Loading structure
-    // Individual paths to definition files are separated by ";"
-    String structureDefinitions = kbProperties.getProperty(STRUCTURE_PROPERTY_NAME);
-    String[] structureDefinitionsArray = structureDefinitions.split(PATH_SEPARATOR);
-
-    for (String structureDefinitionsFile : structureDefinitionsArray) {
-      String definitionFileNormalized = combinePaths(workingDirectory, structureDefinitionsFile);
-
-      File file = new File(definitionFileNormalized);
-      if (!file.exists() || file.isDirectory()) {
-        log.error("The specified properties file does not exist: " + definitionFileNormalized);
-        continue;
-      }
-
-      Properties properties = new Properties();
-      try (InputStream fileStream = new FileInputStream(definitionFileNormalized)) {
-        properties.load(fileStream);
-        loadStructure(properties);
-      }
-    }
+    // Cache template
+    setCacheTemplatePath(combinePaths(cacheDirectory,
+        getMandatoryValue(kbProperties, CACHE_TEMPLATE_PATH_PROPERTY_NAME)));
 
     // SPARQL insert
-    if (kbProperties.containsKey(INSERT_SUPPORTED)) {
-      setInsertSupported(Boolean.parseBoolean(kbProperties.getProperty(INSERT_SUPPORTED)));
-    }
+    setInsertSupported(Boolean
+        .parseBoolean(getOptionalValue(kbProperties, INSERT_SUPPORTED, DEFAULT_INSERT_SUPPORTED)));
 
     if (isInsertSupported()) {
-      setInsertSchemaElementPrefix(new URI(kbProperties.getProperty(INSERT_PREFIX_SCHEMA_ELEMENT)));
-      setInsertDataElementPrefix(new URI(kbProperties.getProperty(INSERT_PREFIX_DATA_ELEMENT)));
-      setInsertLabel(kbProperties.getProperty(INSERT_LABEL));
-      setInsertAlternativeLabel(kbProperties.getProperty(INSERT_ALTERNATIVE_LABEL));
-      setInsertRootClass(kbProperties.getProperty(INSERT_ROOT_CLASS));
-      setInsertSubclassOf(kbProperties.getProperty(INSERT_SUBCLASS_OF));
-      setInsertInstanceOf(kbProperties.getProperty(INSERT_INSTANCE_OF));
-      setInsertClassType(kbProperties.getProperty(INSERT_CLASS_TYPE));
-      setInsertGraph(kbProperties.getProperty(INSERT_GRAPH));
-      setInsertPropertyType(kbProperties.getProperty(INSERT_PROPERTY_TYPE));
-      setInsertSubProperty(kbProperties.getProperty(INSERT_SUB_PROPERTY));
-      setInsertDomain(kbProperties.getProperty(INSERT_DOMAIN));
-      setInsertRange(kbProperties.getProperty(INSERT_RANGE));
+      setInsertPrefixData(new URI(getMandatoryValue(kbProperties, INSERT_PREFIX_DATA)));
+      setInsertPrefixSchema(new URI(getMandatoryValue(kbProperties, INSERT_PREFIX_SCHEMA)));
     }
   }
 
-  private void loadStructure(Properties properties) {
-    for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-      String key = (String) entry.getKey();
-      Set<String> structureValues = structure.getOrDefault(key, null);
-
-      if (structureValues == null) {
-        log.error("Unknown structure key: " + key);
-        continue;
-      }
-
-      String values = (String) entry.getValue();
-      String[] valuesArray = values.split(URL_SEPARATOR);
-
-      for (String value : valuesArray) {
-        boolean valueAdded = structureValues.add(value);
-
-        if (!valueAdded) {
-          log.warn(String.format("Structure value %1$s for the key %2$s is already loaded.", value, key));
-        }
-      }
-    }
+  private void setCacheTemplatePath(final String cacheTemplatePath) {
+    this.cacheTemplatePath = cacheTemplatePath;
   }
 
-  //endregion
+  private void setInsertPrefixData(final URI insertPrefixData) {
+    this.insertPrefixData = insertPrefixData;
+  }
+
+  private void setInsertPrefixSchema(final URI insertPrefixSchema) {
+    this.insertPrefixSchema = insertPrefixSchema;
+  }
+
+  private void setInsertSupported(final boolean insertSupported) {
+    this.insertSupported = insertSupported;
+  }
+
+  private void setName(final String name) {
+    this.name = name;
+  }
+
+  private void setStopListFile(final String stopListFile) {
+    this.stopListFile = stopListFile;
+  }
+
+  // endregion
 }

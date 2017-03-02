@@ -1,16 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>cz.cuni.mff.xrg.odalic</groupId>
+	<groupId>eu.odalic.sti</groupId>
 	<artifactId>odalic-sti</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
     <packaging>pom</packaging>
 	<name>Odalic STI</name>
 	<description>Odalic Semantic Table Interpreter</description>
 
 	<modules>
         <module>sti-common-util</module>
-        <module>sti-any23</module>
         <module>sti-kbproxy</module>
         <module>sti-websearch</module>
         <module>sti-main</module>

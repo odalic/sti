@@ -1,0 +1,1881 @@
+{
+  "subjectColumnPositions" : {
+    "DBpedia Clone" : {
+      "index" : 0
+    },
+    "DBpedia" : {
+      "index" : 0
+    }
+  },
+  "headerAnnotations" : [ {
+    "candidates" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://schema.org/Book",
+          "label" : "Book",
+          "prefixed" : "schema-org:Book",
+          "prefix" : {
+            "with" : "schema-org",
+            "what" : "http://schema.org/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 4.001703799510735
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/Book",
+          "label" : "Book",
+          "prefixed" : "http://dbpedia.org/class/Book",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 3.8615444837198862
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Book",
+          "label" : "book",
+          "prefixed" : "dbpedia-owl:Book",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 3.8615444837198862
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q571",
+          "label" : "book",
+          "prefixed" : "http://www.wikidata.org/entity/Q571",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 3.8615444837198862
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatNovelsByStevenErikson",
+          "label" : "Wikicat Novels By Steven Erikson",
+          "prefixed" : "yago:WikicatNovelsByStevenErikson",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatNovelsByStevenErikson"
+        },
+        "score" : {
+          "value" : 3.8300399946348174
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://purl.org/ontology/bibo/Book",
+          "label" : "Book",
+          "prefixed" : "bibo:Book",
+          "prefix" : {
+            "with" : "bibo",
+            "what" : "http://purl.org/ontology/bibo/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 3.7596782683985133
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatCanadianFantasyNovels",
+          "label" : "Wikicat Canadian Fantasy Novels",
+          "prefixed" : "yago:WikicatCanadianFantasyNovels",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatCanadianFantasyNovels"
+        },
+        "score" : {
+          "value" : 3.5179334347022104
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatFantasyNovels",
+          "label" : "Wikicat Fantasy Novels",
+          "prefixed" : "yago:WikicatFantasyNovels",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatFantasyNovels"
+        },
+        "score" : {
+          "value" : 3.3695464423070547
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatCanadianNovels",
+          "label" : "Wikicat Canadian Novels",
+          "prefixed" : "yago:WikicatCanadianNovels",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatCanadianNovels"
+        },
+        "score" : {
+          "value" : 3.2786838354026857
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Novel106367879",
+          "label" : "Novel",
+          "prefixed" : "yago:Novel106367879",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Novel106367879"
+        },
+        "score" : {
+          "value" : 3.063583672708414
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Abstraction100002137",
+          "label" : "Abstraction",
+          "prefixed" : "yago:Abstraction100002137",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Abstraction100002137"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Communication100033020",
+          "label" : "Communication",
+          "prefixed" : "yago:Communication100033020",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Communication100033020"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Fiction106367107",
+          "label" : "Fiction",
+          "prefixed" : "yago:Fiction106367107",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Fiction106367107"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/LiteraryComposition106364329",
+          "label" : "Literary Composition",
+          "prefixed" : "yago:LiteraryComposition106364329",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "LiteraryComposition106364329"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Writing106362953",
+          "label" : "Writing",
+          "prefixed" : "yago:Writing106362953",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Writing106362953"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WrittenCommunication106349220",
+          "label" : "Written Communication",
+          "prefixed" : "yago:WrittenCommunication106349220",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WrittenCommunication106349220"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Work",
+          "label" : "work",
+          "prefixed" : "dbpedia-owl:Work",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Work"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/WrittenWork",
+          "label" : "written work",
+          "prefixed" : "dbpedia-owl:WrittenWork",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "WrittenWork"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://schema.org/CreativeWork",
+          "label" : "Creative Work",
+          "prefixed" : "schema-org:CreativeWork",
+          "prefix" : {
+            "with" : "schema-org",
+            "what" : "http://schema.org/"
+          },
+          "tail" : "CreativeWork"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q386724",
+          "label" : "work",
+          "prefixed" : "http://www.wikidata.org/entity/Q386724",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://umbel.org/umbel/rc/Book_CW",
+          "label" : "Book CW",
+          "prefixed" : "http://umbel.org/umbel/rc/Book_CW",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.236111111111111
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Wikicat2000Novels",
+          "label" : "Wikicat",
+          "prefixed" : "yago:Wikicat2000Novels",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Wikicat2000Novels"
+        },
+        "score" : {
+          "value" : 1.3838834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Wikicat1999Novels",
+          "label" : "Wikicat",
+          "prefixed" : "yago:Wikicat1999Novels",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Wikicat1999Novels"
+        },
+        "score" : {
+          "value" : 1.125
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/ontology#Item",
+          "label" : "Item",
+          "prefixed" : "http://www.wikidata.org/ontology#Item",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 0.0
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://schema.org/Book",
+          "label" : "Book",
+          "prefixed" : "schema-org:Book",
+          "prefix" : {
+            "with" : "schema-org",
+            "what" : "http://schema.org/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 3.3088834764831843
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/dbtax/Book",
+          "label" : "Book",
+          "prefixed" : "http://dbpedia.org/dbtax/Book",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 3.175550143149851
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Book",
+          "label" : "book",
+          "prefixed" : "dbpedia-owl:Book",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 3.175550143149851
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://purl.org/ontology/bibo/Book",
+          "label" : "Book",
+          "prefixed" : "bibo:Book",
+          "prefix" : {
+            "with" : "bibo",
+            "what" : "http://purl.org/ontology/bibo/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 3.0803120479117556
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/dbtax/Article",
+          "label" : "Article",
+          "prefixed" : "http://dbpedia.org/dbtax/Article",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Article",
+          "label" : "article",
+          "prefixed" : "dbpedia-owl:Article",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Article"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Work",
+          "label" : "work",
+          "prefixed" : "dbpedia-owl:Work",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Work"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/WrittenWork",
+          "label" : "written work",
+          "prefixed" : "dbpedia-owl:WrittenWork",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "WrittenWork"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://schema.org/CreativeWork",
+          "label" : "Creative Work",
+          "prefixed" : "schema-org:CreativeWork",
+          "prefix" : {
+            "with" : "schema-org",
+            "what" : "http://schema.org/"
+          },
+          "tail" : "CreativeWork"
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q386724",
+          "label" : "Q 386724",
+          "prefixed" : "http://www.wikidata.org/entity/Q386724",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q571",
+          "label" : "Q 571",
+          "prefixed" : "http://www.wikidata.org/entity/Q571",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.5088834764831844
+        }
+      } ]
+    },
+    "chosen" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://schema.org/Book",
+          "label" : "Book",
+          "prefixed" : "schema-org:Book",
+          "prefix" : {
+            "with" : "schema-org",
+            "what" : "http://schema.org/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 4.001703799510735
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://schema.org/Book",
+          "label" : "Book",
+          "prefixed" : "schema-org:Book",
+          "prefix" : {
+            "with" : "schema-org",
+            "what" : "http://schema.org/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 3.3088834764831843
+        }
+      } ]
+    }
+  }, {
+    "candidates" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatCanadianFantasyWriters",
+          "label" : "Wikicat Canadian Fantasy Writers",
+          "prefixed" : "yago:WikicatCanadianFantasyWriters",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatCanadianFantasyWriters"
+        },
+        "score" : {
+          "value" : 3.009886689182247
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatFantasyWriters",
+          "label" : "Wikicat Fantasy Writers",
+          "prefixed" : "yago:WikicatFantasyWriters",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatFantasyWriters"
+        },
+        "score" : {
+          "value" : 2.823750490426472
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatPeopleFromToronto",
+          "label" : "Wikicat People From Toronto",
+          "prefixed" : "yago:WikicatPeopleFromToronto",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatPeopleFromToronto"
+        },
+        "score" : {
+          "value" : 2.823750490426472
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatCanadianAnthropologists",
+          "label" : "Wikicat Canadian Anthropologists",
+          "prefixed" : "yago:WikicatCanadianAnthropologists",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatCanadianAnthropologists"
+        },
+        "score" : {
+          "value" : 2.7014148777116227
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatCanadianNovelists",
+          "label" : "Wikicat Canadian Novelists",
+          "prefixed" : "yago:WikicatCanadianNovelists",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatCanadianNovelists"
+        },
+        "score" : {
+          "value" : 2.7014148777116227
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatCanadianPeople",
+          "label" : "Wikicat Canadian People",
+          "prefixed" : "yago:WikicatCanadianPeople",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatCanadianPeople"
+        },
+        "score" : {
+          "value" : 2.7014148777116227
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatCanadianScienceFictionWriters",
+          "label" : "Wikicat Canadian Science Fiction Writers",
+          "prefixed" : "yago:WikicatCanadianScienceFictionWriters",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatCanadianScienceFictionWriters"
+        },
+        "score" : {
+          "value" : 2.691606307584654
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Alumnus109786338",
+          "label" : "Alumnus",
+          "prefixed" : "yago:Alumnus109786338",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Alumnus109786338"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Anthropologist109796323",
+          "label" : "Anthropologist",
+          "prefixed" : "yago:Anthropologist109796323",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Anthropologist109796323"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/CausalAgent100007347",
+          "label" : "Causal Agent",
+          "prefixed" : "yago:CausalAgent100007347",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "CausalAgent100007347"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Communicator109610660",
+          "label" : "Communicator",
+          "prefixed" : "yago:Communicator109610660",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Communicator109610660"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Intellectual109621545",
+          "label" : "Intellectual",
+          "prefixed" : "yago:Intellectual109621545",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Intellectual109621545"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/LivingThing100004258",
+          "label" : "Living Thing",
+          "prefixed" : "yago:LivingThing100004258",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "LivingThing100004258"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Novelist110363573",
+          "label" : "Novelist",
+          "prefixed" : "yago:Novelist110363573",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Novelist110363573"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Object100002684",
+          "label" : "Object",
+          "prefixed" : "yago:Object100002684",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Object100002684"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Organism100004475",
+          "label" : "Organism",
+          "prefixed" : "yago:Organism100004475",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Organism100004475"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Person100007846",
+          "label" : "Person",
+          "prefixed" : "yago:Person100007846",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Person100007846"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/PhysicalEntity100001930",
+          "label" : "Physical Entity",
+          "prefixed" : "yago:PhysicalEntity100001930",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "PhysicalEntity100001930"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Scholar110557854",
+          "label" : "Scholar",
+          "prefixed" : "yago:Scholar110557854",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Scholar110557854"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Scientist110560637",
+          "label" : "Scientist",
+          "prefixed" : "yago:Scientist110560637",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Scientist110560637"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/SocialScientist110619642",
+          "label" : "Social Scientist",
+          "prefixed" : "yago:SocialScientist110619642",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "SocialScientist110619642"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Whole100003553",
+          "label" : "Whole",
+          "prefixed" : "yago:Whole100003553",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Whole100003553"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatIowaWriters'WorkshopAlumni",
+          "label" : "Wikicat Iowa Writers Workshop Alumni",
+          "prefixed" : "yago:WikicatIowaWriters'WorkshopAlumni",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatIowaWriters'WorkshopAlumni"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatLivingPeople",
+          "label" : "Wikicat Living People",
+          "prefixed" : "yago:WikicatLivingPeople",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatLivingPeople"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatPseudonymousWriters",
+          "label" : "Wikicat Pseudonymous Writers",
+          "prefixed" : "yago:WikicatPseudonymousWriters",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatPseudonymousWriters"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatWriters",
+          "label" : "Wikicat Writers",
+          "prefixed" : "yago:WikicatWriters",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatWriters"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/Writer110794014",
+          "label" : "Writer",
+          "prefixed" : "yago:Writer110794014",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "Writer110794014"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/YagoLegalActor",
+          "label" : "Yago Legal Actor",
+          "prefixed" : "yago:YagoLegalActor",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "YagoLegalActor"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/YagoLegalActorGeo",
+          "label" : "Yago Legal Actor Geo",
+          "prefixed" : "yago:YagoLegalActorGeo",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "YagoLegalActorGeo"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Agent",
+          "label" : "agent",
+          "prefixed" : "dbpedia-owl:Agent",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Agent"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Person",
+          "label" : "person",
+          "prefixed" : "dbpedia-owl:Person",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Person"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Writer",
+          "label" : "writer",
+          "prefixed" : "dbpedia-owl:Writer",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Writer"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://schema.org/Person",
+          "label" : "Person",
+          "prefixed" : "schema-org:Person",
+          "prefix" : {
+            "with" : "schema-org",
+            "what" : "http://schema.org/"
+          },
+          "tail" : "Person"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://umbel.org/umbel/rc/Writer",
+          "label" : "Writer",
+          "prefixed" : "http://umbel.org/umbel/rc/Writer",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#NaturalPerson",
+          "label" : "Natural Person",
+          "prefixed" : "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#NaturalPerson",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q215627",
+          "label" : "person",
+          "prefixed" : "http://www.wikidata.org/entity/Q215627",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q36180",
+          "label" : "writer",
+          "prefixed" : "http://www.wikidata.org/entity/Q36180",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q5",
+          "label" : "human",
+          "prefixed" : "http://www.wikidata.org/entity/Q5",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://xmlns.com/foaf/0.1/Person",
+          "label" : "Person",
+          "prefixed" : "foaf:Person",
+          "prefix" : {
+            "with" : "foaf",
+            "what" : "http://xmlns.com/foaf/0.1/"
+          },
+          "tail" : "Person"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/ontology#Item",
+          "label" : "Item",
+          "prefixed" : "http://www.wikidata.org/ontology#Item",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 0.0
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/dbtax/Article",
+          "label" : "Article",
+          "prefixed" : "http://dbpedia.org/dbtax/Article",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/dbtax/List",
+          "label" : "List",
+          "prefixed" : "http://dbpedia.org/dbtax/List",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/dbtax/Writer",
+          "label" : "Writer",
+          "prefixed" : "http://dbpedia.org/dbtax/Writer",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Agent",
+          "label" : "agent",
+          "prefixed" : "dbpedia-owl:Agent",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Agent"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Article",
+          "label" : "article",
+          "prefixed" : "dbpedia-owl:Article",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Article"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/List",
+          "label" : "list",
+          "prefixed" : "dbpedia-owl:List",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "List"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Person",
+          "label" : "person",
+          "prefixed" : "dbpedia-owl:Person",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Person"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Writer",
+          "label" : "writer",
+          "prefixed" : "dbpedia-owl:Writer",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Writer"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://schema.org/Person",
+          "label" : "Person",
+          "prefixed" : "schema-org:Person",
+          "prefix" : {
+            "with" : "schema-org",
+            "what" : "http://schema.org/"
+          },
+          "tail" : "Person"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#NaturalPerson",
+          "label" : "Natural Person",
+          "prefixed" : "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#NaturalPerson",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q215627",
+          "label" : "Q 215627",
+          "prefixed" : "http://www.wikidata.org/entity/Q215627",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q36180",
+          "label" : "Q 36180",
+          "prefixed" : "http://www.wikidata.org/entity/Q36180",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q5",
+          "label" : "Q 5",
+          "prefixed" : "http://www.wikidata.org/entity/Q5",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://xmlns.com/foaf/0.1/Person",
+          "label" : "Person",
+          "prefixed" : "foaf:Person",
+          "prefix" : {
+            "with" : "foaf",
+            "what" : "http://xmlns.com/foaf/0.1/"
+          },
+          "tail" : "Person"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      } ]
+    },
+    "chosen" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/class/yago/WikicatCanadianFantasyWriters",
+          "label" : "Wikicat Canadian Fantasy Writers",
+          "prefixed" : "yago:WikicatCanadianFantasyWriters",
+          "prefix" : {
+            "with" : "yago",
+            "what" : "http://dbpedia.org/class/yago/"
+          },
+          "tail" : "WikicatCanadianFantasyWriters"
+        },
+        "score" : {
+          "value" : 3.009886689182247
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#NaturalPerson",
+          "label" : "Natural Person",
+          "prefixed" : "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#NaturalPerson",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      } ]
+    }
+  }, {
+    "candidates" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q277759",
+          "label" : "book series",
+          "prefixed" : "http://www.wikidata.org/entity/Q277759",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 3.92662468525901
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/ontology#Item",
+          "label" : "Item",
+          "prefixed" : "http://www.wikidata.org/ontology#Item",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.8944271909999157
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://schema.org/Book",
+          "label" : "Book",
+          "prefixed" : "schema-org:Book",
+          "prefix" : {
+            "with" : "schema-org",
+            "what" : "http://schema.org/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 2.395046391999925
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/dbtax/Book",
+          "label" : "Book",
+          "prefixed" : "http://dbpedia.org/dbtax/Book",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 2.3405009374544705
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Book",
+          "label" : "book",
+          "prefixed" : "dbpedia-owl:Book",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 2.3405009374544705
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://purl.org/ontology/bibo/Book",
+          "label" : "Book",
+          "prefixed" : "bibo:Book",
+          "prefix" : {
+            "with" : "bibo",
+            "what" : "http://purl.org/ontology/bibo/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 2.295046391999925
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/dbtax/Article",
+          "label" : "Article",
+          "prefixed" : "http://dbpedia.org/dbtax/Article",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Article",
+          "label" : "article",
+          "prefixed" : "dbpedia-owl:Article",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Article"
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/TelevisionShow",
+          "label" : "television show",
+          "prefixed" : "dbpedia-owl:TelevisionShow",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "TelevisionShow"
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/Work",
+          "label" : "work",
+          "prefixed" : "dbpedia-owl:Work",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "Work"
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://dbpedia.org/ontology/WrittenWork",
+          "label" : "written work",
+          "prefixed" : "dbpedia-owl:WrittenWork",
+          "prefix" : {
+            "with" : "dbpedia-owl",
+            "what" : "http://dbpedia.org/ontology/"
+          },
+          "tail" : "WrittenWork"
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://schema.org/CreativeWork",
+          "label" : "Creative Work",
+          "prefixed" : "schema-org:CreativeWork",
+          "prefix" : {
+            "with" : "schema-org",
+            "what" : "http://schema.org/"
+          },
+          "tail" : "CreativeWork"
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q386724",
+          "label" : "Q 386724",
+          "prefixed" : "http://www.wikidata.org/entity/Q386724",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q571",
+          "label" : "Q 571",
+          "prefixed" : "http://www.wikidata.org/entity/Q571",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      } ]
+    },
+    "chosen" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q277759",
+          "label" : "book series",
+          "prefixed" : "http://www.wikidata.org/entity/Q277759",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 3.92662468525901
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://schema.org/Book",
+          "label" : "Book",
+          "prefixed" : "schema-org:Book",
+          "prefix" : {
+            "with" : "schema-org",
+            "what" : "http://schema.org/"
+          },
+          "tail" : "Book"
+        },
+        "score" : {
+          "value" : 2.395046391999925
+        }
+      } ]
+    }
+  } ],
+  "cellAnnotations" : [ [ {
+    "candidates" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Gardens_of_the_Moon",
+          "label" : "Gardens of the Moon",
+          "prefixed" : "dbpedia:Gardens_of_the_Moon",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Gardens_of_the_Moon"
+        },
+        "score" : {
+          "value" : 2.25
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Gardens_of_the_Moon",
+          "label" : "Gardens of the Moon",
+          "prefixed" : "dbpedia:Gardens_of_the_Moon",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Gardens_of_the_Moon"
+        },
+        "score" : {
+          "value" : 2.25
+        }
+      } ]
+    },
+    "chosen" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Gardens_of_the_Moon",
+          "label" : "Gardens of the Moon",
+          "prefixed" : "dbpedia:Gardens_of_the_Moon",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Gardens_of_the_Moon"
+        },
+        "score" : {
+          "value" : 2.25
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Gardens_of_the_Moon",
+          "label" : "Gardens of the Moon",
+          "prefixed" : "dbpedia:Gardens_of_the_Moon",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Gardens_of_the_Moon"
+        },
+        "score" : {
+          "value" : 2.25
+        }
+      } ]
+    }
+  }, {
+    "candidates" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson",
+          "prefixed" : "dbpedia:Steven_Erikson",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Steven_Erikson"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson",
+          "prefixed" : "dbpedia:Steven_Erikson",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Steven_Erikson"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      } ]
+    },
+    "chosen" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson",
+          "prefixed" : "dbpedia:Steven_Erikson",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Steven_Erikson"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson",
+          "prefixed" : "dbpedia:Steven_Erikson",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Steven_Erikson"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      } ]
+    }
+  }, {
+    "candidates" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q458982",
+          "label" : "Malazan Book of the Fallen",
+          "prefixed" : "http://www.wikidata.org/entity/Q458982",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.8944271909999157
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Malazan_Book_of_the_Fallen",
+          "label" : "Malazan Book of the Fallen",
+          "prefixed" : "dbpedia:Malazan_Book_of_the_Fallen",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Malazan_Book_of_the_Fallen"
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      } ]
+    },
+    "chosen" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q458982",
+          "label" : "Malazan Book of the Fallen",
+          "prefixed" : "http://www.wikidata.org/entity/Q458982",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.8944271909999157
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Malazan_Book_of_the_Fallen",
+          "label" : "Malazan Book of the Fallen",
+          "prefixed" : "dbpedia:Malazan_Book_of_the_Fallen",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Malazan_Book_of_the_Fallen"
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      } ]
+    }
+  } ], [ {
+    "candidates" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Deadhouse_Gates",
+          "label" : "Deadhouse Gates",
+          "prefixed" : "dbpedia:Deadhouse_Gates",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Deadhouse_Gates"
+        },
+        "score" : {
+          "value" : 2.767766952966369
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Deadhouse_Gates",
+          "label" : "Deadhouse Gates",
+          "prefixed" : "dbpedia:Deadhouse_Gates",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Deadhouse_Gates"
+        },
+        "score" : {
+          "value" : 2.767766952966369
+        }
+      } ]
+    },
+    "chosen" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Deadhouse_Gates",
+          "label" : "Deadhouse Gates",
+          "prefixed" : "dbpedia:Deadhouse_Gates",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Deadhouse_Gates"
+        },
+        "score" : {
+          "value" : 2.767766952966369
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Deadhouse_Gates",
+          "label" : "Deadhouse Gates",
+          "prefixed" : "dbpedia:Deadhouse_Gates",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Deadhouse_Gates"
+        },
+        "score" : {
+          "value" : 2.767766952966369
+        }
+      } ]
+    }
+  }, {
+    "candidates" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson",
+          "prefixed" : "dbpedia:Steven_Erikson",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Steven_Erikson"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson",
+          "prefixed" : "dbpedia:Steven_Erikson",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Steven_Erikson"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      } ]
+    },
+    "chosen" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson",
+          "prefixed" : "dbpedia:Steven_Erikson",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Steven_Erikson"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson",
+          "prefixed" : "dbpedia:Steven_Erikson",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Steven_Erikson"
+        },
+        "score" : {
+          "value" : 2.1570838237598053
+        }
+      } ]
+    }
+  }, {
+    "candidates" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q458982",
+          "label" : "Malazan Book of the Fallen",
+          "prefixed" : "http://www.wikidata.org/entity/Q458982",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.8944271909999157
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Malazan_Book_of_the_Fallen",
+          "label" : "Malazan Book of the Fallen",
+          "prefixed" : "dbpedia:Malazan_Book_of_the_Fallen",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Malazan_Book_of_the_Fallen"
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      } ]
+    },
+    "chosen" : {
+      "DBpedia Clone" : [ {
+        "entity" : {
+          "resource" : "http://www.wikidata.org/entity/Q458982",
+          "label" : "Malazan Book of the Fallen",
+          "prefixed" : "http://www.wikidata.org/entity/Q458982",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.8944271909999157
+        }
+      } ],
+      "DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://dbpedia.org/resource/Malazan_Book_of_the_Fallen",
+          "label" : "Malazan Book of the Fallen",
+          "prefixed" : "dbpedia:Malazan_Book_of_the_Fallen",
+          "prefix" : {
+            "with" : "dbpedia",
+            "what" : "http://dbpedia.org/resource/"
+          },
+          "tail" : "Malazan_Book_of_the_Fallen"
+        },
+        "score" : {
+          "value" : 1.795046391999925
+        }
+      } ]
+    }
+  } ] ],
+  "columnRelationAnnotations" : { },
+  "statisticalAnnotations" : [ {
+    "component" : { },
+    "predicate" : { }
+  }, {
+    "component" : { },
+    "predicate" : { }
+  }, {
+    "component" : { },
+    "predicate" : { }
+  } ],
+  "columnProcessingAnnotations" : [ {
+    "processingType" : {
+      "DBpedia Clone" : "NAMED_ENTITY",
+      "DBpedia" : "NAMED_ENTITY"
+    }
+  }, {
+    "processingType" : {
+      "DBpedia Clone" : "NAMED_ENTITY",
+      "DBpedia" : "NAMED_ENTITY"
+    }
+  }, {
+    "processingType" : {
+      "DBpedia Clone" : "NAMED_ENTITY",
+      "DBpedia" : "NAMED_ENTITY"
+    }
+  } ],
+  "warnings" : [ ]
+}

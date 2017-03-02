@@ -1,74 +1,48 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
-import org.apache.jena.ontology.OntModel;
-import org.apache.jena.ontology.OntModelSpec;
-import org.apache.jena.query.*;
-import org.apache.jena.rdf.model.ModelFactory;
-import uk.ac.shef.dcs.kbproxy.KBDefinition;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.*;
 
 /**
  * Created by - on 10/06/2016.
  */
 public class DBpediaProxy extends SPARQLProxy {
-
-  private static final String DBP_SPARQL_ENDPOINT = "dbp.sparql.endpoint";
-  private static final String DBP_ONTOLOGY_URL = "dbp.ontology.url";
-
-  private OntModel ontology;
-
   /**
-   * @param fuzzyKeywords   given a query string, kbproxy will firstly try to fetch results matching the exact query. when no match is
-   *                        found, you can set fuzzyKeywords to true, to let kbproxy to break the query string based on conjunective words.
-   *                        So if the query string is "tom and jerry", it will try "tom" and "jerry"
-   * @param cachesBasePath  Base path for the initialized solr caches.
-   * @throws IOException
+   * @param properties the knowledge base definition
+   * @param workingDirectory Base working directory of the application.
+   * @param cachesBasePath Base path for the initialized solr caches.
+   * @param prefixToUriMap Map of user defined prefixes.
    */
-  public DBpediaProxy(KBDefinition kbDefinition,
-                      Boolean fuzzyKeywords,
-                      String cachesBasePath) throws IOException, KBProxyException {
-    super(kbDefinition, fuzzyKeywords, cachesBasePath);
-    String ontologyURL = kbDefinition.getOntologyUri();
-    if (ontologyURL != null) {
-      ontology = loadModel(ontologyURL);
-    }
+  public DBpediaProxy(
+          final Properties properties,
+          String workingDirectory,
+          String cachesBasePath,
+          final Map<String, String> prefixToUriMap)
+          throws IOException, URISyntaxException, KBProxyException {
+    super(properties, workingDirectory, cachesBasePath, prefixToUriMap);
     resultFilter = new DBpediaSearchResultFilter(kbDefinition.getStopListFile());
   }
 
   @Override
-  protected List<String> queryForLabel(Query sparqlQuery, String resourceURI) throws KBProxyException {
-    List<String> baseOut = super.queryForLabel(sparqlQuery, resourceURI);
-    if (baseOut == null || baseOut.size() == 0) {
-      return baseOut;
-    }
-
-    String suffix = kbDefinition.getLanguageSuffix();
-    if (isNullOrEmpty(suffix)) {
-      return baseOut;
-    }
-
-    List<String> out = new ArrayList<>();
-    for(String label : baseOut) {
-      if (label.contains("@")) { //language tag in dbpedia literals
-        if (label.endsWith(suffix)) {
-          label = label.substring(0, label.length() - suffix.length()).trim();
-        }
-        else {
-          continue;
+  protected String applyCustomUriHeuristics(String resourceURI, String label) {
+    // This is an yago resource, which may have numbered ids as suffix
+    // e.g., City015467.
+    if (resourceURI.contains("yago")) {
+      int end = 0;
+      for (int i = 0; i < label.length(); i++) {
+        if (Character.isDigit(label.charAt(i))) {
+          end = i;
+          break;
         }
       }
 
-      out.add(label);
+      if (end > 0) {
+        label = label.substring(0, end);
+      }
     }
 
-    return out;
-  }
-
-  private OntModel loadModel(String ontURL) {
-    OntModel base = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM);
-    base.read(ontURL);
-    return ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF, base);
+    return label;
   }
 }

@@ -17,38 +17,22 @@ public final class Ambiguity implements Serializable {
 
   /**
    * Creates a new hint to keep a cell ambiguous.
-   * 
+   *
    * @param position position of the cell
    */
-  public Ambiguity(CellPosition position) {
+  public Ambiguity(final CellPosition position) {
     Preconditions.checkNotNull(position);
-    
+
     this.position = position;
   }
 
-  /**
-   * @return the position
-   */
-  public CellPosition getPosition() {
-    return position;
-  }
-
-  /* (non-Javadoc)
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((position == null) ? 0 : position.hashCode());
-    return result;
-  }
-
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -58,22 +42,44 @@ public final class Ambiguity implements Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    Ambiguity other = (Ambiguity) obj;
-    if (position == null) {
+    final Ambiguity other = (Ambiguity) obj;
+    if (this.position == null) {
       if (other.position != null) {
         return false;
       }
-    } else if (!position.equals(other.position)) {
+    } else if (!this.position.equals(other.position)) {
       return false;
     }
     return true;
   }
 
-  /* (non-Javadoc)
+  /**
+   * @return the position
+   */
+  public CellPosition getPosition() {
+    return this.position;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + ((this.position == null) ? 0 : this.position.hashCode());
+    return result;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "Ambiguity [position=" + position + "]";
+    return "Ambiguity [position=" + this.position + "]";
   }
 }

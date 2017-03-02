@@ -8,7 +8,7 @@ import com.google.common.base.Preconditions;
 
 /**
  * Position of a row in a table.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -16,47 +16,37 @@ import com.google.common.base.Preconditions;
 public final class RowPosition implements Serializable, Comparable<RowPosition> {
 
   private static final long serialVersionUID = 3435359552551500579L;
-  
+
   private final int index;
 
   /**
    * Creates new row position representation.
-   * 
+   *
    * @param index zero-base index
    */
-  public RowPosition(int index) {
+  public RowPosition(final int index) {
     Preconditions.checkArgument(index >= 0);
-    
+
     this.index = index;
   }
 
-  /**
-   * @return the index
-   */
-  public int getIndex() {
-    return index;
-  }
-
-  /**
-   * Computes hash code based on the index.
-   * 
-   * @see java.lang.Object#hashCode()
+  /*
+   * (non-Javadoc)
+   *
+   * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + index;
-    return result;
+  public int compareTo(final RowPosition other) {
+    return Integer.compare(this.index, other.index);
   }
 
   /**
    * Compares for equality (only other row position with the same index passes).
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -66,26 +56,40 @@ public final class RowPosition implements Serializable, Comparable<RowPosition> 
     if (getClass() != obj.getClass()) {
       return false;
     }
-    RowPosition other = (RowPosition) obj;
-    if (index != other.index) {
+    final RowPosition other = (RowPosition) obj;
+    if (this.index != other.index) {
       return false;
     }
     return true;
   }
-  
-  /* (non-Javadoc)
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
+
+  /**
+   * @return the index
    */
-  @Override
-  public int compareTo(RowPosition other) {
-    return Integer.compare(index, other.index);
+  public int getIndex() {
+    return this.index;
   }
 
-  /* (non-Javadoc)
+  /**
+   * Computes hash code based on the index.
+   *
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + this.index;
+    return result;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "[" + index + "]";
+    return "[" + this.index + "]";
   }
 }

@@ -4,48 +4,48 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Author: Ziqi Zhang (z.zhang@dcs.shef.ac.uk)
- * Date: 09/10/12
- * Time: 11:07
+ * Author: Ziqi Zhang (z.zhang@dcs.shef.ac.uk) Date: 09/10/12 Time: 11:07
  */
 public class List implements Serializable {
-    private static final long serialVersionUID = -8136725813759687613L;
-    private String sourceId;
-    private String listId;
-    private java.util.List<ListItem> items;
-    private java.util.List<String> contexts;
+  private static final long serialVersionUID = -8136725813759687613L;
+  private final String sourceId;
+  private final String listId;
+  private final java.util.List<ListItem> items;
+  private final java.util.List<String> contexts;
 
-    public List(String sourceId, String listId){
-        this.sourceId=sourceId;
-        this.listId=listId;
-        items=new ArrayList<>();
-        contexts=new ArrayList<>();
-    }
+  public List(final String sourceId, final String listId) {
+    this.sourceId = sourceId;
+    this.listId = listId;
+    this.items = new ArrayList<>();
+    this.contexts = new ArrayList<>();
+  }
 
-    public String getSourceId() {
-        return sourceId;
-    }
+  public void addContext(final String ctx) {
+    this.contexts.add(ctx);
+  }
 
-    public String getListId() {
-        return listId;
-    }
+  public void addItem(final ListItem item) {
+    this.items.add(item);
+  }
 
-    public String toString(){
-        return getSourceId()+","+getListId();
-    }
+  public java.util.List<String> getContexts() {
+    return this.contexts;
+  }
 
-    public void addItem(ListItem item){
-        items.add(item);
-    }
-    public java.util.List<ListItem> getItems(){
-        return items;
-    }
+  public java.util.List<ListItem> getItems() {
+    return this.items;
+  }
 
-    public java.util.List<String> getContexts() {
-        return contexts;
-    }
+  public String getListId() {
+    return this.listId;
+  }
 
-    public void addContext(String ctx) {
-        this.contexts.add(ctx);
-    }
+  public String getSourceId() {
+    return this.sourceId;
+  }
+
+  @Override
+  public String toString() {
+    return getSourceId() + "," + getListId();
+  }
 }

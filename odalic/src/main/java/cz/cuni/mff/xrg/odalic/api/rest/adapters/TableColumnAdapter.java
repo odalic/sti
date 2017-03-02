@@ -9,14 +9,14 @@ import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.TableColumn;
 public final class TableColumnAdapter extends XmlAdapter<TableColumnValue, TableColumn> {
 
   @Override
-  public TableColumnValue marshal(TableColumn bound) throws Exception {
+  public TableColumnValue marshal(final TableColumn bound) throws Exception {
     return new TableColumnValue(bound);
   }
 
   @Override
-  public TableColumn unmarshal(TableColumnValue value) throws Exception {
+  public TableColumn unmarshal(final TableColumnValue value) throws Exception {
     return new TableColumn(value.getName(), value.getTitles(), value.getDescription(),
-        value.getDataType(), value.getVirtual(), value.getSuppressOutput(),
-        value.getAboutUrl(), value.getSeparator(), value.getPropertyUrl(), value.getValueUrl());
+        value.getDataType(), value.getVirtual(), value.getSuppressOutput(), value.getAboutUrl(),
+        value.getSeparator(), value.getPropertyUrl(), value.getValueUrl());
   }
 }

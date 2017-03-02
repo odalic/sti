@@ -14,6 +14,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,56 +22,90 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
+import cz.cuni.mff.xrg.odalic.api.rest.util.Security;
 import cz.cuni.mff.xrg.odalic.api.rest.values.ExecutionValue;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
+import cz.cuni.mff.xrg.odalic.users.Role;
 
 @Component
-@Path("/tasks/{id}/execution")
+@Path("/")
+@Secured({Role.ADMINISTRATOR, Role.USER})
 public final class ExecutionResource {
 
-  private ExecutionService executionService;
-  
+  private final ExecutionService executionService;
+
+  @Context
+  private SecurityContext securityContext;
+
   @Context
   private UriInfo uriInfo;
-  
+
   @Autowired
-  public ExecutionResource(ExecutionService executionService) {
+  public ExecutionResource(final ExecutionService executionService) {
     Preconditions.checkNotNull(executionService);
-    
+
     this.executionService = executionService;
   }
 
-  @PUT
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response putExecutionForTaskId(@PathParam("id") String id, ExecutionValue execution) throws IOException {
-    if (execution == null) {
-      throw new BadRequestException("The execution must be provided!");
-    }
-    
-    try {
-      executionService.submitForTaskId(id);
-    } catch (final IllegalStateException e) {
-      throw new WebApplicationException("The task has already been scheduled!", e, Response.Status.CONFLICT);
-    } catch (final IllegalArgumentException e) {
-      throw new BadRequestException("The task does not exist!", e);
-    }
-    
-    return Message.of("Execution submitted.").toResponse(Response.Status.OK, uriInfo);
-  }
-  
   @DELETE
+  @Path("tasks/{taskId}/execution")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response deleteExecutionForTaskId(@PathParam("id") String id) {
+  public Response deleteExecutionForTaskId(final @PathParam("taskId") String taskId) {
+    return deleteExecutionForTaskId(this.securityContext.getUserPrincipal().getName(), taskId);
+  }
+
+  @DELETE
+  @Path("users/{userId}/tasks/{taskId}/execution")
+  @Produces({MediaType.APPLICATION_JSON})
+  public Response deleteExecutionForTaskId(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId) {
+    Security.checkAuthorization(this.securityContext, userId);
+
     try {
-      executionService.cancelForTaskId(id);
+      this.executionService.cancelForTaskId(userId, taskId);
     } catch (final IllegalStateException e) {
-      throw new WebApplicationException("The task has already finished!", e, Response.Status.CONFLICT);
+      throw new WebApplicationException("The task has already finished!", e,
+          Response.Status.CONFLICT);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("The task has not been scheduled or does not exist!", e);
     }
-    
-    return Message.of("Execution canceled.").toResponse(Response.Status.OK, uriInfo);
+
+    return Message.of("Execution canceled.").toResponse(Response.Status.OK, this.uriInfo);
+  }
+
+  @PUT
+  @Path("tasks/{taskId}/execution")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response putExecutionForTaskId(final @PathParam("taskId") String taskId,
+      final ExecutionValue execution) throws IOException {
+    return putExecutionForTaskId(this.securityContext.getUserPrincipal().getName(), taskId,
+        execution);
+  }
+
+  @PUT
+  @Path("users/{userId}/tasks/{taskId}/execution")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response putExecutionForTaskId(final @PathParam("userId") String userId,
+      final @PathParam("taskId") String taskId, final ExecutionValue execution) throws IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    if (execution == null) {
+      throw new BadRequestException("The execution must be provided!");
+    }
+
+    try {
+      this.executionService.submitForTaskId(userId, taskId);
+    } catch (final IllegalStateException e) {
+      throw new WebApplicationException("The task has already been scheduled!", e,
+          Response.Status.CONFLICT);
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException("The task does not exist!", e);
+    }
+
+    return Message.of("Execution submitted.").toResponse(Response.Status.OK, this.uriInfo);
   }
 }

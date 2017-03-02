@@ -1,30 +1,28 @@
-# Semantic Table Interpretation
+# Odalic Semantic Table Interpretation
 
-### DISCLAIMER
+Odalic Semantic Table Interpretation is a fork of https://github.com/ziqizhang/sti , which is a tool allowing to extract Linked Data from web pages containing HTML tables.
 
-This project is based on the work described at [1]. The original code referred to in the paper is now hosted and can be downloaded from [here](http://staffwww.dcs.shef.ac.uk/people/Z.Zhang/resources/tableminerplus/sti_2015.zip). The code has then been significantly improved, undergone a lot of refactorization and re-implementation, and therefore, may not work with the cache included in the published data [here](http://staffwww.dcs.shef.ac.uk/people/Z.Zhang/resources/tableminerplus/data.tar.gz). 
+Odalic focuses on CSV as the source of data and introduces several major extensions and improvements, e.g.:
+- ODALIC server deployable as WAR, accessible and controllable through REST API.
+- Users can provide feedback on results of automatic conversion, which the algorithm now takes into account during subsequent runs.
+- Users can add their own resources and use them for feedback and exports.
+- Ability to employ multiple knowledge bases at once.
+- Export of results conforming to [CSV on the Web](https://www.w3.org/2013/csvw/wiki/Main_Page) or popular RDF serialization formats Turtle and JSON+LD.
+- Support for running the conversions in independent tasks and their management.
+- Support for multiple users and the administrator, employing token-based authorization and authentication.
+- Local and remote CSV files management.
+- Task configuration exportable in RDF for easier data provenance.
 
-In addition to TableMiner+, this project provides implementation of several other semantic table interpretation algorithms, including: Joint Inference based on Liamye2011, and Semantic Message Passing based on Mulwad2013. **However, due to many things out of our control (e.g., use of in-house software in original works, different versions of knowledge bases), please note that we cannot guarantee identical replication of the original systems or reproduction of experiment results.**
-
+Together with https://github.com/odalic/odalic-ui , which serves as its graphic user interface, and https://github.com/odalic/odalic-uv-plugin , which allows to exploit the power of Odalic in a mature ETL framework, the Odalic STI provides a comprehensive platform to convert Open Data published in the form of CSV files to Linked Open Data, making them inherently more valuable, easier to query, integrate and share.
 
 ### ACKNOWLEDGEMENT
-Part of this work was funded by the EPSRC project LODIE - Linked Open Data for Information Extraction, EP/ J019488/1.
+Odalic STI came to life as a student project at http://www.mff.cuni.cz .
 
 ### LICENCE
 Apache 2.0
 
-### Quick Start
- - Place a copy of STI on your computer
- - Run maven to install two 3rd party libraries (in 'libs') to your local maven repository. See https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html and the maven plugin with id 'maven-install-plugin' for howto.
- - Download test data, from [here](http://staffwww.dcs.shef.ac.uk/people/Z.Zhang/resources/tableminerplus/data.tar.gz)
- - Unzip the test data, into e.g., [sti_data]
- - Navigate into [sti_data/dataset], unzip, depending on the test cases: imdb.tar.gz for the IMDB dataset; musicbrainz.tar.gz for the MusicBrainz dataset; Limaye200.tar.gz for the Limaye200 dataset; Limaye_complete.tar.gz for the LimayeAll dataset
- - Configure your local copy of STI
- - - open 'sti.properties', as a minimum, you need to change 'sti.home', and 'sti.cache.main.dir'. Please follow the documentation inside the property file
- - - open 'kbsearch.properties', as a minimum, you need to change 'kb.search.result.stoplistfile', and 'fb.query.api.key' to use your own Freebase API key
- - - open 'websearch.properties', as a minimum, you need to change 'bing.keys' to use your own bing web search key
- - Run a test case. For example, to run TMP, use:  **uk.ac.shef.dcs.sti.experiment.TableMinerPlusBatch "[sti_data/Limaye200]" "[output_dir]" "/[sit_home_dir]/sti.properties"**
+### Documentation
+Soon at https://grips.semantic-web.at/ .
 
-**Note:** 'sti.properties' distributed with code is a default configuration for Limaye200 and LimayeAll datasets; for IMDB and MusicBrainz datasets, you can edit a template inside '/resources'. For both IMDB and MusicBrainz, you may want to provide the VM variable '-Djava.util.logging.config.file=' to configure the logging output of the any23-sti module (which can produce too many logs).
- 
-[1] Under minor revision review: http://www.semantic-web-journal.net/content/effective-and-efficient-semantic-table-interpretation-using-tableminer-0
+### Installation guide
+Soon at https://grips.semantic-web.at/ .

@@ -8,7 +8,7 @@ import com.google.common.base.Preconditions;
 
 /**
  * Encapsulates annotating entity and the score that is assigned to it.
- * 
+ *
  * @author Václav Brodec
  *
  */
@@ -25,7 +25,7 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
    * @param entity
    * @param score
    */
-  public EntityCandidate(Entity entity, Score score) {
+  public EntityCandidate(final Entity entity, final Score score) {
     Preconditions.checkNotNull(entity);
 
     this.entity = entity;
@@ -33,40 +33,29 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
   }
 
   /**
-   * @return the entity
-   */
-  public Entity getEntity() {
-    return entity;
-  }
-
-  /**
-   * @return the score
-   */
-  public Score getScore() {
-    return score;
-  }
-
-  /**
-   * Computes hash code based on the entity and the score.
-   * 
-   * @see java.lang.Object#hashCode()
+   * Entity candidates are naturally ordered by their score in ascending order. In case of the equal
+   * score the natural ordering of entities is taken into account.
+   *
+   * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((entity == null) ? 0 : entity.hashCode());
-    result = prime * result + ((score == null) ? 0 : score.hashCode());
-    return result;
+  public int compareTo(final EntityCandidate o) {
+    final int likelihoodComparison = this.score.compareTo(o.score);
+
+    if (likelihoodComparison == 0) {
+      return this.entity.compareTo(o.entity);
+    } else {
+      return likelihoodComparison;
+    }
   }
 
   /**
    * Compares for equality (only other candidates entity with the same score passes).
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -76,48 +65,59 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
     if (getClass() != obj.getClass()) {
       return false;
     }
-    EntityCandidate other = (EntityCandidate) obj;
-    if (entity == null) {
+    final EntityCandidate other = (EntityCandidate) obj;
+    if (this.entity == null) {
       if (other.entity != null) {
         return false;
       }
-    } else if (!entity.equals(other.entity)) {
+    } else if (!this.entity.equals(other.entity)) {
       return false;
     }
-    if (score == null) {
+    if (this.score == null) {
       if (other.score != null) {
         return false;
       }
-    } else if (!score.equals(other.score)) {
+    } else if (!this.score.equals(other.score)) {
       return false;
     }
     return true;
   }
-  
+
   /**
-   * Entity candidates are naturally ordered by their score in ascending order. In case of the
-   * equal score the natural ordering of entities is taken into account.
-   * 
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
+   * @return the entity
+   */
+  public Entity getEntity() {
+    return this.entity;
+  }
+
+  /**
+   * @return the score
+   */
+  public Score getScore() {
+    return this.score;
+  }
+
+  /**
+   * Computes hash code based on the entity and the score.
+   *
+   * @see java.lang.Object#hashCode()
    */
   @Override
-  public int compareTo(EntityCandidate o) {
-    final int likelihoodComparison = score.compareTo(o.score);
-    
-    if (likelihoodComparison == 0) {
-      return entity.compareTo(o.entity);
-    } else {
-      return likelihoodComparison;
-    }
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = (prime * result) + ((this.entity == null) ? 0 : this.entity.hashCode());
+    result = (prime * result) + ((this.score == null) ? 0 : this.score.hashCode());
+    return result;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "EntityCandidate [entity=" + entity + ", score=" + score + "]";
+    return "EntityCandidate [entity=" + this.entity + ", score=" + this.score + "]";
   }
 }
