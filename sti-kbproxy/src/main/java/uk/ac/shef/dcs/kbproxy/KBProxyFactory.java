@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import uk.ac.shef.dcs.kbproxy.sparql.DBpediaProxy;
-
 /**
  * Created by - on 17/03/2016.
  */

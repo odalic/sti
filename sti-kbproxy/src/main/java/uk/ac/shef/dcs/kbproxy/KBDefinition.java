@@ -1,21 +1,11 @@
 package uk.ac.shef.dcs.kbproxy;
 
-import com.google.common.base.Preconditions;
-
 import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

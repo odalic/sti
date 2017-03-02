@@ -15,7 +15,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.simmetrics.StringMetric;
 import org.simmetrics.metrics.Levenshtein;
 
-import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.kbproxy.KBProxyGeneric;
 import uk.ac.shef.dcs.kbproxy.KBProxyUtils;

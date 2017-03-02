@@ -1,9 +1,5 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
-import org.apache.jena.ontology.OntModel;
-import org.apache.jena.ontology.OntModelSpec;
-import org.apache.jena.rdf.model.ModelFactory;
-import uk.ac.shef.dcs.kbproxy.KBDefinition;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import java.io.IOException;
 import java.net.URISyntaxException;
