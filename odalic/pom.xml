@@ -48,9 +48,9 @@
 	<dependencies>
 		<!-- Core -->
 		<dependency>
-			<groupId>uk.ac.shef.dcs</groupId>
+			<groupId>eu.odalic.sti</groupId>
 			<artifactId>sti-main</artifactId>
-			<version>1.0alpha</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- Guava -->
