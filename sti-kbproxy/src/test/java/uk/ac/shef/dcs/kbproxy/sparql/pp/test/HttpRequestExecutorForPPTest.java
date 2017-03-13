@@ -74,11 +74,12 @@ public class HttpRequestExecutorForPPTest {
 //    }
 
     //create class
-    //@Test
+    @Test
     public void POSTCreateClass() throws Exception {
 
         HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();
-        ResourceDesc ed = new ResourceDesc("http://example.org/class/test03", "test03"); //the url is the class URL
+        ResourceDesc ed = new ResourceDesc("http://example.org/object", "object-example"); //the url is the class URL
+        //ResourceDesc ed = new ResourceDesc("http://example.org/subjecthttp://example.org/class/test03", "test03"); //the url is the class URL
         //String url = executor.createConceptRequest(ed);
         //ed.setConceptUrl(url);
         executor.createClassRequest(ed);
@@ -86,7 +87,7 @@ public class HttpRequestExecutorForPPTest {
 
 
     //create relation
-    @Test
+    //@Test
     public void POSTCreateRelation() throws Exception {
 
         HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();

@@ -1,6 +1,7 @@
 package uk.ac.shef.dcs.kbproxy;
 
-import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,14 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
 
 /**
  * Information about the knowledge base. Created by Jan
@@ -123,6 +119,7 @@ public class KBDefinition {
     this.structure.put(PREDICATE_TYPE_PROPERTY_NAME, new HashSet<>());
     this.structure.put(STRUCTURE_CLASS, new HashSet<>());
     this.structure.put(STRUCTURE_PROPERTY, new HashSet<>());
+    this.structure.put(RESOURCE_CLASS,new HashSet<>());
   }
 
   public String getCacheTemplatePath() {
@@ -251,7 +248,6 @@ public class KBDefinition {
 
   public boolean isInsertSupported() {
     return this.insertSupported;
-    structure.put(RESOURCE_CLASS,new HashSet<>());
   }
 
   /**
