@@ -53,7 +53,7 @@ public abstract class KBProxy {
 
   private final String cachesBasePath;
 
-  protected KBSearchResultFilter resultFilter;
+  protected KBProxyResultFilter resultFilter;
 
   protected final Logger log = LoggerFactory.getLogger(getClass());
 
