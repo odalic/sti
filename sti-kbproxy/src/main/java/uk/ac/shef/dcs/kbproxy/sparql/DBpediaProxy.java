@@ -22,7 +22,6 @@ public class DBpediaProxy extends SPARQLProxy {
           final Map<String, String> prefixToUriMap)
           throws IOException, URISyntaxException, KBProxyException {
     super(properties, workingDirectory, cachesBasePath, prefixToUriMap);
-    resultFilter = new DBpediaSearchResultFilter(kbDefinition.getStopListFile());
   }
 
   @Override

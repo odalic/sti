@@ -84,6 +84,7 @@ public class SPARQLProxy extends KBProxyGeneric<SPARQLDefinition> {
           final Map<String, String> prefixToUriMap)
           throws IOException, URISyntaxException, KBProxyException {
     super(properties, workingDirectory, cachesBasePath, prefixToUriMap);
+    resultFilter = new SPARQLResultFilter(kbDefinition.getStopListFile());
   }
 
   /**

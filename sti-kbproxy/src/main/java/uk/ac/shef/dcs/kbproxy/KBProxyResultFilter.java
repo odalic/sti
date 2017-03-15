@@ -20,15 +20,15 @@ import uk.ac.shef.dcs.kbproxy.model.Clazz;
  * Information retrieved from a KB may contain those that are too generic or high level to be
  * useful. E.g., in DBpedia, class 'Thing' may never be a sensible class to annotate a table column.
  *
- * KBSearchResultFilter is responsible for filtering such information. This can be class, relation,
+ * KBProxyResultFilter is responsible for filtering such information. This can be class, relation,
  * or entity, depending on the actual implementing classes.
  */
-public abstract class KBSearchResultFilter {
+public abstract class KBProxyResultFilter {
   protected static final String LABEL_INVALID_CLAZZ = "!invalid_clazz";
   protected static final String LABEL_INVALID_ATTRIBUTE = "!invalid_attribute";
   protected Map<String, Set<String>> stopLists = new HashMap<>();
 
-  public KBSearchResultFilter(final String stopListsFile) throws IOException {
+  public KBProxyResultFilter(final String stopListsFile) throws IOException {
     loadStopLists(stopListsFile);
   }
 
