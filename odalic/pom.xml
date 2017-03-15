@@ -50,7 +50,7 @@
 		<dependency>
 			<groupId>eu.odalic.sti</groupId>
 			<artifactId>sti-main</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 		</dependency>
 
 		<!-- Guava -->
