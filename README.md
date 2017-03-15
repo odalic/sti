@@ -21,8 +21,5 @@ Odalic STI came to life as a student project at http://www.mff.cuni.cz .
 ### LICENCE
 Apache 2.0
 
-### Documentation
-Soon at https://grips.semantic-web.at/ .
-
-### Installation guide
-Soon at https://grips.semantic-web.at/ .
+### Installation guide and documentation
+https://odalic.github.io/download/ODALIC.Project.Documentation.pdf
