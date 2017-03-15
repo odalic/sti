@@ -22,4 +22,4 @@ Odalic STI came to life as a student project at http://www.mff.cuni.cz .
 Apache 2.0
 
 ### Installation guide and documentation
-https://odalic.github.io/download/ODALIC.Project.Documentation.pdf
+[PDF version](https://odalic.github.io/download/ODALIC.Project.Documentation.pdf)
