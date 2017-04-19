@@ -18,24 +18,23 @@ import com.google.common.collect.ImmutableSortedSet;
  * Default {@link AdvancedBaseTypesService} implementation.
  *
  */
-public final class DefaultAdvancedBaseTypesService implements AdvancedBaseTypesService {
+public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTypesService {
 
-  private static final String SPARQL_BASE_TYPE_NAME = "SPARQL";
+  public static final String SPARQL_BASE_TYPE_NAME = "SPARQL";
 
-  private static final AdvancedBaseType SPARQL_BASE_TYPE = new AdvancedBaseType(SPARQL_BASE_TYPE_NAME, ImmutableSet.of(), ImmutableMap.of(), ImmutableMap.of());
+  public static final AdvancedBaseType SPARQL_BASE_TYPE = new AdvancedBaseType(SPARQL_BASE_TYPE_NAME, ImmutableSet.of(), ImmutableMap.of(), ImmutableMap.of());
   
   private final Map<? extends String, ? extends AdvancedBaseType> types;
   
-  @Autowired
-  public DefaultAdvancedBaseTypesService() {
+  public MemoryOnlyAdvancedBaseTypesService() {
     this(ImmutableSet.of(SPARQL_BASE_TYPE));
   }
   
-  private DefaultAdvancedBaseTypesService(final Set<? extends AdvancedBaseType> types) {
+  private MemoryOnlyAdvancedBaseTypesService(final Set<? extends AdvancedBaseType> types) {
     this(types.stream().collect(ImmutableMap.toImmutableMap(e -> e.getName(), Function.identity())));
   }
   
-  private DefaultAdvancedBaseTypesService(final Map<? extends String, ? extends AdvancedBaseType> types) {
+  private MemoryOnlyAdvancedBaseTypesService(final Map<? extends String, ? extends AdvancedBaseType> types) {
     Preconditions.checkNotNull(types);
     
     this.types = types;

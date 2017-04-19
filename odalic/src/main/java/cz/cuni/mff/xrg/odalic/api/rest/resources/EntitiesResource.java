@@ -164,7 +164,7 @@ public final class EntitiesResource {
   }
 
   @GET
-  @Path("users/{userId}/bases/{base}/entities/resources")
+  @Path("users/{userId}/bases/{base}/entities")
   @Produces({MediaType.APPLICATION_JSON})
   public Response search(final @PathParam("userId") String userId,
       @PathParam("base") final String baseName, @QueryParam("query") final String query,
@@ -174,7 +174,7 @@ public final class EntitiesResource {
   }
 
   @GET
-  @Path("bases/{base}/entities/resources")
+  @Path("bases/{base}/entities")
   @Produces({MediaType.APPLICATION_JSON})
   public Response search(@PathParam("base") final String baseName,
       @QueryParam("query") final String query,

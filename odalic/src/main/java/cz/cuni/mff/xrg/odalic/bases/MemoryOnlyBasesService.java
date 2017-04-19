@@ -4,8 +4,6 @@
 package cz.cuni.mff.xrg.odalic.bases;
 
 import java.util.NavigableSet;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSortedSet;
@@ -20,12 +18,10 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   private final Table<String, String, KnowledgeBase> userAndBaseIdsToBases;
   
-  @Autowired
   public MemoryOnlyBasesService() {
     this(HashBasedTable.create());
   }
   
-  @Autowired
   public MemoryOnlyBasesService(final Table<String, String, KnowledgeBase> userAndBaseIdsToBases) {
     Preconditions.checkNotNull(userAndBaseIdsToBases);
 
