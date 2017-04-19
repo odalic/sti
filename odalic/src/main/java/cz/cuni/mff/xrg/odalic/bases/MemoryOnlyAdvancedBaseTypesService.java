@@ -4,9 +4,7 @@
 package cz.cuni.mff.xrg.odalic.bases;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.function.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -25,11 +23,7 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
   private final Map<? extends String, ? extends AdvancedBaseType> types;
   
   public MemoryOnlyAdvancedBaseTypesService() {
-    this(ImmutableSet.of(SPARQL_BASE_TYPE));
-  }
-  
-  private MemoryOnlyAdvancedBaseTypesService(final Set<? extends AdvancedBaseType> types) {
-    this(types.stream().collect(ImmutableMap.toImmutableMap(e -> e.getName(), Function.identity())));
+    this(ImmutableMap.of(SPARQL_BASE_TYPE_NAME, SPARQL_BASE_TYPE));
   }
   
   private MemoryOnlyAdvancedBaseTypesService(final Map<? extends String, ? extends AdvancedBaseType> types) {
