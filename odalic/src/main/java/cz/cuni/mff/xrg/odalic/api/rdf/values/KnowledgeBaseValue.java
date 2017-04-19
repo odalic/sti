@@ -7,7 +7,7 @@ import com.complexible.pinto.annotations.RdfProperty;
 import com.complexible.pinto.annotations.RdfsClass;
 import com.google.common.base.Preconditions;
 
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 
 /**
  * Domain class {@link KnowledgeBase} adapted for RDF serialization.
@@ -44,10 +44,6 @@ public final class KnowledgeBaseValue {
     Preconditions.checkNotNull(name);
 
     this.name = name;
-  }
-
-  public KnowledgeBase toKnowledgeBase() {
-    return new KnowledgeBase(this.name);
   }
 
   @Override

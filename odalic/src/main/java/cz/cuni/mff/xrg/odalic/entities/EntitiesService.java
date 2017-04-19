@@ -3,8 +3,8 @@ package cz.cuni.mff.xrg.odalic.entities;
 import java.net.URI;
 import java.util.NavigableSet;
 
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
 
 /**

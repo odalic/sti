@@ -27,9 +27,9 @@ import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
 import cz.cuni.mff.xrg.odalic.api.rest.util.Security;
 import cz.cuni.mff.xrg.odalic.api.rest.values.ConfigurationValue;
 import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
@@ -131,7 +131,7 @@ public final class ConfigurationResource {
 
     final NavigableSet<KnowledgeBase> usedBases;
     if (configurationValue.getUsedBases() == null) {
-      usedBases = this.basesService.getBases();
+      usedBases = this.basesService.getBases(userId);
     } else {
       usedBases = configurationValue.getUsedBases();
     }

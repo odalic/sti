@@ -27,7 +27,6 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
@@ -277,10 +276,10 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
       boolean addAlternatives = false;
 
       for (int j = 0; j < input.rowsCount(); j++) {
-        for (final Entry<KnowledgeBase, Set<EntityCandidate>> entry : result
+        for (final Entry<String, Set<EntityCandidate>> entry : result
             .getCellAnnotations()[j][i].getChosen().entrySet()) {
           if ((entry.getValue() != null) && !entry.getValue().isEmpty()) {
-            if (entry.getKey().getName().equals(configuration.getPrimaryBase().getName())) {
+            if (entry.getKey().equals(configuration.getPrimaryBase().getName())) {
               addPrimary = true;
             } else {
               addAlternatives = true;

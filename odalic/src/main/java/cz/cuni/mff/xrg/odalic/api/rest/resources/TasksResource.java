@@ -40,11 +40,11 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.StatefulTaskValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.TaskValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.util.States;
 import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
 import cz.cuni.mff.xrg.odalic.users.Role;
@@ -291,7 +291,7 @@ public final class TasksResource {
 
     final NavigableSet<KnowledgeBase> usedBases;
     if (configurationValue.getUsedBases() == null) {
-      usedBases = this.basesService.getBases();
+      usedBases = this.basesService.getBases(userId);
     } else {
       usedBases = configurationValue.getUsedBases();
     }

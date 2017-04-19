@@ -7,13 +7,13 @@ import com.google.common.base.Preconditions;
 @RdfsClass("http://odalic.eu/internal/KnowledgeBaseEntityCandidateSetEntry")
 public class KnowledgeBaseEntityCandidateSetEntry {
 
-  private KnowledgeBaseValue base;
+  private String base;
 
   private EntityCandidateSetWrapper set;
 
   public KnowledgeBaseEntityCandidateSetEntry() {}
 
-  public KnowledgeBaseEntityCandidateSetEntry(final KnowledgeBaseValue base,
+  public KnowledgeBaseEntityCandidateSetEntry(final String base,
       final EntityCandidateSetWrapper set) {
     Preconditions.checkNotNull(base);
     Preconditions.checkNotNull(set);
@@ -26,7 +26,7 @@ public class KnowledgeBaseEntityCandidateSetEntry {
    * @return the base
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseEntityCandidateSetEntry/base")
-  public KnowledgeBaseValue getBase() {
+  public String getBase() {
     return this.base;
   }
 
@@ -41,7 +41,7 @@ public class KnowledgeBaseEntityCandidateSetEntry {
   /**
    * @param base the base to set
    */
-  public void setBase(final KnowledgeBaseValue base) {
+  public void setBase(final String base) {
     Preconditions.checkNotNull(base);
 
     this.base = base;

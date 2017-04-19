@@ -17,6 +17,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +27,14 @@ import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
+import cz.cuni.mff.xrg.odalic.api.rest.util.Security;
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.entities.ClassProposal;
 import cz.cuni.mff.xrg.odalic.entities.EntitiesService;
 import cz.cuni.mff.xrg.odalic.entities.PropertyProposal;
 import cz.cuni.mff.xrg.odalic.entities.ResourceProposal;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.users.Role;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.sti.STIException;
@@ -43,29 +46,42 @@ import uk.ac.shef.dcs.sti.STIException;
  *
  */
 @Component
-@Path("/bases/{base}/entities/")
+@Path("/")
 @Secured({Role.ADMINISTRATOR, Role.USER})
 public final class EntitiesResource {
 
   private final EntitiesService entitiesService;
+  private final BasesService basesService;
+
+  @Context
+  private SecurityContext securityContext;
 
   @Context
   private UriInfo uriInfo;
 
+
   @Autowired
-  public EntitiesResource(final EntitiesService entitiesService) {
+  public EntitiesResource(final EntitiesService entitiesService, final BasesService basesService) {
     Preconditions.checkNotNull(entitiesService);
+    Preconditions.checkNotNull(basesService);
+
     this.entitiesService = entitiesService;
+    this.basesService = basesService;
   }
 
   @POST
-  @Path("classes")
+  @Path("users/{userId}/bases/{base}/entities/classes")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response propose(@PathParam("base") final String base, final ClassProposal proposal)
+  public Response propose(final @PathParam("userId") String userId,
+      @PathParam("base") final String baseName, final ClassProposal proposal)
       throws KBProxyException, STIException, IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final KnowledgeBase base = getBase(userId, baseName);
+
     final Entity createdClass;
     try {
-      createdClass = this.entitiesService.propose(new KnowledgeBase(base), proposal);
+      createdClass = this.entitiesService.propose(base, proposal);
     } catch (final IllegalArgumentException e) {
       throw new WebApplicationException("The class already exists!", e, Response.Status.CONFLICT);
     }
@@ -74,13 +90,26 @@ public final class EntitiesResource {
   }
 
   @POST
-  @Path("properties")
+  @Path("/bases/{base}/entities/classes")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response propose(@PathParam("base") final String base, final PropertyProposal proposal)
+  public Response propose(@PathParam("base") final String baseName, final ClassProposal proposal)
       throws KBProxyException, STIException, IOException {
+    return propose(this.securityContext.getUserPrincipal().getName(), baseName, proposal);
+  }
+
+  @POST
+  @Path("users/{userId}/bases/{base}/entities/properties")
+  @Produces({MediaType.APPLICATION_JSON})
+  public Response propose(final @PathParam("userId") String userId,
+      final @PathParam("base") String baseName, final PropertyProposal proposal)
+      throws KBProxyException, STIException, IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final KnowledgeBase base = getBase(userId, baseName);
+
     final Entity createdProperty;
     try {
-      createdProperty = this.entitiesService.propose(new KnowledgeBase(base), proposal);
+      createdProperty = this.entitiesService.propose(base, proposal);
     } catch (final IllegalArgumentException e) {
       throw new WebApplicationException("The property already exists!", e,
           Response.Status.CONFLICT);
@@ -90,13 +119,34 @@ public final class EntitiesResource {
   }
 
   @POST
-  @Path("resources")
+  @Path("bases/{base}/entities/properties")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response propose(@PathParam("base") final String base, final ResourceProposal proposal)
+  public Response propose(final @PathParam("base") String baseName, final PropertyProposal proposal)
       throws KBProxyException, STIException, IOException {
+    return propose(this.securityContext.getUserPrincipal().getName(), baseName, proposal);
+  }
+
+  private KnowledgeBase getBase(final String userId, final String baseName) {
+    try {
+      return this.basesService.getByName(userId, baseName);
+    } catch (final IllegalArgumentException e) {
+      throw new WebApplicationException(e.getMessage(), e);
+    }
+  }
+
+  @POST
+  @Path("users/{userId}/bases/{base}/entities/resources")
+  @Produces({MediaType.APPLICATION_JSON})
+  public Response propose(final @PathParam("userId") String userId,
+      @PathParam("base") final String baseName, final ResourceProposal proposal)
+      throws KBProxyException, STIException, IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final KnowledgeBase base = getBase(userId, baseName);
+
     final Entity createdEntity;
     try {
-      createdEntity = this.entitiesService.propose(new KnowledgeBase(base), proposal);
+      createdEntity = this.entitiesService.propose(base, proposal);
     } catch (final IllegalArgumentException e) {
       throw new WebApplicationException("The resource already exists!", e,
           Response.Status.CONFLICT);
@@ -105,29 +155,52 @@ public final class EntitiesResource {
     return Reply.data(Response.Status.OK, createdEntity, this.uriInfo).toResponse();
   }
 
-  @GET
+  @POST
+  @Path("bases/{base}/entities/resources")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response search(@PathParam("base") final String base,
-      @QueryParam("query") final String query,
-      @DefaultValue("20") @QueryParam("limit") final Integer limit)
+  public Response propose(@PathParam("base") final String baseName, final ResourceProposal proposal)
       throws KBProxyException, STIException, IOException {
-    return searchResources(base, query, limit);
+    return propose(this.securityContext.getUserPrincipal().getName(), baseName, proposal);
   }
 
   @GET
-  @Path("classes")
+  @Path("users/{userId}/bases/{base}/entities/resources")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response searchClasses(@PathParam("base") final String base,
+  public Response search(final @PathParam("userId") String userId,
+      @PathParam("base") final String baseName, @QueryParam("query") final String query,
+      @DefaultValue("20") @QueryParam("limit") final Integer limit)
+      throws KBProxyException, STIException, IOException {
+    return searchResources(userId, baseName, query, limit);
+  }
+
+  @GET
+  @Path("bases/{base}/entities/resources")
+  @Produces({MediaType.APPLICATION_JSON})
+  public Response search(@PathParam("base") final String baseName,
       @QueryParam("query") final String query,
       @DefaultValue("20") @QueryParam("limit") final Integer limit)
       throws KBProxyException, STIException, IOException {
+    return search(this.securityContext.getUserPrincipal().getName(), baseName, query, limit);
+  }
+
+  @GET
+  @Path("users/{userId}/bases/{base}/entities/classes")
+  @Produces({MediaType.APPLICATION_JSON})
+  public Response searchClasses(final @PathParam("userId") String userId,
+      @PathParam("base") final String baseName, @QueryParam("query") final String query,
+      @DefaultValue("20") @QueryParam("limit") final Integer limit)
+      throws KBProxyException, STIException, IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
     if (query == null) {
       throw new BadRequestException("Query not provided!");
     }
 
+    final KnowledgeBase base = getBase(userId, baseName);
+
     final NavigableSet<Entity> result;
     try {
-      result = this.entitiesService.searchClasses(new KnowledgeBase(base), query, limit);
+      result = this.entitiesService.searchClasses(base, query, limit);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException(e);
     }
@@ -136,21 +209,70 @@ public final class EntitiesResource {
   }
 
   @GET
-  @Path("properties")
+  @Path("bases/{base}/entities/classes")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response searchProperties(@PathParam("base") final String base,
+  public Response searchClasses(@PathParam("base") final String baseName,
+      @QueryParam("query") final String query,
+      @DefaultValue("20") @QueryParam("limit") final Integer limit)
+      throws KBProxyException, STIException, IOException {
+    return searchClasses(this.securityContext.getUserPrincipal().getName(), baseName, query, limit);
+  }
+
+  @GET
+  @Path("users/{userId}/bases/{base}/entities/properties")
+  @Produces({MediaType.APPLICATION_JSON})
+  public Response searchProperties(final @PathParam("userId") String userId,
+      @PathParam("base") final String baseName, @QueryParam("query") final String query,
+      @DefaultValue("20") @QueryParam("limit") final Integer limit,
+      @QueryParam("domain") final URI domain, @QueryParam("range") final URI range)
+      throws KBProxyException, STIException, IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    if (query == null) {
+      throw new BadRequestException("Query not provided!");
+    }
+
+    final KnowledgeBase base = getBase(userId, baseName);
+
+    final NavigableSet<Entity> result;
+    try {
+      result = this.entitiesService.searchProperties(base, query, limit, domain, range);
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException(e);
+    }
+
+    return Reply.data(Response.Status.OK, result, this.uriInfo).toResponse();
+  }
+
+  @GET
+  @Path("bases/{base}/entities/properties")
+  @Produces({MediaType.APPLICATION_JSON})
+  public Response searchProperties(@PathParam("base") final String baseName,
       @QueryParam("query") final String query,
       @DefaultValue("20") @QueryParam("limit") final Integer limit,
       @QueryParam("domain") final URI domain, @QueryParam("range") final URI range)
       throws KBProxyException, STIException, IOException {
+    return searchProperties(baseName, query, limit, domain, range);
+  }
+
+  @GET
+  @Path("users/{userId}/bases/{base}/entities/resources")
+  @Produces({MediaType.APPLICATION_JSON})
+  public Response searchResources(final @PathParam("userId") String userId,
+      @PathParam("base") final String baseName, @QueryParam("query") final String query,
+      @DefaultValue("20") @QueryParam("limit") final Integer limit)
+      throws KBProxyException, STIException, IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
     if (query == null) {
       throw new BadRequestException("Query not provided!");
     }
 
+    final KnowledgeBase base = getBase(userId, baseName);
+
     final NavigableSet<Entity> result;
     try {
-      result = this.entitiesService.searchProperties(new KnowledgeBase(base), query, limit, domain,
-          range);
+      result = this.entitiesService.searchResources(base, query, limit);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException(e);
     }
@@ -159,23 +281,13 @@ public final class EntitiesResource {
   }
 
   @GET
-  @Path("resources")
+  @Path("bases/{base}/entities/resources")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response searchResources(@PathParam("base") final String base,
+  public Response searchResources(@PathParam("base") final String baseName,
       @QueryParam("query") final String query,
       @DefaultValue("20") @QueryParam("limit") final Integer limit)
       throws KBProxyException, STIException, IOException {
-    if (query == null) {
-      throw new BadRequestException("Query not provided!");
-    }
-
-    final NavigableSet<Entity> result;
-    try {
-      result = this.entitiesService.searchResources(new KnowledgeBase(base), query, limit);
-    } catch (final IllegalArgumentException e) {
-      throw new NotFoundException(e);
-    }
-
-    return Reply.data(Response.Status.OK, result, this.uriInfo).toResponse();
+    return searchResources(this.securityContext.getUserPrincipal().getName(), baseName, query,
+        limit);
   }
 }

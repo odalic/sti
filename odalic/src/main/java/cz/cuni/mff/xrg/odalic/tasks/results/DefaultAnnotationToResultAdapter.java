@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ColumnProcessingTypeValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.entities.EntitiesFactory;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
@@ -28,7 +29,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.util.Arrays;
@@ -59,9 +59,9 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     return new ColumnPosition(tableAnnotation.getSubjectColumn());
   }
 
-  private static Map<KnowledgeBase, ColumnPosition> extractSubjectColumnPositions(
+  private static Map<String, ColumnPosition> extractSubjectColumnPositions(
       final Map<? extends KnowledgeBase, ? extends TAnnotation> basesToTableAnnotations) {
-    final ImmutableMap.Builder<KnowledgeBase, ColumnPosition> subjectColumnPositionsBuilder =
+    final ImmutableMap.Builder<String, ColumnPosition> subjectColumnPositionsBuilder =
         ImmutableMap.builder();
     for (final Map.Entry<? extends KnowledgeBase, ? extends TAnnotation> annotationEntry : basesToTableAnnotations
         .entrySet()) {
@@ -69,36 +69,36 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
       final ColumnPosition subjectColumnPosition =
           extractSubjectColumnPosition(annotationEntry.getValue());
 
-      subjectColumnPositionsBuilder.put(base, subjectColumnPosition);
+      subjectColumnPositionsBuilder.put(base.getName(), subjectColumnPosition);
     }
     return subjectColumnPositionsBuilder.build();
   }
 
-  private static String getCellWarning(final KnowledgeBase knowledgeBase, final int row,
+  private static String getCellWarning(final String knowledgeBaseName, final int row,
       final int column, final String warning) {
-    return String.format("%1$s - Cell on row %2$d, column %3$d - %4$s", knowledgeBase.getName(),
+    return String.format("%1$s - Cell on row %2$d, column %3$d - %4$s", knowledgeBaseName,
         row + 1, column + 1, warning);
   }
 
-  private static String getHeaderWarning(final KnowledgeBase knowledgeBase, final int column,
+  private static String getHeaderWarning(final String knowledgeBaseName, final int column,
       final String warning) {
-    return String.format("%1$s - Header %2$d - %3$s", knowledgeBase.getName(), column + 1, warning);
+    return String.format("%1$s - Header %2$d - %3$s", knowledgeBaseName, column + 1, warning);
   }
 
-  private static String getRelationWarning(final KnowledgeBase knowledgeBase,
+  private static String getRelationWarning(final String knowledgeBaseName,
       final RelationColumns relationColumns, final String warning) {
-    return String.format("%1$s - Relation %2$d -> %3$d - %4$s", knowledgeBase.getName(),
+    return String.format("%1$s - Relation %2$d -> %3$d - %4$s", knowledgeBaseName,
         relationColumns.getSubjectCol() + 1, relationColumns.getObjectCol() + 1, warning);
   }
 
-  private static List<String> getWarnings(final KnowledgeBase knowledgeBase,
+  private static List<String> getWarnings(final String knowledgeBaseName,
       final TAnnotation original) {
     final int columnCount = original.getCols();
     final int rowCount = original.getRows();
 
     final List<String> result = original.getColumnRelationWarnings().entrySet().stream()
         .flatMap(entry -> entry.getValue().stream()
-            .map(warning -> getRelationWarning(knowledgeBase, entry.getKey(), warning)))
+            .map(warning -> getRelationWarning(knowledgeBaseName, entry.getKey(), warning)))
         .collect(Collectors.toList());
 
     for (int column = 0; column < columnCount; column++) {
@@ -108,11 +108,11 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
         final int rowFinal = row;
 
         result.addAll(original.getContentWarnings(row, column).stream()
-            .map(warning -> getCellWarning(knowledgeBase, rowFinal, columnFinal, warning))
+            .map(warning -> getCellWarning(knowledgeBaseName, rowFinal, columnFinal, warning))
             .collect(Collectors.toList()));
       }
       result.addAll(original.getHeaderWarnings(column).stream()
-          .map(warning -> getHeaderWarning(knowledgeBase, columnFinal, warning))
+          .map(warning -> getHeaderWarning(knowledgeBaseName, columnFinal, warning))
           .collect(Collectors.toList()));
     }
 
@@ -135,7 +135,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     this.entitiesFactory = entitesFactory;
   }
 
-  private CellAnnotation[][] convertCellAnnotations(final KnowledgeBase knowledgeBase,
+  private CellAnnotation[][] convertCellAnnotations(final String knowledgeBase,
       final TAnnotation original) {
     final int columnCount = original.getCols();
     final int rowCount = original.getRows();
@@ -146,8 +146,8 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
         final TCellAnnotation[] annotations =
             original.getContentCellAnnotations(rowIndex, columnIndex);
 
-        final HashMap<KnowledgeBase, Set<EntityCandidate>> candidates = new HashMap<>();
-        final HashMap<KnowledgeBase, Set<EntityCandidate>> chosen = new HashMap<>();
+        final HashMap<String, Set<EntityCandidate>> candidates = new HashMap<>();
+        final HashMap<String, Set<EntityCandidate>> chosen = new HashMap<>();
 
         if (annotations != null) {
           final Set<EntityCandidate> candidatesSet = new HashSet<>();
@@ -186,7 +186,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     return cellAnnotations;
   }
 
-  private List<HeaderAnnotation> convertColumnAnnotations(final KnowledgeBase knowledgeBase,
+  private List<HeaderAnnotation> convertColumnAnnotations(final String knowledgeBaseName,
       final TAnnotation original) {
     final int columnCount = original.getCols();
     final List<HeaderAnnotation> headerAnnotations = new ArrayList<>(columnCount);
@@ -194,15 +194,15 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
       final TColumnHeaderAnnotation[] annotations = original.getHeaderAnnotation(columnIndex);
 
-      final HashMap<KnowledgeBase, Set<EntityCandidate>> candidates = new HashMap<>();
-      final HashMap<KnowledgeBase, Set<EntityCandidate>> chosen = new HashMap<>();
+      final HashMap<String, Set<EntityCandidate>> candidates = new HashMap<>();
+      final HashMap<String, Set<EntityCandidate>> chosen = new HashMap<>();
 
       if (annotations != null) {
         final Set<EntityCandidate> candidatesSet = new HashSet<>();
         final Set<EntityCandidate> chosenSet = new HashSet<>();
 
-        candidates.put(knowledgeBase, candidatesSet);
-        chosen.put(knowledgeBase, chosenSet);
+        candidates.put(knowledgeBaseName, candidatesSet);
+        chosen.put(knowledgeBaseName, chosenSet);
 
         EntityCandidate bestCandidate = null;
         for (final TColumnHeaderAnnotation annotation : annotations) {
@@ -234,7 +234,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
   }
 
   private List<ColumnProcessingAnnotation> convertColumnProcessingAnnotations(
-      final KnowledgeBase knowledgeBase, final TAnnotation original) {
+      final String knowledgeBaseName, final TAnnotation original) {
     final int columnCount = original.getCols();
     final List<ColumnProcessingAnnotation> columnProcessingAnnotations =
         new ArrayList<>(columnCount);
@@ -243,7 +243,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
       final TColumnProcessingAnnotation annotation =
           original.getColumnProcessingAnnotation(columnIndex);
 
-      final HashMap<KnowledgeBase, ColumnProcessingTypeValue> processingType = new HashMap<>();
+      final HashMap<String, ColumnProcessingTypeValue> processingType = new HashMap<>();
 
       if (annotation != null) {
         ColumnProcessingTypeValue processingTypeValue;
@@ -263,7 +263,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
             break;
         }
 
-        processingType.put(knowledgeBase, processingTypeValue);
+        processingType.put(knowledgeBaseName, processingTypeValue);
       }
 
       final ColumnProcessingAnnotation columnProcessingAnnotation =
@@ -275,18 +275,18 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
   }
 
   private Map<ColumnRelationPosition, ColumnRelationAnnotation> convertColumnRelations(
-      final KnowledgeBase knowledgeBase, final TAnnotation original) {
+      final String knowledgeBaseName, final TAnnotation original) {
     final Map<ColumnRelationPosition, ColumnRelationAnnotation> columnRelations = new HashMap<>();
     for (final Map.Entry<RelationColumns, List<TColumnColumnRelationAnnotation>> annotations : original
         .getColumncolumnRelations().entrySet()) {
-      final HashMap<KnowledgeBase, Set<EntityCandidate>> candidates = new HashMap<>();
-      final HashMap<KnowledgeBase, Set<EntityCandidate>> chosen = new HashMap<>();
+      final HashMap<String, Set<EntityCandidate>> candidates = new HashMap<>();
+      final HashMap<String, Set<EntityCandidate>> chosen = new HashMap<>();
 
       final Set<EntityCandidate> candidatesSet = new HashSet<>();
       final Set<EntityCandidate> chosenSet = new HashSet<>();
 
-      candidates.put(knowledgeBase, candidatesSet);
-      chosen.put(knowledgeBase, chosenSet);
+      candidates.put(knowledgeBaseName, candidatesSet);
+      chosen.put(knowledgeBaseName, chosenSet);
 
       EntityCandidate bestCandidate = null;
       for (final TColumnColumnRelationAnnotation annotation : annotations.getValue()) {
@@ -320,15 +320,15 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
   }
 
   private List<StatisticalAnnotation> convertStatisticalAnnotations(
-      final KnowledgeBase knowledgeBase, final TAnnotation original) {
+      final String knowledgeBaseName, final TAnnotation original) {
     final int columnCount = original.getCols();
     final List<StatisticalAnnotation> statisticalAnnotations = new ArrayList<>(columnCount);
 
     for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
       final TStatisticalAnnotation annotation = original.getStatisticalAnnotation(columnIndex);
 
-      final HashMap<KnowledgeBase, ComponentTypeValue> component = new HashMap<>();
-      final HashMap<KnowledgeBase, Set<EntityCandidate>> predicate = new HashMap<>();
+      final HashMap<String, ComponentTypeValue> component = new HashMap<>();
+      final HashMap<String, Set<EntityCandidate>> predicate = new HashMap<>();
 
       if (annotation != null) {
         ComponentTypeValue componentType;
@@ -349,8 +349,8 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
             break;
         }
 
-        component.put(knowledgeBase, componentType);
-        predicate.put(knowledgeBase, predicateSet);
+        component.put(knowledgeBaseName, componentType);
+        predicate.put(knowledgeBaseName, predicateSet);
 
         if ((annotation.getPredicateURI() != null) && (annotation.getPredicateLabel() != null)) {
           final Entity entity = this.entitiesFactory.create(annotation.getPredicateURI(),
@@ -372,48 +372,48 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
   }
 
   private void mergeCells(final CellAnnotation[][] mergedCellAnnotations,
-      final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
+      final String knowledgeBaseName, final TAnnotation tableAnnotation) {
     final CellAnnotation[][] cellAnnotations =
-        convertCellAnnotations(knowledgeBase, tableAnnotation);
+        convertCellAnnotations(knowledgeBaseName, tableAnnotation);
     Arrays.zipMatrixWith(mergedCellAnnotations, cellAnnotations, CellAnnotation::merge);
   }
 
   private void mergeColumnProcessingAnnotations(
       final List<ColumnProcessingAnnotation> mergedColumnProcessingAnnotations,
-      final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
+      final String knowledgeBaseName, final TAnnotation tableAnnotation) {
     final List<ColumnProcessingAnnotation> columnProcessingAnnotations =
-        convertColumnProcessingAnnotations(knowledgeBase, tableAnnotation);
+        convertColumnProcessingAnnotations(knowledgeBaseName, tableAnnotation);
     Lists.zipWith(mergedColumnProcessingAnnotations, columnProcessingAnnotations,
         ColumnProcessingAnnotation::merge);
   }
 
   private void mergeColumnRelations(
       final Map<ColumnRelationPosition, ColumnRelationAnnotation> mergedColumnRelations,
-      final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
+      final String knowledgeBaseName, final TAnnotation tableAnnotation) {
     final Map<ColumnRelationPosition, ColumnRelationAnnotation> columnRelations =
-        convertColumnRelations(knowledgeBase, tableAnnotation);
+        convertColumnRelations(knowledgeBaseName, tableAnnotation);
     Maps.mergeWith(mergedColumnRelations, columnRelations, ColumnRelationAnnotation::merge);
   }
 
   private void mergeHeaders(final List<HeaderAnnotation> mergedHeaderAnnotations,
-      final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
+      final String knowledgeBaseName, final TAnnotation tableAnnotation) {
     final List<HeaderAnnotation> headerAnnotations =
-        convertColumnAnnotations(knowledgeBase, tableAnnotation);
+        convertColumnAnnotations(knowledgeBaseName, tableAnnotation);
     Lists.zipWith(mergedHeaderAnnotations, headerAnnotations, HeaderAnnotation::merge);
   }
 
   private void mergeStatisticalAnnotations(
       final List<StatisticalAnnotation> mergedStatisticalAnnotations,
-      final KnowledgeBase knowledgeBase, final TAnnotation tableAnnotation) {
+      final String knowledgeBaseName, final TAnnotation tableAnnotation) {
     final List<StatisticalAnnotation> statisticalAnnotations =
-        convertStatisticalAnnotations(knowledgeBase, tableAnnotation);
+        convertStatisticalAnnotations(knowledgeBaseName, tableAnnotation);
     Lists.zipWith(mergedStatisticalAnnotations, statisticalAnnotations,
         StatisticalAnnotation::merge);
   }
 
-  private void mergeWarnings(final List<String> mergedWarnings, final KnowledgeBase knowledgeBase,
+  private void mergeWarnings(final List<String> mergedWarnings, final String knowledgeBaseName,
       final TAnnotation tableAnnotation) {
-    final List<String> warnings = getWarnings(knowledgeBase, tableAnnotation);
+    final List<String> warnings = getWarnings(knowledgeBaseName, tableAnnotation);
     mergedWarnings.addAll(warnings);
   }
 
@@ -432,13 +432,15 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
       final KnowledgeBase knowledgeBase = entry.getKey();
       final TAnnotation tableAnnotation = entry.getValue();
 
-      mergeHeaders(mergedHeaderAnnotations, knowledgeBase, tableAnnotation);
-      mergeCells(mergedCellAnnotations, knowledgeBase, tableAnnotation);
-      mergeColumnRelations(mergedColumnRelations, knowledgeBase, tableAnnotation);
-      mergeStatisticalAnnotations(mergedStatisticalAnnotations, knowledgeBase, tableAnnotation);
-      mergeColumnProcessingAnnotations(mergedColumnProcessingAnnotations, knowledgeBase,
+      final String knowledgeBaseName = knowledgeBase.getName();
+      
+      mergeHeaders(mergedHeaderAnnotations, knowledgeBaseName, tableAnnotation);
+      mergeCells(mergedCellAnnotations, knowledgeBaseName, tableAnnotation);
+      mergeColumnRelations(mergedColumnRelations, knowledgeBaseName, tableAnnotation);
+      mergeStatisticalAnnotations(mergedStatisticalAnnotations, knowledgeBaseName, tableAnnotation);
+      mergeColumnProcessingAnnotations(mergedColumnProcessingAnnotations, knowledgeBaseName,
           tableAnnotation);
-      mergeWarnings(mergedWarnings, knowledgeBase, tableAnnotation);
+      mergeWarnings(mergedWarnings, knowledgeBaseName, tableAnnotation);
     }
   }
 
@@ -454,7 +456,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     Preconditions.checkArgument(!basesToTableAnnotations.isEmpty());
 
     // Extract subject column positions.
-    final Map<KnowledgeBase, ColumnPosition> subjectColumnPositions =
+    final Map<String, ColumnPosition> subjectColumnPositions =
         extractSubjectColumnPositions(basesToTableAnnotations);
 
     // Merge annotations.
@@ -467,17 +469,19 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     final KnowledgeBase firstKnowledgeBase = firstEntry.getKey();
     final TAnnotation firstTableAnnotation = firstEntry.getValue();
 
+    final String firstKnowledgeBaseName = firstKnowledgeBase.getName(); 
+    
     final List<HeaderAnnotation> mergedHeaderAnnotations =
-        convertColumnAnnotations(firstKnowledgeBase, firstTableAnnotation);
+        convertColumnAnnotations(firstKnowledgeBaseName, firstTableAnnotation);
     final CellAnnotation[][] mergedCellAnnotations =
-        convertCellAnnotations(firstKnowledgeBase, firstTableAnnotation);
+        convertCellAnnotations(firstKnowledgeBaseName, firstTableAnnotation);
     final Map<ColumnRelationPosition, ColumnRelationAnnotation> mergedColumnRelations =
-        convertColumnRelations(firstKnowledgeBase, firstTableAnnotation);
+        convertColumnRelations(firstKnowledgeBaseName, firstTableAnnotation);
     final List<StatisticalAnnotation> mergedStatisticalAnnotations =
-        convertStatisticalAnnotations(firstKnowledgeBase, firstTableAnnotation);
+        convertStatisticalAnnotations(firstKnowledgeBaseName, firstTableAnnotation);
     final List<ColumnProcessingAnnotation> mergedColumnProcessingAnnotations =
-        convertColumnProcessingAnnotations(firstKnowledgeBase, firstTableAnnotation);
-    final List<String> mergedWarnings = getWarnings(firstKnowledgeBase, firstTableAnnotation);
+        convertColumnProcessingAnnotations(firstKnowledgeBaseName, firstTableAnnotation);
+    final List<String> mergedWarnings = getWarnings(firstKnowledgeBaseName, firstTableAnnotation);
 
     // Process the rest.
     processTheRest(entrySetIterator, mergedHeaderAnnotations, mergedCellAnnotations,

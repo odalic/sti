@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.ws.rs.BadRequestException;
@@ -27,6 +28,8 @@ import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rdf.values.ConfigurationValue;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.TaskValue;
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
@@ -48,7 +51,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  */
 public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializationService {
 
-  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V2/%s";
+  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V3/%s";
 
   private static String format(final Model model) {
     final StringWriter stringWriter = new StringWriter();
@@ -74,16 +77,6 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
         .createIRI(baseUri
             .resolve(String.format(VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT, UUID.randomUUID()))
             .toString());
-  }
-
-  private static Configuration initializeConfiguration(final ConfigurationValue configurationValue,
-      final File input) {
-    return new Configuration(input,
-        configurationValue.getUsedBases().stream().map(e -> e.toKnowledgeBase()).collect(
-            ImmutableSet.toImmutableSet()),
-        configurationValue.getPrimaryBase().toKnowledgeBase(),
-        configurationValue.getFeedback().toFeedback(), configurationValue.getRowsLimit(),
-        configurationValue.isStatistical());
   }
 
   private static Model parse(final InputStream taskStream) throws IOException {
@@ -113,22 +106,29 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
 
   private final FileService fileService;
 
+  private final BasesService basesService;
+
   public TurtleRdfMappingTaskSerializationService(final RDFMapper.Builder rdfMapperBuilder,
-      final UserService userService, final FileService fileService) {
+      final UserService userService, final FileService fileService,
+      final BasesService basesService) {
     Preconditions.checkNotNull(rdfMapperBuilder);
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(basesService);
 
     this.rdfMapperBuilder = rdfMapperBuilder;
     this.userService = userService;
     this.fileService = fileService;
+    this.basesService = basesService;
   }
 
   @Autowired
   public TurtleRdfMappingTaskSerializationService(final UserService userService,
-      final FileService fileService) {
-    this(RDFMapper.builder().set(MappingOptions.IGNORE_CARDINALITY_VIOLATIONS, false)
-        .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false), userService, fileService);
+      final FileService fileService, final BasesService basesService) {
+    this(
+        RDFMapper.builder().set(MappingOptions.IGNORE_CARDINALITY_VIOLATIONS, false)
+            .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false),
+        userService, fileService, basesService);
   }
 
   private RDFMapper buildMapper(final URI baseUri) {
@@ -154,7 +154,7 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
     }
 
     final File input = getInput(userId, configurationValue);
-    final Configuration configuration = initializeConfiguration(configurationValue, input);
+    final Configuration configuration = initializeConfiguration(userId, configurationValue, input);
 
     final Task task = fromProxies(userId, taskId, taskValue, configuration);
 
@@ -173,6 +173,21 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
 
   private File getInput(final String userId, final ConfigurationValue configurationValue) {
     return this.fileService.getById(userId, configurationValue.getInput());
+  }
+
+  private Configuration initializeConfiguration(final String userId,
+      final ConfigurationValue configurationValue, final File input) {
+    final Set<String> usedBasesNames = configurationValue.getUsedBases().stream()
+        .map(e -> e.getName()).collect(ImmutableSet.toImmutableSet());
+    final Set<KnowledgeBase> usedBases = usedBasesNames.stream()
+        .map(e -> this.basesService.getByName(userId, e)).collect(ImmutableSet.toImmutableSet());
+
+    final String primaryBaseName = configurationValue.getPrimaryBase().getName();
+    final KnowledgeBase primaryBase = this.basesService.getByName(userId, primaryBaseName);
+
+    return new Configuration(input, usedBases, primaryBase,
+        configurationValue.getFeedback().toFeedback(), configurationValue.getRowsLimit(),
+        configurationValue.isStatistical());
   }
 
   @Override

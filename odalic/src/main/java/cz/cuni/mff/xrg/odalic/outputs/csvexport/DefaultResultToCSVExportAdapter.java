@@ -15,7 +15,6 @@ import com.google.common.base.Preconditions;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
@@ -65,10 +64,10 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
       boolean addAlternatives = false;
 
       for (int j = 0; j < input.rowsCount(); j++) {
-        for (final Entry<KnowledgeBase, Set<EntityCandidate>> entry : result
+        for (final Entry<String, Set<EntityCandidate>> entry : result
             .getCellAnnotations()[j][i].getChosen().entrySet()) {
           if ((entry.getValue() != null) && !entry.getValue().isEmpty()) {
-            if (entry.getKey().getName().equals(configuration.getPrimaryBase().getName())) {
+            if (entry.getKey().equals(configuration.getPrimaryBase().getName())) {
               addPrimary = true;
 
               for (final EntityCandidate chosen : entry.getValue()) {

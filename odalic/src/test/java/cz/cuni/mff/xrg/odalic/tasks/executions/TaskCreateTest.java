@@ -1,7 +1,9 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,9 +35,15 @@ import com.google.common.collect.ImmutableSet;
 import cz.cuni.mff.xrg.odalic.api.rest.values.ConfigurationValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.CredentialsValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.TaskValue;
+import cz.cuni.mff.xrg.odalic.bases.DefaultKnowledgeBaseBuilder;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.groups.DefaultGroupBuilder;
+import cz.cuni.mff.xrg.odalic.groups.GroupBuilder;
 import cz.cuni.mff.xrg.odalic.users.Credentials;
+import cz.cuni.mff.xrg.odalic.users.Role;
+import cz.cuni.mff.xrg.odalic.users.User;
 
 /**
  * JUnit test for creating tasks with test files
@@ -118,9 +126,9 @@ public class TaskCreateTest {
     ConfigurationValue configuration = new ConfigurationValue();
     configuration.setInput(file.getName());
     configuration.setFeedback(CoreExecutionBatch.createFeedback(true));
-    configuration.setUsedBases(ImmutableSet.of(new KnowledgeBase("DBpedia"),
-        new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")));
-    configuration.setPrimaryBase(new KnowledgeBase("DBpedia"));
+    configuration.setUsedBases(ImmutableSet.of(getDummyBase("DBpedia"),
+        getDummyBase("DBpedia Clone"), getDummyBase("German DBpedia")));
+    configuration.setPrimaryBase(getDummyBase("DBpedia"));
     configuration.setRowsLimit(rowsLimit);
     configuration.setStatistical(statistical);
 
@@ -139,5 +147,28 @@ public class TaskCreateTest {
   public static void afterClass() {
 
     client.close();
+  }
+  
+  private static KnowledgeBase getDummyBase(final String name) {    
+    final User owner = new User("dummy@dummy.com", "dummyHash", Role.ADMINISTRATOR);
+    
+    final GroupBuilder groupBuilder = new DefaultGroupBuilder();
+    groupBuilder.setId("DummyGroup");
+    groupBuilder.setOwner(owner);
+    
+    final KnowledgeBaseBuilder builder = new DefaultKnowledgeBaseBuilder();
+    
+    builder.setName(name);
+    builder.setOwner(owner);
+    
+    try {
+      builder.setEndpoint(new URL("http://dummy.com"));
+    } catch (final MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+    
+    builder.addSelectedGroup(groupBuilder.build());
+        
+    return builder.build();
   }
 }

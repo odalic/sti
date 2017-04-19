@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.feedbacks.FeedbackToConstraintsAdapter;
 import cz.cuni.mff.xrg.odalic.files.FileService;
@@ -33,7 +35,6 @@ import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.InputToTableAdapter;
 import cz.cuni.mff.xrg.odalic.input.ParsingResult;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
@@ -60,6 +61,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   private final ConfigurationService configurationService;
   private final FeedbackService feedbackService;
   private final FileService fileService;
+  private final BasesService basesService;
   private final AnnotationToResultAdapter annotationResultAdapter;
   private final SemanticTableInterpreterFactory semanticTableInterpreterFactory;
   private final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter;
@@ -87,13 +89,15 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   @Autowired
   public DbCachedFutureBasedExecutionService(final ConfigurationService configurationService,
       final FeedbackService feedbackService, final FileService fileService,
-      final DbService dbService, final AnnotationToResultAdapter annotationToResultAdapter,
+      final DbService dbService, final BasesService basesService,
+      final AnnotationToResultAdapter annotationToResultAdapter,
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
       final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter) {
     Preconditions.checkNotNull(configurationService);
     Preconditions.checkNotNull(feedbackService);
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(basesService);
     Preconditions.checkNotNull(dbService);
     Preconditions.checkNotNull(annotationToResultAdapter);
     Preconditions.checkNotNull(semanticTableInterpreterFactory);
@@ -104,6 +108,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     this.configurationService = configurationService;
     this.feedbackService = feedbackService;
     this.fileService = fileService;
+    this.basesService = basesService;
     this.annotationResultAdapter = annotationToResultAdapter;
     this.semanticTableInterpreterFactory = semanticTableInterpreterFactory;
     this.feedbackToConstraintsAdapter = feedbackToConstraintsAdapter;
@@ -280,7 +285,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
         for (final Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters
             .entrySet()) {
-          final KnowledgeBase base = new KnowledgeBase(interpreterEntry.getKey());
+          final KnowledgeBase base = this.basesService.getByName(userId, interpreterEntry.getKey());
           if (!usedBases.contains(base)) {
             continue;
           }

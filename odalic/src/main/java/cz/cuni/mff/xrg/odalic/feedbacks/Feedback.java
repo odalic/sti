@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.FeedbackAdapter;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * User feedback for the result of annotating algorithm. Expresses also input constraints for the
@@ -29,7 +28,7 @@ public final class Feedback implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
-  private final Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
+  private final Map<String, ColumnPosition> subjectColumnPositions;
 
   private final Set<ColumnIgnore> columnIgnores;
 
@@ -73,7 +72,7 @@ public final class Feedback implements Serializable {
    * @param dataCubeComponents dataCubeComponents hints for columns
    */
   public Feedback(
-      final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions,
+      final Map<? extends String, ? extends ColumnPosition> subjectColumnPositions,
       final Set<? extends ColumnIgnore> columnIgnores,
       final Set<? extends ColumnAmbiguity> columnAmbiguities,
       final Set<? extends Classification> classifications,
@@ -224,7 +223,7 @@ public final class Feedback implements Serializable {
    * @return the subject column position
    */
   @Nullable
-  public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
+  public Map<String, ColumnPosition> getSubjectColumnPositions() {
     return this.subjectColumnPositions;
   }
 
@@ -255,8 +254,8 @@ public final class Feedback implements Serializable {
       return;
     }
 
-    for (final KnowledgeBase base : this.subjectColumnPositions.keySet()) {
-      final ColumnPosition subjCol = this.subjectColumnPositions.get(base);
+    for (final String baseName : this.subjectColumnPositions.keySet()) {
+      final ColumnPosition subjCol = this.subjectColumnPositions.get(baseName);
       if (subjCol == null) {
         return;
       }
@@ -269,10 +268,10 @@ public final class Feedback implements Serializable {
 
       for (final Classification classification : this.classifications) {
         if ((classification.getPosition().getIndex() == subjCol.getIndex())
-            && (classification.getAnnotation().getChosen().get(base) != null)
-            && classification.getAnnotation().getChosen().get(base).isEmpty()) {
+            && (classification.getAnnotation().getChosen().get(baseName) != null)
+            && classification.getAnnotation().getChosen().get(baseName).isEmpty()) {
           throw new IllegalArgumentException("The column (position: " + subjCol.getIndex()
-              + ") which has empty chosen classification set (for " + base.getName()
+              + ") which has empty chosen classification set (for " + baseName
               + " KB) does not have to be a subject column (for that KB).");
         }
       }

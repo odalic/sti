@@ -1,8 +1,7 @@
 package cz.cuni.mff.xrg.odalic.bases;
 
 import java.util.NavigableSet;
-
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import javax.annotation.Nullable;
 
 /**
  * Provides basic capabilities of bases management.
@@ -13,12 +12,25 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 public interface BasesService {
 
   /**
+   * @param userId owner's ID
    * @return bases naturally ordered
    */
-  NavigableSet<KnowledgeBase> getBases();
-
+  NavigableSet<KnowledgeBase> getBases(String userId);
+  
   /**
+   * @param userId owner's ID
    * @return insert supporting bases, naturally ordered
    */
-  NavigableSet<KnowledgeBase> getInsertSupportingBases();
+  NavigableSet<KnowledgeBase> getInsertSupportingBases(String userId);
+  
+  void create(KnowledgeBase base);
+  
+  void replace(KnowledgeBase base);
+  
+  boolean existsBaseWithId(String userId, String baseId);
+
+  KnowledgeBase getByName(String userId, String name) throws IllegalArgumentException;
+  
+  @Nullable
+  KnowledgeBase verifyBaseExistenceByName(String userId, String name);
 }

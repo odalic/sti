@@ -20,7 +20,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 
 /**
@@ -46,7 +45,7 @@ public class Result implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
-  private final Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
+  private final Map<String, ColumnPosition> subjectColumnPositions;
 
   private final List<HeaderAnnotation> headerAnnotations;
 
@@ -60,7 +59,7 @@ public class Result implements Serializable {
 
   private final List<String> warnings;
 
-  public Result(final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions,
+  public Result(final Map<? extends String, ? extends ColumnPosition> subjectColumnPositions,
       final List<? extends HeaderAnnotation> headerAnnotations,
       final CellAnnotation[][] cellAnnotations,
       final Map<? extends ColumnRelationPosition, ? extends ColumnRelationAnnotation> columnRelationAnnotations,
@@ -191,7 +190,7 @@ public class Result implements Serializable {
    * @return the subject column positions
    */
   @Nullable
-  public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
+  public Map<String, ColumnPosition> getSubjectColumnPositions() {
     return this.subjectColumnPositions;
   }
 

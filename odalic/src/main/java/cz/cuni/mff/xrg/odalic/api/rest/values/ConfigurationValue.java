@@ -11,8 +11,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSortedSet;
 
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 
 /**

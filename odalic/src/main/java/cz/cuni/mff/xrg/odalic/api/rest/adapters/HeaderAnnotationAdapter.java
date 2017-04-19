@@ -10,7 +10,6 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.HeaderAnnotationValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 
 public final class HeaderAnnotationAdapter
@@ -23,9 +22,9 @@ public final class HeaderAnnotationAdapter
 
   @Override
   public HeaderAnnotation unmarshal(final HeaderAnnotationValue value) throws Exception {
-    final Map<KnowledgeBase, NavigableSet<EntityCandidate>> candidates =
+    final Map<String, NavigableSet<EntityCandidate>> candidates =
         Annotations.toNavigableDomain(value.getCandidates());
-    final Map<KnowledgeBase, Set<EntityCandidate>> chosen = Annotations.toDomain(value.getChosen());
+    final Map<String, Set<EntityCandidate>> chosen = Annotations.toDomain(value.getChosen());
 
     return new HeaderAnnotation(candidates, chosen);
   }

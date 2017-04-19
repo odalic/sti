@@ -19,6 +19,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.filters.AuthenticationFilter;
 import cz.cuni.mff.xrg.odalic.api.rest.filters.AuthorizationFilter;
 import cz.cuni.mff.xrg.odalic.api.rest.filters.CorsResponseFilter;
 import cz.cuni.mff.xrg.odalic.api.rest.filters.LoggingResponseFilter;
+import cz.cuni.mff.xrg.odalic.api.rest.resources.AdvancedBaseTypesResource;
 import cz.cuni.mff.xrg.odalic.api.rest.resources.AnnotatedTableResource;
 import cz.cuni.mff.xrg.odalic.api.rest.resources.BasesResource;
 import cz.cuni.mff.xrg.odalic.api.rest.resources.ConfigurationResource;
@@ -28,6 +29,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.resources.ExecutionResource;
 import cz.cuni.mff.xrg.odalic.api.rest.resources.FeedbackResource;
 import cz.cuni.mff.xrg.odalic.api.rest.resources.FilesResource;
 import cz.cuni.mff.xrg.odalic.api.rest.resources.FormatResource;
+import cz.cuni.mff.xrg.odalic.api.rest.resources.GroupsResource;
 import cz.cuni.mff.xrg.odalic.api.rest.resources.RdfExportResource;
 import cz.cuni.mff.xrg.odalic.api.rest.resources.ResultResource;
 import cz.cuni.mff.xrg.odalic.api.rest.resources.StateResource;
@@ -70,6 +72,8 @@ public final class Configuration extends ResourceConfig {
     register(BasesResource.class);
     register(FormatResource.class);
     register(UsersResource.class);
+    register(GroupsResource.class);
+    register(AdvancedBaseTypesResource.class);
 
     // Filters registration
     register(RequestContextFilter.class);
