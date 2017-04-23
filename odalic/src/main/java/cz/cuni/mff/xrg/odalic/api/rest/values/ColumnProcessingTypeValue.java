@@ -28,5 +28,10 @@ public enum ColumnProcessingTypeValue {
   /**
    * processing type for ignored column
    */
-  @XmlEnumValue("IGNORED") IGNORED
+  @XmlEnumValue("IGNORED") IGNORED,
+
+  /**
+   * processing type for compulsory column
+   */
+  @XmlEnumValue("COMPULSORY") COMPULSORY
 }
