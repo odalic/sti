@@ -18,6 +18,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.conversions.KnowledgeBaseKeyJsonSerialize
 import cz.cuni.mff.xrg.odalic.feedbacks.Ambiguity;
 import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnAmbiguity;
+import cz.cuni.mff.xrg.odalic.feedbacks.ColumnCompulsory;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnIgnore;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnRelation;
 import cz.cuni.mff.xrg.odalic.feedbacks.DataCubeComponent;
@@ -41,6 +42,8 @@ public final class FeedbackValue implements Serializable {
 
   private Set<ColumnIgnore> columnIgnores;
 
+  private Set<ColumnCompulsory> columnCompulsory;
+
   private Set<ColumnAmbiguity> columnAmbiguities;
 
   private Set<Classification> classifications;
@@ -56,6 +59,7 @@ public final class FeedbackValue implements Serializable {
   public FeedbackValue() {
     this.subjectColumnPositions = ImmutableMap.of();
     this.columnIgnores = ImmutableSet.of();
+    this.columnCompulsory = ImmutableSet.of();
     this.columnAmbiguities = ImmutableSet.of();
     this.classifications = ImmutableSet.of();
     this.columnRelations = ImmutableSet.of();
@@ -67,6 +71,7 @@ public final class FeedbackValue implements Serializable {
   public FeedbackValue(final Feedback adaptee) {
     this.subjectColumnPositions = adaptee.getSubjectColumnPositions();
     this.columnIgnores = adaptee.getColumnIgnores();
+    this.columnCompulsory = adaptee.getColumnCompulsory();
     this.columnAmbiguities = adaptee.getColumnAmbiguities();
     this.classifications = adaptee.getClassifications();
     this.columnRelations = adaptee.getColumnRelations();
@@ -105,6 +110,14 @@ public final class FeedbackValue implements Serializable {
   @XmlElement
   public Set<ColumnIgnore> getColumnIgnores() {
     return this.columnIgnores;
+  }
+
+  /**
+   * @return the column compulsory
+   */
+  @XmlElement
+  public Set<ColumnCompulsory> getColumnCompulsory() {
+    return this.columnCompulsory;
   }
 
   /**
@@ -178,6 +191,15 @@ public final class FeedbackValue implements Serializable {
   }
 
   /**
+   * @param columnCompulsory the column compulsory to set
+   */
+  public void setColumnCompulsory(final Set<? extends ColumnCompulsory> columnCompulsory) {
+    Preconditions.checkNotNull(columnCompulsory);
+
+    this.columnCompulsory = ImmutableSet.copyOf(columnCompulsory);
+  }
+
+  /**
    * @param columnRelations the column relations to set
    */
   public void setColumnRelations(final Set<? extends ColumnRelation> columnRelations) {
@@ -217,7 +239,8 @@ public final class FeedbackValue implements Serializable {
   @Override
   public String toString() {
     return "FeedbackValue [subjectColumnPositions=" + this.subjectColumnPositions
-        + ", columnIgnores=" + this.columnIgnores + ", columnAmbiguities=" + this.columnAmbiguities
+        + ", columnIgnores=" + this.columnIgnores + ", columnCompulsory=" + this.columnCompulsory
+        + ", columnAmbiguities=" + this.columnAmbiguities
         + ", classifications=" + this.classifications + ", columnRelations=" + this.columnRelations
         + ", disambiguations=" + this.disambiguations + ", ambiguities=" + this.ambiguities
         + ", dataCubeComponents=" + this.dataCubeComponents + "]";

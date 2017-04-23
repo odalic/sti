@@ -34,6 +34,8 @@ public final class Constraints implements Serializable {
 
   private final Set<ColumnIgnore> columnIgnores;
 
+  private final Set<ColumnCompulsory> columnCompulsory;
+
   private final Set<Classification> classifications;
 
   private final Set<ColumnAmbiguity> columnAmbiguities;
@@ -52,6 +54,7 @@ public final class Constraints implements Serializable {
   public Constraints() {
     this.subjectColumnPosition = null;
     this.columnIgnores = ImmutableSet.of();
+    this.columnCompulsory = ImmutableSet.of();
     this.columnAmbiguities = ImmutableSet.of();
     this.classifications = ImmutableSet.of();
     this.columnRelations = ImmutableSet.of();
@@ -65,6 +68,7 @@ public final class Constraints implements Serializable {
    *
    * @param subjectColumnPosition position of the subject column (optional)
    * @param columnIgnores ignored columns
+   * @param columnCompulsory compulsory columns
    * @param columnAmbiguities columns whose cells will not be disambiguated
    * @param classifications classification hints for columns
    * @param columnRelations hints with relation between columns
@@ -74,6 +78,7 @@ public final class Constraints implements Serializable {
    */
   public Constraints(@Nullable final ColumnPosition subjectColumnPosition,
       final Set<? extends ColumnIgnore> columnIgnores,
+      final Set<? extends ColumnCompulsory> columnCompulsory,
       final Set<? extends ColumnAmbiguity> columnAmbiguities,
       final Set<? extends Classification> classifications,
       final Set<? extends ColumnRelation> columnRelations,
@@ -81,6 +86,7 @@ public final class Constraints implements Serializable {
       final Set<? extends Ambiguity> ambiguities,
       final Set<? extends DataCubeComponent> dataCubeComponents) {
     Preconditions.checkNotNull(columnIgnores);
+    Preconditions.checkNotNull(columnCompulsory);
     Preconditions.checkNotNull(columnAmbiguities);
     Preconditions.checkNotNull(classifications);
     Preconditions.checkNotNull(columnRelations);
@@ -89,6 +95,7 @@ public final class Constraints implements Serializable {
 
     this.subjectColumnPosition = subjectColumnPosition;
     this.columnIgnores = ImmutableSet.copyOf(columnIgnores);
+    this.columnCompulsory = ImmutableSet.copyOf(columnCompulsory);
     this.columnAmbiguities = ImmutableSet.copyOf(columnAmbiguities);
     this.classifications = ImmutableSet.copyOf(classifications);
     this.columnRelations = ImmutableSet.copyOf(columnRelations);
@@ -140,6 +147,13 @@ public final class Constraints implements Serializable {
         return false;
       }
     } else if (!this.columnIgnores.equals(other.columnIgnores)) {
+      return false;
+    }
+    if (this.columnCompulsory == null) {
+      if (other.columnCompulsory != null) {
+        return false;
+      }
+    } else if (!this.columnCompulsory.equals(other.columnCompulsory)) {
       return false;
     }
     if (this.columnRelations == null) {
@@ -223,6 +237,13 @@ public final class Constraints implements Serializable {
    */
   public Set<ColumnIgnore> getColumnIgnores() {
     return this.columnIgnores;
+  }
+
+  /**
+   * @return compulsory columns
+   */
+  public Set<ColumnCompulsory> getColumnCompulsory() {
+    return this.columnCompulsory;
   }
 
   /**
@@ -323,6 +344,7 @@ public final class Constraints implements Serializable {
     result = (prime * result)
         + ((this.columnAmbiguities == null) ? 0 : this.columnAmbiguities.hashCode());
     result = (prime * result) + ((this.columnIgnores == null) ? 0 : this.columnIgnores.hashCode());
+    result = (prime * result) + ((this.columnCompulsory == null) ? 0 : this.columnCompulsory.hashCode());
     result =
         (prime * result) + ((this.columnRelations == null) ? 0 : this.columnRelations.hashCode());
     result =
@@ -342,7 +364,8 @@ public final class Constraints implements Serializable {
   @Override
   public String toString() {
     return "Constraints [subjectColumnPosition=" + this.subjectColumnPosition + ", columnIgnores="
-        + this.columnIgnores + ", columnAmbiguities=" + this.columnAmbiguities
+        + this.columnIgnores + ", columnCompulsory=" + this.columnCompulsory
+        + ", columnAmbiguities=" + this.columnAmbiguities
         + ", classifications=" + this.classifications + ", columnRelations=" + this.columnRelations
         + ", disambiguations=" + this.disambiguations + ", ambiguities=" + this.ambiguities
         + ", dataCubeComponents=" + this.dataCubeComponents + "]";
