@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -48,6 +49,8 @@ public class Result implements Serializable {
 
   private final Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
 
+  private final Map<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions;
+
   private final List<HeaderAnnotation> headerAnnotations;
 
   private final CellAnnotation[][] cellAnnotations;
@@ -61,6 +64,7 @@ public class Result implements Serializable {
   private final List<String> warnings;
 
   public Result(final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions,
+      final Map<? extends KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions,
       final List<? extends HeaderAnnotation> headerAnnotations,
       final CellAnnotation[][] cellAnnotations,
       final Map<? extends ColumnRelationPosition, ? extends ColumnRelationAnnotation> columnRelationAnnotations,
@@ -68,6 +72,7 @@ public class Result implements Serializable {
       final List<? extends ColumnProcessingAnnotation> columnProcessingAnnotations,
       final List<? extends String> warnings) {
     Preconditions.checkNotNull(subjectColumnPositions);
+    Preconditions.checkNotNull(otherSubjectColumnPositions);
     Preconditions.checkNotNull(headerAnnotations);
     Preconditions.checkNotNull(cellAnnotations);
     Preconditions.checkNotNull(columnRelationAnnotations);
@@ -78,6 +83,7 @@ public class Result implements Serializable {
     Preconditions.checkArgument(cz.cuni.mff.xrg.odalic.util.Arrays.isMatrix(cellAnnotations));
 
     this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
+    this.otherSubjectColumnPositions = ImmutableMap.copyOf(otherSubjectColumnPositions);
     this.headerAnnotations = ImmutableList.copyOf(headerAnnotations);
     this.cellAnnotations =
         cz.cuni.mff.xrg.odalic.util.Arrays.deepCopy(CellAnnotation.class, cellAnnotations);
@@ -126,6 +132,13 @@ public class Result implements Serializable {
         return false;
       }
     } else if (!this.subjectColumnPositions.equals(other.subjectColumnPositions)) {
+      return false;
+    }
+    if (this.otherSubjectColumnPositions == null) {
+      if (other.otherSubjectColumnPositions != null) {
+        return false;
+      }
+    } else if (!this.otherSubjectColumnPositions.equals(other.otherSubjectColumnPositions)) {
       return false;
     }
     if (this.statisticalAnnotations == null) {
@@ -196,6 +209,14 @@ public class Result implements Serializable {
   }
 
   /**
+   * @return the other subject column positions
+   */
+  @Nullable
+  public Map<KnowledgeBase, Set<ColumnPosition>> getOtherSubjectColumnPositions() {
+    return this.otherSubjectColumnPositions;
+  }
+
+  /**
    * @return the warnings in order of appearance
    */
   public List<String> getWarnings() {
@@ -219,6 +240,8 @@ public class Result implements Serializable {
     result = (prime * result)
         + ((this.subjectColumnPositions == null) ? 0 : this.subjectColumnPositions.hashCode());
     result = (prime * result)
+        + ((this.otherSubjectColumnPositions == null) ? 0 : this.otherSubjectColumnPositions.hashCode());
+    result = (prime * result)
         + ((this.statisticalAnnotations == null) ? 0 : this.statisticalAnnotations.hashCode());
     result = (prime * result) + ((this.columnProcessingAnnotations == null) ? 0
         : this.columnProcessingAnnotations.hashCode());
@@ -227,7 +250,8 @@ public class Result implements Serializable {
 
   @Override
   public String toString() {
-    return "Result [subjectColumnPositions=" + this.subjectColumnPositions + ", headerAnnotations="
+    return "Result [subjectColumnPositions=" + this.subjectColumnPositions
+        + ", otherSubjectColumnPositions=" + this.otherSubjectColumnPositions + ", headerAnnotations="
         + this.headerAnnotations + ", cellAnnotations=" + Arrays.deepToString(this.cellAnnotations)
         + ", columnRelationAnnotations=" + this.columnRelationAnnotations
         + ", statisticalAnnotations=" + this.statisticalAnnotations

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -44,6 +45,8 @@ public final class ResultValue implements Serializable {
 
   private Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
 
+  private Map<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions;
+
   private List<HeaderAnnotation> headerAnnotations;
 
   private CellAnnotation[][] cellAnnotations;
@@ -58,6 +61,7 @@ public final class ResultValue implements Serializable {
 
   public ResultValue() {
     this.subjectColumnPositions = ImmutableMap.of();
+    this.otherSubjectColumnPositions = ImmutableMap.of();
     this.headerAnnotations = ImmutableList.of();
     this.cellAnnotations = new CellAnnotation[0][0];;
     this.columnRelationAnnotations = ImmutableMap.of();
@@ -68,6 +72,7 @@ public final class ResultValue implements Serializable {
 
   public ResultValue(final Result adaptee) {
     this.subjectColumnPositions = adaptee.getSubjectColumnPositions();
+    this.otherSubjectColumnPositions = adaptee.getOtherSubjectColumnPositions();
     this.headerAnnotations = adaptee.getHeaderAnnotations();
     this.cellAnnotations = adaptee.getCellAnnotations();
     this.statisticalAnnotations = adaptee.getStatisticalAnnotations();
@@ -129,6 +134,16 @@ public final class ResultValue implements Serializable {
   @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
   public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
     return this.subjectColumnPositions;
+  }
+
+  /**
+   * @return the other subject column positions
+   */
+  @XmlElement
+  @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
+  @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
+  public Map<KnowledgeBase, Set<ColumnPosition>> getOtherSubjectColumnPositions() {
+    return this.otherSubjectColumnPositions;
   }
 
   /**
@@ -222,6 +237,16 @@ public final class ResultValue implements Serializable {
   }
 
   /**
+   * @param otherSubjectColumnPositions the other subject column positions to set
+   */
+  public void setOtherSubjectColumnPosition(
+      final Map<? extends KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions) {
+    Preconditions.checkNotNull(otherSubjectColumnPositions);
+
+    this.otherSubjectColumnPositions = ImmutableMap.copyOf(otherSubjectColumnPositions);
+  }
+
+  /**
    * @param warnings the warnings to set
    */
   public void setWarnings(final List<String> warnings) {
@@ -233,6 +258,7 @@ public final class ResultValue implements Serializable {
   @Override
   public String toString() {
     return "ResultValue [subjectColumnPositions=" + this.subjectColumnPositions
+        + ", otherSubjectColumnPositions=" + this.otherSubjectColumnPositions
         + ", headerAnnotations=" + this.headerAnnotations + ", cellAnnotations="
         + Arrays.toString(this.cellAnnotations) + ", columnRelationAnnotations="
         + this.columnRelationAnnotations + ", statisticalAnnotations=" + this.statisticalAnnotations

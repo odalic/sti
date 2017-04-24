@@ -3,6 +3,7 @@
  */
 package cz.cuni.mff.xrg.odalic.feedbacks;
 
+import java.util.HashSet;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -265,12 +266,25 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
     }
   }
 
+  private Set<uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition> convertOtherSubjectColumns(
+      final Feedback feedback, final KnowledgeBase base) {
+    final Set<ColumnPosition> otherSubjectColumnPositions = feedback.getOtherSubjectColumnPositions().get(base);
+
+    if (otherSubjectColumnPositions != null) {
+      return otherSubjectColumnPositions.stream()
+          .map(DefaultFeedbackToConstraintsAdapter::convert).collect(Collectors.toSet());
+    } else {
+      return new HashSet<>();
+    }
+  }
+
   @Override
   public Constraints toConstraints(final Feedback feedback, final KnowledgeBase base) {
     Preconditions.checkNotNull(feedback);
     Preconditions.checkNotNull(base);
 
     return new Constraints(convertSubjectColumn(feedback, base),
+        convertOtherSubjectColumns(feedback, base),
         convertIgnores(feedback.getColumnIgnores()),
         convertColumnAmbiguities(feedback.getColumnAmbiguities()),
         convertClassifications(feedback.getClassifications(), base),

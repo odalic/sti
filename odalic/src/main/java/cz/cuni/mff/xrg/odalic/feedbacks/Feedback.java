@@ -31,6 +31,8 @@ public final class Feedback implements Serializable {
 
   private final Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
 
+  private final Map<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions;
+
   private final Set<ColumnIgnore> columnIgnores;
 
   private final Set<Classification> classifications;
@@ -51,6 +53,7 @@ public final class Feedback implements Serializable {
    */
   public Feedback() {
     this.subjectColumnPositions = ImmutableMap.of();
+    this.otherSubjectColumnPositions = ImmutableMap.of();
     this.columnIgnores = ImmutableSet.of();
     this.columnAmbiguities = ImmutableSet.of();
     this.classifications = ImmutableSet.of();
@@ -64,6 +67,7 @@ public final class Feedback implements Serializable {
    * Creates feedback.
    *
    * @param subjectColumnPositions positions of the subject columns
+   * @param otherSubjectColumnPositions positions of the other subject columns
    * @param columnIgnores ignored columns
    * @param columnAmbiguities columns whose cells will not be disambiguated
    * @param classifications classification hints for columns
@@ -74,6 +78,7 @@ public final class Feedback implements Serializable {
    */
   public Feedback(
       final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions,
+      final Map<? extends KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions,
       final Set<? extends ColumnIgnore> columnIgnores,
       final Set<? extends ColumnAmbiguity> columnAmbiguities,
       final Set<? extends Classification> classifications,
@@ -89,6 +94,7 @@ public final class Feedback implements Serializable {
     Preconditions.checkNotNull(ambiguities);
 
     this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
+    this.otherSubjectColumnPositions = ImmutableMap.copyOf(otherSubjectColumnPositions);
     this.columnIgnores = ImmutableSet.copyOf(columnIgnores);
     this.columnAmbiguities = ImmutableSet.copyOf(columnAmbiguities);
     this.classifications = ImmutableSet.copyOf(classifications);
@@ -168,6 +174,13 @@ public final class Feedback implements Serializable {
     } else if (!this.subjectColumnPositions.equals(other.subjectColumnPositions)) {
       return false;
     }
+    if (this.otherSubjectColumnPositions == null) {
+      if (other.otherSubjectColumnPositions != null) {
+        return false;
+      }
+    } else if (!this.otherSubjectColumnPositions.equals(other.otherSubjectColumnPositions)) {
+      return false;
+    }
     return true;
   }
 
@@ -228,6 +241,14 @@ public final class Feedback implements Serializable {
     return this.subjectColumnPositions;
   }
 
+  /**
+   * @return the other subject column positions
+   */
+  @Nullable
+  public Map<KnowledgeBase, Set<ColumnPosition>> getOtherSubjectColumnPositions() {
+    return this.otherSubjectColumnPositions;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -246,6 +267,8 @@ public final class Feedback implements Serializable {
         + ((this.dataCubeComponents == null) ? 0 : this.dataCubeComponents.hashCode());
     result = (prime * result)
         + ((this.subjectColumnPositions == null) ? 0 : this.subjectColumnPositions.hashCode());
+    result = (prime * result)
+        + ((this.otherSubjectColumnPositions == null) ? 0 : this.otherSubjectColumnPositions.hashCode());
     return result;
   }
 
@@ -281,7 +304,8 @@ public final class Feedback implements Serializable {
 
   @Override
   public String toString() {
-    return "Feedback [subjectColumnPositions=" + this.subjectColumnPositions + ", columnIgnores="
+    return "Feedback [subjectColumnPositions=" + this.subjectColumnPositions
+        + ", otherSubjectColumnPositions=" + this.otherSubjectColumnPositions + ", columnIgnores="
         + this.columnIgnores + ", columnAmbiguities=" + this.columnAmbiguities
         + ", classifications=" + this.classifications + ", columnRelations=" + this.columnRelations
         + ", disambiguations=" + this.disambiguations + ", ambiguities=" + this.ambiguities

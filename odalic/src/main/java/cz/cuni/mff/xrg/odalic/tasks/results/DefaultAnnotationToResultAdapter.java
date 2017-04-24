@@ -74,6 +74,29 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     return subjectColumnPositionsBuilder.build();
   }
 
+  private static Set<ColumnPosition> extractOtherSubjectColumnPositionSet(final TAnnotation tableAnnotation) {
+    Set<ColumnPosition> otherSubjectPositions = new HashSet<>();
+    for (Integer columnIndex : tableAnnotation.getOtherSubjectColumns()) {
+      otherSubjectPositions.add(new ColumnPosition(columnIndex));
+    }
+    return otherSubjectPositions;
+  }
+
+  private static Map<KnowledgeBase, Set<ColumnPosition>> extractOtherSubjectColumnPositions(
+      final Map<? extends KnowledgeBase, ? extends TAnnotation> basesToTableAnnotations) {
+    final ImmutableMap.Builder<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositionsBuilder =
+        ImmutableMap.builder();
+    for (final Map.Entry<? extends KnowledgeBase, ? extends TAnnotation> annotationEntry : basesToTableAnnotations
+        .entrySet()) {
+      final KnowledgeBase base = annotationEntry.getKey();
+      final Set<ColumnPosition> otherSubjectColumnPositions =
+          extractOtherSubjectColumnPositionSet(annotationEntry.getValue());
+
+      otherSubjectColumnPositionsBuilder.put(base, otherSubjectColumnPositions);
+    }
+    return otherSubjectColumnPositionsBuilder.build();
+  }
+
   private static String getCellWarning(final KnowledgeBase knowledgeBase, final int row,
       final int column, final String warning) {
     return String.format("%1$s - Cell on row %2$d, column %3$d - %4$s", knowledgeBase.getName(),
@@ -457,6 +480,10 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
     final Map<KnowledgeBase, ColumnPosition> subjectColumnPositions =
         extractSubjectColumnPositions(basesToTableAnnotations);
 
+    // Extract other subject column positions.
+    final Map<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions =
+        extractOtherSubjectColumnPositions(basesToTableAnnotations);
+
     // Merge annotations.
     final Iterator<? extends Map.Entry<? extends KnowledgeBase, ? extends TAnnotation>> entrySetIterator =
         initializeEntrySetIterator(basesToTableAnnotations);
@@ -486,8 +513,9 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
 
     Collections.sort(mergedWarnings);
 
-    return new Result(subjectColumnPositions, mergedHeaderAnnotations, mergedCellAnnotations,
-        mergedColumnRelations, mergedStatisticalAnnotations, mergedColumnProcessingAnnotations,
+    return new Result(subjectColumnPositions, otherSubjectColumnPositions,
+        mergedHeaderAnnotations, mergedCellAnnotations, mergedColumnRelations,
+        mergedStatisticalAnnotations, mergedColumnProcessingAnnotations,
         mergedWarnings);
   }
 }

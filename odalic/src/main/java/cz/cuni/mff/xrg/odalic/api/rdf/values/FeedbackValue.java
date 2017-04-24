@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import cz.cuni.mff.xrg.odalic.api.rdf.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
@@ -26,6 +27,8 @@ public final class FeedbackValue implements Serializable {
 
   private Set<KnowledgeBaseColumnPositionEntry> subjectColumnPositions;
 
+  private Set<KnowledgeBaseColumnPositionSetEntry> otherSubjectColumnPositions;
+
   private Set<ColumnIgnoreValue> columnIgnores;
 
   private Set<ColumnAmbiguityValue> columnAmbiguities;
@@ -42,6 +45,7 @@ public final class FeedbackValue implements Serializable {
 
   public FeedbackValue() {
     this.subjectColumnPositions = ImmutableSet.of();
+    this.otherSubjectColumnPositions = ImmutableSet.of();
     this.columnIgnores = ImmutableSet.of();
     this.columnAmbiguities = ImmutableSet.of();
     this.classifications = ImmutableSet.of();
@@ -56,6 +60,7 @@ public final class FeedbackValue implements Serializable {
         .map(e -> new KnowledgeBaseColumnPositionEntry(new KnowledgeBaseValue(e.getKey()),
             new ColumnPositionValue(e.getValue())))
         .collect(ImmutableSet.toImmutableSet());
+    this.otherSubjectColumnPositions = Annotations.toPositionValues(adaptee.getOtherSubjectColumnPositions());
     this.columnIgnores = adaptee.getColumnIgnores().stream().map(ColumnIgnoreValue::new)
         .collect(ImmutableSet.toImmutableSet());
     this.columnAmbiguities = adaptee.getColumnAmbiguities().stream().map(ColumnAmbiguityValue::new)
@@ -137,6 +142,14 @@ public final class FeedbackValue implements Serializable {
   }
 
   /**
+   * @return the other subject column positions
+   */
+  @RdfProperty("http://odalic.eu/internal/Feedback/otherSubjectColumnPositions")
+  public Set<KnowledgeBaseColumnPositionSetEntry> getOtherSubjectColumnPositions() {
+    return this.otherSubjectColumnPositions;
+  }
+
+  /**
    * @param ambiguities the ambiguities to set
    */
   public void setAmbiguities(final Set<? extends AmbiguityValue> ambiguities) {
@@ -210,6 +223,16 @@ public final class FeedbackValue implements Serializable {
     this.subjectColumnPositions = ImmutableSet.copyOf(subjectColumnPositions);
   }
 
+  /**
+   * @param otherSubjectColumnPositions the subject column positions to set
+   */
+  public void setOtherSubjectColumnPositions(
+      final Set<? extends KnowledgeBaseColumnPositionSetEntry> otherSubjectColumnPositions) {
+    Preconditions.checkNotNull(otherSubjectColumnPositions);
+
+    this.otherSubjectColumnPositions = ImmutableSet.copyOf(otherSubjectColumnPositions);
+  }
+
   public Feedback toFeedback() {
     final ImmutableMap.Builder<KnowledgeBase, ColumnPosition> subjectColumnPositionsMapBuilder =
         ImmutableMap.builder();
@@ -219,6 +242,7 @@ public final class FeedbackValue implements Serializable {
     }
 
     return new Feedback(subjectColumnPositionsMapBuilder.build(),
+        Annotations.toPositionDomain(this.otherSubjectColumnPositions),
         this.columnIgnores.stream().map(ColumnIgnoreValue::toColumnIgnore)
             .collect(ImmutableSet.toImmutableSet()),
         this.columnAmbiguities.stream().map(ColumnAmbiguityValue::toColumnAmbiguity)
@@ -238,6 +262,7 @@ public final class FeedbackValue implements Serializable {
   @Override
   public String toString() {
     return "FeedbackValue [subjectColumnPositions=" + this.subjectColumnPositions
+        + ", otherSubjectColumnPositions=" + this.otherSubjectColumnPositions
         + ", columnIgnores=" + this.columnIgnores + ", columnAmbiguities=" + this.columnAmbiguities
         + ", classifications=" + this.classifications + ", columnRelations=" + this.columnRelations
         + ", disambiguations=" + this.disambiguations + ", ambiguities=" + this.ambiguities

@@ -168,6 +168,7 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
         }
       }
       constraints = new Constraints(constraints.getSubjectColumnPosition(),
+          constraints.getOtherSubjectColumnPositions(),
           constraints.getColumnIgnores(), constraints.getColumnAmbiguities(),
           constraints.getClassifications(), constraints.getColumnRelations(),
           constraints.getDisambiguations(), newAmbiguities, constraints.getDataCubeComponents());

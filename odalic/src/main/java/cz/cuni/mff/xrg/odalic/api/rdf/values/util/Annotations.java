@@ -11,12 +11,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 
+import cz.cuni.mff.xrg.odalic.api.rdf.values.ColumnPositionSetWrapper;
+import cz.cuni.mff.xrg.odalic.api.rdf.values.ColumnPositionValue;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.EntityCandidateNavigableSetWrapper;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.EntityCandidateSetWrapper;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.EntityCandidateValue;
+import cz.cuni.mff.xrg.odalic.api.rdf.values.KnowledgeBaseColumnPositionSetEntry;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.KnowledgeBaseEntityCandidateNavigableSetEntry;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.KnowledgeBaseEntityCandidateSetEntry;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.KnowledgeBaseValue;
+import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
@@ -56,6 +60,19 @@ public final class Annotations {
   }
 
   /**
+   * Makes a copy of the argument.
+   * 
+   * @param chosen chosen
+   * @return copied chosen
+   */
+  public static Set<KnowledgeBaseColumnPositionSetEntry> copyPositionValues(
+      final Set<? extends KnowledgeBaseColumnPositionSetEntry> chosen) {
+    Preconditions.checkNotNull(chosen);
+
+    return ImmutableSet.copyOf(chosen);
+  }
+
+  /**
    * Converts from values to domain objects.
    * 
    * @param candidateValues values
@@ -73,6 +90,31 @@ public final class Annotations {
 
       final Set<EntityCandidate> domainValues = values.stream()
           .map(e -> new EntityCandidate(e.getEntity().toEntity(), e.getScore().toScore()))
+          .collect(ImmutableSet.toImmutableSet());
+
+      candidatesBuilder.put(base, domainValues);
+    }
+    return candidatesBuilder.build();
+  }
+
+  /**
+   * Converts from values to domain objects.
+   * 
+   * @param candidateValues values
+   * @return domain objects
+   */
+  public static Map<KnowledgeBase, Set<ColumnPosition>> toPositionDomain(
+      final Set<? extends KnowledgeBaseColumnPositionSetEntry> candidateValues) {
+    Preconditions.checkNotNull(candidateValues);
+
+    final ImmutableMap.Builder<KnowledgeBase, Set<ColumnPosition>> candidatesBuilder =
+        ImmutableMap.builder();
+    for (final KnowledgeBaseColumnPositionSetEntry entry : candidateValues) {
+      final KnowledgeBase base = entry.getBase().toKnowledgeBase();
+      final Set<ColumnPositionValue> values = entry.getSet().getValue();
+
+      final Set<ColumnPosition> domainValues = values.stream()
+          .map(e -> new ColumnPosition(e.getIndex()))
           .collect(ImmutableSet.toImmutableSet());
 
       candidatesBuilder.put(base, domainValues);
@@ -151,6 +193,30 @@ public final class Annotations {
           .map(e -> new EntityCandidateValue(e)).collect(ImmutableSet.toImmutableSet());
       chosenBuilder.add(new KnowledgeBaseEntityCandidateSetEntry(new KnowledgeBaseValue(base),
           new EntityCandidateSetWrapper(values)));
+    }
+    return chosenBuilder.build();
+  }
+
+  /**
+   * Converts from domain objects to values.
+   * 
+   * @param chosen domain objects
+   * @return values
+   */
+  public static Set<KnowledgeBaseColumnPositionSetEntry> toPositionValues(
+      final Map<KnowledgeBase, Set<ColumnPosition>> chosen) {
+    Preconditions.checkNotNull(chosen);
+
+    final ImmutableSet.Builder<KnowledgeBaseColumnPositionSetEntry> chosenBuilder =
+        ImmutableSet.builder();
+    for (final Map.Entry<KnowledgeBase, Set<ColumnPosition>> entry : chosen.entrySet()) {
+      final KnowledgeBase base = entry.getKey();
+      final Set<ColumnPosition> baseChosen = entry.getValue();
+
+      final Set<ColumnPositionValue> values = baseChosen.stream()
+          .map(e -> new ColumnPositionValue(e)).collect(ImmutableSet.toImmutableSet());
+      chosenBuilder.add(new KnowledgeBaseColumnPositionSetEntry(new KnowledgeBaseValue(base),
+          new ColumnPositionSetWrapper(values)));
     }
     return chosenBuilder.build();
   }

@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
 import cz.cuni.mff.xrg.odalic.entities.PrefixMappingEntitiesFactory;
@@ -194,6 +195,13 @@ public class CoreExecutionBatch {
       HashMap<KnowledgeBase, ColumnPosition> subjectColumns = new HashMap<>();
       subjectColumns.put(new KnowledgeBase("DBpedia Clone"), new ColumnPosition(0));
 
+      // other subject columns example
+      HashMap<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumns = new HashMap<>();
+      HashSet<ColumnPosition> otherSubjectPositions = new HashSet<>();
+      otherSubjectPositions.add(new ColumnPosition(1));
+      otherSubjectPositions.add(new ColumnPosition(2));
+      otherSubjectColumns.put(new KnowledgeBase("DBpedia Clone"), otherSubjectPositions);
+
       // classifications example
       HashSet<EntityCandidate> candidatesClassification = new HashSet<>();
       candidatesClassification.add(
@@ -259,12 +267,12 @@ public class CoreExecutionBatch {
 
       /**/
       // statistical data feedback example
-      return new Feedback(ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(),
+      return new Feedback(ImmutableMap.of(), ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(),
           ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), dataCubeComponents);
       /*/
 
       // construction example
-      return new Feedback(subjectColumns, columnIgnores, columnAmbiguities, classifications,
+      return new Feedback(subjectColumns, otherSubjectColumns, columnIgnores, columnAmbiguities, classifications,
           relations, disambiguations, ambiguities, ImmutableSet.of());
       /**/
     }
