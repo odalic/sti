@@ -85,6 +85,7 @@ public class TAnnotation {
   protected int rows;
   protected int cols;
   protected int subjectColumn;
+  protected Set<Integer> otherSubjectColumns;
   protected ObjectMatrix1D headerAnnotations; // each object in the matrix is an array of
                                               // TColumnHeaderAnnotation
   protected ObjectMatrix2D contentAnnotations; // each object in the matrix is an array of
@@ -123,6 +124,7 @@ public class TAnnotation {
     this.columncolumnRelations = new HashMap<>();
     this.statisticalAnnotations = new SparseObjectMatrix1D(cols);
     this.columnProcessingAnnotations = new SparseObjectMatrix1D(cols);
+    this.otherSubjectColumns = new HashSet<>();
   }
 
   public void addCellCellRelation(final TCellCellRelationAnotation toAdd) {
@@ -331,6 +333,10 @@ public class TAnnotation {
     return this.subjectColumn;
   }
 
+  public Set<Integer> getOtherSubjectColumns() {
+    return this.otherSubjectColumns;
+  }
+
   public java.util.List<TCellAnnotation> getWinningContentCellAnnotation(final int row,
       final int col) {
     final TCellAnnotation[] annotations = getContentCellAnnotations(row, col);
@@ -408,6 +414,10 @@ public class TAnnotation {
     this.columncolumnRelations.clear();
   }
 
+  public void resetOtherSubjectColumns() {
+    this.otherSubjectColumns.clear();
+  }
+
   public void setColumnProcessingAnnotation(final int col,
       final TColumnProcessingAnnotation annotation) {
     this.columnProcessingAnnotations.set(col, annotation);
@@ -442,5 +452,9 @@ public class TAnnotation {
 
   public void setSubjectColumn(final int subjectColumn) {
     this.subjectColumn = subjectColumn;
+  }
+
+  public void addOtherSubjectColumn(final int otherSubjectColumn) {
+    this.otherSubjectColumns.add(otherSubjectColumn);
   }
 }

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
+import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 import uk.ac.shef.dcs.sti.core.model.RelationColumns;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TCellAnnotation;
@@ -78,6 +79,13 @@ public class RELATIONENUMERATION {
       tableAnnotations = winningSolution;
     }
 
+    // relations with other subject columns
+    for (ColumnPosition otherSubjectCol : constraints.getOtherSubjectColumnPositions()) {
+      LOG.info(">>\t\t Let other subject column=" + otherSubjectCol.getIndex());
+      relationEnumerator.runRelationEnumeration(tableAnnotations, table,
+          otherSubjectCol.getIndex(), constraints);
+      tableAnnotations.addOtherSubjectColumn(otherSubjectCol.getIndex());
+    }
 
     if (STIConstantProperty.REVISE_RELATION_ANNOTATION_BY_DC && (update != null)) {
       final List<String> domain_rep =
