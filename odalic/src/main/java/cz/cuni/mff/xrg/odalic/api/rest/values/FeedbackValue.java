@@ -39,6 +39,8 @@ public final class FeedbackValue implements Serializable {
 
   private Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
 
+  private Map<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions;
+
   private Set<ColumnIgnore> columnIgnores;
 
   private Set<ColumnAmbiguity> columnAmbiguities;
@@ -55,6 +57,7 @@ public final class FeedbackValue implements Serializable {
 
   public FeedbackValue() {
     this.subjectColumnPositions = ImmutableMap.of();
+    this.otherSubjectColumnPositions = ImmutableMap.of();
     this.columnIgnores = ImmutableSet.of();
     this.columnAmbiguities = ImmutableSet.of();
     this.classifications = ImmutableSet.of();
@@ -66,6 +69,7 @@ public final class FeedbackValue implements Serializable {
 
   public FeedbackValue(final Feedback adaptee) {
     this.subjectColumnPositions = adaptee.getSubjectColumnPositions();
+    this.otherSubjectColumnPositions = adaptee.getOtherSubjectColumnPositions();
     this.columnIgnores = adaptee.getColumnIgnores();
     this.columnAmbiguities = adaptee.getColumnAmbiguities();
     this.classifications = adaptee.getClassifications();
@@ -142,6 +146,16 @@ public final class FeedbackValue implements Serializable {
   }
 
   /**
+   * @return the other subject column positions
+   */
+  @XmlElement
+  @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
+  @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
+  public Map<KnowledgeBase, Set<ColumnPosition>> getOtherSubjectColumnPositions() {
+    return this.otherSubjectColumnPositions;
+  }
+
+  /**
    * @param ambiguities the ambiguities to set
    */
   public void setAmbiguities(final Set<? extends Ambiguity> ambiguities) {
@@ -214,9 +228,20 @@ public final class FeedbackValue implements Serializable {
     this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
   }
 
+  /**
+   * @param otherSubjectColumnPositions the other subject column positions to set
+   */
+  public void setOtherSubjectColumnPositions(
+      final Map<? extends KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions) {
+    Preconditions.checkNotNull(otherSubjectColumnPositions);
+
+    this.otherSubjectColumnPositions = ImmutableMap.copyOf(otherSubjectColumnPositions);
+  }
+
   @Override
   public String toString() {
     return "FeedbackValue [subjectColumnPositions=" + this.subjectColumnPositions
+        + ", otherSubjectColumnPositions=" + this.otherSubjectColumnPositions
         + ", columnIgnores=" + this.columnIgnores + ", columnAmbiguities=" + this.columnAmbiguities
         + ", classifications=" + this.classifications + ", columnRelations=" + this.columnRelations
         + ", disambiguations=" + this.disambiguations + ", ambiguities=" + this.ambiguities
