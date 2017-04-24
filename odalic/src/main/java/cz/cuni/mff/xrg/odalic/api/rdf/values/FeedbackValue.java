@@ -31,6 +31,8 @@ public final class FeedbackValue implements Serializable {
 
   private Set<ColumnIgnoreValue> columnIgnores;
 
+  private Set<ColumnCompulsoryValue> columnCompulsory;
+
   private Set<ColumnAmbiguityValue> columnAmbiguities;
 
   private Set<ClassificationValue> classifications;
@@ -47,6 +49,7 @@ public final class FeedbackValue implements Serializable {
     this.subjectColumnPositions = ImmutableSet.of();
     this.otherSubjectColumnPositions = ImmutableSet.of();
     this.columnIgnores = ImmutableSet.of();
+    this.columnCompulsory = ImmutableSet.of();
     this.columnAmbiguities = ImmutableSet.of();
     this.classifications = ImmutableSet.of();
     this.columnRelations = ImmutableSet.of();
@@ -62,6 +65,8 @@ public final class FeedbackValue implements Serializable {
         .collect(ImmutableSet.toImmutableSet());
     this.otherSubjectColumnPositions = Annotations.toPositionValues(adaptee.getOtherSubjectColumnPositions());
     this.columnIgnores = adaptee.getColumnIgnores().stream().map(ColumnIgnoreValue::new)
+        .collect(ImmutableSet.toImmutableSet());
+    this.columnCompulsory = adaptee.getColumnCompulsory().stream().map(ColumnCompulsoryValue::new)
         .collect(ImmutableSet.toImmutableSet());
     this.columnAmbiguities = adaptee.getColumnAmbiguities().stream().map(ColumnAmbiguityValue::new)
         .collect(ImmutableSet.toImmutableSet());
@@ -107,6 +112,14 @@ public final class FeedbackValue implements Serializable {
   @RdfProperty("http://odalic.eu/internal/Feedback/columnIgnore")
   public Set<ColumnIgnoreValue> getColumnIgnores() {
     return this.columnIgnores;
+  }
+
+  /**
+   * @return the column compulsory
+   */
+  @RdfProperty("http://odalic.eu/internal/Feedback/columnCompulsory")
+  public Set<ColumnCompulsoryValue> getColumnCompulsory() {
+    return this.columnCompulsory;
   }
 
   /**
@@ -186,6 +199,15 @@ public final class FeedbackValue implements Serializable {
   }
 
   /**
+   * @param columnCompulsory the column compulsory to set
+   */
+  public void setColumnCompulsory(final Set<? extends ColumnCompulsoryValue> columnCompulsory) {
+    Preconditions.checkNotNull(columnCompulsory);
+
+    this.columnCompulsory = ImmutableSet.copyOf(columnCompulsory);
+  }
+
+  /**
    * @param columnRelations the column relations to set
    */
   public void setColumnRelations(final Set<? extends ColumnRelationValue> columnRelations) {
@@ -245,6 +267,8 @@ public final class FeedbackValue implements Serializable {
         Annotations.toPositionDomain(this.otherSubjectColumnPositions),
         this.columnIgnores.stream().map(ColumnIgnoreValue::toColumnIgnore)
             .collect(ImmutableSet.toImmutableSet()),
+        this.columnCompulsory.stream().map(ColumnCompulsoryValue::toColumnCompulsory)
+            .collect(ImmutableSet.toImmutableSet()),
         this.columnAmbiguities.stream().map(ColumnAmbiguityValue::toColumnAmbiguity)
             .collect(ImmutableSet.toImmutableSet()),
         this.classifications.stream().map(ClassificationValue::toClassification)
@@ -259,13 +283,16 @@ public final class FeedbackValue implements Serializable {
             .collect(ImmutableSet.toImmutableSet()));
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   @Override
   public String toString() {
-    return "FeedbackValue [subjectColumnPositions=" + this.subjectColumnPositions
-        + ", otherSubjectColumnPositions=" + this.otherSubjectColumnPositions
-        + ", columnIgnores=" + this.columnIgnores + ", columnAmbiguities=" + this.columnAmbiguities
-        + ", classifications=" + this.classifications + ", columnRelations=" + this.columnRelations
-        + ", disambiguations=" + this.disambiguations + ", ambiguities=" + this.ambiguities
-        + ", dataCubeComponents=" + this.dataCubeComponents + "]";
+    return "FeedbackValue [subjectColumnPositions=" + subjectColumnPositions
+        + ", otherSubjectColumnPositions=" + otherSubjectColumnPositions + ", columnIgnores="
+        + columnIgnores + ", columnCompulsory=" + columnCompulsory + ", columnAmbiguities="
+        + columnAmbiguities + ", classifications=" + classifications + ", columnRelations="
+        + columnRelations + ", disambiguations=" + disambiguations + ", ambiguities=" + ambiguities
+        + ", dataCubeComponents=" + dataCubeComponents + "]";
   }
 }

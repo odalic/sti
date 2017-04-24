@@ -28,6 +28,7 @@ public final class FeedbackAdapter extends XmlAdapter<FeedbackValue, Feedback> {
             value.getOtherSubjectColumnPositions() == null ? ImmutableMap.of()
                 : value.getOtherSubjectColumnPositions(),
         value.getColumnIgnores() == null ? ImmutableSet.of() : value.getColumnIgnores(),
+        value.getColumnCompulsory() == null ? ImmutableSet.of() : value.getColumnCompulsory(),
         value.getColumnAmbiguities() == null ? ImmutableSet.of() : value.getColumnAmbiguities(),
         value.getClassifications() == null ? ImmutableSet.of() : value.getClassifications(),
         value.getColumnRelations() == null ? ImmutableSet.of() : value.getColumnRelations(),

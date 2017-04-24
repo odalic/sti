@@ -82,6 +82,11 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
     return new uk.ac.shef.dcs.sti.core.extension.constraints.ColumnIgnore(convert(e.getPosition()));
   }
 
+  private static uk.ac.shef.dcs.sti.core.extension.constraints.ColumnCompulsory convert(
+      final ColumnCompulsory e) {
+    return new uk.ac.shef.dcs.sti.core.extension.constraints.ColumnCompulsory(convert(e.getPosition()));
+  }
+
   private static uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition convert(
       final ColumnPosition columnPosition) {
     return new uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition(
@@ -249,6 +254,12 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
         .collect(Collectors.toSet());
   }
 
+  private static Set<uk.ac.shef.dcs.sti.core.extension.constraints.ColumnCompulsory> convertCompulsory(
+      final Set<? extends ColumnCompulsory> set) {
+    return set.stream().map(DefaultFeedbackToConstraintsAdapter::convert)
+        .collect(Collectors.toSet());
+  }
+
   private static Set<uk.ac.shef.dcs.sti.core.extension.constraints.ColumnRelation> convertRelations(
       final Set<? extends ColumnRelation> set, final KnowledgeBase base) {
     return set.stream().map(e -> convert(e, base)).filter(e -> e != null)
@@ -286,6 +297,7 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
     return new Constraints(convertSubjectColumn(feedback, base),
         convertOtherSubjectColumns(feedback, base),
         convertIgnores(feedback.getColumnIgnores()),
+        convertCompulsory(feedback.getColumnCompulsory()),
         convertColumnAmbiguities(feedback.getColumnAmbiguities()),
         convertClassifications(feedback.getClassifications(), base),
         convertRelations(feedback.getColumnRelations(), base),

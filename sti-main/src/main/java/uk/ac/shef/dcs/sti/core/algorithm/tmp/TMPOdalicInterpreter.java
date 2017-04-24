@@ -128,6 +128,11 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
         getIgnoreColumns().stream().mapToInt(e -> e.intValue()).sorted().toArray();
     this.literalColumnTagger.setIgnoreColumns(ignoreColumnsArray);
 
+    final Set<Integer> mustdoCols = constraints.getColumnCompulsory().stream()
+        .map(e -> e.getPosition().getIndex()).collect(Collectors.toSet());
+
+    setMustdoColumns(mustdoCols);
+
     try {
       final TAnnotation tableAnnotations = new TAnnotation(table.getNumRows(), table.getNumCols());
 
@@ -140,9 +145,10 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
 
       // set column processing annotations:
       // 1) when the column is ignored, set processing type to IGNORED
-      // 2) when the column's most frequent data type is Named entity,
+      // 2) when the column is compulsory, set processing type to COMPULSORY
+      // 3) when the column's most frequent data type is Named entity,
       // set processing type to NAMED_ENTITY
-      // 3) otherwise (i.e. the column does not contain Named entity as the most frequent data
+      // 4) otherwise (i.e. the column does not contain Named entity as the most frequent data
       // type),
       // set processing type to NON_NAMED_ENTITY and in this case
       // we will not disambiguate (and so classify) them, except for
@@ -152,6 +158,9 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
         if (getIgnoreColumns().contains(col)) {
           tableAnnotations.setColumnProcessingAnnotation(col,
               new TColumnProcessingAnnotation(TColumnProcessingType.IGNORED));
+        } else if (isCompulsoryColumn(col)) {
+          tableAnnotations.setColumnProcessingAnnotation(col,
+              new TColumnProcessingAnnotation(TColumnProcessingType.COMPULSORY));
         } else if (table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType()
             .equals(DataTypeClassifier.DataType.NAMED_ENTITY)) {
           tableAnnotations.setColumnProcessingAnnotation(col,
@@ -169,7 +178,8 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       }
       constraints = new Constraints(constraints.getSubjectColumnPosition(),
           constraints.getOtherSubjectColumnPositions(),
-          constraints.getColumnIgnores(), constraints.getColumnAmbiguities(),
+          constraints.getColumnIgnores(), constraints.getColumnCompulsory(),
+          constraints.getColumnAmbiguities(),
           constraints.getClassifications(), constraints.getColumnRelations(),
           constraints.getDisambiguations(), newAmbiguities, constraints.getDataCubeComponents());
 

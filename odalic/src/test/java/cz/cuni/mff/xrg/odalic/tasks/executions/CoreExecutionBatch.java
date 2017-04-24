@@ -29,6 +29,7 @@ import cz.cuni.mff.xrg.odalic.entities.PrefixMappingEntitiesFactory;
 import cz.cuni.mff.xrg.odalic.feedbacks.Ambiguity;
 import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnAmbiguity;
+import cz.cuni.mff.xrg.odalic.feedbacks.ColumnCompulsory;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnIgnore;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnRelation;
 import cz.cuni.mff.xrg.odalic.feedbacks.DataCubeComponent;
@@ -244,6 +245,10 @@ public class CoreExecutionBatch {
       HashSet<ColumnIgnore> columnIgnores = new HashSet<>();
       columnIgnores.add(new ColumnIgnore(new ColumnPosition(3)));
 
+      // compulsory columns example
+      HashSet<ColumnCompulsory> columnCompulsory = new HashSet<>();
+      columnCompulsory.add(new ColumnCompulsory(new ColumnPosition(2)));
+
       // column ambiguities example
       HashSet<ColumnAmbiguity> columnAmbiguities = new HashSet<>();
       columnAmbiguities.add(new ColumnAmbiguity(new ColumnPosition(4)));
@@ -265,16 +270,9 @@ public class CoreExecutionBatch {
       dataCubeComponents.add(createDCC(8, ComponentTypeValue.MEASURE,
           "http://dbpedia.org/ontology/year", "Year"));
 
-      /**/
       // statistical data feedback example
       return new Feedback(ImmutableMap.of(), ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(),
-          ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), dataCubeComponents);
-      /*/
-
-      // construction example
-      return new Feedback(subjectColumns, otherSubjectColumns, columnIgnores, columnAmbiguities, classifications,
-          relations, disambiguations, ambiguities, ImmutableSet.of());
-      /**/
+          ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), dataCubeComponents);
     }
   }
 

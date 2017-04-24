@@ -281,6 +281,9 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
           case IGNORED:
             processingTypeValue = ColumnProcessingTypeValue.IGNORED;
             break;
+          case COMPULSORY:
+            processingTypeValue = ColumnProcessingTypeValue.COMPULSORY;
+            break;
           default:
             processingTypeValue = ColumnProcessingTypeValue.NAMED_ENTITY;
             break;
