@@ -20,7 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
-import uk.ac.shef.dcs.kbproxy.KBProxy;
+import uk.ac.shef.dcs.kbproxy.CachingKnowledgeBaseProxy;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseInterface;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
@@ -151,10 +152,10 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       this.properties.load(new FileInputStream(this.propertyFilePath));
 
       // object to fetch things from KB
-      final Map<String, KBProxy> kbProxyInstances = this.knowledgeBaseProxyFactory.getKBProxies();
+      final Map<String, CachingKnowledgeBaseProxy> kbProxyInstances = this.knowledgeBaseProxyFactory.getKBProxies();
 
       this.interpreters = new HashMap<>();
-      for (final KBProxy kbProxy : kbProxyInstances.values()) {
+      for (final KnowledgeBaseInterface kbProxy : kbProxyInstances.values()) {
         final SubjectColumnDetector subcolDetector = initSubColDetector(kbProxy);
 
         final TCellDisambiguator disambiguator = initDisambiguator(kbProxy);
@@ -183,7 +184,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     }
   }
 
-  private TCellDisambiguator initDisambiguator(final KBProxy kbProxy) throws STIException {
+  private TCellDisambiguator initDisambiguator(final KnowledgeBaseInterface kbProxy) throws STIException {
     try {
       return new TCellDisambiguator(kbProxy,
           new TMPEntityScorer(getStopwords(), STIConstantProperty.SCORER_ENTITY_CONTEXT_WEIGHT,
@@ -195,7 +196,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     }
   }
 
-  private LEARNING initLearning(final KBProxy kbProxy, final TContentCellRanker selector,
+  private LEARNING initLearning(final KnowledgeBaseInterface kbProxy, final TContentCellRanker selector,
       final TCellDisambiguator disambiguator, final TColumnClassifier classifier)
       throws STIException {
     logger.info("Initializing LEARNING components ...");
@@ -235,7 +236,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     }
   }
 
-  private SubjectColumnDetector initSubColDetector(final KBProxy kbProxy) throws STIException {
+  private SubjectColumnDetector initSubColDetector(final KnowledgeBaseInterface kbProxy) throws STIException {
     logger.info("Initializing SUBJECT COLUMN DETECTION components ...");
     try {
       return new SubjectColumnDetector(new TContentTContentRowRankerImpl(),
@@ -255,7 +256,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     }
   }
 
-  private UPDATE initUpdate(final KBProxy kbProxy, final TContentCellRanker selector,
+  private UPDATE initUpdate(final KnowledgeBaseInterface kbProxy, final TContentCellRanker selector,
       final TCellDisambiguator disambiguator, final TColumnClassifier classifier)
       throws STIException {
     logger.info("Initializing UPDATE components ...");

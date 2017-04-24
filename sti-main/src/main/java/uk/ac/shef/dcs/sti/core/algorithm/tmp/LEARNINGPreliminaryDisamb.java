@@ -9,8 +9,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyResult;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseInterface;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
@@ -29,10 +29,10 @@ public class LEARNINGPreliminaryDisamb {
   private static final Logger LOG =
       LoggerFactory.getLogger(LEARNINGPreliminaryDisamb.class.getName());
   private final TCellDisambiguator disambiguator;
-  private final KBProxy kbSearch;
+  private final KnowledgeBaseInterface kbSearch;
   private final TColumnClassifier classifier;
 
-  public LEARNINGPreliminaryDisamb(final KBProxy kbSearch, final TCellDisambiguator disambiguator,
+  public LEARNINGPreliminaryDisamb(final KnowledgeBaseInterface kbSearch, final TCellDisambiguator disambiguator,
       final TColumnClassifier classifier) {
     this.kbSearch = kbSearch;
     this.disambiguator = disambiguator;

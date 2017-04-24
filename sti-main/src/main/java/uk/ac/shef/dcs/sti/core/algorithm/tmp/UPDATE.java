@@ -11,9 +11,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.kbproxy.KBProxyResult;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseInterface;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.STIException;
@@ -37,13 +37,13 @@ public class UPDATE {
 
   private static final Logger LOG = LoggerFactory.getLogger(UPDATE.class.getName());
   private final TCellDisambiguator disambiguator;
-  private final KBProxy kbSearch;
+  private final KnowledgeBaseInterface kbSearch;
   private final TColumnClassifier classifier;
   private final String nlpResourcesDir;
   private final TContentCellRanker selector;
   private final List<String> stopWords;
 
-  public UPDATE(final TContentCellRanker selector, final KBProxy kbSearch,
+  public UPDATE(final TContentCellRanker selector, final KnowledgeBaseInterface kbSearch,
       final TCellDisambiguator disambiguator, final TColumnClassifier classifier,
       final List<String> stopwords, final String nlpResourcesDir) {
     this.selector = selector;

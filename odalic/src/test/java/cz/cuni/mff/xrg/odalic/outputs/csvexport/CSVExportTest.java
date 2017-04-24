@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.collect.ImmutableSet;
 
-import cz.cuni.mff.xrg.odalic.bases.DefaultKnowledgeBaseBuilder;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
@@ -192,7 +192,7 @@ public class CSVExportTest {
     groupBuilder.setId("DummyGroup");
     groupBuilder.setOwner(owner);
     
-    final KnowledgeBaseBuilder builder = new DefaultKnowledgeBaseBuilder();
+    final KnowledgeBaseBuilder builder = new KnowledgeBaseBuilder();
     
     builder.setName(name);
     builder.setOwner(owner);

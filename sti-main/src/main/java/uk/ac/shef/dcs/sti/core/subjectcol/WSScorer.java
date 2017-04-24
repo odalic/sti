@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.sti.nlp.TermFreqCounter;
-import uk.ac.shef.dcs.util.SolrCache;
+import uk.ac.shef.dcs.util.Cache;
 import uk.ac.shef.dcs.websearch.WebSearch;
 import uk.ac.shef.dcs.websearch.WebSearchResultDoc;
 
@@ -29,14 +29,14 @@ public class WSScorer {
                                                            // higher weight
   protected static final boolean WORD_ORDER_MATTERS = false;
   protected static final Logger LOG = LoggerFactory.getLogger(WSScorer.class.getName());
-  protected SolrCache cache;
+  protected Cache cache;
   protected WebSearch searcher;
   protected TermFreqCounter counter = new TermFreqCounter();
 
   protected List<String> stopWords;
 
 
-  public WSScorer(final SolrCache cache, final WebSearch searcher, final List<String> stopWords) {
+  public WSScorer(final Cache cache, final WebSearch searcher, final List<String> stopWords) {
     this.cache = cache;
     this.searcher = searcher;
     this.stopWords = stopWords;

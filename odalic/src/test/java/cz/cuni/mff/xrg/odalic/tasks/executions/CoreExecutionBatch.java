@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
-import cz.cuni.mff.xrg.odalic.bases.DefaultKnowledgeBaseBuilder;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
 import cz.cuni.mff.xrg.odalic.entities.PrefixMappingEntitiesFactory;
@@ -293,7 +293,7 @@ public class CoreExecutionBatch {
     groupBuilder.setId("DummyGroup");
     groupBuilder.setOwner(owner);
     
-    final KnowledgeBaseBuilder builder = new DefaultKnowledgeBaseBuilder();
+    final KnowledgeBaseBuilder builder = new KnowledgeBaseBuilder();
     
     builder.setName(name);
     builder.setOwner(owner);

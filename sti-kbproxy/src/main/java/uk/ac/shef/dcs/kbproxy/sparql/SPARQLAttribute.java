@@ -1,6 +1,6 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
-import uk.ac.shef.dcs.kbproxy.KBDefinition;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseDefinition;
 import uk.ac.shef.dcs.kbproxy.KBProxyUtils;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 
@@ -19,7 +19,7 @@ public class SPARQLAttribute extends Attribute {
   }
 
   @Override
-  public boolean isAlias(KBDefinition definition) {
+  public boolean isAlias(KnowledgeBaseDefinition definition) {
     if (definition instanceof SPARQLDefinition) {
       return KBProxyUtils.contains(((SPARQLDefinition)definition).getStructurePredicateLabel(), getRelationURI());
     }
@@ -28,7 +28,7 @@ public class SPARQLAttribute extends Attribute {
   }
 
   @Override
-  public boolean isDescription(KBDefinition definition) {
+  public boolean isDescription(KnowledgeBaseDefinition definition) {
     if (definition instanceof SPARQLDefinition) {
       return KBProxyUtils.contains(((SPARQLDefinition)definition).getStructurePredicateDescription(), getRelationURI());
     }

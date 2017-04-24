@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableSet;
 import cz.cuni.mff.xrg.odalic.api.rest.values.ConfigurationValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.CredentialsValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.TaskValue;
-import cz.cuni.mff.xrg.odalic.bases.DefaultKnowledgeBaseBuilder;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
@@ -156,7 +156,7 @@ public class TaskCreateTest {
     groupBuilder.setId("DummyGroup");
     groupBuilder.setOwner(owner);
     
-    final KnowledgeBaseBuilder builder = new DefaultKnowledgeBaseBuilder();
+    final KnowledgeBaseBuilder builder = new KnowledgeBaseBuilder();
     
     builder.setName(name);
     builder.setOwner(owner);

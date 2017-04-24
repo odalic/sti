@@ -31,8 +31,8 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
-import uk.ac.shef.dcs.kbproxy.KBProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseInterface;
 
 /**
  * The default {@link ResultToAnnotatedTableAdapter} implementation.
@@ -97,7 +97,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
   private List<String> headers;
   private boolean[] isDisambiguated;
 
-  private KBProxy kbProxy;
+  private KnowledgeBaseInterface kbProxy;
   private Map<String, String> prefixes;
 
   @Autowired

@@ -10,6 +10,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 
+import cz.cuni.mff.xrg.odalic.bases.types.SparqlKnowledgeBaseDefinitionFactory;
+
 /**
  * Default {@link AdvancedBaseTypesService} implementation.
  *
@@ -22,14 +24,18 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
   
   private final Map<? extends String, ? extends AdvancedBaseType> types;
   
+  private final Map<? extends AdvancedBaseType, ? extends KnowledgeBaseDefinitionFactory<?>> typesToDefinitionFactories;
+  
   public MemoryOnlyAdvancedBaseTypesService() {
-    this(ImmutableMap.of(SPARQL_BASE_TYPE_NAME, SPARQL_BASE_TYPE));
+    this(ImmutableMap.of(SPARQL_BASE_TYPE_NAME, SPARQL_BASE_TYPE), ImmutableMap.of(SPARQL_BASE_TYPE, new SparqlKnowledgeBaseDefinitionFactory()));
   }
   
-  private MemoryOnlyAdvancedBaseTypesService(final Map<? extends String, ? extends AdvancedBaseType> types) {
+  private MemoryOnlyAdvancedBaseTypesService(final Map<? extends String, ? extends AdvancedBaseType> types, final Map<? extends AdvancedBaseType, ? extends KnowledgeBaseDefinitionFactory<?>> typesToDefinitionFactories) {
     Preconditions.checkNotNull(types);
+    Preconditions.checkNotNull(typesToDefinitionFactories);
     
     this.types = types;
+    this.typesToDefinitionFactories = typesToDefinitionFactories;
   }
   
   @Override
@@ -53,4 +59,6 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
 
     return this.types.get(name);
   }
+  
+  KnowledgeBase
 }

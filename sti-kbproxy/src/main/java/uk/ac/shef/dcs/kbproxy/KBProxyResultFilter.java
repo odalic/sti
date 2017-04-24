@@ -4,14 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
@@ -24,12 +25,77 @@ import uk.ac.shef.dcs.kbproxy.model.Clazz;
  * or entity, depending on the actual implementing classes.
  */
 public abstract class KBProxyResultFilter {
-  protected static final String LABEL_INVALID_CLAZZ = "!invalid_clazz";
-  protected static final String LABEL_INVALID_ATTRIBUTE = "!invalid_attribute";
-  protected Map<String, Set<String>> stopLists = new HashMap<>();
+  
+  private static final String LABEL_INVALID_CLAZZ = "!invalid_clazz";
+  private static final String LABEL_INVALID_ATTRIBUTE = "!invalid_attribute";
+  
+  private final Set<String> stoppedClasses;
+  private final Set<String> stoppedAttributes;
 
+  public KBProxyResultFilter(final Set<? extends String> stoppedClasses, final Set<? extends String> stoppedAttributes) throws IOException {
+    Preconditions.checkNotNull(stoppedClasses);
+    Preconditions.checkNotNull(stoppedAttributes);
+    
+    this.stoppedClasses = ImmutableSet.copyOf(stoppedClasses);
+    this.stoppedAttributes = ImmutableSet.copyOf(stoppedAttributes);
+  }
+  
+
+  /**
+   * An external file defining class/relation/entities to be filtered. the file must correspond to
+   * certain format. See 'resources/kbstoplist.txt' for explanation
+   *
+   * It loads all given classes/relations/entities to a Map, which contains as the key for the set
+   * of stop wrods the label obtained from the file (from the line starting with !). So there are
+   * different stop words for attributes and classes, e.g.
+   *
+   * @param stopListsFile
+   * 
+   * @throws IOException
+   */
   public KBProxyResultFilter(final String stopListsFile) throws IOException {
-    loadStopLists(stopListsFile);
+    final ImmutableSet.Builder<String> stoppedClassesBuilder = ImmutableSet.builder();
+    final ImmutableSet.Builder<String> stoppedAttributesBuilder = ImmutableSet.builder();
+    
+    final LineIterator it = FileUtils.lineIterator(new File(stopListsFile));
+    String label = "";
+    Set<String> elements = new HashSet<>();
+    while (it.hasNext()) {
+      final String line = it.nextLine().trim();
+
+      if ((line.length() < 1) || line.startsWith("#")) {
+        continue;
+      }
+
+      if (line.startsWith("!")) {
+        if (elements.size() > 0) {
+          if (label.equals(LABEL_INVALID_CLAZZ)) {
+            stoppedClassesBuilder.addAll(elements);
+          } else if (label.equals(LABEL_INVALID_ATTRIBUTE)) {
+            stoppedAttributesBuilder.addAll(elements);
+          } else {
+            throw new IllegalArgumentException("Unknown stop list label kind!");
+          }
+        }
+
+        elements = new HashSet<>();
+        label = line;
+      } else {
+        elements.add(line);
+      }
+    }
+    if (elements.size() != 0) {
+      if (label.equals(LABEL_INVALID_CLAZZ)) {
+        stoppedClassesBuilder.addAll(elements);
+      } else if (label.equals(LABEL_INVALID_ATTRIBUTE)) {
+        stoppedAttributesBuilder.addAll(elements);
+      } else {
+        throw new IllegalArgumentException("Unknown stop list label kind!");
+      }
+    }
+    
+    this.stoppedClasses = stoppedClassesBuilder.build();
+    this.stoppedAttributes = stoppedAttributesBuilder.build();
   }
 
   /**
@@ -65,8 +131,7 @@ public abstract class KBProxyResultFilter {
    * @return true if the attribute is valid
    */
   protected boolean isValidAttribute(final Attribute attribute) {
-
-    final Set<String> stop = this.stopLists.get(LABEL_INVALID_ATTRIBUTE);
+    final Set<String> stop = this.stoppedAttributes;
     final String relation = attribute.getRelationURI();
     if (stop != null) {
       for (final String s : stop) {
@@ -85,8 +150,7 @@ public abstract class KBProxyResultFilter {
    * @return true if the class is valid
    */
   protected boolean isValidClazz(final Clazz c) {
-
-    final Set<String> stop = this.stopLists.get(LABEL_INVALID_CLAZZ);
+    final Set<String> stop = this.stoppedClasses;
     if (stop == null) {
       return true;
     }
@@ -99,44 +163,4 @@ public abstract class KBProxyResultFilter {
 
     return true;
   }
-
-
-  /**
-   * An external file defining class/relation/entities to be filtered. the file must correspond to
-   * certain format. See 'resources/kbstoplist.txt' for explanation
-   *
-   * It loads all given classes/relations/entities to a Map, which contains as the key for the set
-   * of stop wrods the label obtained from the file (from the line starting with !). So there are
-   * different stop words for attributes and classes, e.g.
-   *
-   * @param stopListsFile
-   * @throws IOException
-   */
-  protected void loadStopLists(final String stopListsFile) throws IOException {
-    final LineIterator it = FileUtils.lineIterator(new File(stopListsFile));
-    String label = "";
-    Set<String> elements = new HashSet<>();
-    while (it.hasNext()) {
-      final String line = it.nextLine().trim();
-
-      if ((line.length() < 1) || line.startsWith("#")) {
-        continue;
-      }
-
-      if (line.startsWith("!")) {
-        if (elements.size() > 0) {
-          this.stopLists.put(label, elements);
-        }
-
-        elements = new HashSet<>();
-        label = line;
-      } else {
-        elements.add(line);
-      }
-    }
-    if (elements.size() != 0) {
-      this.stopLists.put(label, elements);
-    }
-  }
-
 }

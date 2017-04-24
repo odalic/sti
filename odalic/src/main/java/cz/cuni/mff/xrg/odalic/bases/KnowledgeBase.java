@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.bases;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -46,9 +47,9 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   private final Set<Group> selectedGroups;
   
   private final boolean insertEnabled;
-  private final String insertGraph;
-  private final String userClassesPrefix;
-  private final String userResourcesPrefix;
+  private final URI insertGraph;
+  private final URI userClassesPrefix;
+  private final URI userResourcesPrefix;
   
   private final AdvancedBaseType advancedType;
   private final Map<String, String> advancedProperties;
@@ -68,8 +69,8 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   public KnowledgeBase(final User owner, final String name, final URL endpoint, final String description,
       final TextSearchingMethod textSearchingMethod, final String languageTag,
       final List<? extends String> skippedAttributes, final List<? extends String> skippedClasses,
-      final Set<? extends Group> selectedGroups, final boolean insertEnabled, final String insertGraph,
-      final String userClassesPrefix, final String userResourcesPrefix,
+      final Set<? extends Group> selectedGroups, final boolean insertEnabled, final URI insertGraph,
+      final URI userClassesPrefix, final URI userResourcesPrefix,
       final AdvancedBaseType advancedType, final Map<? extends String, ? extends String> advancedProperties) {
     Preconditions.checkNotNull(owner);
     Preconditions.checkNotNull(name);
@@ -164,17 +165,17 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   }
 
   @Nullable
-  public String getInsertGraph() {
+  public URI getInsertGraph() {
     return insertGraph;
   }
 
   @Nullable
-  public String getUserClassesPrefix() {
+  public URI getUserClassesPrefix() {
     return userClassesPrefix;
   }
 
   @Nullable
-  public String getUserResourcesPrefix() {
+  public URI getUserResourcesPrefix() {
     return userResourcesPrefix;
   }
 

@@ -1,6 +1,6 @@
 package uk.ac.shef.dcs.kbproxy.model;
 
-import uk.ac.shef.dcs.kbproxy.KBDefinition;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseDefinition;
 
 import java.io.Serializable;
 
@@ -32,13 +32,13 @@ public abstract class Attribute implements Serializable {
    *
    * @return true if the attribute is about alias
    */
-  public abstract boolean isAlias(KBDefinition definition);
+  public abstract boolean isAlias(KnowledgeBaseDefinition definition);
 
   /**
    *
    * @return true if the attribute is about description
    */
-  public abstract boolean isDescription(KBDefinition definition);
+  public abstract boolean isDescription(KnowledgeBaseDefinition definition);
 
   public void setRelationURI(String relationURI) {
     this.relationURI = relationURI;

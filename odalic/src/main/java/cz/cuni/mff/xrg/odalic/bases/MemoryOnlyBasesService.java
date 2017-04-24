@@ -16,15 +16,19 @@ import com.google.common.collect.Table;
  */
 public final class MemoryOnlyBasesService implements BasesService {
 
+  private final AdvancedBaseTypesService advancedBaseTypesService;
+  
   private final Table<String, String, KnowledgeBase> userAndBaseIdsToBases;
   
-  public MemoryOnlyBasesService() {
-    this(HashBasedTable.create());
+  public MemoryOnlyBasesService(final AdvancedBaseTypesService advancedBaseTypesService) {
+    this(advancedBaseTypesService, HashBasedTable.create());
   }
   
-  public MemoryOnlyBasesService(final Table<String, String, KnowledgeBase> userAndBaseIdsToBases) {
+  public MemoryOnlyBasesService(final AdvancedBaseTypesService advancedBaseTypesService, final Table<String, String, KnowledgeBase> userAndBaseIdsToBases) {
+    Preconditions.checkNotNull(advancedBaseTypesService);
     Preconditions.checkNotNull(userAndBaseIdsToBases);
 
+    this.advancedBaseTypesService = advancedBaseTypesService;
     this.userAndBaseIdsToBases = userAndBaseIdsToBases;
   }
 
@@ -55,6 +59,8 @@ public final class MemoryOnlyBasesService implements BasesService {
     final String baseId = base.getName();
 
     this.userAndBaseIdsToBases.put(userId, baseId, base);
+    
+    this.proxies = 
   }
   
   @Override

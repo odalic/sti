@@ -16,8 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.PrefixMappingService;
-import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.CachingKnowledgeBaseProxy;
 import uk.ac.shef.dcs.kbproxy.KBProxyFactory;
 import uk.ac.shef.dcs.sti.STIException;
 
@@ -33,7 +32,7 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
   private static final Logger logger =
       LoggerFactory.getLogger(DefaultKnowledgeBaseProxyFactory.class);
 
-  private Map<String, KBProxy> kbProxies;
+  private Map<String, CachingKnowledgeBaseProxy> kbProxies;
   private final Lock initLock = new ReentrantLock();
   private boolean isInitialized = false;
 
@@ -59,7 +58,7 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
   }
 
   @Override
-  public Map<String, KBProxy> getKBProxies() {
+  public Map<String, CachingKnowledgeBaseProxy> getKBProxies() {
     return this.kbProxies;
   }
 
@@ -85,14 +84,10 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
       }
 
       // object to fetch things from KB
-      final Collection<KBProxy> kbProxyInstances = initKBProxies(prefixMap);
-
-      for (final KBProxy kbProxy : kbProxyInstances) {
-        initKBCache(kbProxy);
-      }
+      final Collection<CachingKnowledgeBaseProxy> kbProxyInstances = initKBProxies(prefixMap);
 
       this.kbProxies =
-          kbProxyInstances.stream().collect(Collectors.toMap(KBProxy::getName, item -> item));
+          kbProxyInstances.stream().collect(Collectors.toMap(CachingKnowledgeBaseProxy::getName, item -> item));
 
       this.isInitialized = true;
     } finally {
@@ -100,17 +95,7 @@ public class DefaultKnowledgeBaseProxyFactory implements KnowledgeBaseProxyFacto
     }
   }
 
-  private void initKBCache(final KBProxy kbProxy) throws STIException {
-    logger.info("Initializing KB cache ...");
-    try {
-      kbProxy.initializeCaches();
-    } catch (final KBProxyException e) {
-      logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
-      throw new STIException("Failed initializing KBProxy cache.", e);
-    }
-  }
-
-  private Collection<KBProxy> initKBProxies(final Map<String, String> prefixToUriMap)
+  private Collection<CachingKnowledgeBaseProxy> initKBProxies(final Map<String, String> prefixToUriMap)
       throws STIException {
     logger.info("Initializing KBProxy ...");
     try {
