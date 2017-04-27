@@ -29,10 +29,10 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
-import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
+import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxiesProvider;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseInterface;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxy;
 
 /**
  * The default {@link ResultToAnnotatedTableAdapter} implementation.
@@ -92,17 +92,17 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
       Entity.of(PREFIX_SDMX_MEASURE, PREFIX_SDMX_MEASURE.getWhat() + "obsValue", "");
   private static final String SEPARATOR = " ";
   private static final String OBSERVATION = "OBSERVATION";
-  private final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory;
+  private final KnowledgeBaseProxiesProvider knowledgeBaseProxyFactory;
   private final TableColumnBuilder builder = new TableColumnBuilder();
   private List<String> headers;
   private boolean[] isDisambiguated;
 
-  private KnowledgeBaseInterface kbProxy;
+  private KnowledgeBaseProxy kbProxy;
   private Map<String, String> prefixes;
 
   @Autowired
   public DefaultResultToAnnotatedTableAdapter(
-      final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory) {
+      final KnowledgeBaseProxiesProvider knowledgeBaseProxyFactory) {
     Preconditions.checkNotNull(knowledgeBaseProxyFactory);
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;

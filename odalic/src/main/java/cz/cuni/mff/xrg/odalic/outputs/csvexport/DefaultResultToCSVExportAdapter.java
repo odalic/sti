@@ -16,7 +16,7 @@ import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
-import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
+import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxiesProvider;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
@@ -31,11 +31,11 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
 
   private static final String OBSERVATION = "OBSERVATION";
 
-  private final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory;
+  private final KnowledgeBaseProxiesProvider knowledgeBaseProxyFactory;
 
   @Autowired
   public DefaultResultToCSVExportAdapter(
-      final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory) {
+      final KnowledgeBaseProxiesProvider knowledgeBaseProxyFactory) {
     Preconditions.checkNotNull(knowledgeBaseProxyFactory);
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;

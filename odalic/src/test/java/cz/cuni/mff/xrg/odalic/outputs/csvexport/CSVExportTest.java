@@ -39,8 +39,8 @@ import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.DefaultResultToAnnotatedTableAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
-import cz.cuni.mff.xrg.odalic.tasks.executions.DefaultKnowledgeBaseProxyFactory;
-import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
+import cz.cuni.mff.xrg.odalic.tasks.executions.DefaultKnowledgeBaseProxiesProvider;
+import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxiesProvider;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import cz.cuni.mff.xrg.odalic.users.Role;
 import cz.cuni.mff.xrg.odalic.users.User;
@@ -70,11 +70,11 @@ public class CSVExportTest {
   @Test
   public void TestConversionToCSV() {
 
-    KnowledgeBaseProxyFactory kbf;
+    KnowledgeBaseProxiesProvider kbf;
     try {
       System.setProperty("cz.cuni.mff.xrg.odalic.sti", Paths.get("").toAbsolutePath()
           .resolveSibling("config").resolve("sti.properties").toString());
-      kbf = new DefaultKnowledgeBaseProxyFactory(new TurtleConfigurablePrefixMappingService(new DefaultPropertiesService()));
+      kbf = new DefaultKnowledgeBaseProxiesProvider(new TurtleConfigurablePrefixMappingService(new DefaultPropertiesService()));
     } catch (STIException | IOException e) {
       log.info("KnowledgeBaseProxyFactory is not available, so test was stopped: " + e.getMessage());
       return;
@@ -127,7 +127,7 @@ public class CSVExportTest {
   }
 
   public static Input testExportToCSVFile(Result result, Input input, Configuration config,
-      String filePath, KnowledgeBaseProxyFactory kbf) {
+      String filePath, KnowledgeBaseProxiesProvider kbf) {
 
     // Conversion from result to CSV extended input
     Input extendedInput = new DefaultResultToCSVExportAdapter(kbf).toCSVExport(result, input, config);
@@ -155,7 +155,7 @@ public class CSVExportTest {
   }
 
   public static AnnotatedTable testExportToAnnotatedTable(Result result, Input input,
-      Configuration config, String filePath, KnowledgeBaseProxyFactory kbf) {
+      Configuration config, String filePath, KnowledgeBaseProxiesProvider kbf) {
 
     // Conversion from result to annotated table
     AnnotatedTable annotatedTable =

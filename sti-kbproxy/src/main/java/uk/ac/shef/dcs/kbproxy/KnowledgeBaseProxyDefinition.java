@@ -8,7 +8,7 @@ import java.net.URI;
  * @author Jan Váňa
  * @author Václav Brodec
  */
-public class KnowledgeBaseDefinition {
+public class KnowledgeBaseProxyDefinition {
 
   public static abstract class Builder<T extends Builder<T>> {
 
@@ -18,8 +18,8 @@ public class KnowledgeBaseDefinition {
     private URI insertPrefixData;
     private URI insertPrefixSchema;
     
-    public KnowledgeBaseDefinition build() {
-      return new KnowledgeBaseDefinition(this);
+    public KnowledgeBaseProxyDefinition build() {
+      return new KnowledgeBaseProxyDefinition(this);
     }
     
     protected abstract T getThis();
@@ -73,7 +73,7 @@ public class KnowledgeBaseDefinition {
    * @param insertPrefixData
    * @param insertPrefixSchema
    */
-  protected KnowledgeBaseDefinition(final Builder<?> builder) {
+  protected KnowledgeBaseProxyDefinition(final Builder<?> builder) {
     this.name = builder.name;
     this.insertSupported = builder.insertSupported;
     this.insertPrefixData = builder.insertPrefixData;

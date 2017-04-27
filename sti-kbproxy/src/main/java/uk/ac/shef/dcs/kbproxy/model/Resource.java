@@ -1,6 +1,6 @@
 package uk.ac.shef.dcs.kbproxy.model;
 
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseDefinition;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxyDefinition;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public abstract class Resource implements Serializable {
   private String description; // a description, if available
   private Set<String> aliases; // aliases, if available
 
-  public String getDescription(KnowledgeBaseDefinition definition) {
+  public String getDescription(KnowledgeBaseProxyDefinition definition) {
     if (description == null || description.equals("")) {
       for (Attribute attr : getAttributes()) {
         if (attr.isDirect() && attr.isDescription(definition)) {
@@ -34,7 +34,7 @@ public abstract class Resource implements Serializable {
     return description;
   }
 
-  public Set<String> getAliases(KnowledgeBaseDefinition definition) {
+  public Set<String> getAliases(KnowledgeBaseProxyDefinition definition) {
     if (aliases == null) {
       aliases = new HashSet<>();
       return aliases;

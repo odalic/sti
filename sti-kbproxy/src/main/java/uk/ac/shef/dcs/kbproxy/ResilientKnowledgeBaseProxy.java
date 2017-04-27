@@ -13,31 +13,30 @@ import com.google.common.base.Preconditions;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 
-public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface {
+public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
 
   protected final Logger logger = LoggerFactory.getLogger(getClass());
   
-  private final String name;
+  private final KnowledgeBaseProxyCore core;
   
   protected interface Func<Type> {
     Type Do() throws Exception;
   }
   
-  /**
-   * @param name name of the proxy
-   */
-  public BasicKnowledgeBaseProxy(final String name) {
-    Preconditions.checkNotNull(name);
+  public ResilientKnowledgeBaseProxy(final KnowledgeBaseProxyCore core) {
+    Preconditions.checkNotNull(core);
     
-    this.name = name;
+    this.core = core;
   }
 
   @Override
   public void closeConnection() throws KBProxyException {
+    this.core.closeConnection();
   }
 
   @Override
   public void commitChanges() throws KBProxyException {
+    this.core.commitChanges();
   }
 
   private <ResultType> KBProxyResult<ResultType> Do(final Func<ResultType> func,
@@ -57,11 +56,8 @@ public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface 
    */
   @Override
   public KBProxyResult<List<Attribute>> findAttributesOfClazz(final String clazzId) {
-    return Do(() -> findAttributesOfClazzInternal(clazzId), new ArrayList<Attribute>());
+    return Do(() -> this.core.findAttributesOfClazz(clazzId), new ArrayList<Attribute>());
   }
-
-  protected abstract List<Attribute> findAttributesOfClazzInternal(String clazzId)
-      throws KBProxyException;
 
   /**
    * Get attributes of the entity candidate (all predicates and object values of the triples where
@@ -71,22 +67,16 @@ public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface 
    */
   @Override
   public KBProxyResult<List<Attribute>> findAttributesOfEntities(final Entity ec) {
-    return Do(() -> findAttributesOfEntitiesInternal(ec), new ArrayList<Attribute>());
+    return Do(() -> this.core.findAttributesOfEntities(ec), new ArrayList<Attribute>());
   }
-
-  protected abstract List<Attribute> findAttributesOfEntitiesInternal(Entity ec)
-      throws KBProxyException;
 
   /**
    * get attributes of the property
    */
   @Override
   public KBProxyResult<List<Attribute>> findAttributesOfProperty(final String propertyId) {
-    return Do(() -> findAttributesOfPropertyInternal(propertyId), new ArrayList<Attribute>());
+    return Do(() -> this.core.findAttributesOfProperty(propertyId), new ArrayList<Attribute>());
   }
-
-  protected abstract List<Attribute> findAttributesOfPropertyInternal(String propertyId)
-      throws KBProxyException;
 
   /**
    * Given a string, fetch candidate entities (classes) from the KB based on a fulltext search.
@@ -97,8 +87,10 @@ public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface 
    * @throws IOException
    */
   @Override
-  public abstract List<Entity> findClassByFulltext(String pattern, int limit)
-      throws KBProxyException;
+  public List<Entity> findClassByFulltext(String pattern, int limit)
+      throws KBProxyException {
+    return this.core.findClassByFulltext(pattern, limit);
+  }
 
   /**
    * Given a string, fetch candidate entities (resources) from the KB Candidate entities are those
@@ -109,11 +101,13 @@ public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface 
    */
   @Override
   public KBProxyResult<List<Entity>> findEntityCandidates(final String content) {
-    return Do(() -> findEntityCandidatesInternal(content), new ArrayList<Entity>());
+    return Do(() -> this.core.findEntityCandidates(content), new ArrayList<Entity>());
   }
-
-  protected abstract List<Entity> findEntityCandidatesInternal(String content)
-      throws KBProxyException;
+  
+  @Override
+  public KBProxyResult<List<Entity>> findEntityCandidates(final String content, final KnowledgeBaseProxyCore dependenciesProxy) {
+    return Do(() -> this.core.findEntityCandidates(content, dependenciesProxy), new ArrayList<Entity>());
+  }
 
   /**
    * Given a string, fetch candidate entities (resources) from the KB that only match certain types
@@ -121,11 +115,14 @@ public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface 
   @Override
   public KBProxyResult<List<Entity>> findEntityCandidatesOfTypes(final String content,
       final String... types) {
-    return Do(() -> findEntityCandidatesOfTypesInternal(content, types), new ArrayList<Entity>());
+    return Do(() -> this.core.findEntityCandidatesOfTypes(content, types), new ArrayList<Entity>());
   }
-
-  protected abstract List<Entity> findEntityCandidatesOfTypesInternal(String content,
-      String... types) throws KBProxyException;
+  
+  @Override
+  public KBProxyResult<List<Entity>> findEntityCandidatesOfTypes(final String content, final KnowledgeBaseProxyCore dependenciesProxy,
+      final String... types) {
+    return Do(() -> this.core.findEntityCandidatesOfTypes(content, dependenciesProxy, types), new ArrayList<Entity>());
+  }
 
   /**
    * compute the seamntic similarity between an entity and a class
@@ -133,12 +130,7 @@ public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface 
   @Override
   public KBProxyResult<Double> findEntityClazzSimilarity(final String entity_id,
       final String clazz_url) {
-    return Do(() -> findEntityClazzSimilarityInternal(entity_id, clazz_url), 0.0);
-  }
-
-  protected double findEntityClazzSimilarityInternal(final String entity_id, final String clazz_url)
-      throws KBProxyException {
-    return 0;
+    return Do(() -> this.core.findEntityClazzSimilarity(entity_id, clazz_url), 0.0);
   }
 
   /**
@@ -146,11 +138,7 @@ public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface 
    */
   @Override
   public KBProxyResult<Double> findGranularityOfClazz(final String clazz) {
-    return Do(() -> findGranularityOfClazzInternal(clazz), 0.0);
-  }
-
-  protected double findGranularityOfClazzInternal(final String clazz) throws KBProxyException {
-    return 0;
+    return Do(() -> this.core.findGranularityOfClazz(clazz), 0.0);
   }
 
   /**
@@ -162,8 +150,10 @@ public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface 
    * @throws IOException
    */
   @Override
-  public abstract List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain,
-      URI range) throws KBProxyException;
+  public List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain,
+      URI range) throws KBProxyException {
+    return this.core.findPredicateByFulltext(pattern, limit, domain, range);
+  }
 
   /**
    * Given a string, fetch candidate entities (resources) from the KB based on a fulltext search.
@@ -174,14 +164,15 @@ public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface 
    * @throws IOException
    */
   @Override
-  public abstract List<Entity> findResourceByFulltext(String pattern, int limit)
-      throws KBProxyException;
+  public List<Entity> findResourceByFulltext(String pattern, int limit)
+      throws KBProxyException {
+    return this.core.findResourceByFulltext(pattern, limit);
+  }
 
   @Override
   public String getName() {
-    return this.name;
+    return this.core.getName();
   }
-
 
   /**
    * Fetches domain of the gives resource.
@@ -191,8 +182,9 @@ public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface 
    * @throws KBProxyException
    */
   @Override
-  public abstract List<String> getPropertyDomains(String uri) throws KBProxyException;
-
+  public List<String> getPropertyDomains(String uri) throws KBProxyException {
+    return this.core.getPropertyDomains(uri);
+  }
 
   /**
    * Fetches range of the gives resource.
@@ -202,45 +194,68 @@ public abstract class BasicKnowledgeBaseProxy implements KnowledgeBaseInterface 
    * @throws KBProxyException
    */
   @Override
-  public abstract List<String> getPropertyRanges(String uri) throws KBProxyException;
+  public List<String> getPropertyRanges(String uri) throws KBProxyException {
+    return this.core.getPropertyRanges(uri);
+  }
 
   /**
    * Inserts a new class into the knowledge base
    */
   @Override
-  public abstract Entity insertClass(URI uri, String label, Collection<String> alternativeLabels,
-      String superClass) throws KBProxyException;
+  public Entity insertClass(URI uri, String label, Collection<String> alternativeLabels,
+      String superClass) throws KBProxyException {
+    return this.core.insertClass(uri, label, alternativeLabels, superClass);
+  }
 
   /**
    * Inserts a new concept into the knowledge base
    */
   @Override
-  public abstract Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels,
-      Collection<String> classes) throws KBProxyException;
+  public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels,
+      Collection<String> classes) throws KBProxyException {
+    return this.core.insertConcept(uri, label, alternativeLabels, classes);
+  }
 
   /**
    * Inserts a new property into the knowledge base
    */
   @Override
-  public abstract Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels,
-      String superProperty, String domain, String range) throws KBProxyException;
+  public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels,
+      String superProperty, String domain, String range) throws KBProxyException {
+    return this.core.insertProperty(uri, label, alternativeLabels, superProperty, domain, range);
+  }
 
   /**
    * Information about whether the knowledge base supports inserting new concepts
    */
   @Override
-  public abstract boolean isInsertSupported();
+  public boolean isInsertSupported() {
+    return this.core.isInsertSupported();
+  }
 
   /**
    * Loads the entity from the knowledge base.
    *
    * @param uri The entity uri.
-   * @return The entity or null if no such uri was found in the knowledge base.
+   * @return The entity or null if no such URI was found in the knowledge base.
    */
   @Override
   public KBProxyResult<Entity> loadEntity(final String uri) {
-    return Do(() -> loadEntityInternal(uri), null);
+    return Do(() -> this.core.loadEntity(uri), null);
+  }
+  
+  @Override
+  public KBProxyResult<Entity> loadEntity(final String uri, final KnowledgeBaseProxyCore dependenciesProxy) {
+    return Do(() -> this.core.loadEntity(uri, dependenciesProxy), null);
   }
 
-  protected abstract Entity loadEntityInternal(String uri) throws KBProxyException;
+  @Override
+  public String getResourceLabel(String uri) throws KBProxyException {
+    return this.core.getResourceLabel(uri);
+  }
+
+  @Override
+  public List<Attribute> findAttributes(String resourceId) throws KBProxyException {
+    return this.core.findAttributes(resourceId);
+  }
 }

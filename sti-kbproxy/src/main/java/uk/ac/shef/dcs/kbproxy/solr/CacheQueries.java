@@ -13,17 +13,20 @@ import java.util.stream.Collectors;
  * obtain the results, then cache the results in solr. Again you should call these methods to
  * create a query string, which should be passed as the id of the record to be added to solr
  */
-public class KbProxySolr {
+public final class CacheQueries {
 
-  public KbProxySolr() {
-    // TODO Auto-generated constructor stub
+  private CacheQueries() {
   }
 
-  public static String createSolrCacheQuery_findAttributesOfResource(final String resource) {
+  public static String findLabelForResource(String url) {
+    return "LABEL_" + url;
+  }
+  
+  public static String findAttributesOfResource(final String resource) {
     return "ATTR_" + resource;
   }
 
-  public static String createSolrCacheQuery_findResources(final String content, final String... types) {
+  public static String findResources(final String content, final String... types) {
     final StringBuilder builder = new StringBuilder("FIND_RESOURCE_");
     builder.append(content);
   
@@ -35,12 +38,12 @@ public class KbProxySolr {
     return builder.toString();
   }
 
-  public static String createSolrCacheQuery_getPropertyValues(final String uri,
+  public static String getPropertyValues(final String uri,
       final String propertyUri) {
     return "GET_PROPERTY_VALUES_" + uri + "_" + propertyUri;
   }
 
-  public static String createSolrCacheQuery_loadResource(final String uri) {
+  public static String loadResource(final String uri) {
     return "LOAD_RESOURCE_" + uri;
   }
 

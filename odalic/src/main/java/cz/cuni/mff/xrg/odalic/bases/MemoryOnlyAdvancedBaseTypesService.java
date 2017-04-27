@@ -59,6 +59,4 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
 
     return this.types.get(name);
   }
-  
-  KnowledgeBase
 }

@@ -4,18 +4,14 @@ import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseDefinitionFactory;
 import cz.cuni.mff.xrg.odalic.bases.TextSearchingMethod;
 import cz.cuni.mff.xrg.odalic.groups.Group;
-import uk.ac.shef.dcs.kbproxy.sparql.SparqlBaseDefinition;
+import uk.ac.shef.dcs.kbproxy.sparql.SparqlBaseProxyDefinition;
 
 public final class SparqlKnowledgeBaseDefinitionFactory
-    implements KnowledgeBaseDefinitionFactory<SparqlBaseDefinition> {
-
-  public SparqlKnowledgeBaseDefinitionFactory() {
-    // TODO Auto-generated constructor stub
-  }
+    implements KnowledgeBaseDefinitionFactory<SparqlBaseProxyDefinition> {
 
   @Override
-  public SparqlBaseDefinition create(final KnowledgeBase base, final Class<? extends SparqlBaseDefinition> type) {
-    final SparqlBaseDefinition.Builder builder = SparqlBaseDefinition.builder();
+  public SparqlBaseProxyDefinition create(final KnowledgeBase base, final Class<? extends SparqlBaseProxyDefinition> type) {
+    final SparqlBaseProxyDefinition.Builder builder = SparqlBaseProxyDefinition.builder();
     
     // Name
     builder.setName(base.getName());
@@ -40,7 +36,7 @@ public final class SparqlKnowledgeBaseDefinitionFactory
     builder.setLanguageSuffix(base.getLanguageTag());
 
     // Use default class type mode
-    builder.setClassTypeMode(SparqlBaseDefinition.SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
+    builder.setClassTypeMode(SparqlBaseProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
 
     // Loading structure
     for (final Group group : base.getSelectedGroups()) {
@@ -51,22 +47,28 @@ public final class SparqlKnowledgeBaseDefinitionFactory
         builder.addAllStructurePredicateType(group.getInstanceOfPredicates());
     }
 
-    builder.setStructureInstanceOf(SparqlBaseDefinition.DEFAULT_STRUCTURE_PREDICATE_INSTANCE_OF);
-    builder.setStructureDomain(SparqlBaseDefinition.DEFAULT_STRUCTURE_PREDICATE_DOMAIN);
-    builder.setStructureRange(SparqlBaseDefinition.DEFAULT_STRUCTURE_PREDICATE_RANGE);
+    builder.setStructureInstanceOf(SparqlBaseProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_INSTANCE_OF);
+    builder.setStructureDomain(SparqlBaseProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_DOMAIN);
+    builder.setStructureRange(SparqlBaseProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_RANGE);
 
     // SPARQL insert
     if (base.isInsertEnabled()) {
       builder.setInsertGraph(base.getInsertGraph().toString());
 
-      builder.setInsertDefaultClass(SparqlBaseDefinition.DEFAULT_INSERT_DEFAULT_CLASS);
-      builder.setInsertPredicateLabel(SparqlBaseDefinition.DEFAULT_INSERT_PREDICATE_LABEL);
-      builder.setInsertPredicateAlternativeLabel(SparqlBaseDefinition.DEFAULT_INSERT_PREDICATE_ALTERNATIVE_LABEL);
-      builder.setInsertPredicateSubclassOf(SparqlBaseDefinition.DEFAULT_INSERT_PREDICATE_SUBCLASS_OF);
-      builder.setInsertPredicateSubPropertyOf(SparqlBaseDefinition.DEFAULT_INSERT_PREDICATE_SUB_PROPERTY_OF);
-      builder.setInsertTypeClass(SparqlBaseDefinition.DEFAULT_INSERT_TYPE_CLASS);
-      builder.setInsertTypeProperty(SparqlBaseDefinition.DEFAULT_INSERT_TYPE_PROPERTY);
+      builder.setInsertDefaultClass(SparqlBaseProxyDefinition.DEFAULT_INSERT_DEFAULT_CLASS);
+      builder.setInsertPredicateLabel(SparqlBaseProxyDefinition.DEFAULT_INSERT_PREDICATE_LABEL);
+      builder.setInsertPredicateAlternativeLabel(SparqlBaseProxyDefinition.DEFAULT_INSERT_PREDICATE_ALTERNATIVE_LABEL);
+      builder.setInsertPredicateSubclassOf(SparqlBaseProxyDefinition.DEFAULT_INSERT_PREDICATE_SUBCLASS_OF);
+      builder.setInsertPredicateSubPropertyOf(SparqlBaseProxyDefinition.DEFAULT_INSERT_PREDICATE_SUB_PROPERTY_OF);
+      builder.setInsertTypeClass(SparqlBaseProxyDefinition.DEFAULT_INSERT_TYPE_CLASS);
+      builder.setInsertTypeProperty(SparqlBaseProxyDefinition.DEFAULT_INSERT_TYPE_PROPERTY);
     }
+    
+    builder.setStoppedClasses(base.getSkippedClasses());
+    builder.setStoppedAttributes(base.getSkippedAttributes());
+    
+    // Apply URI heuristics
+    builder.setUriLabelHeuristicApplied(true);
       
     return builder.build();
   }

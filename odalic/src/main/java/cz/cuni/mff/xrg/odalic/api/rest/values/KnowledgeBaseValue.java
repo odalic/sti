@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.api.rest.values;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +41,9 @@ public final class KnowledgeBaseValue {
   private Set<String> selectedGroups;
   
   private boolean insertEnabled;
-  private String insertGraph;
-  private String userClassesPrefix;
-  private String userResourcesPrefix;
+  private URI insertGraph;
+  private URI userClassesPrefix;
+  private URI userResourcesPrefix;
   
   private String advancedType;
   private Map<String, String> advancedProperties;
@@ -232,14 +233,14 @@ public final class KnowledgeBaseValue {
    */
   @XmlElement
   @Nullable
-  public String getInsertGraph() {
+  public URI getInsertGraph() {
     return insertGraph;
   }
 
   /**
    * @param insertGraph the insert graph to set
    */
-  public void setInsertGraph(final String insertGraph) {
+  public void setInsertGraph(final URI insertGraph) {
     Preconditions.checkNotNull(insertGraph);
     
     this.insertGraph = insertGraph;
@@ -250,14 +251,14 @@ public final class KnowledgeBaseValue {
    */
   @XmlElement
   @Nullable
-  public String getUserClassesPrefix() {
+  public URI getUserClassesPrefix() {
     return userClassesPrefix;
   }
 
   /**
    * @param userClassesPrefix the user classes prefix to set
    */
-  public void setUserClassesPrefix(final String userClassesPrefix) {
+  public void setUserClassesPrefix(final URI userClassesPrefix) {
     Preconditions.checkNotNull(userClassesPrefix);
     
     this.userClassesPrefix = userClassesPrefix;
@@ -268,14 +269,14 @@ public final class KnowledgeBaseValue {
    */
   @XmlElement
   @Nullable
-  public String getUserResourcesPrefix() {
+  public URI getUserResourcesPrefix() {
     return userResourcesPrefix;
   }
 
   /**
    * @param userResourcesPrefix the user resources prefix to set
    */
-  public void setUserResourcesPrefix(final String userResourcesPrefix) {
+  public void setUserResourcesPrefix(final URI userResourcesPrefix) {
     Preconditions.checkNotNull(userResourcesPrefix);
     
     this.userResourcesPrefix = userResourcesPrefix;

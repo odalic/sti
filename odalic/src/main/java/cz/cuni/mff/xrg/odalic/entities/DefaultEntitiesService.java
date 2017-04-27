@@ -16,9 +16,9 @@ import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
-import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
+import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxiesProvider;
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseInterface;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxy;
 
 /**
  * Default {@link EntitiesService} implementation.
@@ -26,11 +26,11 @@ import uk.ac.shef.dcs.kbproxy.KnowledgeBaseInterface;
  */
 public final class DefaultEntitiesService implements EntitiesService {
 
-  private final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory;
+  private final KnowledgeBaseProxiesProvider knowledgeBaseProxyFactory;
   private final EntitiesFactory entitiesFactory;
 
   @Autowired
-  public DefaultEntitiesService(final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory,
+  public DefaultEntitiesService(final KnowledgeBaseProxiesProvider knowledgeBaseProxyFactory,
       final EntitiesFactory entitiesFactory) {
     Preconditions.checkNotNull(knowledgeBaseProxyFactory);
     Preconditions.checkNotNull(entitiesFactory);
@@ -47,8 +47,8 @@ public final class DefaultEntitiesService implements EntitiesService {
     }
   }
 
-  private KnowledgeBaseInterface getKBProxy(final KnowledgeBase base) {
-    final KnowledgeBaseInterface kbProxy = this.knowledgeBaseProxyFactory.getKBProxies().get(base.getName());
+  private KnowledgeBaseProxy getKBProxy(final KnowledgeBase base) {
+    final KnowledgeBaseProxy kbProxy = this.knowledgeBaseProxyFactory.getKBProxies().get(base.getName());
 
     if (kbProxy == null) {
       throw new IllegalArgumentException(
@@ -61,7 +61,7 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Override
   public Entity propose(final KnowledgeBase base, final ClassProposal proposal)
       throws KBProxyException {
-    final KnowledgeBaseInterface kbProxy = getKBProxy(base);
+    final KnowledgeBaseProxy kbProxy = getKBProxy(base);
 
     final String superClassUri = getEntityValue(proposal.getSuperClass());
 
@@ -74,7 +74,7 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Override
   public Entity propose(final KnowledgeBase base, final PropertyProposal proposal)
       throws KBProxyException {
-    final KnowledgeBaseInterface kbProxy = getKBProxy(base);
+    final KnowledgeBaseProxy kbProxy = getKBProxy(base);
 
     final String superPropertyUri = getEntityValue(proposal.getSuperProperty());
 
@@ -88,7 +88,7 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Override
   public Entity propose(final KnowledgeBase base, final ResourceProposal proposal)
       throws KBProxyException {
-    final KnowledgeBaseInterface kbProxy = getKBProxy(base);
+    final KnowledgeBaseProxy kbProxy = getKBProxy(base);
 
     Collection<String> classes = null;
     if (proposal.getClasses() != null) {
@@ -104,7 +104,7 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Override
   public NavigableSet<Entity> searchClasses(final KnowledgeBase base, final String query,
       final int limit) throws KBProxyException {
-    final KnowledgeBaseInterface kbProxy = getKBProxy(base);
+    final KnowledgeBaseProxy kbProxy = getKBProxy(base);
 
     final List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
         kbProxy.findClassByFulltext(query, limit);
@@ -117,7 +117,7 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Override
   public NavigableSet<Entity> searchProperties(final KnowledgeBase base, final String query,
       final int limit, final URI domain, final URI range) throws KBProxyException {
-    final KnowledgeBaseInterface kbProxy = getKBProxy(base);
+    final KnowledgeBaseProxy kbProxy = getKBProxy(base);
 
     // TODO: Find only properties, restricted by the domain (the domains of found properties must be
     // sub-type of the provided domain, the same for ranges). Null means no restriction.
@@ -133,7 +133,7 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Override
   public NavigableSet<Entity> searchResources(final KnowledgeBase base, final String query,
       final int limit) throws KBProxyException {
-    final KnowledgeBaseInterface kbProxy = getKBProxy(base);
+    final KnowledgeBaseProxy kbProxy = getKBProxy(base);
 
     final List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
         kbProxy.findResourceByFulltext(query, limit);

@@ -71,7 +71,7 @@ public class CoreExecutionBatch {
 
   private static final Logger log = LoggerFactory.getLogger(CoreExecutionBatch.class);
 
-  private static KnowledgeBaseProxyFactory kbf;
+  private static KnowledgeBaseProxiesProvider kbf;
 
   /**
    * Expects sti.properties file path as the first and test input CSV file path as the second
@@ -145,7 +145,7 @@ public class CoreExecutionBatch {
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
-      kbf = new DefaultKnowledgeBaseProxyFactory(pms);
+      kbf = new DefaultKnowledgeBaseProxiesProvider(pms);
       semanticTableInterpreters = new TableMinerPlusFactory(kbf).getInterpreters();
     } catch (IOException e) {
       log.error("Error - TMP initialization process fails to load its configuration:", e);
@@ -187,7 +187,7 @@ public class CoreExecutionBatch {
     return new CoreSnapshot(odalicResult, parsingResult.getInput(), configuration);
   }
 
-  public static KnowledgeBaseProxyFactory getKnowledgeBaseProxyFactory() {
+  public static KnowledgeBaseProxiesProvider getKnowledgeBaseProxyFactory() {
     return kbf;
   }
 

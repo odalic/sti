@@ -1,17 +1,18 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseDefinition;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxyDefinition;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
-public class SparqlBaseDefinition extends KnowledgeBaseDefinition {
+public class SparqlBaseProxyDefinition extends KnowledgeBaseProxyDefinition {
   
-  public static class Builder extends KnowledgeBaseDefinition.Builder<Builder> {
+  public static class Builder extends KnowledgeBaseProxyDefinition.Builder<Builder> {
     
     private String endpoint;
     
@@ -41,14 +42,20 @@ public class SparqlBaseDefinition extends KnowledgeBaseDefinition {
     private String insertTypeClass;
     private String insertTypeProperty;
 
+    private Set<String> stoppedClasses;
+    private Set<String> stoppedAttributes;
+    
+    public boolean uriLabelHeuristicApplied;
+
+
     @Override
     protected Builder getThis() {
       return this;
     }
     
     @Override
-    public SparqlBaseDefinition build() {
-      return new SparqlBaseDefinition(this);
+    public SparqlBaseProxyDefinition build() {
+      return new SparqlBaseProxyDefinition(this);
     }
 
     public Builder setFulltextEnabled(boolean fulltextEnabled) {
@@ -111,7 +118,7 @@ public class SparqlBaseDefinition extends KnowledgeBaseDefinition {
       return this;
     }
 
-    public Builder setClassTypeMode(final SparqlBaseDefinition.SEARCH_CLASS_TYPE_MODE_VALUE classTypeMode) {
+    public Builder setClassTypeMode(final SparqlBaseProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE classTypeMode) {
       this.classTypeMode = classTypeMode;
 
       return this;
@@ -273,6 +280,44 @@ public class SparqlBaseDefinition extends KnowledgeBaseDefinition {
       
       return this;
     }
+    
+    public Builder setUriLabelHeuristicApplied(final boolean uriLabelHeuristicApplied) {
+      this.uriLabelHeuristicApplied = uriLabelHeuristicApplied;
+      
+      return this;
+    }
+
+    public Builder setStoppedClasses(List<String> stoppedClasses) {
+      Preconditions.checkNotNull(stoppedClasses);
+      
+      this.stoppedClasses = new HashSet<>(stoppedClasses);
+      
+      return this;
+    }
+    
+    public Builder addStoppedClass(String stoppedClass) {
+      Preconditions.checkNotNull(stoppedClass);
+      
+      this.stoppedClasses.add(stoppedClass);
+      
+      return this;
+    }
+
+    public Builder setStoppedAttributes(List<String> stoppedAttributes) {
+      Preconditions.checkNotNull(stoppedAttributes);
+      
+      this.stoppedAttributes = new HashSet<>(stoppedAttributes);
+      
+      return this;
+    }
+    
+    public Builder addStoppedAttributes(String stoppedAttribute) {
+      Preconditions.checkNotNull(stoppedAttribute);
+      
+      this.stoppedAttributes.add(stoppedAttribute);
+      
+      return this;
+    }
   }
   
   public static enum SEARCH_CLASS_TYPE_MODE_VALUE {
@@ -344,7 +389,12 @@ public class SparqlBaseDefinition extends KnowledgeBaseDefinition {
   private final String insertTypeClass;
   private final String insertTypeProperty;
   
-  protected SparqlBaseDefinition(final Builder builder) {
+  private final Set<String> stoppedClasses;
+  private final Set<String> stoppedAttributes;
+  
+  private final boolean uriLabelHeuristicApplied;
+  
+  protected SparqlBaseProxyDefinition(final Builder builder) {
     super(builder);
     
     Preconditions.checkArgument(!builder.structurePredicateLabel.isEmpty(), "No label predicate defined!");
@@ -371,6 +421,9 @@ public class SparqlBaseDefinition extends KnowledgeBaseDefinition {
     this.insertPredicateSubPropertyOf = builder.insertPredicateSubPropertyOf;
     this.insertTypeClass = builder.insertTypeClass;
     this.insertTypeProperty = builder.insertTypeProperty;
+    this.stoppedClasses = ImmutableSet.copyOf(builder.stoppedClasses);
+    this.stoppedAttributes = ImmutableSet.copyOf(builder.stoppedAttributes);
+    this.uriLabelHeuristicApplied = builder.uriLabelHeuristicApplied;
   }
 
   /**
@@ -439,7 +492,7 @@ public class SparqlBaseDefinition extends KnowledgeBaseDefinition {
   /**
    * @return the classTypeMode
    */
-  public SparqlBaseDefinition.SEARCH_CLASS_TYPE_MODE_VALUE getClassTypeMode() {
+  public SparqlBaseProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE getClassTypeMode() {
     return classTypeMode;
   }
 
@@ -518,5 +571,26 @@ public class SparqlBaseDefinition extends KnowledgeBaseDefinition {
    */
   public String getInsertTypeProperty() {
     return insertTypeProperty;
+  }
+
+  /**
+   * @return the stoppedClasses
+   */
+  public Set<String> getStoppedClasses() {
+    return stoppedClasses;
+  }
+
+  /**
+   * @return the stoppedAttributes
+   */
+  public Set<String> getStoppedAttributes() {
+    return stoppedAttributes;
+  }
+
+  /**
+   * @return the uriLabelHeuristicApplied
+   */
+  public boolean isUriLabelHeuristicApplied() {
+    return uriLabelHeuristicApplied;
   }
 }

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.kbproxy.KBProxyException;
 import uk.ac.shef.dcs.kbproxy.KBProxyResult;
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseInterface;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxy;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIException;
@@ -39,7 +39,7 @@ public class LEARNINGPreliminaryColumnClassifier {
   private static final Logger LOG =
       LoggerFactory.getLogger(LEARNINGPreliminaryColumnClassifier.class.getName());
   private final TContentCellRanker selector;
-  private final KnowledgeBaseInterface kbSearch;
+  private final KnowledgeBaseProxy kbSearch;
   private final TCellDisambiguator cellDisambiguator;
 
   private final TColumnClassifier columnClassifier;
@@ -48,7 +48,7 @@ public class LEARNINGPreliminaryColumnClassifier {
 
   public LEARNINGPreliminaryColumnClassifier(final TContentCellRanker selector,
       final String stoppingCriteriaClassname, final String[] stoppingCriteriaParams,
-      final KnowledgeBaseInterface candidateFinder, final TCellDisambiguator cellDisambiguator,
+      final KnowledgeBaseProxy candidateFinder, final TCellDisambiguator cellDisambiguator,
       final TColumnClassifier columnClassifier) {
     this.selector = selector;
     this.kbSearch = candidateFinder;

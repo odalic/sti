@@ -1,15 +1,10 @@
 package uk.ac.shef.dcs.kbproxy;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.LineIterator;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
@@ -24,10 +19,7 @@ import uk.ac.shef.dcs.kbproxy.model.Clazz;
  * KBProxyResultFilter is responsible for filtering such information. This can be class, relation,
  * or entity, depending on the actual implementing classes.
  */
-public abstract class KBProxyResultFilter {
-  
-  private static final String LABEL_INVALID_CLAZZ = "!invalid_clazz";
-  private static final String LABEL_INVALID_ATTRIBUTE = "!invalid_attribute";
+public class KBProxyResultFilter {
   
   private final Set<String> stoppedClasses;
   private final Set<String> stoppedAttributes;
@@ -40,63 +32,6 @@ public abstract class KBProxyResultFilter {
     this.stoppedAttributes = ImmutableSet.copyOf(stoppedAttributes);
   }
   
-
-  /**
-   * An external file defining class/relation/entities to be filtered. the file must correspond to
-   * certain format. See 'resources/kbstoplist.txt' for explanation
-   *
-   * It loads all given classes/relations/entities to a Map, which contains as the key for the set
-   * of stop wrods the label obtained from the file (from the line starting with !). So there are
-   * different stop words for attributes and classes, e.g.
-   *
-   * @param stopListsFile
-   * 
-   * @throws IOException
-   */
-  public KBProxyResultFilter(final String stopListsFile) throws IOException {
-    final ImmutableSet.Builder<String> stoppedClassesBuilder = ImmutableSet.builder();
-    final ImmutableSet.Builder<String> stoppedAttributesBuilder = ImmutableSet.builder();
-    
-    final LineIterator it = FileUtils.lineIterator(new File(stopListsFile));
-    String label = "";
-    Set<String> elements = new HashSet<>();
-    while (it.hasNext()) {
-      final String line = it.nextLine().trim();
-
-      if ((line.length() < 1) || line.startsWith("#")) {
-        continue;
-      }
-
-      if (line.startsWith("!")) {
-        if (elements.size() > 0) {
-          if (label.equals(LABEL_INVALID_CLAZZ)) {
-            stoppedClassesBuilder.addAll(elements);
-          } else if (label.equals(LABEL_INVALID_ATTRIBUTE)) {
-            stoppedAttributesBuilder.addAll(elements);
-          } else {
-            throw new IllegalArgumentException("Unknown stop list label kind!");
-          }
-        }
-
-        elements = new HashSet<>();
-        label = line;
-      } else {
-        elements.add(line);
-      }
-    }
-    if (elements.size() != 0) {
-      if (label.equals(LABEL_INVALID_CLAZZ)) {
-        stoppedClassesBuilder.addAll(elements);
-      } else if (label.equals(LABEL_INVALID_ATTRIBUTE)) {
-        stoppedAttributesBuilder.addAll(elements);
-      } else {
-        throw new IllegalArgumentException("Unknown stop list label kind!");
-      }
-    }
-    
-    this.stoppedClasses = stoppedClassesBuilder.build();
-    this.stoppedAttributes = stoppedAttributesBuilder.build();
-  }
 
   /**
    * Creates new list of attributes, which contains only attributes which are valid.

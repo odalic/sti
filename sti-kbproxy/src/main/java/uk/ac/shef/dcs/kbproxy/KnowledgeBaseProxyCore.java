@@ -9,7 +9,7 @@ import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 
 
-public interface KnowledgeBaseInterface {
+public interface KnowledgeBaseProxyCore {
 
   void closeConnection() throws KBProxyException;
 
@@ -17,21 +17,24 @@ public interface KnowledgeBaseInterface {
 
   /**
    * get attributes of the class
+   * @throws KBProxyException 
    */
-  KBProxyResult<List<Attribute>> findAttributesOfClazz(String clazzId);
+  List<Attribute> findAttributesOfClazz(String clazzId) throws KBProxyException;
 
   /**
    * Get attributes of the entity candidate (all predicates and object values of the triples where
    * the candidate entity is the subject).
    *
    * Note: Certain predicates may be blacklisted.
+   * @throws KBProxyException 
    */
-  KBProxyResult<List<Attribute>> findAttributesOfEntities(Entity ec);
+  List<Attribute> findAttributesOfEntities(Entity ec) throws KBProxyException;
 
   /**
    * get attributes of the property
+   * @throws KBProxyException 
    */
-  KBProxyResult<List<Attribute>> findAttributesOfProperty(String propertyId);
+  List<Attribute> findAttributesOfProperty(String propertyId) throws KBProxyException;
 
   /**
    * Given a string, fetch candidate entities (classes) from the KB based on a fulltext search.
@@ -49,23 +52,29 @@ public interface KnowledgeBaseInterface {
    *
    * @param content
    * @return
+   * @throws KBProxyException 
    */
-  KBProxyResult<List<Entity>> findEntityCandidates(String content);
+  List<Entity> findEntityCandidates(String content) throws KBProxyException;
+  
+  List<Entity> findEntityCandidates(String content, final KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException;
 
   /**
    * Given a string, fetch candidate entities (resources) from the KB that only match certain types
+   * @throws KBProxyException 
    */
-  KBProxyResult<List<Entity>> findEntityCandidatesOfTypes(String content, String... types);
+  List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws KBProxyException;
+  
+  List<Entity> findEntityCandidatesOfTypes(String content, final KnowledgeBaseProxyCore dependenciesProxy, String... types) throws KBProxyException;
 
   /**
    * compute the seamntic similarity between an entity and a class
    */
-  KBProxyResult<Double> findEntityClazzSimilarity(String entity_id, String clazz_url);
+  Double findEntityClazzSimilarity(String entity_id, String clazz_url);
 
   /**
    * @return the granularity of the class in the KB.
    */
-  KBProxyResult<Double> findGranularityOfClazz(String clazz);
+  Double findGranularityOfClazz(String clazz);
 
   /**
    * Given a string, fetch candidate entities (predicates) from the KB based on a fulltext search.
@@ -136,7 +145,23 @@ public interface KnowledgeBaseInterface {
    *
    * @param uri The entity uri.
    * @return The entity or null if no such uri was found in the knowledge base.
+   * @throws KBProxyException 
    */
-  KBProxyResult<Entity> loadEntity(String uri);
+  Entity loadEntity(String uri) throws KBProxyException;
+  
+  Entity loadEntity(String uri, KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException;
+
+  String getResourceLabel(String uri) throws KBProxyException;
+
+  List<Attribute> findAttributes(String resourceId) throws KBProxyException;
+
+  List<Attribute> findAttributesOfClazz(String clazzId,
+      KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException;
+
+  List<Attribute> findAttributesOfEntities(Entity ec,
+      KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException;
+  
+  List<Attribute> findAttributesOfProperty(String propertyId,
+      KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException;
 
 }

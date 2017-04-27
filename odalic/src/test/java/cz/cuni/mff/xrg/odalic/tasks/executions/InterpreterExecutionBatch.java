@@ -42,7 +42,7 @@ public class InterpreterExecutionBatch {
     // settings for export
     final String baseExportPath = FilenameUtils.getFullPath(testInputFilePath)
         + FilenameUtils.getBaseName(testInputFilePath) + "-export";
-    final KnowledgeBaseProxyFactory kbf = CoreExecutionBatch.getKnowledgeBaseProxyFactory();
+    final KnowledgeBaseProxiesProvider kbf = CoreExecutionBatch.getKnowledgeBaseProxyFactory();
 
     // JSON export
     AnnotatedTable annotatedTable = CSVExportTest.testExportToAnnotatedTable(coreSnapshot.getResult(),

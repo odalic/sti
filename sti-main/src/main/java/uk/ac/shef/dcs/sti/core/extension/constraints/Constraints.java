@@ -13,7 +13,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import uk.ac.shef.dcs.kbproxy.KBProxyResult;
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseInterface;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxy;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 import uk.ac.shef.dcs.sti.core.model.EntityResult;
@@ -188,7 +188,7 @@ public final class Constraints implements Serializable {
   }
 
   private KBProxyResult<Entity> findOrCreateEntity(final String resource, final String label,
-      final KnowledgeBaseInterface kbProxy) {
+      final KnowledgeBaseProxy kbProxy) {
     KBProxyResult<Entity> entity = kbProxy.loadEntity(resource);
 
     if (entity == null) {
@@ -247,7 +247,7 @@ public final class Constraints implements Serializable {
    * @return entities chosen for disambiguation of given cell
    */
   public EntityResult getDisambChosenForCell(final int columnIndex, final int rowIndex,
-      final KnowledgeBaseInterface kbProxy) {
+      final KnowledgeBaseProxy kbProxy) {
     final List<Entity> entities = new ArrayList<>();
     final List<String> warnings = new ArrayList<>();
 

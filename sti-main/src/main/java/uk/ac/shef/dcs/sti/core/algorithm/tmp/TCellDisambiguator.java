@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.kbproxy.KBProxyResult;
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseInterface;
+import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxy;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.model.DisambiguationResult;
@@ -27,10 +27,10 @@ import uk.ac.shef.dcs.util.Pair;
 public class TCellDisambiguator {
 
   private static final Logger LOG = LoggerFactory.getLogger(TCellDisambiguator.class.getName());
-  private final KnowledgeBaseInterface kbSearch;
+  private final KnowledgeBaseProxy kbSearch;
   private final EntityScorer disambScorer;
 
-  public TCellDisambiguator(final KnowledgeBaseInterface kbSearch, final EntityScorer disambScorer) {
+  public TCellDisambiguator(final KnowledgeBaseProxy kbSearch, final EntityScorer disambScorer) {
     this.kbSearch = kbSearch;
     this.disambScorer = disambScorer;
   }
