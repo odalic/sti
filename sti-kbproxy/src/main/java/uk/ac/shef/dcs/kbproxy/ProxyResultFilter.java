@@ -1,6 +1,5 @@
 package uk.ac.shef.dcs.kbproxy;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,12 +18,12 @@ import uk.ac.shef.dcs.kbproxy.model.Clazz;
  * KBProxyResultFilter is responsible for filtering such information. This can be class, relation,
  * or entity, depending on the actual implementing classes.
  */
-public class KBProxyResultFilter {
+public final class ProxyResultFilter {
   
   private final Set<String> stoppedClasses;
   private final Set<String> stoppedAttributes;
 
-  public KBProxyResultFilter(final Set<? extends String> stoppedClasses, final Set<? extends String> stoppedAttributes) throws IOException {
+  public ProxyResultFilter(final Set<? extends String> stoppedClasses, final Set<? extends String> stoppedAttributes) {
     Preconditions.checkNotNull(stoppedClasses);
     Preconditions.checkNotNull(stoppedAttributes);
     
@@ -97,5 +96,15 @@ public class KBProxyResultFilter {
     }
 
     return true;
+  }
+
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "ResultFilter [stoppedClasses=" + stoppedClasses + ", stoppedAttributes="
+        + stoppedAttributes + "]";
   }
 }

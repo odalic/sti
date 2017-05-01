@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 
 import cz.cuni.mff.xrg.odalic.bases.types.SparqlKnowledgeBaseDefinitionFactory;
+import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
 
 /**
  * Default {@link AdvancedBaseTypesService} implementation.
@@ -24,13 +25,13 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
   
   private final Map<? extends String, ? extends AdvancedBaseType> types;
   
-  private final Map<? extends AdvancedBaseType, ? extends KnowledgeBaseDefinitionFactory<?>> typesToDefinitionFactories;
+  private final Map<? extends AdvancedBaseType, ? extends ProxyDefinitionFactory> typesToDefinitionFactories;
   
   public MemoryOnlyAdvancedBaseTypesService() {
     this(ImmutableMap.of(SPARQL_BASE_TYPE_NAME, SPARQL_BASE_TYPE), ImmutableMap.of(SPARQL_BASE_TYPE, new SparqlKnowledgeBaseDefinitionFactory()));
   }
   
-  private MemoryOnlyAdvancedBaseTypesService(final Map<? extends String, ? extends AdvancedBaseType> types, final Map<? extends AdvancedBaseType, ? extends KnowledgeBaseDefinitionFactory<?>> typesToDefinitionFactories) {
+  private MemoryOnlyAdvancedBaseTypesService(final Map<? extends String, ? extends AdvancedBaseType> types, final Map<? extends AdvancedBaseType, ? extends ProxyDefinitionFactory> typesToDefinitionFactories) {
     Preconditions.checkNotNull(types);
     Preconditions.checkNotNull(typesToDefinitionFactories);
     
@@ -58,5 +59,13 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
     Preconditions.checkNotNull(name);
 
     return this.types.get(name);
+  }
+  
+  @Override
+  public ProxyDefinition toProxyDefinition(final KnowledgeBase base) {
+    final ProxyDefinitionFactory factory = this.typesToDefinitionFactories.get(base.getAdvancedType());
+    Preconditions.checkArgument(factory != null, String.format("The type %s has no definition factory assigned!", base));
+    
+    return factory.create(base);
   }
 }

@@ -26,9 +26,12 @@ public interface GroupsService {
 
   boolean existsGroupWithId(String userId, String groupId);
   
-  void subscribe(Group group, KnowledgeBase base);
+  void deleteById(String userId, String groupId);
   
-  void unsubscribe(Group group, KnowledgeBase base);
+  void subscribe(KnowledgeBase base);
+  
+  void unsubscribe(KnowledgeBase base);
 
   Set<Group> detectUsed(String userId, URL endpoint);
+
 }

@@ -4,6 +4,8 @@ import java.util.SortedSet;
 
 import javax.annotation.Nullable;
 
+import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
+
 /**
  * Provides available advanced base types.
  *
@@ -29,4 +31,6 @@ public interface AdvancedBaseTypesService {
    */
   @Nullable
   AdvancedBaseType verifyTypeExistenceByName(String name);
+
+  ProxyDefinition toProxyDefinition(final KnowledgeBase base);
 }

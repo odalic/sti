@@ -9,9 +9,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
-import uk.ac.shef.dcs.kbproxy.KBProxyResult;
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxy;
+import uk.ac.shef.dcs.kbproxy.ProxyException;
+import uk.ac.shef.dcs.kbproxy.ProxyResult;
+import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIException;
@@ -39,7 +39,7 @@ public class LEARNINGPreliminaryColumnClassifier {
   private static final Logger LOG =
       LoggerFactory.getLogger(LEARNINGPreliminaryColumnClassifier.class.getName());
   private final TContentCellRanker selector;
-  private final KnowledgeBaseProxy kbSearch;
+  private final Proxy kbSearch;
   private final TCellDisambiguator cellDisambiguator;
 
   private final TColumnClassifier columnClassifier;
@@ -48,7 +48,7 @@ public class LEARNINGPreliminaryColumnClassifier {
 
   public LEARNINGPreliminaryColumnClassifier(final TContentCellRanker selector,
       final String stoppingCriteriaClassname, final String[] stoppingCriteriaParams,
-      final KnowledgeBaseProxy candidateFinder, final TCellDisambiguator cellDisambiguator,
+      final Proxy candidateFinder, final TCellDisambiguator cellDisambiguator,
       final TColumnClassifier columnClassifier) {
     this.selector = selector;
     this.kbSearch = candidateFinder;
@@ -83,7 +83,7 @@ public class LEARNINGPreliminaryColumnClassifier {
    * @param skipRows
    * @return pair: key is the index of the cell by which the classification stopped. value is the
    *         re-ordered indexes of cells based on the sampler
-   * @throws KBProxyException
+   * @throws ProxyException
    */
   public Pair<Integer, List<List<Integer>>> runPreliminaryColumnClassifier(final Table table,
       final TAnnotation tableAnnotation, final int column, final Constraints constraints,
@@ -154,11 +154,11 @@ public class LEARNINGPreliminaryColumnClassifier {
         final List<String> warnings = entityResult.getWarnings();
 
         if (candidates.isEmpty()) {
-          final KBProxyResult<List<Entity>> candidatesResult =
+          final ProxyResult<List<Entity>> candidatesResult =
               this.kbSearch.findEntityCandidates(sample.getText());
 
           candidates = candidatesResult.getResult();
-          candidatesResult.appendWarning(warnings);
+          candidatesResult.appendExistingWarning(warnings);
         }
 
         // do cold start disambiguation

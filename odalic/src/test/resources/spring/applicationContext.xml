@@ -1,0 +1,105 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="cz.cuni.mff.xrg.odalic.*" />
+
+	<!-- Helpers -->
+	<bean id="inputBuilder" class="cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder"
+		scope="prototype" />
+	<bean id="inputToTableAdapter" class="cz.cuni.mff.xrg.odalic.input.DefaultInputToTableAdapter"
+		scope="prototype" />
+
+	<bean id="apacheCsvFormatAdapter"
+		class="cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter"
+		scope="prototype" />
+
+	<bean id="csvInputParser" class="cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser"
+		scope="prototype" />
+	<bean id="annotationToResultAdapter"
+		class="cz.cuni.mff.xrg.odalic.tasks.results.DefaultAnnotationToResultAdapter"
+		scope="prototype" />
+
+	<bean id="resultToAnnotatedTableAdapter"
+		class="cz.cuni.mff.xrg.odalic.outputs.annotatedtable.DefaultResultToAnnotatedTableAdapter"
+		scope="prototype" />
+	<bean id="resultToCsvExportAdapter"
+		class="cz.cuni.mff.xrg.odalic.outputs.csvexport.DefaultResultToCSVExportAdapter"
+		scope="prototype" />
+	<bean id="csvExporter"
+		class="cz.cuni.mff.xrg.odalic.outputs.csvexport.DefaultCSVExporter"
+		scope="prototype" />
+
+	<bean id="annotatedTableToRdfExportAdapter"
+		class="cz.cuni.mff.xrg.odalic.outputs.rdfexport.DefaultAnnotatedTableToRDFExportAdapter"
+		scope="prototype" />
+	<bean id="rdfExporter"
+		class="cz.cuni.mff.xrg.odalic.outputs.rdfexport.DefaultRDFExporter"
+		scope="prototype" />
+
+	<bean id="entitiesFactory"
+		class="cz.cuni.mff.xrg.odalic.entities.PrefixMappingEntitiesFactory" />
+	<bean id="knowledgeBaseProxyFactory"
+		class="cz.cuni.mff.xrg.odalic.tasks.executions.DefaultKnowledgeBaseProxyFactory" />
+	<bean id="semanticTableInterpreterFactory"
+		class="cz.cuni.mff.xrg.odalic.tasks.executions.TableMinerPlusFactory" />
+	<bean id="feedbackToConstraintsAdapter"
+		class="cz.cuni.mff.xrg.odalic.feedbacks.DefaultFeedbackToConstraintsAdapter" />
+
+	<!-- Services -->
+	<bean id="dbService" class="cz.cuni.mff.xrg.odalic.util.storage.FileDbService" />
+	<bean id="fileService" class="cz.cuni.mff.xrg.odalic.files.DbFileService" />
+	<bean id="configurationService"
+		class="cz.cuni.mff.xrg.odalic.tasks.configurations.DefaultConfigurationService" />
+	<bean id="executionService"
+		class="cz.cuni.mff.xrg.odalic.tasks.executions.DbCachedFutureBasedExecutionService" />
+	<bean id="feedbackService"
+		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.DbFeedbackService" />
+	<bean id="taskService" class="cz.cuni.mff.xrg.odalic.tasks.DbTaskService" />
+	<bean id="annotatedTableService"
+		class="cz.cuni.mff.xrg.odalic.outputs.annotatedtable.ResultAdaptingAnnotatedTableService" />
+	<bean id="csvExportService"
+		class="cz.cuni.mff.xrg.odalic.outputs.csvexport.ResultAdaptingCsvExportService" />
+	<bean id="rdfExportService"
+		class="cz.cuni.mff.xrg.odalic.outputs.rdfexport.RioBackedRdfExportService" />
+	<bean id="entitiesService" class="cz.cuni.mff.xrg.odalic.entities.DefaultEntitiesService" />
+	<bean id="basesService" class="cz.cuni.mff.xrg.odalic.bases.MemoryOnlyBasesService" />
+	<bean id="groupsService" class="cz.cuni.mff.xrg.odalic.groups.MemoryOnlyGroupsService" />
+	<bean id="advancedBaseTypesService" class="cz.cuni.mff.xrg.odalic.bases.MemoryOnlyAdvancedBaseTypesService" />
+	<bean id="prefixMappingService"
+		class="cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService" />
+	<bean id="propertiesService" class="cz.cuni.mff.xrg.odalic.util.configuration.DefaultPropertiesService" />
+	<bean id="passwordHashingService" class="cz.cuni.mff.xrg.odalic.util.hash.ScryptPasswordHashingService" />
+	<bean id="mailService" class="cz.cuni.mff.xrg.odalic.util.mail.SmtpMailService" />
+	<bean id="tokenService" class="cz.cuni.mff.xrg.odalic.users.AuthZeroTokenService" />
+	<bean id="userService" class="cz.cuni.mff.xrg.odalic.users.DbUserService" />
+	<bean id="taskRdfSerializationService" class="cz.cuni.mff.xrg.odalic.api.rdf.TurtleRdfMappingTaskSerializationService" />
+
+	<!-- Resources -->
+	<bean id="configurationResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.ConfigurationResource" />
+	<bean id="executionResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.ExecutionResource" />
+	<bean id="feedbackResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.FeedbackResource" />
+	<bean id="filesResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.FilesResource" />
+	<bean id="formatResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.FormatResource" />
+	<bean id="resultResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.ResultResource" />
+	<bean id="stateResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.StateResource" />
+	<bean id="tasksResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.TasksResource" />
+	<bean id="annotatedTableResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.AnnotatedTableResource" />
+	<bean id="csvExportResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.CsvExportResource" />
+	<bean id="rdfExportResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.RdfExportResource" />
+	<bean id="entitiesResource"
+		class="cz.cuni.mff.xrg.odalic.api.rest.resources.EntitiesResource" />
+	<bean id="basesResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.BasesResource" />
+	<bean id="usersResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.UsersResource" />
+</beans>

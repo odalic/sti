@@ -13,41 +13,41 @@ import com.google.common.base.Preconditions;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 
-public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
+public final class CoreExceptionsWrappingProxy implements Proxy {
 
-  protected final Logger logger = LoggerFactory.getLogger(getClass());
+  private final Logger logger = LoggerFactory.getLogger(CoreExceptionsWrappingProxy.class);
   
-  private final KnowledgeBaseProxyCore core;
+  private final ProxyCore core;
   
   protected interface Func<Type> {
     Type Do() throws Exception;
   }
   
-  public ResilientKnowledgeBaseProxy(final KnowledgeBaseProxyCore core) {
+  public CoreExceptionsWrappingProxy(final ProxyCore core) {
     Preconditions.checkNotNull(core);
     
     this.core = core;
   }
 
   @Override
-  public void closeConnection() throws KBProxyException {
+  public void closeConnection() throws ProxyException {
     this.core.closeConnection();
   }
 
   @Override
-  public void commitChanges() throws KBProxyException {
+  public void commitChanges() throws ProxyException {
     this.core.commitChanges();
   }
 
-  private <ResultType> KBProxyResult<ResultType> Do(final Func<ResultType> func,
+  private <ResultType> ProxyResult<ResultType> Do(final Func<ResultType> func,
       final ResultType defaultValue) {
     try {
       final ResultType result = func.Do();
-      return new KBProxyResult<>(result);
+      return new ProxyResult<>(result);
     } catch (final Exception ex) {
       this.logger.error(ex.getLocalizedMessage(), ex);
       
-      return new KBProxyResult<>(defaultValue, ex.getLocalizedMessage());
+      return new ProxyResult<>(defaultValue, ex.getLocalizedMessage());
     }
   }
 
@@ -55,7 +55,7 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    * get attributes of the class
    */
   @Override
-  public KBProxyResult<List<Attribute>> findAttributesOfClazz(final String clazzId) {
+  public ProxyResult<List<Attribute>> findAttributesOfClazz(final String clazzId) {
     return Do(() -> this.core.findAttributesOfClazz(clazzId), new ArrayList<Attribute>());
   }
 
@@ -66,7 +66,7 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    * Note: Certain predicates may be blacklisted.
    */
   @Override
-  public KBProxyResult<List<Attribute>> findAttributesOfEntities(final Entity ec) {
+  public ProxyResult<List<Attribute>> findAttributesOfEntities(final Entity ec) {
     return Do(() -> this.core.findAttributesOfEntities(ec), new ArrayList<Attribute>());
   }
 
@@ -74,7 +74,7 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    * get attributes of the property
    */
   @Override
-  public KBProxyResult<List<Attribute>> findAttributesOfProperty(final String propertyId) {
+  public ProxyResult<List<Attribute>> findAttributesOfProperty(final String propertyId) {
     return Do(() -> this.core.findAttributesOfProperty(propertyId), new ArrayList<Attribute>());
   }
 
@@ -88,7 +88,7 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    */
   @Override
   public List<Entity> findClassByFulltext(String pattern, int limit)
-      throws KBProxyException {
+      throws ProxyException {
     return this.core.findClassByFulltext(pattern, limit);
   }
 
@@ -100,12 +100,12 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    * @return
    */
   @Override
-  public KBProxyResult<List<Entity>> findEntityCandidates(final String content) {
+  public ProxyResult<List<Entity>> findEntityCandidates(final String content) {
     return Do(() -> this.core.findEntityCandidates(content), new ArrayList<Entity>());
   }
   
   @Override
-  public KBProxyResult<List<Entity>> findEntityCandidates(final String content, final KnowledgeBaseProxyCore dependenciesProxy) {
+  public ProxyResult<List<Entity>> findEntityCandidates(final String content, final ProxyCore dependenciesProxy) {
     return Do(() -> this.core.findEntityCandidates(content, dependenciesProxy), new ArrayList<Entity>());
   }
 
@@ -113,13 +113,13 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    * Given a string, fetch candidate entities (resources) from the KB that only match certain types
    */
   @Override
-  public KBProxyResult<List<Entity>> findEntityCandidatesOfTypes(final String content,
+  public ProxyResult<List<Entity>> findEntityCandidatesOfTypes(final String content,
       final String... types) {
     return Do(() -> this.core.findEntityCandidatesOfTypes(content, types), new ArrayList<Entity>());
   }
   
   @Override
-  public KBProxyResult<List<Entity>> findEntityCandidatesOfTypes(final String content, final KnowledgeBaseProxyCore dependenciesProxy,
+  public ProxyResult<List<Entity>> findEntityCandidatesOfTypes(final String content, final ProxyCore dependenciesProxy,
       final String... types) {
     return Do(() -> this.core.findEntityCandidatesOfTypes(content, dependenciesProxy, types), new ArrayList<Entity>());
   }
@@ -128,7 +128,7 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    * compute the seamntic similarity between an entity and a class
    */
   @Override
-  public KBProxyResult<Double> findEntityClazzSimilarity(final String entity_id,
+  public ProxyResult<Double> findEntityClazzSimilarity(final String entity_id,
       final String clazz_url) {
     return Do(() -> this.core.findEntityClazzSimilarity(entity_id, clazz_url), 0.0);
   }
@@ -137,7 +137,7 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    * @return the granularity of the class in the KB.
    */
   @Override
-  public KBProxyResult<Double> findGranularityOfClazz(final String clazz) {
+  public ProxyResult<Double> findGranularityOfClazz(final String clazz) {
     return Do(() -> this.core.findGranularityOfClazz(clazz), 0.0);
   }
 
@@ -151,7 +151,7 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    */
   @Override
   public List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain,
-      URI range) throws KBProxyException {
+      URI range) throws ProxyException {
     return this.core.findPredicateByFulltext(pattern, limit, domain, range);
   }
 
@@ -165,7 +165,7 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    */
   @Override
   public List<Entity> findResourceByFulltext(String pattern, int limit)
-      throws KBProxyException {
+      throws ProxyException {
     return this.core.findResourceByFulltext(pattern, limit);
   }
 
@@ -179,10 +179,10 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    *
    * @param uri
    * @return
-   * @throws KBProxyException
+   * @throws ProxyException
    */
   @Override
-  public List<String> getPropertyDomains(String uri) throws KBProxyException {
+  public List<String> getPropertyDomains(String uri) throws ProxyException {
     return this.core.getPropertyDomains(uri);
   }
 
@@ -191,10 +191,10 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    *
    * @param uri
    * @return
-   * @throws KBProxyException
+   * @throws ProxyException
    */
   @Override
-  public List<String> getPropertyRanges(String uri) throws KBProxyException {
+  public List<String> getPropertyRanges(String uri) throws ProxyException {
     return this.core.getPropertyRanges(uri);
   }
 
@@ -203,7 +203,7 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    */
   @Override
   public Entity insertClass(URI uri, String label, Collection<String> alternativeLabels,
-      String superClass) throws KBProxyException {
+      String superClass) throws ProxyException {
     return this.core.insertClass(uri, label, alternativeLabels, superClass);
   }
 
@@ -212,7 +212,7 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    */
   @Override
   public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels,
-      Collection<String> classes) throws KBProxyException {
+      Collection<String> classes) throws ProxyException {
     return this.core.insertConcept(uri, label, alternativeLabels, classes);
   }
 
@@ -221,7 +221,7 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    */
   @Override
   public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels,
-      String superProperty, String domain, String range) throws KBProxyException {
+      String superProperty, String domain, String range) throws ProxyException {
     return this.core.insertProperty(uri, label, alternativeLabels, superProperty, domain, range);
   }
 
@@ -240,22 +240,27 @@ public class ResilientKnowledgeBaseProxy implements KnowledgeBaseProxy {
    * @return The entity or null if no such URI was found in the knowledge base.
    */
   @Override
-  public KBProxyResult<Entity> loadEntity(final String uri) {
+  public ProxyResult<Entity> loadEntity(final String uri) {
     return Do(() -> this.core.loadEntity(uri), null);
   }
   
   @Override
-  public KBProxyResult<Entity> loadEntity(final String uri, final KnowledgeBaseProxyCore dependenciesProxy) {
+  public ProxyResult<Entity> loadEntity(final String uri, final ProxyCore dependenciesProxy) {
     return Do(() -> this.core.loadEntity(uri, dependenciesProxy), null);
   }
 
   @Override
-  public String getResourceLabel(String uri) throws KBProxyException {
+  public String getResourceLabel(String uri) throws ProxyException {
     return this.core.getResourceLabel(uri);
   }
 
   @Override
-  public List<Attribute> findAttributes(String resourceId) throws KBProxyException {
+  public List<Attribute> findAttributes(String resourceId) throws ProxyException {
     return this.core.findAttributes(resourceId);
+  }
+
+  @Override
+  public ProxyDefinition getDefinition() {
+    return this.core.getDefinition();
   }
 }

@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
+import cz.cuni.mff.xrg.odalic.users.User;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
@@ -222,8 +223,14 @@ public final class DbFileService implements FileService {
   }
 
   @Override
-  public void subscribe(final File file, final Task task) {
-    final String userId = file.getOwner().getEmail();
+  public void subscribe(final Task task) {
+    final File file = task.getConfiguration().getInput();
+
+    final User owner = file.getOwner();
+    Preconditions.checkArgument(owner.equals(task.getOwner()),
+        "The owner of the file is not the same as the owner of the task!");
+
+    final String userId = owner.getEmail();
     final String fileId = file.getId();
 
     Preconditions.checkArgument(this.files.get(new Object[] {userId, fileId}).equals(file),
@@ -236,8 +243,14 @@ public final class DbFileService implements FileService {
   }
 
   @Override
-  public void unsubscribe(final File file, final Task task) {
-    final String userId = file.getOwner().getEmail();
+  public void unsubscribe(final Task task) {
+    final File file = task.getConfiguration().getInput();
+
+    final User owner = file.getOwner();
+    Preconditions.checkArgument(owner.equals(task.getOwner()),
+        "The owner of the file is not the same as the owner of the task!");
+
+    final String userId = owner.getEmail();
     final String fileId = file.getId();
 
     Preconditions.checkArgument(this.files.get(new Object[] {userId, fileId}).equals(file),

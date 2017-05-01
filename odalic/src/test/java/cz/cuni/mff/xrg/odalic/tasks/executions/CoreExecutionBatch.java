@@ -27,8 +27,8 @@ import java.util.Map;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
+import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
-import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
 import cz.cuni.mff.xrg.odalic.entities.PrefixMappingEntitiesFactory;
 import cz.cuni.mff.xrg.odalic.feedbacks.Ambiguity;
 import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
@@ -71,7 +71,7 @@ public class CoreExecutionBatch {
 
   private static final Logger log = LoggerFactory.getLogger(CoreExecutionBatch.class);
 
-  private static KnowledgeBaseProxiesProvider kbf;
+  private static KnowledgeBaseProxiesService kbf;
 
   /**
    * Expects sti.properties file path as the first and test input CSV file path as the second
@@ -145,13 +145,10 @@ public class CoreExecutionBatch {
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
-      kbf = new DefaultKnowledgeBaseProxiesProvider(pms);
-      semanticTableInterpreters = new TableMinerPlusFactory(kbf).getInterpreters();
-    } catch (IOException e) {
-      log.error("Error - TMP initialization process fails to load its configuration:", e);
-      return null;
-    } catch (STIException e) {
-      log.error("Error - TMP interpreters fail to initialize:", e);
+      kbf = null; // TODO: Instantiate with pms!
+      semanticTableInterpreters = null; // TODO: Instantiate factory first, with cache service.
+    } catch (final Exception e) {
+      log.error("Error - TMP interpreters failed to initialize:", e);
       return null;
     }
     Preconditions.checkNotNull(semanticTableInterpreters);
@@ -187,7 +184,7 @@ public class CoreExecutionBatch {
     return new CoreSnapshot(odalicResult, parsingResult.getInput(), configuration);
   }
 
-  public static KnowledgeBaseProxiesProvider getKnowledgeBaseProxyFactory() {
+  public static KnowledgeBaseProxiesService getKnowledgeBaseProxyFactory() {
     return kbf;
   }
 

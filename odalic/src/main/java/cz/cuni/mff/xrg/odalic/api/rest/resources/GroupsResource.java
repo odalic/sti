@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
@@ -13,6 +14,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -102,7 +104,7 @@ public final class GroupsResource {
   @Path("groups/{groupId}")
   @Produces({MediaType.APPLICATION_JSON})
   public Response get(final @PathParam("groupId") String groupId) {
-    return get(this.securityContext.getUserPrincipal().getName());
+    return get(this.securityContext.getUserPrincipal().getName(), groupId);
   }
 
   @PUT
@@ -143,6 +145,31 @@ public final class GroupsResource {
   @Produces({MediaType.APPLICATION_JSON})
   public Response put(final @PathParam("groupId") String groupId, final GroupValue group) throws MalformedURLException, IllegalStateException, IllegalArgumentException {
     return put(this.securityContext.getUserPrincipal().getName(), groupId, group);
+  }
+  
+  @DELETE
+  @Path("groups/{groupId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deleteById(final @PathParam("groupId") String groupId) {
+    return deleteById(this.securityContext.getUserPrincipal().getName(), groupId);
+  }
+
+  @DELETE
+  @Path("users/{userId}/groups/{groupId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deleteById(final @PathParam("userId") String userId,
+      final @PathParam("groupId") String groupId) {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    try {
+      this.groupsService.deleteById(userId, groupId);
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException("The group does not exist!", e);
+    } catch (final IllegalStateException e) {
+      throw new WebApplicationException(e.getMessage(), e, Response.Status.CONFLICT);
+    }
+
+    return Message.of("Group deleted.").toResponse(Response.Status.OK, this.uriInfo);
   }
   
   @GET

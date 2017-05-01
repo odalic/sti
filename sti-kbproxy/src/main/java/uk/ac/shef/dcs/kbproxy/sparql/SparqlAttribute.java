@@ -1,8 +1,8 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxyDefinition;
-import uk.ac.shef.dcs.kbproxy.KBProxyUtils;
+import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
+import uk.ac.shef.dcs.kbproxy.utils.Uris;
 
 /**
  * Created by - on 10/06/2016.
@@ -19,18 +19,18 @@ public class SparqlAttribute extends Attribute {
   }
 
   @Override
-  public boolean isAlias(KnowledgeBaseProxyDefinition definition) {
-    if (definition instanceof SparqlBaseProxyDefinition) {
-      return KBProxyUtils.contains(((SparqlBaseProxyDefinition)definition).getStructurePredicateLabel(), getRelationURI());
+  public boolean isAlias(ProxyDefinition definition) {
+    if (definition instanceof SparqlProxyDefinition) {
+      return Uris.httpVersionAgnosticContains(((SparqlProxyDefinition)definition).getStructurePredicateLabel(), getRelationURI());
     }
 
     return false;
   }
 
   @Override
-  public boolean isDescription(KnowledgeBaseProxyDefinition definition) {
-    if (definition instanceof SparqlBaseProxyDefinition) {
-      return KBProxyUtils.contains(((SparqlBaseProxyDefinition)definition).getStructurePredicateDescription(), getRelationURI());
+  public boolean isDescription(ProxyDefinition definition) {
+    if (definition instanceof SparqlProxyDefinition) {
+      return Uris.httpVersionAgnosticContains(((SparqlProxyDefinition)definition).getStructurePredicateDescription(), getRelationURI());
     }
 
     return false;

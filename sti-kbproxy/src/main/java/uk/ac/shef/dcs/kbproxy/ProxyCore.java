@@ -9,32 +9,32 @@ import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 
 
-public interface KnowledgeBaseProxyCore {
+public interface ProxyCore {
 
-  void closeConnection() throws KBProxyException;
+  void closeConnection() throws ProxyException;
 
-  void commitChanges() throws KBProxyException;
+  void commitChanges() throws ProxyException;
 
   /**
    * get attributes of the class
-   * @throws KBProxyException 
+   * @throws ProxyException 
    */
-  List<Attribute> findAttributesOfClazz(String clazzId) throws KBProxyException;
+  List<Attribute> findAttributesOfClazz(String clazzId) throws ProxyException;
 
   /**
    * Get attributes of the entity candidate (all predicates and object values of the triples where
    * the candidate entity is the subject).
    *
    * Note: Certain predicates may be blacklisted.
-   * @throws KBProxyException 
+   * @throws ProxyException 
    */
-  List<Attribute> findAttributesOfEntities(Entity ec) throws KBProxyException;
+  List<Attribute> findAttributesOfEntities(Entity ec) throws ProxyException;
 
   /**
    * get attributes of the property
-   * @throws KBProxyException 
+   * @throws ProxyException 
    */
-  List<Attribute> findAttributesOfProperty(String propertyId) throws KBProxyException;
+  List<Attribute> findAttributesOfProperty(String propertyId) throws ProxyException;
 
   /**
    * Given a string, fetch candidate entities (classes) from the KB based on a fulltext search.
@@ -44,7 +44,7 @@ public interface KnowledgeBaseProxyCore {
    * @return
    * @throws IOException
    */
-  List<Entity> findClassByFulltext(String pattern, int limit) throws KBProxyException;
+  List<Entity> findClassByFulltext(String pattern, int limit) throws ProxyException;
 
   /**
    * Given a string, fetch candidate entities (resources) from the KB Candidate entities are those
@@ -52,19 +52,19 @@ public interface KnowledgeBaseProxyCore {
    *
    * @param content
    * @return
-   * @throws KBProxyException 
+   * @throws ProxyException 
    */
-  List<Entity> findEntityCandidates(String content) throws KBProxyException;
+  List<Entity> findEntityCandidates(String content) throws ProxyException;
   
-  List<Entity> findEntityCandidates(String content, final KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException;
+  List<Entity> findEntityCandidates(String content, final ProxyCore dependenciesProxy) throws ProxyException;
 
   /**
    * Given a string, fetch candidate entities (resources) from the KB that only match certain types
-   * @throws KBProxyException 
+   * @throws ProxyException 
    */
-  List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws KBProxyException;
+  List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws ProxyException;
   
-  List<Entity> findEntityCandidatesOfTypes(String content, final KnowledgeBaseProxyCore dependenciesProxy, String... types) throws KBProxyException;
+  List<Entity> findEntityCandidatesOfTypes(String content, final ProxyCore dependenciesProxy, String... types) throws ProxyException;
 
   /**
    * compute the seamntic similarity between an entity and a class
@@ -85,7 +85,7 @@ public interface KnowledgeBaseProxyCore {
    * @throws IOException
    */
   List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain, URI range)
-      throws KBProxyException;
+      throws ProxyException;
 
   /**
    * Given a string, fetch candidate entities (resources) from the KB based on a fulltext search.
@@ -95,7 +95,7 @@ public interface KnowledgeBaseProxyCore {
    * @return
    * @throws IOException
    */
-  List<Entity> findResourceByFulltext(String pattern, int limit) throws KBProxyException;
+  List<Entity> findResourceByFulltext(String pattern, int limit) throws ProxyException;
 
   String getName();
 
@@ -104,36 +104,36 @@ public interface KnowledgeBaseProxyCore {
    *
    * @param uri
    * @return
-   * @throws KBProxyException
+   * @throws ProxyException
    */
-  List<String> getPropertyDomains(String uri) throws KBProxyException;
+  List<String> getPropertyDomains(String uri) throws ProxyException;
 
   /**
    * Fetches range of the gives resource.
    *
    * @param uri
    * @return
-   * @throws KBProxyException
+   * @throws ProxyException
    */
-  List<String> getPropertyRanges(String uri) throws KBProxyException;
+  List<String> getPropertyRanges(String uri) throws ProxyException;
 
   /**
    * Inserts a new class into the knowledge base
    */
   Entity insertClass(URI uri, String label, Collection<String> alternativeLabels, String superClass)
-      throws KBProxyException;
+      throws ProxyException;
 
   /**
    * Inserts a new concept into the knowledge base
    */
   Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels,
-      Collection<String> classes) throws KBProxyException;
+      Collection<String> classes) throws ProxyException;
 
   /**
    * Inserts a new property into the knowledge base
    */
   Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels,
-      String superProperty, String domain, String range) throws KBProxyException;
+      String superProperty, String domain, String range) throws ProxyException;
 
   /**
    * Information about whether the knowledge base supports inserting new concepts
@@ -145,23 +145,24 @@ public interface KnowledgeBaseProxyCore {
    *
    * @param uri The entity uri.
    * @return The entity or null if no such uri was found in the knowledge base.
-   * @throws KBProxyException 
+   * @throws ProxyException 
    */
-  Entity loadEntity(String uri) throws KBProxyException;
+  Entity loadEntity(String uri) throws ProxyException;
   
-  Entity loadEntity(String uri, KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException;
+  Entity loadEntity(String uri, ProxyCore dependenciesProxy) throws ProxyException;
 
-  String getResourceLabel(String uri) throws KBProxyException;
+  String getResourceLabel(String uri) throws ProxyException;
 
-  List<Attribute> findAttributes(String resourceId) throws KBProxyException;
+  List<Attribute> findAttributes(String resourceId) throws ProxyException;
 
   List<Attribute> findAttributesOfClazz(String clazzId,
-      KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException;
+      ProxyCore dependenciesProxy) throws ProxyException;
 
   List<Attribute> findAttributesOfEntities(Entity ec,
-      KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException;
+      ProxyCore dependenciesProxy) throws ProxyException;
   
   List<Attribute> findAttributesOfProperty(String propertyId,
-      KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException;
+      ProxyCore dependenciesProxy) throws ProxyException;
 
+  ProxyDefinition getDefinition();
 }

@@ -16,9 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
-import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
-import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
@@ -73,7 +71,7 @@ public final class DbTaskService implements TaskService {
 
     final Map<Object[], Task> taskIdsToTasks = this.tasks.prefixSubMap(new Object[] {userId});
     taskIdsToTasks.entrySet().stream().forEach(e -> this.fileService
-        .unsubscribe(e.getValue().getConfiguration().getInput(), e.getValue()));
+        .unsubscribe(e.getValue()));
     taskIdsToTasks.clear();
   }
 
@@ -85,8 +83,7 @@ public final class DbTaskService implements TaskService {
     final Task task = this.tasks.remove(new Object[] {userId, taskId});
     Preconditions.checkArgument(task != null);
 
-    final Configuration configuration = task.getConfiguration();
-    this.fileService.unsubscribe(configuration.getInput(), task);
+    this.fileService.unsubscribe(task);
 
     this.db.commit();
   }
@@ -129,22 +126,16 @@ public final class DbTaskService implements TaskService {
     final Task previous =
         this.tasks.put(new Object[] {task.getOwner().getEmail(), task.getId()}, task);
     if (previous != null) {
-      final Configuration previousConfiguration = previous.getConfiguration();
-      final File previousInput = previousConfiguration.getInput();
-
       try {
-        this.fileService.unsubscribe(previousInput, previous);
+        this.fileService.unsubscribe(previous);
       } catch (final Exception e) {
         this.db.rollback();
         throw e;
       }
     }
 
-    final Configuration configuration = task.getConfiguration();
-    final File input = configuration.getInput();
-
     try {
-      this.fileService.subscribe(input, task);
+      this.fileService.subscribe(task);
     } catch (final Exception e) {
       this.db.rollback();
       throw e;

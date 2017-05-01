@@ -14,29 +14,29 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class CachingKnowledgeBaseProxyCore implements KnowledgeBaseProxyCore {
+public class CachingProxyCore implements ProxyCore {
 
   private static interface ProxyOperation<T> {
-    T get() throws KBProxyException;
+    T get() throws ProxyException;
   }
 
-  private static final Logger log = LoggerFactory.getLogger(CachingKnowledgeBaseProxyCore.class);
+  private static final Logger log = LoggerFactory.getLogger(CachingProxyCore.class);
 
-  private final KnowledgeBaseProxyCore proxy;
+  private final ProxyCore core;
 
   private final Cache cache;
 
   private final String structureDomain;
   private final String structureRange;
 
-  public CachingKnowledgeBaseProxyCore(final KnowledgeBaseProxyCore proxy, final Cache cache,
+  public CachingProxyCore(final ProxyCore proxy, final Cache cache,
       final String structureDomain, final String structureRange) {
     Preconditions.checkNotNull(proxy);
     Preconditions.checkNotNull(cache);
     Preconditions.checkNotNull(structureDomain);
     Preconditions.checkNotNull(structureRange);
 
-    this.proxy = proxy;
+    this.core = proxy;
     this.cache = cache;
     this.structureDomain = structureDomain;
     this.structureRange = structureRange;
@@ -56,7 +56,7 @@ public class CachingKnowledgeBaseProxyCore implements KnowledgeBaseProxyCore {
   }
 
   private <T> T retrieveOrTryExecute(final String queryCache, final ProxyOperation<T> operation)
-      throws KBProxyException {
+      throws ProxyException {
     T result = retrieveCachedValue(queryCache);
 
     if (isNullOrEmpty(result)) {
@@ -67,7 +67,7 @@ public class CachingKnowledgeBaseProxyCore implements KnowledgeBaseProxyCore {
           cacheValue(queryCache, result);
         }
       } catch (final Exception ex) {
-        throw new KBProxyException("Unexpected error during KB access.", ex);
+        throw new ProxyException("Unexpected error during KB access.", ex);
       }
     }
 
@@ -102,52 +102,52 @@ public class CachingKnowledgeBaseProxyCore implements KnowledgeBaseProxyCore {
   }
 
   @Override
-  public List<String> getPropertyDomains(String uri) throws KBProxyException {
+  public List<String> getPropertyDomains(String uri) throws ProxyException {
     final String cacheQuery = CacheQueries.getPropertyValues(uri, this.structureDomain);
 
     return retrieveOrTryExecute(cacheQuery, () -> {
-      return this.proxy.getPropertyDomains(uri);
+      return this.core.getPropertyDomains(uri);
     });
   }
 
   @Override
-  public List<String> getPropertyRanges(String uri) throws KBProxyException {
+  public List<String> getPropertyRanges(String uri) throws ProxyException {
     final String cacheQuery = CacheQueries.getPropertyValues(uri, this.structureRange);
 
     return retrieveOrTryExecute(cacheQuery, () -> {
-      return this.proxy.getPropertyRanges(uri);
+      return this.core.getPropertyRanges(uri);
     });
   }
 
   @Override
-  public Entity loadEntity(String uri) throws KBProxyException {
+  public Entity loadEntity(String uri) throws ProxyException {
     final String cacheQuery = CacheQueries.loadResource(uri);
 
     return retrieveOrTryExecute(cacheQuery, () -> {
-      return this.proxy.loadEntity(uri, this);
+      return this.core.loadEntity(uri, this);
     });
   }
 
   @Override
-  public List<Entity> findEntityCandidates(final String content) throws KBProxyException {
+  public List<Entity> findEntityCandidates(final String content) throws ProxyException {
     final String cacheQuery = CacheQueries.findResources(content);
 
     return retrieveOrTryExecute(cacheQuery, () -> {
-      return this.proxy.findEntityCandidates(content, this);
+      return this.core.findEntityCandidates(content, this);
     });
   }
 
   @Override
   public List<Entity> findEntityCandidatesOfTypes(final String content, final String... types)
-      throws KBProxyException {
+      throws ProxyException {
     final String cacheQuery = CacheQueries.findResources(content, types);
 
     return retrieveOrTryExecute(cacheQuery, () -> {
-      return this.proxy.findEntityCandidatesOfTypes(content, this, types);
+      return this.core.findEntityCandidatesOfTypes(content, this, types);
     });
   }
 
-  public String getResourceLabel(String uri) throws KBProxyException {
+  public String getResourceLabel(String uri) throws ProxyException {
     if (!uri.startsWith("http")) {
       return uri;
     }
@@ -155,145 +155,150 @@ public class CachingKnowledgeBaseProxyCore implements KnowledgeBaseProxyCore {
     final String queryCache = CacheQueries.findLabelForResource(uri);
 
     return retrieveOrTryExecute(queryCache, () -> {
-      return this.proxy.getResourceLabel(uri);
+      return this.core.getResourceLabel(uri);
     });
   }
 
-  public List<Attribute> findAttributes(String id) throws KBProxyException {
+  public List<Attribute> findAttributes(String id) throws ProxyException {
     if (id.length() == 0)
       return new ArrayList<>();
 
     final String queryCache = CacheQueries.findAttributesOfResource(id);
 
     return retrieveOrTryExecute(queryCache, () -> {
-      return this.proxy.findAttributes(id);
+      return this.core.findAttributes(id);
     });
   }
 
   @Override
-  public void closeConnection() throws KBProxyException {
+  public void closeConnection() throws ProxyException {
     try {
       this.cache.shutdown();
     } catch (final Exception e) {
-      throw new KBProxyException(e);
+      throw new ProxyException(e);
     }
 
-    this.proxy.closeConnection();
+    this.core.closeConnection();
   }
 
   @Override
-  public void commitChanges() throws KBProxyException {
+  public void commitChanges() throws ProxyException {
     try {
       this.cache.commit();
     } catch (final Exception e) {
-      throw new KBProxyException(e);
+      throw new ProxyException(e);
     }
 
-    this.proxy.commitChanges();
+    this.core.commitChanges();
   }
 
   @Override
-  public List<Attribute> findAttributesOfClazz(String clazzId) throws KBProxyException {
-    return this.proxy.findAttributesOfClazz(clazzId, this);
+  public List<Attribute> findAttributesOfClazz(String clazzId) throws ProxyException {
+    return this.core.findAttributesOfClazz(clazzId, this);
   }
 
   @Override
-  public List<Attribute> findAttributesOfEntities(Entity ec) throws KBProxyException {
-    return this.proxy.findAttributesOfEntities(ec, this);
+  public List<Attribute> findAttributesOfEntities(Entity ec) throws ProxyException {
+    return this.core.findAttributesOfEntities(ec, this);
   }
 
   @Override
-  public List<Attribute> findAttributesOfProperty(String propertyId) throws KBProxyException {
-    return this.proxy.findAttributesOfProperty(propertyId, this);
+  public List<Attribute> findAttributesOfProperty(String propertyId) throws ProxyException {
+    return this.core.findAttributesOfProperty(propertyId, this);
   }
 
   @Override
-  public List<Entity> findClassByFulltext(String pattern, int limit) throws KBProxyException {
-    return this.proxy.findClassByFulltext(pattern, limit);
+  public List<Entity> findClassByFulltext(String pattern, int limit) throws ProxyException {
+    return this.core.findClassByFulltext(pattern, limit);
   }
 
   @Override
   public List<Entity> findEntityCandidates(final String content,
-      final KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException {
+      final ProxyCore dependenciesProxy) throws ProxyException {
     return dependenciesProxy.findEntityCandidates(content);
   }
 
   @Override
   public List<Entity> findEntityCandidatesOfTypes(String content,
-      KnowledgeBaseProxyCore dependenciesProxy, String... types) throws KBProxyException {
+      ProxyCore dependenciesProxy, String... types) throws ProxyException {
     return dependenciesProxy.findEntityCandidatesOfTypes(content, types);
   }
 
   @Override
   public Double findEntityClazzSimilarity(String entity_id, String clazz_url) {
-    return this.proxy.findEntityClazzSimilarity(entity_id, clazz_url);
+    return this.core.findEntityClazzSimilarity(entity_id, clazz_url);
   }
 
   @Override
   public Double findGranularityOfClazz(String clazz) {
-    return this.proxy.findGranularityOfClazz(clazz);
+    return this.core.findGranularityOfClazz(clazz);
   }
 
   @Override
   public List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain, URI range)
-      throws KBProxyException {
-    return this.proxy.findPredicateByFulltext(pattern, limit, domain, range);
+      throws ProxyException {
+    return this.core.findPredicateByFulltext(pattern, limit, domain, range);
   }
 
   @Override
-  public List<Entity> findResourceByFulltext(String pattern, int limit) throws KBProxyException {
-    return this.proxy.findResourceByFulltext(pattern, limit);
+  public List<Entity> findResourceByFulltext(String pattern, int limit) throws ProxyException {
+    return this.core.findResourceByFulltext(pattern, limit);
   }
 
   @Override
   public String getName() {
-    return this.proxy.getName();
+    return this.core.getName();
   }
 
   @Override
   public Entity insertClass(URI uri, String label, Collection<String> alternativeLabels,
-      String superClass) throws KBProxyException {
-    return this.proxy.insertClass(uri, label, alternativeLabels, superClass);
+      String superClass) throws ProxyException {
+    return this.core.insertClass(uri, label, alternativeLabels, superClass);
   }
 
   @Override
   public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels,
-      Collection<String> classes) throws KBProxyException {
-    return this.proxy.insertConcept(uri, label, alternativeLabels, classes);
+      Collection<String> classes) throws ProxyException {
+    return this.core.insertConcept(uri, label, alternativeLabels, classes);
   }
 
   @Override
   public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels,
-      String superProperty, String domain, String range) throws KBProxyException {
-    return this.proxy.insertProperty(uri, label, alternativeLabels, superProperty, domain, range);
+      String superProperty, String domain, String range) throws ProxyException {
+    return this.core.insertProperty(uri, label, alternativeLabels, superProperty, domain, range);
   }
 
   @Override
   public boolean isInsertSupported() {
-    return this.proxy.isInsertSupported();
+    return this.core.isInsertSupported();
   }
 
   @Override
-  public Entity loadEntity(String uri, KnowledgeBaseProxyCore dependenciesProxy)
-      throws KBProxyException {
+  public Entity loadEntity(String uri, ProxyCore dependenciesProxy)
+      throws ProxyException {
     return dependenciesProxy.loadEntity(uri);
   }
 
   @Override
   public List<Attribute> findAttributesOfClazz(String clazzId,
-      KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException {
+      ProxyCore dependenciesProxy) throws ProxyException {
     return dependenciesProxy.findAttributesOfClazz(clazzId);
   }
 
   @Override
   public List<Attribute> findAttributesOfEntities(Entity ec,
-      KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException {
+      ProxyCore dependenciesProxy) throws ProxyException {
     return dependenciesProxy.findAttributesOfEntities(ec);
   }
 
   @Override
   public List<Attribute> findAttributesOfProperty(String propertyId,
-      KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException {
+      ProxyCore dependenciesProxy) throws ProxyException {
     return dependenciesProxy.findAttributesOfProperty(propertyId);
+  }
+
+  @Override
+  public ProxyDefinition getDefinition() {
+    return this.core.getDefinition();
   }
 }

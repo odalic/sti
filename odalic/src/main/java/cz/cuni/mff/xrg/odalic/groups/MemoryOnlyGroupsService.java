@@ -6,6 +6,9 @@ package cz.cuni.mff.xrg.odalic.groups;
 import java.net.URL;
 import java.util.Set;
 import java.util.SortedSet;
+
+import org.springframework.stereotype.Component;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
@@ -14,11 +17,13 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.users.User;
 
 /**
- * Default {@link GroupsService} implementation.
+ * Memory-only {@link GroupsService} implementation.
  *
  */
+@Component
 public final class MemoryOnlyGroupsService implements GroupsService {
 
   private final Table<String, String, Group> userAndGroupIdsToGroups;
@@ -77,47 +82,77 @@ public final class MemoryOnlyGroupsService implements GroupsService {
   }
 
   @Override
-  public void subscribe(final Group group, final KnowledgeBase base) {
-    final String userId = group.getOwner().getEmail();
-    final String groupId = group.getId();
+  public void subscribe(final KnowledgeBase base) {
+    final User baseOwner = base.getOwner();
+    final String baseName = base.getName();
+    
+    final Set<Group> groups = base.getSelectedGroups();
+    
+    for (final Group group : groups) {      
+      subscribe(baseOwner, baseName, group);
+    }
+  }
 
+  private void subscribe(final User baseOwner, final String baseName, final Group group) {
+    final User owner = group.getOwner();
+    Preconditions.checkArgument(owner.equals(baseOwner),
+        "The owner of the group is not the same as the owner of the base!");
+    
+    final String userId = owner.getEmail();
+    final String groupId = group.getId();      
+    
     Preconditions.checkArgument(this.userAndGroupIdsToGroups.get(userId, groupId).equals(group),
         "The group is not registered!");
-
+ 
     final Set<String> bases = this.utilizingBases.get(userId, groupId);
-
+ 
     final boolean inserted;
     if (bases == null) {
-      this.utilizingBases.put(userId, groupId, Sets.newHashSet(base.getName()));
+      this.utilizingBases.put(userId, groupId, Sets.newHashSet(baseName));
       inserted = true;
     } else {
-      inserted = bases.add(base.getName());
+      inserted = bases.add(baseName);
     }
-
-    Preconditions.checkArgument(inserted, "The base has already been subcscribed to the group!");
+ 
+      Preconditions.checkArgument(inserted, "The base has already been subcscribed to the group!");
   }
 
   @Override
-  public void unsubscribe(final Group group, final KnowledgeBase base) {
-    final String userId = group.getOwner().getEmail();
-    final String groupId = group.getId();
+  public void unsubscribe(final KnowledgeBase base) {
+    final User baseOwner = base.getOwner();
+    final String baseName = base.getName();
+    
+    final Set<Group> groups = base.getSelectedGroups();
+    
+    for (final Group group : groups) {      
+      unsubscribe(baseOwner, baseName, group);
+    }
+  }
 
+  private void unsubscribe(final User baseOwner, final String baseName, final Group group) {
+    final User owner = group.getOwner();
+    Preconditions.checkArgument(owner.equals(baseOwner),
+        "The owner of the group is not the same as the owner of the base!");
+    
+    final String userId = owner.getEmail();
+    final String groupId = group.getId();      
+    
     Preconditions.checkArgument(this.userAndGroupIdsToGroups.get(userId, groupId).equals(group),
         "The group is not registered!");
-
+ 
     final Set<String> bases = this.utilizingBases.get(userId, groupId);
-
+ 
     final boolean removed;
     if (bases == null) {
       removed = false;
     } else {
-      removed = bases.remove(base.getName());
-
+      removed = bases.remove(baseName);
+ 
       if (bases.isEmpty()) {
         this.utilizingBases.remove(userId, groupId);
       }
     }
-
+ 
     Preconditions.checkArgument(removed, "The base is not subcscribed to the group!");
   }
 
@@ -136,5 +171,28 @@ public final class MemoryOnlyGroupsService implements GroupsService {
     
     // TODO: Implement used groups detection.
     return ImmutableSet.copyOf(this.userAndGroupIdsToGroups.row(userId).values());
+  }
+
+  @Override
+  public void deleteById(String userId, String groupId) {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(groupId);
+
+    checkUtilization(userId, groupId);
+
+    final Group group = this.userAndGroupIdsToGroups.remove(userId, groupId);
+    Preconditions.checkArgument(group != null);
+  }
+  
+  private void checkUtilization(final String userId, final String groupId)
+      throws IllegalStateException {
+    final Set<String> utilizingBaseIds = this.utilizingBases.get(userId, groupId);
+    if (utilizingBaseIds == null) {
+      return;
+    }
+
+    final String jointUtilizingBaseIds = String.join(", ", utilizingBaseIds);
+    Preconditions.checkState(utilizingBaseIds.isEmpty(),
+        String.format("Some bases definition (%s) still refer to this group!", jointUtilizingBaseIds));
   }
 }

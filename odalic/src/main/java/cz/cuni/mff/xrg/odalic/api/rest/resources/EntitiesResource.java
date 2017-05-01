@@ -36,7 +36,7 @@ import cz.cuni.mff.xrg.odalic.entities.PropertyProposal;
 import cz.cuni.mff.xrg.odalic.entities.ResourceProposal;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.users.Role;
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.ProxyException;
 import uk.ac.shef.dcs.sti.STIException;
 
 /**
@@ -59,7 +59,6 @@ public final class EntitiesResource {
   @Context
   private UriInfo uriInfo;
 
-
   @Autowired
   public EntitiesResource(final EntitiesService entitiesService, final BasesService basesService) {
     Preconditions.checkNotNull(entitiesService);
@@ -74,7 +73,7 @@ public final class EntitiesResource {
   @Produces({MediaType.APPLICATION_JSON})
   public Response propose(final @PathParam("userId") String userId,
       @PathParam("base") final String baseName, final ClassProposal proposal)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     Security.checkAuthorization(this.securityContext, userId);
 
     final KnowledgeBase base = getBase(userId, baseName);
@@ -93,7 +92,7 @@ public final class EntitiesResource {
   @Path("/bases/{base}/entities/classes")
   @Produces({MediaType.APPLICATION_JSON})
   public Response propose(@PathParam("base") final String baseName, final ClassProposal proposal)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     return propose(this.securityContext.getUserPrincipal().getName(), baseName, proposal);
   }
 
@@ -102,7 +101,7 @@ public final class EntitiesResource {
   @Produces({MediaType.APPLICATION_JSON})
   public Response propose(final @PathParam("userId") String userId,
       final @PathParam("base") String baseName, final PropertyProposal proposal)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     Security.checkAuthorization(this.securityContext, userId);
 
     final KnowledgeBase base = getBase(userId, baseName);
@@ -122,7 +121,7 @@ public final class EntitiesResource {
   @Path("bases/{base}/entities/properties")
   @Produces({MediaType.APPLICATION_JSON})
   public Response propose(final @PathParam("base") String baseName, final PropertyProposal proposal)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     return propose(this.securityContext.getUserPrincipal().getName(), baseName, proposal);
   }
 
@@ -139,7 +138,7 @@ public final class EntitiesResource {
   @Produces({MediaType.APPLICATION_JSON})
   public Response propose(final @PathParam("userId") String userId,
       @PathParam("base") final String baseName, final ResourceProposal proposal)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     Security.checkAuthorization(this.securityContext, userId);
 
     final KnowledgeBase base = getBase(userId, baseName);
@@ -159,7 +158,7 @@ public final class EntitiesResource {
   @Path("bases/{base}/entities/resources")
   @Produces({MediaType.APPLICATION_JSON})
   public Response propose(@PathParam("base") final String baseName, final ResourceProposal proposal)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     return propose(this.securityContext.getUserPrincipal().getName(), baseName, proposal);
   }
 
@@ -169,7 +168,7 @@ public final class EntitiesResource {
   public Response search(final @PathParam("userId") String userId,
       @PathParam("base") final String baseName, @QueryParam("query") final String query,
       @DefaultValue("20") @QueryParam("limit") final Integer limit)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     return searchResources(userId, baseName, query, limit);
   }
 
@@ -179,7 +178,7 @@ public final class EntitiesResource {
   public Response search(@PathParam("base") final String baseName,
       @QueryParam("query") final String query,
       @DefaultValue("20") @QueryParam("limit") final Integer limit)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     return search(this.securityContext.getUserPrincipal().getName(), baseName, query, limit);
   }
 
@@ -189,7 +188,7 @@ public final class EntitiesResource {
   public Response searchClasses(final @PathParam("userId") String userId,
       @PathParam("base") final String baseName, @QueryParam("query") final String query,
       @DefaultValue("20") @QueryParam("limit") final Integer limit)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     Security.checkAuthorization(this.securityContext, userId);
 
     if (query == null) {
@@ -214,7 +213,7 @@ public final class EntitiesResource {
   public Response searchClasses(@PathParam("base") final String baseName,
       @QueryParam("query") final String query,
       @DefaultValue("20") @QueryParam("limit") final Integer limit)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     return searchClasses(this.securityContext.getUserPrincipal().getName(), baseName, query, limit);
   }
 
@@ -225,7 +224,7 @@ public final class EntitiesResource {
       @PathParam("base") final String baseName, @QueryParam("query") final String query,
       @DefaultValue("20") @QueryParam("limit") final Integer limit,
       @QueryParam("domain") final URI domain, @QueryParam("range") final URI range)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     Security.checkAuthorization(this.securityContext, userId);
 
     if (query == null) {
@@ -251,7 +250,7 @@ public final class EntitiesResource {
       @QueryParam("query") final String query,
       @DefaultValue("20") @QueryParam("limit") final Integer limit,
       @QueryParam("domain") final URI domain, @QueryParam("range") final URI range)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     return searchProperties(baseName, query, limit, domain, range);
   }
 
@@ -261,7 +260,7 @@ public final class EntitiesResource {
   public Response searchResources(final @PathParam("userId") String userId,
       @PathParam("base") final String baseName, @QueryParam("query") final String query,
       @DefaultValue("20") @QueryParam("limit") final Integer limit)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     Security.checkAuthorization(this.securityContext, userId);
 
     if (query == null) {
@@ -286,7 +285,7 @@ public final class EntitiesResource {
   public Response searchResources(@PathParam("base") final String baseName,
       @QueryParam("query") final String query,
       @DefaultValue("20") @QueryParam("limit") final Integer limit)
-      throws KBProxyException, STIException, IOException {
+      throws ProxyException, STIException, IOException {
     return searchResources(this.securityContext.getUserPrincipal().getName(), baseName, query,
         limit);
   }

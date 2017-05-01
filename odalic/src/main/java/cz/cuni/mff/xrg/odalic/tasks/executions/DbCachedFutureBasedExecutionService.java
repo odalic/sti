@@ -279,16 +279,13 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
         final boolean isStatistical = configuration.isStatistical();
 
         final Map<String, SemanticTableInterpreter> interpreters =
-            this.semanticTableInterpreterFactory.getInterpreters();
+            this.semanticTableInterpreterFactory.getInterpreters(usedBases);
 
         final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
 
         for (final Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters
             .entrySet()) {
           final KnowledgeBase base = this.basesService.getByName(userId, interpreterEntry.getKey());
-          if (!usedBases.contains(base)) {
-            continue;
-          }
 
           final Constraints constraints =
               this.feedbackToConstraintsAdapter.toConstraints(feedback, base);

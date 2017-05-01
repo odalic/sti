@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
 import cz.cuni.mff.xrg.odalic.outputs.csvexport.CSVExportTest;
@@ -42,7 +43,7 @@ public class InterpreterExecutionBatch {
     // settings for export
     final String baseExportPath = FilenameUtils.getFullPath(testInputFilePath)
         + FilenameUtils.getBaseName(testInputFilePath) + "-export";
-    final KnowledgeBaseProxiesProvider kbf = CoreExecutionBatch.getKnowledgeBaseProxyFactory();
+    final KnowledgeBaseProxiesService kbf = CoreExecutionBatch.getKnowledgeBaseProxyFactory();
 
     // JSON export
     AnnotatedTable annotatedTable = CSVExportTest.testExportToAnnotatedTable(coreSnapshot.getResult(),

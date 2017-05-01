@@ -11,12 +11,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
-import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxiesProvider;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
@@ -31,11 +33,11 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
 
   private static final String OBSERVATION = "OBSERVATION";
 
-  private final KnowledgeBaseProxiesProvider knowledgeBaseProxyFactory;
+  private final KnowledgeBaseProxiesService knowledgeBaseProxyFactory;
 
   @Autowired
   public DefaultResultToCSVExportAdapter(
-      final KnowledgeBaseProxiesProvider knowledgeBaseProxyFactory) {
+      final KnowledgeBaseProxiesService knowledgeBaseProxyFactory) {
     Preconditions.checkNotNull(knowledgeBaseProxyFactory);
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
@@ -118,8 +120,9 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
     }
 
     if (configuration.isStatistical()) {
-      final URI kbUri = this.knowledgeBaseProxyFactory.getKBProxies()
-          .get(configuration.getPrimaryBase().getName()).getKbDefinition()
+      final KnowledgeBase primaryBase = configuration.getPrimaryBase();
+      
+      final URI kbUri = this.knowledgeBaseProxyFactory.toProxies(ImmutableSet.of(primaryBase)).values().iterator().next().getDefinition()
           .getInsertPrefixData();
 
       builder.insertHeader(urlFormat(OBSERVATION), newPosition);

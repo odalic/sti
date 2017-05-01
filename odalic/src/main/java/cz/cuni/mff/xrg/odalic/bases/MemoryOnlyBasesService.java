@@ -10,25 +10,32 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Table;
 
+import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
+import cz.cuni.mff.xrg.odalic.groups.GroupsService;
+
 /**
  * Default {@link BasesService} implementation.
  *
  */
 public final class MemoryOnlyBasesService implements BasesService {
 
-  private final AdvancedBaseTypesService advancedBaseTypesService;
+  private final KnowledgeBaseProxiesService knowledgeBaseProxiesService;
   
   private final Table<String, String, KnowledgeBase> userAndBaseIdsToBases;
+
+  private GroupsService groupsService;
   
-  public MemoryOnlyBasesService(final AdvancedBaseTypesService advancedBaseTypesService) {
-    this(advancedBaseTypesService, HashBasedTable.create());
+  public MemoryOnlyBasesService(final KnowledgeBaseProxiesService knowledgeBaseProxiesService, final GroupsService groupsService) {
+    this(knowledgeBaseProxiesService, groupsService, HashBasedTable.create());
   }
   
-  public MemoryOnlyBasesService(final AdvancedBaseTypesService advancedBaseTypesService, final Table<String, String, KnowledgeBase> userAndBaseIdsToBases) {
-    Preconditions.checkNotNull(advancedBaseTypesService);
+  public MemoryOnlyBasesService(final KnowledgeBaseProxiesService knowledgeBaseProxiesService, final GroupsService groupsService, final Table<String, String, KnowledgeBase> userAndBaseIdsToBases) {
+    Preconditions.checkNotNull(knowledgeBaseProxiesService);
+    Preconditions.checkNotNull(groupsService);
     Preconditions.checkNotNull(userAndBaseIdsToBases);
 
-    this.advancedBaseTypesService = advancedBaseTypesService;
+    this.knowledgeBaseProxiesService = knowledgeBaseProxiesService;
+    this.groupsService = groupsService;
     this.userAndBaseIdsToBases = userAndBaseIdsToBases;
   }
 
@@ -55,12 +62,18 @@ public final class MemoryOnlyBasesService implements BasesService {
   
   @Override
   public void replace(final KnowledgeBase base) {
+    Preconditions.checkNotNull(base);
+    
     final String userId = base.getOwner().getEmail();
     final String baseId = base.getName();
 
-    this.userAndBaseIdsToBases.put(userId, baseId, base);
+    final KnowledgeBase previous = this.userAndBaseIdsToBases.put(userId, baseId, base);
+    if (previous != null) {
+      this.groupsService.unsubscribe(previous);
+    }
     
-    this.proxies = 
+    this.knowledgeBaseProxiesService.set(base);
+    this.groupsService.subscribe(base);
   }
   
   @Override

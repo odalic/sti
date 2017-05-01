@@ -8,7 +8,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.ProxyException;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.sti.core.model.RelationColumns;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
@@ -36,7 +36,7 @@ public class LiteralColumnTaggerImpl implements LiteralColumnTagger {
 
   @Override
   public void annotate(final Table table, final TAnnotation annotations, final Integer... neColumns)
-      throws KBProxyException {
+      throws ProxyException {
     // for each column that has a relation with the subject column, infer its type
     final Map<RelationColumns, Map<Integer, List<TCellCellRelationAnotation>>> relationAnnotations =
         annotations.getCellcellRelations();

@@ -25,8 +25,8 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
+import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
-import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
@@ -37,15 +37,10 @@ import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.DefaultResultToAnnotatedTableAdapter;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
-import cz.cuni.mff.xrg.odalic.tasks.executions.DefaultKnowledgeBaseProxiesProvider;
-import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxiesProvider;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import cz.cuni.mff.xrg.odalic.users.Role;
 import cz.cuni.mff.xrg.odalic.users.User;
-import cz.cuni.mff.xrg.odalic.util.configuration.DefaultPropertiesService;
-import uk.ac.shef.dcs.sti.STIException;
 
 /**
  * JUnit test for CSV export
@@ -57,8 +52,8 @@ public class CSVExportTest {
 
   private static final Logger log = LoggerFactory.getLogger(CSVExportTest.class);
 
-  static File inputResultFile;
-  static File inputFile;
+  private static File inputResultFile;
+  private static File inputFile;
 
   @BeforeClass
   public static void beforeClass() throws URISyntaxException, IOException {
@@ -70,12 +65,12 @@ public class CSVExportTest {
   @Test
   public void TestConversionToCSV() {
 
-    KnowledgeBaseProxiesProvider kbf;
+    KnowledgeBaseProxiesService kbf;
     try {
       System.setProperty("cz.cuni.mff.xrg.odalic.sti", Paths.get("").toAbsolutePath()
           .resolveSibling("config").resolve("sti.properties").toString());
-      kbf = new DefaultKnowledgeBaseProxiesProvider(new TurtleConfigurablePrefixMappingService(new DefaultPropertiesService()));
-    } catch (STIException | IOException e) {
+      kbf = null; // TODO: Instantiate with knowledge base proxies service.
+    } catch (final Exception e) {
       log.info("KnowledgeBaseProxyFactory is not available, so test was stopped: " + e.getMessage());
       return;
     }
@@ -127,7 +122,7 @@ public class CSVExportTest {
   }
 
   public static Input testExportToCSVFile(Result result, Input input, Configuration config,
-      String filePath, KnowledgeBaseProxiesProvider kbf) {
+      String filePath, KnowledgeBaseProxiesService kbf) {
 
     // Conversion from result to CSV extended input
     Input extendedInput = new DefaultResultToCSVExportAdapter(kbf).toCSVExport(result, input, config);
@@ -155,7 +150,7 @@ public class CSVExportTest {
   }
 
   public static AnnotatedTable testExportToAnnotatedTable(Result result, Input input,
-      Configuration config, String filePath, KnowledgeBaseProxiesProvider kbf) {
+      Configuration config, String filePath, KnowledgeBaseProxiesService kbf) {
 
     // Conversion from result to annotated table
     AnnotatedTable annotatedTable =

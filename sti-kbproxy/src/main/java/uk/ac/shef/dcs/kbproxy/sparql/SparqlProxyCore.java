@@ -20,22 +20,30 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
-import uk.ac.shef.dcs.kbproxy.KBProxyUtils;
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxyCore;
+import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
+import uk.ac.shef.dcs.kbproxy.ProxyException;
+import uk.ac.shef.dcs.kbproxy.ProxyCore;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
+import uk.ac.shef.dcs.kbproxy.utils.Uris;
 import uk.ac.shef.dcs.util.Pair;
 import uk.ac.shef.dcs.util.StringUtils;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore {
+public final class SparqlProxyCore implements ProxyCore {
 
   private static final String SPARQL_PREFIX = "PREFIX %1$s: <%2$s>";
   private static final String INSERT_BASE = "INSERT DATA {GRAPH <%1$s> {%2$s .}}";
@@ -73,22 +81,20 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
     SPARQL_ESCAPE_REPLACEMENTS = Collections.unmodifiableMap(map);
   }
 
-  private final SparqlBaseProxyDefinition definition;
+  private final SparqlProxyDefinition definition;
   private final Map<String, String> prefixToUriMap;
   private final StringMetric stringMetric;
   
-  private static final Logger log = LoggerFactory.getLogger(SparqlKnowlegeBaseProxyCore.class);
+  private static final Logger log = LoggerFactory.getLogger(SparqlProxyCore.class);
   
-  public SparqlKnowlegeBaseProxyCore(final SparqlBaseProxyDefinition definition,
-      final Map<String, String> prefixToUriMap)
-      throws IOException, URISyntaxException, KBProxyException {
+  public SparqlProxyCore(final SparqlProxyDefinition definition,
+      final Map<String, String> prefixToUriMap) {
     this(definition, prefixToUriMap, new Levenshtein());
   }
   
-  private SparqlKnowlegeBaseProxyCore(final SparqlBaseProxyDefinition definition,
+  private SparqlProxyCore(final SparqlProxyDefinition definition,
           final Map<String, String> prefixToUriMap,
-          final StringMetric stringMetric)
-          throws IOException, URISyntaxException, KBProxyException {
+          final StringMetric stringMetric) {
     Preconditions.checkNotNull(definition);
     Preconditions.checkNotNull(prefixToUriMap);
     Preconditions.checkNotNull(stringMetric);
@@ -101,7 +107,7 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   /**
    * @return the definition
    */
-  public SparqlBaseProxyDefinition getKbDefinition() {
+  public SparqlProxyDefinition getKbDefinition() {
     return this.definition;
   }
 
@@ -130,7 +136,7 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
    * @param restrictClassTypes true if types of resources should be classes
    * @param types restricts the result types
    * @return SPARQL select query
-   * @throws KBProxyException Invalid KB definition
+   * @throws ProxyException Invalid KB definition
    */
   protected Query createFulltextQueryForResources(String content, Integer limit, boolean restrictClassTypes, String... types) {
     SelectBuilder builder = createFulltextQueryBuilder(content, limit, types);
@@ -289,7 +295,7 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
     return out;
   }
 
-  protected List<String> queryForLabel(Query sparqlQuery, String resourceURI) throws KBProxyException {
+  protected List<String> queryForLabel(Query sparqlQuery, String resourceURI) throws ProxyException {
     // Query all labels of the resource.
     List<RDFNode> nodes = queryReturnSingleNodes(sparqlQuery, SPARQL_VARIABLE_OBJECT);
     List<Label> labels = nodes.stream()
@@ -394,16 +400,16 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
   @Override
-  public List<String> getPropertyDomains(String uri) throws KBProxyException{
+  public List<String> getPropertyDomains(String uri) throws ProxyException{
     return getPropertyValues(uri, definition.getStructureDomain());
   }
 
   @Override
-  public List<String> getPropertyRanges(String uri) throws KBProxyException{
+  public List<String> getPropertyRanges(String uri) throws ProxyException{
     return getPropertyValues(uri, definition.getStructureRange());
   }
 
-  private List<String> getPropertyValues(String uri, String propertyUri) throws KBProxyException {
+  private List<String> getPropertyValues(String uri, String propertyUri) throws ProxyException {
     Asserts.notBlank(uri, "uri");
     Asserts.notBlank(propertyUri, "propertyUri");
 
@@ -459,17 +465,17 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
   @Override
-  public List<Entity> findEntityCandidates(String content, final KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException {
+  public List<Entity> findEntityCandidates(String content, final ProxyCore dependenciesProxy) throws ProxyException {
     return queryEntityCandidates(content, dependenciesProxy);
   }
   
   @Override
-  public List<Entity> findEntityCandidatesOfTypes(String content, final KnowledgeBaseProxyCore dependenciesProxy, String... types) throws KBProxyException {
+  public List<Entity> findEntityCandidatesOfTypes(String content, final ProxyCore dependenciesProxy, String... types) throws ProxyException {
     return queryEntityCandidates(content, dependenciesProxy, types);
   }
 
   @Override
-  public Entity loadEntity(String uri, final KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException {
+  public Entity loadEntity(String uri, final ProxyCore dependenciesProxy) throws ProxyException {
     final AskBuilder builder = getAskBuilder().addWhere(createSPARQLResource(uri), createSPARQLResource(definition.getStructureInstanceOf()), "?Type");
     boolean askResult = ask(builder.build());
 
@@ -490,7 +496,7 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
   @Override
-  public Entity insertClass(URI uri, String label, Collection<String> alternativeLabels, String superClass) throws KBProxyException {
+  public Entity insertClass(URI uri, String label, Collection<String> alternativeLabels, String superClass) throws ProxyException {
     performInsertChecks(label);
 
     String url = checkOrGenerateUrl(definition.getInsertPrefixSchema(), uri);
@@ -509,7 +515,7 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
   @Override
-  public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels, Collection<String> classes) throws KBProxyException {
+  public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels, Collection<String> classes) throws ProxyException {
     performInsertChecks(label);
 
     String url = checkOrGenerateUrl(definition.getInsertPrefixData(), uri);
@@ -526,7 +532,7 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
   @Override
-  public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range) throws KBProxyException {
+  public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range) throws ProxyException {
     performInsertChecks(label);
 
     String url = checkOrGenerateUrl(definition.getInsertPrefixSchema(), uri);
@@ -543,7 +549,7 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
     return new Entity(url, label);
   }
 
-  private List<Entity> findByFulltext(QueryGetter exactQueryGetter, QueryGetter fulltextQueryGetter, String content) throws SolrServerException, ClassNotFoundException, IOException, KBProxyException, ParseException {
+  private List<Entity> findByFulltext(QueryGetter exactQueryGetter, QueryGetter fulltextQueryGetter, String content) throws SolrServerException, ClassNotFoundException, IOException, ProxyException, ParseException {
     // Find results by both fulltext and exact match
     Query exactQuery = exactQueryGetter.getQuery();
     List<String> exactQueryResult = queryReturnSingleValues(exactQuery);
@@ -572,13 +578,13 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
 
-  private void performInsertChecks(String label) throws KBProxyException {
+  private void performInsertChecks(String label) throws ProxyException {
     if (!isInsertSupported()){
-      throw new KBProxyException("Insertion of is not supported for the " + definition.getName() + " knowledge base.");
+      throw new ProxyException("Insertion of is not supported for the " + definition.getName() + " knowledge base.");
     }
 
     if (isNullOrEmpty(label)){
-      throw new KBProxyException("Label must not be empty.");
+      throw new ProxyException("Label must not be empty.");
     }
   }
 
@@ -652,7 +658,7 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
     queryExecution.execute();
   }
 
-  private String checkOrGenerateUrl(URI baseURI, URI uri) throws KBProxyException {
+  private String checkOrGenerateUrl(URI baseURI, URI uri) throws ProxyException {
     if (uri == null) {
       return combineURI(baseURI, UUID.randomUUID().toString());
     } else {
@@ -690,8 +696,8 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
     return string == null || string.isEmpty();
   }
 
-  private List<Entity> queryEntityCandidates(final String content, final KnowledgeBaseProxyCore dependenciesProxy, String... types)
-      throws KBProxyException {
+  private List<Entity> queryEntityCandidates(final String content, final ProxyCore dependenciesProxy, String... types)
+      throws ProxyException {
     // adjust the content string before query is executed
     String unescapedContent = StringEscapeUtils.unescapeXml(content);
     int bracket = unescapedContent.indexOf("(");
@@ -738,19 +744,19 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
     return res;
   }
 
-  private void loadEntityAttributes(Entity ec, final KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException {
+  private void loadEntityAttributes(Entity ec, final ProxyCore dependenciesProxy) throws ProxyException {
     List<Attribute> attributes = dependenciesProxy.findAttributes(ec.getId());
     ec.setAttributes(attributes);
     for (Attribute attr : attributes) {
       adjustValueOfURLResource(attr, dependenciesProxy);
-      if (KBProxyUtils.contains(definition.getStructurePredicateType(), attr.getRelationURI()) &&
+      if (Uris.httpVersionAgnosticContains(definition.getStructurePredicateType(), attr.getRelationURI()) &&
           !ec.hasType(attr.getValueURI())) {
         ec.addType(new Clazz(attr.getValueURI(), attr.getValue()));
       }
     }
   }
 
-  private void adjustValueOfURLResource(Attribute attr, final KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException {
+  private void adjustValueOfURLResource(Attribute attr, final ProxyCore dependenciesProxy) throws ProxyException {
     // TODO: This is a mess, re-factor!
     String valueLabel = dependenciesProxy.getResourceLabel(attr.getValue());
     String relationLabel = dependenciesProxy. getResourceLabel(attr.getRelationURI());
@@ -761,7 +767,7 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
   @Override
-  public String getResourceLabel(String uri) throws KBProxyException {
+  public String getResourceLabel(String uri) throws ProxyException {
     if (uri.startsWith("http")) {
       Query sparqlQuery = createGetLabelQuery(uri);
       List<String> result = queryForLabel(sparqlQuery, uri);
@@ -775,12 +781,12 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
   @Override
-  public List<Attribute> findAttributesOfEntities(Entity ec) throws KBProxyException {
+  public List<Attribute> findAttributesOfEntities(Entity ec) throws ProxyException {
     return findAttributes(ec.getId());
   }
 
   @Override
-  public List<Attribute> findAttributes(String resourceId) throws KBProxyException {
+  public List<Attribute> findAttributes(String resourceId) throws ProxyException {
     if (resourceId.length() == 0)
       return new ArrayList<>();
 
@@ -809,12 +815,12 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
   @Override
-  public List<Attribute> findAttributesOfClazz(String clazzId) throws KBProxyException {
+  public List<Attribute> findAttributesOfClazz(String clazzId) throws ProxyException {
     return findAttributes(clazzId);
   }
 
   @Override
-  public List<Attribute> findAttributesOfProperty(String propertyId) throws KBProxyException {
+  public List<Attribute> findAttributesOfProperty(String propertyId) throws ProxyException {
     return findAttributes(propertyId);
   }
 
@@ -924,7 +930,7 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
 
   private SelectBuilder addClassRestriction(SelectBuilder builder, boolean restrictClassTypes) {
 
-      if (definition.getClassTypeMode().equals(SparqlBaseProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT)) {
+      if (definition.getClassTypeMode().equals(SparqlProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT)) {
         //as proposed by Jan
         builder = builder.addWhere(SPARQL_VARIABLE_SUBJECT, createSPARQLResource(definition.getStructureInstanceOf()), SPARQL_VARIABLE_CLASS);
         // If there are no class types defined, then we at least demand the subject is an instance of some class.
@@ -1033,7 +1039,7 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
   private interface QueryGetter {
-    Query getQuery() throws KBProxyException, ParseException;
+    Query getQuery() throws ProxyException, ParseException;
   }
 
   private interface BuilderAction {
@@ -1051,20 +1057,20 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
   @Override
-  public void closeConnection() throws KBProxyException {
+  public void closeConnection() throws ProxyException {
   }
 
   @Override
-  public void commitChanges() throws KBProxyException {
+  public void commitChanges() throws ProxyException {
   }
 
   @Override
-  public List<Entity> findEntityCandidates(String content) throws KBProxyException {
+  public List<Entity> findEntityCandidates(String content) throws ProxyException {
     return findEntityCandidates(content, this);
   }
 
   @Override
-  public List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws KBProxyException {
+  public List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws ProxyException {
     return findEntityCandidatesOfTypes(content, this, types);
   }
 
@@ -1084,25 +1090,30 @@ public final class SparqlKnowlegeBaseProxyCore implements KnowledgeBaseProxyCore
   }
 
   @Override
-  public Entity loadEntity(String uri) throws KBProxyException {
+  public Entity loadEntity(String uri) throws ProxyException {
     return loadEntity(uri, this);
   }
 
   @Override
   public List<Attribute> findAttributesOfClazz(final String clazzId,
-      final KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException {
+      final ProxyCore dependenciesProxy) throws ProxyException {
     return dependenciesProxy.findAttributes(clazzId);
   }
 
   @Override
   public List<Attribute> findAttributesOfProperty(final String propertyId,
-      final KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException {
+      final ProxyCore dependenciesProxy) throws ProxyException {
     return dependenciesProxy.findAttributesOfProperty(propertyId);
   }
 
   @Override
   public List<Attribute> findAttributesOfEntities(Entity ec,
-      KnowledgeBaseProxyCore dependenciesProxy) throws KBProxyException {
+      ProxyCore dependenciesProxy) throws ProxyException {
     return dependenciesProxy.findAttributesOfEntities(ec);
+  }
+
+  @Override
+  public ProxyDefinition getDefinition() {
+    return this.definition;
   }
 }

@@ -1,7 +1,6 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxyDefinition;
-
+import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -10,9 +9,17 @@ import java.util.Set;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
-public class SparqlBaseProxyDefinition extends KnowledgeBaseProxyDefinition {
+import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
+
+public class SparqlProxyDefinition implements ProxyDefinition {
   
-  public static class Builder extends KnowledgeBaseProxyDefinition.Builder<Builder> {
+  public static class Builder {
+    
+    private String name;  
+    
+    private boolean insertSupported;
+    private URI insertPrefixData;
+    private URI insertPrefixSchema;
     
     private String endpoint;
     
@@ -48,14 +55,44 @@ public class SparqlBaseProxyDefinition extends KnowledgeBaseProxyDefinition {
     public boolean uriLabelHeuristicApplied;
 
 
-    @Override
-    protected Builder getThis() {
+    /**
+     * @param name the name to set
+     */
+    public Builder setName(String name) {
+      this.name = name;
+      
       return this;
     }
     
-    @Override
-    public SparqlBaseProxyDefinition build() {
-      return new SparqlBaseProxyDefinition(this);
+    /**
+     * @param insertSupported the insertSupported to set
+     */
+    public Builder setInsertSupported(boolean insertSupported) {
+      this.insertSupported = insertSupported;
+
+      return this;
+    }
+
+    /**
+     * @param insertPrefixData the insertPrefixData to set
+     */
+    public Builder setInsertPrefixData(URI insertPrefixData) {
+      this.insertPrefixData = insertPrefixData;
+
+      return this;
+    }
+    
+    /**
+     * @param insertPrefixSchema the insertPrefixSchema to set
+     */
+    public Builder setInsertPrefixSchema(URI insertPrefixSchema) {
+      this.insertPrefixSchema = insertPrefixSchema;
+
+      return this;
+    }
+    
+    public SparqlProxyDefinition build() {
+      return new SparqlProxyDefinition(this);
     }
 
     public Builder setFulltextEnabled(boolean fulltextEnabled) {
@@ -118,7 +155,7 @@ public class SparqlBaseProxyDefinition extends KnowledgeBaseProxyDefinition {
       return this;
     }
 
-    public Builder setClassTypeMode(final SparqlBaseProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE classTypeMode) {
+    public Builder setClassTypeMode(final SparqlProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE classTypeMode) {
       this.classTypeMode = classTypeMode;
 
       return this;
@@ -361,6 +398,12 @@ public class SparqlBaseProxyDefinition extends KnowledgeBaseProxyDefinition {
     return new Builder();
   }
 
+  private final String name;
+  
+  private final boolean insertSupported;
+  private final URI insertPrefixData;
+  private final URI insertPrefixSchema;
+  
   private final String endpoint;
   
   private final Set<String> structurePredicateLabel;
@@ -394,11 +437,14 @@ public class SparqlBaseProxyDefinition extends KnowledgeBaseProxyDefinition {
   
   private final boolean uriLabelHeuristicApplied;
   
-  protected SparqlBaseProxyDefinition(final Builder builder) {
-    super(builder);
-    
+  protected SparqlProxyDefinition(final Builder builder) {
     Preconditions.checkArgument(!builder.structurePredicateLabel.isEmpty(), "No label predicate defined!");
     Preconditions.checkArgument(!builder.structurePredicateType.isEmpty(), "No type predicate defined!");
+    
+    this.name = builder.name;
+    this.insertSupported = builder.insertSupported;
+    this.insertPrefixData = builder.insertPrefixData;
+    this.insertPrefixSchema = builder.insertPrefixSchema;
     
     this.endpoint = builder.endpoint;
     this.structurePredicateLabel = ImmutableSet.copyOf(builder.structurePredicateLabel);
@@ -426,6 +472,34 @@ public class SparqlBaseProxyDefinition extends KnowledgeBaseProxyDefinition {
     this.uriLabelHeuristicApplied = builder.uriLabelHeuristicApplied;
   }
 
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
+  
+  /**
+   * @return the insertSupported
+   */
+  public boolean isInsertSupported() {
+    return insertSupported;
+  }
+  
+  /**
+   * @return the insertPrefixData
+   */
+  public URI getInsertPrefixData() {
+    return insertPrefixData;
+  }
+  
+  /**
+   * @return the insertPrefixSchema
+   */
+  public URI getInsertPrefixSchema() {
+    return insertPrefixSchema;
+  }
+  
   /**
    * @return the endpoint
    */
@@ -492,7 +566,7 @@ public class SparqlBaseProxyDefinition extends KnowledgeBaseProxyDefinition {
   /**
    * @return the classTypeMode
    */
-  public SparqlBaseProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE getClassTypeMode() {
+  public SparqlProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE getClassTypeMode() {
     return classTypeMode;
   }
 

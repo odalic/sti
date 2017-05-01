@@ -12,8 +12,8 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
-import uk.ac.shef.dcs.kbproxy.KBProxyResult;
-import uk.ac.shef.dcs.kbproxy.KnowledgeBaseProxy;
+import uk.ac.shef.dcs.kbproxy.ProxyResult;
+import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 import uk.ac.shef.dcs.sti.core.model.EntityResult;
@@ -187,12 +187,12 @@ public final class Constraints implements Serializable {
             && !e.getAnnotation().getChosen().isEmpty());
   }
 
-  private KBProxyResult<Entity> findOrCreateEntity(final String resource, final String label,
-      final KnowledgeBaseProxy kbProxy) {
-    KBProxyResult<Entity> entity = kbProxy.loadEntity(resource);
+  private ProxyResult<Entity> findOrCreateEntity(final String resource, final String label,
+      final Proxy kbProxy) {
+    ProxyResult<Entity> entity = kbProxy.loadEntity(resource);
 
     if (entity == null) {
-      entity = new KBProxyResult<Entity>(new Entity(resource, label));
+      entity = new ProxyResult<Entity>(new Entity(resource, label));
     }
     return entity;
   }
@@ -247,7 +247,7 @@ public final class Constraints implements Serializable {
    * @return entities chosen for disambiguation of given cell
    */
   public EntityResult getDisambChosenForCell(final int columnIndex, final int rowIndex,
-      final KnowledgeBaseProxy kbProxy) {
+      final Proxy kbProxy) {
     final List<Entity> entities = new ArrayList<>();
     final List<String> warnings = new ArrayList<>();
 
@@ -256,10 +256,10 @@ public final class Constraints implements Serializable {
             && (e.getPosition().getRowIndex() == rowIndex)
             && !e.getAnnotation().getChosen().isEmpty())
         .forEach(e -> e.getAnnotation().getChosen().forEach(ec -> {
-          final KBProxyResult<Entity> entityResult =
+          final ProxyResult<Entity> entityResult =
               findOrCreateEntity(ec.getEntity().getResource(), ec.getEntity().getLabel(), kbProxy);
 
-          entityResult.appendWarning(warnings);
+          entityResult.appendExistingWarning(warnings);
           entities.add(entityResult.getResult());
         }));
     return new EntityResult(entities, warnings);

@@ -77,6 +77,7 @@
 	<bean id="tokenService" class="cz.cuni.mff.xrg.odalic.users.AuthZeroTokenService" />
 	<bean id="userService" class="cz.cuni.mff.xrg.odalic.users.DbUserService" />
 	<bean id="taskRdfSerializationService" class="cz.cuni.mff.xrg.odalic.api.rdf.TurtleRdfMappingTaskSerializationService" />
+	<bean id="groupsService" class="cz.cuni.mff.xrg.odalic.groups.DbGroupsService" />
 
 	<!-- Resources -->
 	<bean id="configurationResource"

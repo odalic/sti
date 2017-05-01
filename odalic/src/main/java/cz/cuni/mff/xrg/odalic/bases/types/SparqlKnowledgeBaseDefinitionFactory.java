@@ -1,22 +1,22 @@
 package cz.cuni.mff.xrg.odalic.bases.types;
 
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
-import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseDefinitionFactory;
+import cz.cuni.mff.xrg.odalic.bases.ProxyDefinitionFactory;
 import cz.cuni.mff.xrg.odalic.bases.TextSearchingMethod;
 import cz.cuni.mff.xrg.odalic.groups.Group;
-import uk.ac.shef.dcs.kbproxy.sparql.SparqlBaseProxyDefinition;
+import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyDefinition;
 
 public final class SparqlKnowledgeBaseDefinitionFactory
-    implements KnowledgeBaseDefinitionFactory<SparqlBaseProxyDefinition> {
+    implements ProxyDefinitionFactory {
 
   @Override
-  public SparqlBaseProxyDefinition create(final KnowledgeBase base, final Class<? extends SparqlBaseProxyDefinition> type) {
-    final SparqlBaseProxyDefinition.Builder builder = SparqlBaseProxyDefinition.builder();
+  public SparqlProxyDefinition create(final KnowledgeBase base) {
+    final SparqlProxyDefinition.Builder builder = SparqlProxyDefinition.builder();
     
     // Name
     builder.setName(base.getName());
 
-    // SPARQL insert
+    // Insert
     builder.setInsertSupported(base.isInsertEnabled());
     
     if (base.isInsertEnabled()) {
@@ -36,7 +36,7 @@ public final class SparqlKnowledgeBaseDefinitionFactory
     builder.setLanguageSuffix(base.getLanguageTag());
 
     // Use default class type mode
-    builder.setClassTypeMode(SparqlBaseProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
+    builder.setClassTypeMode(SparqlProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
 
     // Loading structure
     for (final Group group : base.getSelectedGroups()) {
@@ -47,21 +47,21 @@ public final class SparqlKnowledgeBaseDefinitionFactory
         builder.addAllStructurePredicateType(group.getInstanceOfPredicates());
     }
 
-    builder.setStructureInstanceOf(SparqlBaseProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_INSTANCE_OF);
-    builder.setStructureDomain(SparqlBaseProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_DOMAIN);
-    builder.setStructureRange(SparqlBaseProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_RANGE);
+    builder.setStructureInstanceOf(SparqlProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_INSTANCE_OF);
+    builder.setStructureDomain(SparqlProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_DOMAIN);
+    builder.setStructureRange(SparqlProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_RANGE);
 
     // SPARQL insert
     if (base.isInsertEnabled()) {
       builder.setInsertGraph(base.getInsertGraph().toString());
 
-      builder.setInsertDefaultClass(SparqlBaseProxyDefinition.DEFAULT_INSERT_DEFAULT_CLASS);
-      builder.setInsertPredicateLabel(SparqlBaseProxyDefinition.DEFAULT_INSERT_PREDICATE_LABEL);
-      builder.setInsertPredicateAlternativeLabel(SparqlBaseProxyDefinition.DEFAULT_INSERT_PREDICATE_ALTERNATIVE_LABEL);
-      builder.setInsertPredicateSubclassOf(SparqlBaseProxyDefinition.DEFAULT_INSERT_PREDICATE_SUBCLASS_OF);
-      builder.setInsertPredicateSubPropertyOf(SparqlBaseProxyDefinition.DEFAULT_INSERT_PREDICATE_SUB_PROPERTY_OF);
-      builder.setInsertTypeClass(SparqlBaseProxyDefinition.DEFAULT_INSERT_TYPE_CLASS);
-      builder.setInsertTypeProperty(SparqlBaseProxyDefinition.DEFAULT_INSERT_TYPE_PROPERTY);
+      builder.setInsertDefaultClass(SparqlProxyDefinition.DEFAULT_INSERT_DEFAULT_CLASS);
+      builder.setInsertPredicateLabel(SparqlProxyDefinition.DEFAULT_INSERT_PREDICATE_LABEL);
+      builder.setInsertPredicateAlternativeLabel(SparqlProxyDefinition.DEFAULT_INSERT_PREDICATE_ALTERNATIVE_LABEL);
+      builder.setInsertPredicateSubclassOf(SparqlProxyDefinition.DEFAULT_INSERT_PREDICATE_SUBCLASS_OF);
+      builder.setInsertPredicateSubPropertyOf(SparqlProxyDefinition.DEFAULT_INSERT_PREDICATE_SUB_PROPERTY_OF);
+      builder.setInsertTypeClass(SparqlProxyDefinition.DEFAULT_INSERT_TYPE_CLASS);
+      builder.setInsertTypeProperty(SparqlProxyDefinition.DEFAULT_INSERT_TYPE_PROPERTY);
     }
     
     builder.setStoppedClasses(base.getSkippedClasses());
