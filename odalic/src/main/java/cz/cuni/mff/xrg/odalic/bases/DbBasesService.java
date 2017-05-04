@@ -4,70 +4,73 @@ import java.io.IOException;
 import java.util.NavigableSet;
 import java.util.Set;
 
+import org.mapdb.BTreeMap;
+import org.mapdb.DB;
+import org.mapdb.Serializer;
+import org.mapdb.serializer.SerializerArrayTuple;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
-
 import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.groups.GroupsService;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.users.User;
+import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
- * Memory-only {@link BasesService} implementation.
- * 
- * @author Václav Brodec
+ * This {@link BasesService} implementation persists the files in {@link DB}-backed maps.
  *
+ * @author Václav Brodec
  */
 @Component
-public final class MemoryOnlyBasesService implements BasesService {
+public final class DbBasesService implements BasesService {
 
   private final KnowledgeBaseProxiesService knowledgeBaseProxiesService;
 
   private final GroupsService groupsService;
 
-  private final Table<String, String, KnowledgeBase> userAndBaseIdsToBases;
+  private final DB db;
+  
+  private final BTreeMap<Object[], KnowledgeBase> userAndBaseIdsToBases;
 
-  private final Table<String, String, Set<String>> utilizingTasks;
+  private final BTreeMap<Object[], Boolean> utilizingTasks;
 
-  public MemoryOnlyBasesService(final KnowledgeBaseProxiesService knowledgeBaseProxiesService,
-      final GroupsService groupsService) {
-    this(knowledgeBaseProxiesService, groupsService, HashBasedTable.create(),
-        HashBasedTable.create());
-  }
-
-  public MemoryOnlyBasesService(final KnowledgeBaseProxiesService knowledgeBaseProxiesService,
-      final GroupsService groupsService,
-      final Table<String, String, KnowledgeBase> userAndBaseIdsToBases,
-      final Table<String, String, Set<String>> utilizingTasks) {
+  @SuppressWarnings("unchecked")
+  public DbBasesService(final KnowledgeBaseProxiesService knowledgeBaseProxiesService,
+      final GroupsService groupsService, final DbService dbService) {
     Preconditions.checkNotNull(knowledgeBaseProxiesService);
     Preconditions.checkNotNull(groupsService);
-    Preconditions.checkNotNull(userAndBaseIdsToBases);
-    Preconditions.checkNotNull(utilizingTasks);
+    Preconditions.checkNotNull(dbService);
+
+    this.db = dbService.getDb();
 
     this.knowledgeBaseProxiesService = knowledgeBaseProxiesService;
     this.groupsService = groupsService;
-    this.userAndBaseIdsToBases = userAndBaseIdsToBases;
-    this.utilizingTasks = utilizingTasks;
+    
+    this.userAndBaseIdsToBases = this.db.treeMap("userAndBaseIdsToBases")
+        .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
+        .valueSerializer(Serializer.JAVA).createOrOpen();
+    this.utilizingTasks = this.db.treeMap("utilizingTasks")
+        .keySerializer(
+            new SerializerArrayTuple(Serializer.STRING, Serializer.STRING, Serializer.STRING))
+        .valueSerializer(Serializer.BOOLEAN).createOrOpen();
   }
 
   @Override
   public NavigableSet<KnowledgeBase> getBases(final String userId) {
     Preconditions.checkNotNull(userId);
 
-    return ImmutableSortedSet.copyOf(this.userAndBaseIdsToBases.row(userId).values());
+    return ImmutableSortedSet.copyOf(this.userAndBaseIdsToBases.prefixSubMap(new Object[] {userId}).values());
   }
 
   @Override
   public NavigableSet<KnowledgeBase> getInsertSupportingBases(final String userId) {
     Preconditions.checkNotNull(userId);
 
-    return this.userAndBaseIdsToBases.row(userId).values().stream().filter(e -> e.isInsertEnabled())
+    return this.userAndBaseIdsToBases.prefixSubMap(new Object[] {userId}).values().stream().filter(e -> e.isInsertEnabled())
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
@@ -85,7 +88,7 @@ public final class MemoryOnlyBasesService implements BasesService {
     final String userId = base.getOwner().getEmail();
     final String baseId = base.getName();
 
-    final KnowledgeBase previous = this.userAndBaseIdsToBases.put(userId, baseId, base);
+    final KnowledgeBase previous = this.userAndBaseIdsToBases.put(new Object[] {userId, baseId}, base);
     if (previous != null) {
       this.groupsService.unsubscribe(previous);
     }
@@ -101,7 +104,7 @@ public final class MemoryOnlyBasesService implements BasesService {
     final String userId = base.getOwner().getEmail();
     final String baseId = base.getName();
 
-    final KnowledgeBase previous = this.userAndBaseIdsToBases.get(userId, baseId);
+    final KnowledgeBase previous = this.userAndBaseIdsToBases.get(new Object[] {userId, baseId});
     if (previous == null) {
       create(base);
       return base;
@@ -115,7 +118,7 @@ public final class MemoryOnlyBasesService implements BasesService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(baseId);
 
-    return this.userAndBaseIdsToBases.contains(userId, baseId);
+    return this.userAndBaseIdsToBases.containsKey(new Object[]{userId, baseId});
   }
 
   @Override
@@ -123,7 +126,7 @@ public final class MemoryOnlyBasesService implements BasesService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(name);
 
-    final KnowledgeBase base = this.userAndBaseIdsToBases.get(userId, name);
+    final KnowledgeBase base = this.userAndBaseIdsToBases.get(new Object[] {userId, name});
     Preconditions.checkArgument(base != null, "Unknown base!");
 
     return base;
@@ -134,7 +137,7 @@ public final class MemoryOnlyBasesService implements BasesService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(name);
 
-    return this.userAndBaseIdsToBases.get(userId, name);
+    return this.userAndBaseIdsToBases.get(new Object[] {userId, name});
   }
 
   @Override
@@ -144,7 +147,7 @@ public final class MemoryOnlyBasesService implements BasesService {
 
     checkUtilization(userId, name);
 
-    final KnowledgeBase base = this.userAndBaseIdsToBases.remove(userId, name);
+    final KnowledgeBase base = this.userAndBaseIdsToBases.remove(new Object[] {userId, name});
     Preconditions.checkArgument(base != null);
 
     this.knowledgeBaseProxiesService.delete(base);
@@ -153,14 +156,15 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   private void checkUtilization(final String userId, final String name)
       throws IllegalStateException {
-    final Set<String> utilizingTaskIds = this.utilizingTasks.get(userId, name);
-    if (utilizingTaskIds == null) {
-      return;
-    }
+    final Set<String> utilizingTaskIds =
+        this.utilizingTasks.prefixSubMap(new Object[] {userId, name}).keySet().stream()
+            .map(e -> (String) e[2]).collect(ImmutableSet.toImmutableSet());
 
-    final String jointUtilizingTasksIds = String.join(", ", utilizingTaskIds);
-    Preconditions.checkState(utilizingTaskIds.isEmpty(),
-        String.format("Some tasks (%s) still refer to this base!", jointUtilizingTasksIds));
+    if (!utilizingTaskIds.isEmpty()) {
+      final String jointUtilizingTasksIds = String.join(", ", utilizingTaskIds);
+      throw new IllegalStateException(
+          String.format("Some tasks (%s) still refer to this base!", jointUtilizingTasksIds));
+    }
   }
 
   @Override
@@ -183,20 +187,15 @@ public final class MemoryOnlyBasesService implements BasesService {
     final String userId = owner.getEmail();
     final String baseName = base.getName();
 
-    Preconditions.checkArgument(this.userAndBaseIdsToBases.get(userId, baseName).equals(base),
+    final Object[] userIdBaseName = new Object[] {userId, baseName};
+
+    Preconditions.checkArgument(this.userAndBaseIdsToBases.get(userIdBaseName).equals(base),
         "The base is not registered!");
 
-    final Set<String> tasks = this.utilizingTasks.get(userId, baseName);
-
-    final boolean inserted;
-    if (tasks == null) {
-      this.utilizingTasks.put(userId, baseName, Sets.newHashSet(taskId));
-      inserted = true;
-    } else {
-      inserted = tasks.add(taskId);
-    }
-
-    Preconditions.checkArgument(inserted, "The task has already been subcscribed to the base!");
+    final Boolean previous =
+        this.utilizingTasks.put(new Object[] {userId, baseName, taskId}, true);
+    Preconditions.checkArgument(previous == null,
+        "The task has already been subcscribed to the base!");
   }
 
   @Override
@@ -219,21 +218,12 @@ public final class MemoryOnlyBasesService implements BasesService {
     final String userId = owner.getEmail();
     final String baseName = base.getName();
 
-    Preconditions.checkArgument(this.userAndBaseIdsToBases.get(userId, baseName).equals(base),
+    Preconditions.checkArgument(
+        this.userAndBaseIdsToBases.get(new Object[] {userId, baseName}).equals(base),
         "The base is not registered!");
 
-    final Set<String> tasks = this.utilizingTasks.get(userId, baseName);
-
-    final boolean removed;
-    if (tasks == null) {
-      removed = false;
-    } else {
-      removed = tasks.remove(taskId);
-
-      if (tasks.isEmpty()) {
-        this.utilizingTasks.remove(userId, baseName);
-      }
-    }
+    final Boolean removed = this.utilizingTasks.remove(new Object[] {userId, baseName, taskId});
+    Preconditions.checkArgument(removed != null, "The task is not subcscribed to the base!");
 
     Preconditions.checkArgument(removed, "The task is not subcscribed to the base!");
   }

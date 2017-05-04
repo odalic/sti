@@ -5,6 +5,9 @@ package cz.cuni.mff.xrg.odalic.bases;
 
 import java.util.Map;
 import java.util.SortedSet;
+
+import org.springframework.stereotype.Component;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -17,6 +20,7 @@ import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
  * Default {@link AdvancedBaseTypesService} implementation.
  *
  */
+@Component
 public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTypesService {
 
   public static final String SPARQL_BASE_TYPE_NAME = "SPARQL";
