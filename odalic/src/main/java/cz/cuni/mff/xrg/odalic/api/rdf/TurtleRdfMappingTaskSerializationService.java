@@ -38,7 +38,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 
 /**
  * <p>
- * A {@link TaskRdfSerializationService} implementation employing {@link RDFMapper}.
+ * A {@link TaskSerializationService} implementation employing {@link RDFMapper}.
  * </p>
  * 
  * <p>
@@ -49,9 +49,9 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  * @author Václav Brodec
  *
  */
-public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializationService {
+public class TurtleRdfMappingTaskSerializationService implements TaskSerializationService {
 
-  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V3/%s";
+  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V4/%s";
 
   private static String format(final Model model) {
     final StringWriter stringWriter = new StringWriter();
@@ -94,10 +94,7 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
   }
 
   private static TaskValue toProxy(final Task task) {
-    final TaskValue taskValue = new TaskValue();
-    taskValue.setDescription(task.getDescription());
-    taskValue.setConfiguration(new ConfigurationValue(task.getConfiguration()));
-    return taskValue;
+    return new TaskValue(task);
   }
 
   private final RDFMapper.Builder rdfMapperBuilder;
@@ -106,29 +103,36 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
 
   private final FileService fileService;
 
+  private final KnowledgeBaseSerializationService knowledgeBaseSerializationService;
+
   private final BasesService basesService;
 
   public TurtleRdfMappingTaskSerializationService(final RDFMapper.Builder rdfMapperBuilder,
       final UserService userService, final FileService fileService,
+      final KnowledgeBaseSerializationService knowledgeBaseSerializationService,
       final BasesService basesService) {
     Preconditions.checkNotNull(rdfMapperBuilder);
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(knowledgeBaseSerializationService);
     Preconditions.checkNotNull(basesService);
 
     this.rdfMapperBuilder = rdfMapperBuilder;
     this.userService = userService;
     this.fileService = fileService;
+    this.knowledgeBaseSerializationService = knowledgeBaseSerializationService;
     this.basesService = basesService;
   }
 
   @Autowired
   public TurtleRdfMappingTaskSerializationService(final UserService userService,
-      final FileService fileService, final BasesService basesService) {
+      final FileService fileService,
+      final KnowledgeBaseSerializationService knowledgeBaseSerializationService,
+      final BasesService basesService) {
     this(
         RDFMapper.builder().set(MappingOptions.IGNORE_CARDINALITY_VIOLATIONS, false)
             .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false),
-        userService, fileService, basesService);
+        userService, fileService, knowledgeBaseSerializationService, basesService);
   }
 
   private RDFMapper buildMapper(final URI baseUri) {
@@ -177,17 +181,27 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
 
   private Configuration initializeConfiguration(final String userId,
       final ConfigurationValue configurationValue, final File input) {
-    final Set<String> usedBasesNames = configurationValue.getUsedBases().stream()
-        .map(e -> e.getName()).collect(ImmutableSet.toImmutableSet());
-    final Set<KnowledgeBase> usedBases = usedBasesNames.stream()
-        .map(e -> this.basesService.getByName(userId, e)).collect(ImmutableSet.toImmutableSet());
+    final Set<KnowledgeBase> usedBases = extractUsedBases(userId, configurationValue);
 
-    final String primaryBaseName = configurationValue.getPrimaryBase().getName();
+    final String primaryBaseName = configurationValue.getPrimaryBase();
     final KnowledgeBase primaryBase = this.basesService.getByName(userId, primaryBaseName);
 
     return new Configuration(input, usedBases, primaryBase,
         configurationValue.getFeedback().toFeedback(), configurationValue.getRowsLimit(),
         configurationValue.isStatistical());
+  }
+
+  private Set<KnowledgeBase> extractUsedBases(final String userId,
+      final ConfigurationValue configurationValue) {
+    final Set<KnowledgeBase> usedBases = configurationValue.getUsedBases().stream()
+        .map(e -> this.knowledgeBaseSerializationService.deserialize(userId, e))
+        .collect(ImmutableSet.toImmutableSet());
+    
+    for (final KnowledgeBase usedBase : usedBases) {
+      this.basesService.merge(usedBase);
+    }
+    
+    return usedBases;
   }
 
   @Override

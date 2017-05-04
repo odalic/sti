@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
 
-import cz.cuni.mff.xrg.odalic.api.rdf.TaskRdfSerializationService;
+import cz.cuni.mff.xrg.odalic.api.rdf.TaskSerializationService;
 import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
@@ -67,7 +67,7 @@ public final class TasksResource {
   private final FileService fileService;
   private final ExecutionService executionService;
   private final BasesService basesService;
-  private final TaskRdfSerializationService taskSerializationService;
+  private final TaskSerializationService taskSerializationService;
 
   @Context
   private SecurityContext securityContext;
@@ -78,7 +78,7 @@ public final class TasksResource {
   @Autowired
   public TasksResource(final UserService userService, final TaskService taskService,
       final FileService fileService, final ExecutionService executionService,
-      final BasesService basesService, final TaskRdfSerializationService taskSerializationService) {
+      final BasesService basesService, final TaskSerializationService taskSerializationService) {
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(taskService);
     Preconditions.checkNotNull(fileService);

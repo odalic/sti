@@ -3,15 +3,21 @@
  */
 package cz.cuni.mff.xrg.odalic.bases;
 
+import java.io.IOException;
 import java.util.NavigableSet;
+import java.util.Set;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 
 import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.groups.GroupsService;
+import cz.cuni.mff.xrg.odalic.tasks.Task;
+import cz.cuni.mff.xrg.odalic.users.User;
 
 /**
  * Default {@link BasesService} implementation.
@@ -23,20 +29,25 @@ public final class MemoryOnlyBasesService implements BasesService {
   
   private final Table<String, String, KnowledgeBase> userAndBaseIdsToBases;
 
-  private GroupsService groupsService;
+  private final GroupsService groupsService;
+
+  private final Table<String, String, Set<String>> utilizingTasks;
   
   public MemoryOnlyBasesService(final KnowledgeBaseProxiesService knowledgeBaseProxiesService, final GroupsService groupsService) {
-    this(knowledgeBaseProxiesService, groupsService, HashBasedTable.create());
+    this(knowledgeBaseProxiesService, groupsService, HashBasedTable.create(), HashBasedTable.create());
   }
   
-  public MemoryOnlyBasesService(final KnowledgeBaseProxiesService knowledgeBaseProxiesService, final GroupsService groupsService, final Table<String, String, KnowledgeBase> userAndBaseIdsToBases) {
+  public MemoryOnlyBasesService(final KnowledgeBaseProxiesService knowledgeBaseProxiesService, final GroupsService groupsService, final Table<String, String, KnowledgeBase> userAndBaseIdsToBases,
+      final Table<String, String, Set<String>> utilizingTasks) {
     Preconditions.checkNotNull(knowledgeBaseProxiesService);
     Preconditions.checkNotNull(groupsService);
     Preconditions.checkNotNull(userAndBaseIdsToBases);
+    Preconditions.checkNotNull(utilizingTasks);
 
     this.knowledgeBaseProxiesService = knowledgeBaseProxiesService;
     this.groupsService = groupsService;
     this.userAndBaseIdsToBases = userAndBaseIdsToBases;
+    this.utilizingTasks = utilizingTasks;
   }
 
   @Override
@@ -77,6 +88,22 @@ public final class MemoryOnlyBasesService implements BasesService {
   }
   
   @Override
+  public KnowledgeBase merge(final KnowledgeBase base) {
+    Preconditions.checkNotNull(base);
+    
+    final String userId = base.getOwner().getEmail();
+    final String baseId = base.getName();
+
+    final KnowledgeBase previous = this.userAndBaseIdsToBases.get(userId, baseId);
+    if (previous == null) {
+      create(base);
+      return base;
+    }
+    
+    return previous;
+  }
+  
+  @Override
   public boolean existsBaseWithId(final String userId, final String baseId) {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(baseId);
@@ -101,5 +128,102 @@ public final class MemoryOnlyBasesService implements BasesService {
     Preconditions.checkNotNull(name);
 
     return this.userAndBaseIdsToBases.get(userId, name);
+  }
+
+  @Override
+  public void deleteById(String userId, String name) throws IOException {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(name);
+
+    checkUtilization(userId, name);
+
+    final KnowledgeBase base = this.userAndBaseIdsToBases.remove(userId, name);
+    Preconditions.checkArgument(base != null);
+    
+    this.knowledgeBaseProxiesService.delete(base);
+    this.groupsService.unsubscribe(base);
+  }
+  
+  private void checkUtilization(final String userId, final String name)
+      throws IllegalStateException {
+    final Set<String> utilizingTaskIds = this.utilizingTasks.get(userId, name);
+    if (utilizingTaskIds == null) {
+      return;
+    }
+
+    final String jointUtilizingTasksIds = String.join(", ", utilizingTaskIds);
+    Preconditions.checkState(utilizingTaskIds.isEmpty(),
+        String.format("Some tasks (%s) still refer to this base!", jointUtilizingTasksIds));
+  }
+
+  @Override
+  public void subscribe(final Task task) {
+    final User taskOwner = task.getOwner();
+    final String taskId = task.getId();
+    
+    final Set<KnowledgeBase> bases = task.getConfiguration().getUsedBases();
+    
+    for (final KnowledgeBase base : bases) {
+      final User owner = base.getOwner();
+      Preconditions.checkArgument(owner.equals(taskOwner),
+          "The owner of the base is not the same as the owner of the task!");
+  
+      final String userId = owner.getEmail();
+      final String baseName = base.getName();
+  
+      Preconditions.checkArgument(this.userAndBaseIdsToBases.get(userId, baseName).equals(base),
+          "The base is not registered!");
+  
+      final Set<String> tasks = this.utilizingTasks.get(userId, baseName);
+  
+      final boolean inserted;
+      if (tasks == null) {
+        this.utilizingTasks.put(userId, baseName, Sets.newHashSet(taskId));
+        inserted = true;
+      } else {
+        inserted = tasks.add(taskId);
+      }
+  
+      Preconditions.checkArgument(inserted, "The task has already been subcscribed to the base!");
+    }
+  }
+
+  @Override
+  public void unsubscribe(final Task task) {
+    final User taskOwner = task.getOwner();
+    final String taskId = task.getId();
+    
+    final Set<KnowledgeBase> bases = task.getConfiguration().getUsedBases();
+
+    for (final KnowledgeBase base : bases) {
+      unsubscribe(taskOwner, taskId, base);
+    }
+  }
+
+  private void unsubscribe(final User taskOwner, final String taskId, final KnowledgeBase base) {
+    final User owner = base.getOwner();
+    Preconditions.checkArgument(owner.equals(taskOwner),
+        "The owner of the base is not the same as the owner of the task!");
+ 
+    final String userId = owner.getEmail();
+    final String baseName = base.getName();
+ 
+    Preconditions.checkArgument(this.userAndBaseIdsToBases.get(userId, baseName).equals(base),
+        "The base is not registered!");
+ 
+    final Set<String> tasks = this.utilizingTasks.get(userId, baseName);
+ 
+    final boolean removed;
+    if (tasks == null) {
+      removed = false;
+    } else {
+      removed = tasks.remove(taskId);
+ 
+      if (tasks.isEmpty()) {
+        this.utilizingTasks.remove(userId, baseName);
+      }
+    }
+ 
+    Preconditions.checkArgument(removed, "The task is not subcscribed to the base!");
   }
 }

@@ -1,11 +1,15 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.NavigableSet;
 import java.util.Set;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -14,6 +18,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -26,6 +31,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
+import cz.cuni.mff.xrg.odalic.api.rdf.KnowledgeBaseSerializationService;
 import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
@@ -52,10 +58,13 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 @Secured({Role.ADMINISTRATOR, Role.USER})
 public final class BasesResource {
 
+  private static final String TURTLE_MIME_TYPE = "text/turtle";
+  
   private final BasesService basesService;
   private final UserService userService;
   private final AdvancedBaseTypesService advancedBaseTypesService;
   private final GroupsService groupsService;
+  private final KnowledgeBaseSerializationService knowledgeBaseRdfSerializationService;
 
   @Context
   private SecurityContext securityContext;
@@ -66,16 +75,19 @@ public final class BasesResource {
 
   @Autowired
   public BasesResource(final BasesService basesService, final UserService userService,
-      final AdvancedBaseTypesService advancedBaseTypesService, final GroupsService groupsService) {
+      final AdvancedBaseTypesService advancedBaseTypesService, final GroupsService groupsService,
+      final KnowledgeBaseSerializationService knowledgeBaseRdfSerializationService) {
     Preconditions.checkNotNull(basesService);
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(advancedBaseTypesService);
     Preconditions.checkNotNull(groupsService);
+    Preconditions.checkNotNull(knowledgeBaseRdfSerializationService);
 
     this.basesService = basesService;
     this.userService = userService;
     this.advancedBaseTypesService = advancedBaseTypesService;
     this.groupsService = groupsService;
+    this.knowledgeBaseRdfSerializationService = knowledgeBaseRdfSerializationService;
   }
 
   @GET
@@ -128,7 +140,7 @@ public final class BasesResource {
   }
 
   @PUT
-  @Path("/users/{userId}/bases/{name}")
+  @Path("users/{userId}/bases/{name}")
   @Produces({MediaType.APPLICATION_JSON})
   public Response put(final @PathParam("userId") String userId,
       final @PathParam("name") String name, final KnowledgeBaseValue baseValue)
@@ -169,6 +181,85 @@ public final class BasesResource {
       this.basesService.replace(base);
       return Message
           .of("The base you specified has been fully updated AT THE LOCATION you specified.")
+          .toResponse(Response.Status.OK, location, this.uriInfo);
+    }
+  }
+  
+  @PUT
+  @Path("bases/{name}")
+  @Produces({MediaType.APPLICATION_JSON})
+  public Response put(final @PathParam("name") String name, final KnowledgeBaseValue baseValue)
+      throws MalformedURLException, IllegalStateException, IllegalArgumentException {
+    return put(this.securityContext.getUserPrincipal().getName(), baseValue);
+  }
+  
+  @DELETE
+  @Path("bases/{name}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deleteById(final @PathParam("name") String name) throws IOException {
+    return deleteById(this.securityContext.getUserPrincipal().getName(), name);
+  }
+
+  @DELETE
+  @Path("users/{userId}/bases/{name}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deleteById(final @PathParam("userId") String userId,
+      final @PathParam("name") String name) throws IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    try {
+      this.basesService.deleteById(userId, name);
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException("The base does not exist!", e);
+    } catch (final IllegalStateException e) {
+      throw new WebApplicationException(e.getMessage(), e, Response.Status.CONFLICT);
+    }
+
+    return Message.of("Base deleted.").toResponse(Response.Status.OK, this.uriInfo);
+  }
+  
+  @PUT
+  @Path("bases/{name}")
+  @Consumes(TURTLE_MIME_TYPE)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response importTaskId(final @PathParam("name") String name, final InputStream body)
+      throws IOException {
+    return importTaskId(this.securityContext.getUserPrincipal().getName(), name, body);
+  }
+
+  @PUT
+  @Path("users/{userId}/bases/{name}")
+  @Consumes(TURTLE_MIME_TYPE)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response importTaskId(final @PathParam("userId") String userId,
+      final @PathParam("name") String name, final InputStream body) throws IOException {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    if (body == null) {
+      throw new BadRequestException("The body cannot be null!");
+    }
+
+    final KnowledgeBase base;
+    try {
+      base = this.knowledgeBaseRdfSerializationService.deserialize(body, userId, name,
+          this.uriInfo.getBaseUri());
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
+
+    final KnowledgeBase baseById = this.basesService.verifyBaseExistenceByName(userId, name);
+
+    final URL location =
+        cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(this.uriInfo, name);
+
+    if (baseById == null) {
+      this.basesService.create(base);
+      return Message.of("A base has been imported AT THE LOCATION you specified")
+          .toResponse(Response.Status.CREATED, location, this.uriInfo);
+    } else {
+      this.basesService.replace(base);
+      return Message
+          .of("The base you specified has been fully updated from the import AT THE LOCATION you specified.")
           .toResponse(Response.Status.OK, location, this.uriInfo);
     }
   }

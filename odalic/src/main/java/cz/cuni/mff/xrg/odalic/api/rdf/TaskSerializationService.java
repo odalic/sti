@@ -10,17 +10,17 @@ import java.net.URI;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 
 /**
- * Serializes and de-serializes {@link Task} instances to and from RDF representation.
+ * Serializes and de-serializes {@link Task} instances.
  *
  * @author Václav Brodec
  *
  */
-public interface TaskRdfSerializationService {
+public interface TaskSerializationService {
 
   /**
    * De-serializes the task.
    *
-   * @param taskStream input stream in supported RDF notation
+   * @param taskStream input stream in supported format
    * @param userId owner's ID
    * @param taskId task ID assigned to the de-serialized task
    * @param baseUri base URI of the application

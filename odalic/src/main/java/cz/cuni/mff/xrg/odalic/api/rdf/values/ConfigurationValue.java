@@ -32,7 +32,7 @@ public final class ConfigurationValue implements Serializable {
 
   private List<KnowledgeBaseValue> usedBases;
 
-  private KnowledgeBaseValue primaryBase;
+  private String primaryBase;
 
   private Integer rowsLimit;
 
@@ -45,7 +45,7 @@ public final class ConfigurationValue implements Serializable {
     this.feedback = adaptee.getFeedback() == null ? null : new FeedbackValue(adaptee.getFeedback());
     this.usedBases = adaptee.getUsedBases().stream().map(KnowledgeBaseValue::new)
         .collect(ImmutableList.toImmutableList());
-    this.primaryBase = new KnowledgeBaseValue(adaptee.getPrimaryBase());
+    this.primaryBase = adaptee.getPrimaryBase().getName();
     this.rowsLimit =
         adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
     this.statistical = adaptee.isStatistical();
@@ -77,7 +77,7 @@ public final class ConfigurationValue implements Serializable {
   @XmlElement
   @Nullable
   @RdfProperty("http://odalic.eu/internal/Configuration/primaryBase")
-  public KnowledgeBaseValue getPrimaryBase() {
+  public String getPrimaryBase() {
     return this.primaryBase;
   }
 
@@ -134,7 +134,7 @@ public final class ConfigurationValue implements Serializable {
   /**
    * @param primaryBase the primary knowledge base to set
    */
-  public void setPrimaryBase(final KnowledgeBaseValue primaryBase) {
+  public void setPrimaryBase(final String primaryBase) {
     Preconditions.checkNotNull(primaryBase);
 
     this.primaryBase = primaryBase;

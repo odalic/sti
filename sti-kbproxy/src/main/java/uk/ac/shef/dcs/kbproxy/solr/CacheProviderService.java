@@ -1,5 +1,7 @@
 package uk.ac.shef.dcs.kbproxy.solr;
 
+import java.io.IOException;
+
 import uk.ac.shef.dcs.util.Cache;
 
 /**
@@ -17,4 +19,6 @@ public interface CacheProviderService {
    * @return cache instance
    */
   Cache getCache(final String identifier);
+
+  void removeCache(String id) throws IOException;
 }

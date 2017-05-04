@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.bases.proxies;
 
+import java.io.IOException;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -89,12 +90,20 @@ public class DefaultKnowledgeBaseProxiesService implements KnowledgeBaseProxiesS
     final ProxyDefinition definition = this.advancedBaseTypesService.toProxyDefinition(base);
     final String proxyId = createProxyId(base);
     
-    final Proxy proxy = this.proxiesFactory.createInstance(proxyId, definition, this.prefixService.getPrefixToUriMap());
+    final Proxy proxy = this.proxiesFactory.create(proxyId, definition, this.prefixService.getPrefixToUriMap());
     
     this.userIdsAndBaseNamesToProxies.put(base.getOwner().getEmail(), base.getName(), proxy);
   }
 
   private static String createProxyId(final KnowledgeBase base) {
     return base.getOwner() + "_" + base.getName();
+  }
+
+  @Override
+  public void delete(final KnowledgeBase base) throws IOException {
+    final Proxy previous = this.userIdsAndBaseNamesToProxies.remove(base.getOwner().getEmail(), base.getName());
+    Preconditions.checkArgument(previous != null);
+    
+    this.proxiesFactory.dispose(previous.getName());
   }
 }

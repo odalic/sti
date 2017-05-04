@@ -171,4 +171,14 @@ public final class MemoryOnlySolrCacheProviderService implements CacheProviderSe
       throw new IllegalStateException(error, e);
     }
   }
+
+  @Override
+  public void removeCache(final String id) throws IOException {
+    final Path path = this.idsToPaths.remove(id);
+    Preconditions.checkArgument(path != null);
+    
+    FileUtils.deleteDirectory(path.toFile());
+    
+    this.idsToCoreContainers.remove(id);
+  }
 }

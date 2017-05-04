@@ -65,6 +65,25 @@ public final class MemoryOnlyGroupsService implements GroupsService {
 
     this.userAndGroupIdsToGroups.put(group.getOwner().getEmail(), group.getId(), group);
   }
+  
+  @Override
+  public Group merge(final Group group) {
+    Preconditions.checkNotNull(group);
+
+    final String userId = group.getOwner().getEmail();
+    final String groupId = group.getId();
+    
+    final Group previous = this.userAndGroupIdsToGroups.get(userId, groupId);
+    if (previous == null) {
+      create(group);
+      return group;
+    }
+    
+    final Group merged = previous.merge(group);
+    replace(previous.merge(group));
+    
+    return merged;
+  }
 
   @Override
   public void create(final Group group) {

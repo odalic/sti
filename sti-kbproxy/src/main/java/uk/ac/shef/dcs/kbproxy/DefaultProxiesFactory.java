@@ -1,5 +1,6 @@
 package uk.ac.shef.dcs.kbproxy;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ public final class DefaultProxiesFactory implements ProxiesFactory {
   
 
   @Override
-  public Proxy createInstance(final String id, final ProxyDefinition definition, final Map<String, String> prefixesToUris) {
+  public Proxy create(final String id, final ProxyDefinition definition, final Map<String, String> prefixesToUris) {
       final ProxyCoreFactory factory = this.definitionClassesToCoreFactories.get(definition.getClass());
       Preconditions.checkArgument(factory != null, "Unknwon definition type!");
       
@@ -55,5 +56,10 @@ public final class DefaultProxiesFactory implements ProxiesFactory {
       final ProxyCore filteringCore = new FilteringProxyCore(cachingCore, filter);
       
       return new CoreExceptionsWrappingProxy(filteringCore);
+  }
+  
+  @Override
+  public void dispose(final String id) throws IOException {
+    this.cacheProviderService.removeCache(id);
   }
 }

@@ -50,7 +50,7 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   
   private final Map<String, Path> idsToPaths;
   
-  private final Map<String, CoreContainer> idsToContainers;
+  private final Map<String, CoreContainer> idsToCoreContainers;
 
   @SuppressWarnings("unchecked")
   public DbSolrCacheProviderService(final PropertiesService propertiesService, final DbService dbService) {
@@ -63,7 +63,7 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
     this.db = dbService.getDb();
     
     this.idsToPaths = this.db.hashMap("idsToPaths", Serializer.STRING, Serializer.JAVA).createOrOpen();
-    this.idsToContainers = new HashMap<>();
+    this.idsToCoreContainers = new HashMap<>();
   }
   
   private static Path readTemplatePath(final PropertiesService propertiesService) {
@@ -86,7 +86,7 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   
   @Override
   public Cache getCache(final String id) {
-    final CoreContainer container = this.idsToContainers.get(id);
+    final CoreContainer container = this.idsToCoreContainers.get(id);
     
     if (container == null) {
       return registerCache(id);
@@ -103,7 +103,7 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
     final Path instancePath = getInstancePath(id);
     
     final EmbeddedSolrServer server = initializeServer(instancePath, id);
-    this.idsToContainers.put(id, server.getCoreContainer());
+    this.idsToCoreContainers.put(id, server.getCoreContainer());
     
     return new SolrCache(server);
   }
@@ -173,5 +173,15 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
       
       throw new IllegalStateException(error, e);
     }
+  }
+  
+  @Override
+  public void removeCache(final String id) throws IOException {
+    final Path path = this.idsToPaths.remove(id);
+    Preconditions.checkArgument(path != null);
+    
+    FileUtils.deleteDirectory(path.toFile());
+    
+    this.idsToCoreContainers.remove(id);
   }
 }

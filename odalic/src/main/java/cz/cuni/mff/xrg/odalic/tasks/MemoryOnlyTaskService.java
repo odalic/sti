@@ -14,6 +14,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 
 /**
@@ -26,11 +27,13 @@ import cz.cuni.mff.xrg.odalic.files.FileService;
 public final class MemoryOnlyTaskService implements TaskService {
 
   private final FileService fileService;
+  private final BasesService basesService;
 
   /**
    * Table of tasks where rows are indexed by user IDs and the columns by task IDs.
    */
   private final Table<String, String, Task> tasks;
+
 
   /**
    * Creates the task service with no registered tasks.
@@ -38,16 +41,18 @@ public final class MemoryOnlyTaskService implements TaskService {
    * @param fileService file service
    */
   @Autowired
-  public MemoryOnlyTaskService(final FileService fileService) {
-    this(fileService, HashBasedTable.create());
+  public MemoryOnlyTaskService(final FileService fileService, final BasesService basesService) {
+    this(fileService, basesService, HashBasedTable.create());
   }
 
-  private MemoryOnlyTaskService(final FileService fileService,
+  private MemoryOnlyTaskService(final FileService fileService, final BasesService basesService,
       final Table<String, String, Task> tasks) {
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(basesService);
     Preconditions.checkNotNull(tasks);
 
     this.fileService = fileService;
+    this.basesService = basesService;
     this.tasks = tasks;
   }
 
@@ -120,9 +125,11 @@ public final class MemoryOnlyTaskService implements TaskService {
     final Task previous = this.tasks.put(task.getOwner().getEmail(), task.getId(), task);
     if (previous != null) {
       this.fileService.unsubscribe(previous);
+      this.basesService.unsubscribe(previous);
     }
 
-    this.fileService.subscribe( task);
+    this.fileService.subscribe(task);
+    this.basesService.subscribe(task);
   }
 
   @Override

@@ -34,4 +34,6 @@ public interface GroupsService {
 
   Set<Group> detectUsed(String userId, URL endpoint);
 
+  Group merge(Group group);
+
 }

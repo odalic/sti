@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.bases.proxies;
 
+import java.io.IOException;
 import java.util.Set;
 
 import com.google.common.collect.Table;
@@ -23,4 +24,6 @@ public interface KnowledgeBaseProxiesService {
   void set(final KnowledgeBase base);
 
   PrefixMappingService getPrefixService();
+
+  void delete(KnowledgeBase base) throws IOException;
 }

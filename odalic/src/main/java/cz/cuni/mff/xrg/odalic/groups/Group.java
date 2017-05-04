@@ -2,13 +2,16 @@ package cz.cuni.mff.xrg.odalic.groups;
 
 import java.io.Serializable;
 import java.util.List;
+
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.GroupAdapter;
 import cz.cuni.mff.xrg.odalic.users.User;
+import cz.cuni.mff.xrg.odalic.util.Lists;
 
 /**
  * Predicates and class group.
@@ -88,7 +91,19 @@ public final class Group implements Serializable {
   public List<String> getPropertyTypes() {
     return propertyTypes;
   }
-
+  
+  public Group merge(final Group group) {
+    return new Group(
+      this.owner,
+      this.id,
+      Lists.merge(this.labelPredicates, group.labelPredicates),
+      Lists.merge(this.descriptionPredicates, group.descriptionPredicates),
+      Lists.merge(this.instanceOfPredicates, group.instanceOfPredicates),
+      Lists.merge(this.classTypes, group.classTypes),
+      Lists.merge(this.propertyTypes, group.propertyTypes)
+    );
+  }
+  
   /* (non-Javadoc)
    * @see java.lang.Object#hashCode()
    */

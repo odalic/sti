@@ -195,4 +195,23 @@ public final class DbGroupsService implements GroupsService {
           String.format("Some bases (%s) still refer to this group!", jointUtilizingBaseIds));
     }
   }
+
+  @Override
+  public Group merge(Group group) {
+    Preconditions.checkNotNull(group);
+
+    final String userId = group.getOwner().getEmail();
+    final String groupId = group.getId();
+    
+    final Group previous = this.userAndGroupIdsToGroups.get(new Object[] {userId, groupId});
+    if (previous == null) {
+      create(group);
+      return group;
+    }
+    
+    final Group merged = previous.merge(group);
+    replace(merged);
+    
+    return merged;
+  }
 }
