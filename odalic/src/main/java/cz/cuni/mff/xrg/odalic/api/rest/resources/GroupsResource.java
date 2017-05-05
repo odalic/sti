@@ -193,7 +193,7 @@ public final class GroupsResource {
   @GET
   @Path("groups/detected")
   @Produces({MediaType.APPLICATION_JSON})
-  public Response detectUsed(final @QueryParam("endpointUrl") URL endpoint) {
+  public Response detectUsed(final @QueryParam("endpoint") URL endpoint) {
     return detectUsed(this.securityContext.getUserPrincipal().getName(), endpoint);
   }
 }
