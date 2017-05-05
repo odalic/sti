@@ -66,7 +66,7 @@
 	<bean id="rdfExportService"
 		class="cz.cuni.mff.xrg.odalic.outputs.rdfexport.RioBackedRdfExportService" />
 	<bean id="entitiesService" class="cz.cuni.mff.xrg.odalic.entities.DefaultEntitiesService" />
-	<bean id="basesService" class="cz.cuni.mff.xrg.odalic.bases.MemoryOnlyBasesService" />
+	<bean id="basesService" class="cz.cuni.mff.xrg.odalic.bases.DbBasesService" />
 	<bean id="groupsService" class="cz.cuni.mff.xrg.odalic.groups.MemoryOnlyGroupsService" />
 	<bean id="advancedBaseTypesService" class="cz.cuni.mff.xrg.odalic.bases.MemoryOnlyAdvancedBaseTypesService" />
 	<bean id="prefixMappingService"
@@ -76,7 +76,10 @@
 	<bean id="mailService" class="cz.cuni.mff.xrg.odalic.util.mail.SmtpMailService" />
 	<bean id="tokenService" class="cz.cuni.mff.xrg.odalic.users.AuthZeroTokenService" />
 	<bean id="userService" class="cz.cuni.mff.xrg.odalic.users.DbUserService" />
-	<bean id="taskRdfSerializationService" class="cz.cuni.mff.xrg.odalic.api.rdf.TurtleRdfMappingTaskSerializationService" />
+	<bean id="taskSerializationService" class="cz.cuni.mff.xrg.odalic.api.rdf.TurtleRdfMappingTaskSerializationService" />
+	<bean id="knowledgeBaseSerializationService" class="cz.cuni.mff.xrg.odalic.api.rdf.TurtleRdfMappingknowledgeBaseSerializationService" />
+	<bean id="groupsService" class="cz.cuni.mff.xrg.odalic.groups.DbGroupsService" />
+	<bean id="KnowledgeBaseProxiesService" class="cz.cuni.mff.xrg.odalic.bases.proxies.DbKnowledgeBaseProxiesService" />
 
 	<!-- Resources -->
 	<bean id="configurationResource"

@@ -178,10 +178,16 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   @Override
   public void removeCache(final String id) throws IOException {
     final Path path = this.idsToPaths.remove(id);
-    Preconditions.checkArgument(path != null);
     
-    FileUtils.deleteDirectory(path.toFile());
-    
-    this.idsToCoreContainers.remove(id);
+    try {
+      Preconditions.checkArgument(path != null);
+      
+      FileUtils.deleteDirectory(path.toFile());
+      
+      this.idsToCoreContainers.remove(id);
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
   }
 }

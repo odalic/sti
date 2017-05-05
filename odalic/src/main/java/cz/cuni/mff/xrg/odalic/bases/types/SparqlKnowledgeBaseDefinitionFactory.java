@@ -1,11 +1,14 @@
 package cz.cuni.mff.xrg.odalic.bases.types;
 
+import org.springframework.stereotype.Component;
+
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.bases.ProxyDefinitionFactory;
 import cz.cuni.mff.xrg.odalic.bases.TextSearchingMethod;
 import cz.cuni.mff.xrg.odalic.groups.Group;
 import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyDefinition;
 
+@Component
 public final class SparqlKnowledgeBaseDefinitionFactory
     implements ProxyDefinitionFactory {
 

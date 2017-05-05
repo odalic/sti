@@ -100,9 +100,16 @@ public final class DbGroupsService implements GroupsService {
 
     final Set<Group> groups = base.getSelectedGroups();
 
-    for (final Group group : groups) {
-      subscribe(baseOwner, baseName, group);
+    try {
+      for (final Group group : groups) {
+        subscribe(baseOwner, baseName, group);
+      }
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
     }
+    
+    this.db.commit();
   }
 
   private void subscribe(final User baseOwner, final String baseName, final Group group) {
@@ -131,8 +138,13 @@ public final class DbGroupsService implements GroupsService {
 
     final Set<Group> groups = base.getSelectedGroups();
 
-    for (final Group group : groups) {
-      unsubscribe(baseOwner, baseName, group);
+    try {
+      for (final Group group : groups) {
+        unsubscribe(baseOwner, baseName, group);
+      }
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
     }
   }
 
@@ -181,6 +193,8 @@ public final class DbGroupsService implements GroupsService {
 
     final Group group = this.userAndGroupIdsToGroups.remove(new Object[] {userId, groupId});
     Preconditions.checkArgument(group != null);
+    
+    this.db.commit();
   }
 
   private void checkUtilization(final String userId, final String groupId)

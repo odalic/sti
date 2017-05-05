@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
@@ -24,11 +25,11 @@ import uk.ac.shef.dcs.kbproxy.ProxiesFactory;
  * @author Václav Brodec
  */
 @Component
-public class DefaultKnowledgeBaseProxiesService implements KnowledgeBaseProxiesService {
+public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBaseProxiesService {
 
   @SuppressWarnings("unused")
   private static final Logger logger =
-      LoggerFactory.getLogger(DefaultKnowledgeBaseProxiesService.class);
+      LoggerFactory.getLogger(MemoryOnlyKnowledgeBaseProxiesService.class);
 
   private final ProxiesFactory proxiesFactory;
   private final AdvancedBaseTypesService advancedBaseTypesService;
@@ -36,11 +37,12 @@ public class DefaultKnowledgeBaseProxiesService implements KnowledgeBaseProxiesS
   
   private final Table<String, String, Proxy> userIdsAndBaseNamesToProxies;
 
-  public DefaultKnowledgeBaseProxiesService(final ProxiesFactory proxiesFactory, final AdvancedBaseTypesService advancedBaseTypesService, final PrefixMappingService prefixService) {
+  @Autowired
+  public MemoryOnlyKnowledgeBaseProxiesService(final ProxiesFactory proxiesFactory, final AdvancedBaseTypesService advancedBaseTypesService, final PrefixMappingService prefixService) {
     this(proxiesFactory, advancedBaseTypesService, prefixService, HashBasedTable.create());
   }
   
-  private DefaultKnowledgeBaseProxiesService(final ProxiesFactory proxiesFactory, final AdvancedBaseTypesService advancedBaseTypesService, final PrefixMappingService prefixService, final Table<String, String, Proxy> userIdsAndBaseNamesToProxies) {
+  private MemoryOnlyKnowledgeBaseProxiesService(final ProxiesFactory proxiesFactory, final AdvancedBaseTypesService advancedBaseTypesService, final PrefixMappingService prefixService, final Table<String, String, Proxy> userIdsAndBaseNamesToProxies) {
     Preconditions.checkNotNull(proxiesFactory);
     Preconditions.checkNotNull(advancedBaseTypesService);
     Preconditions.checkNotNull(prefixService);

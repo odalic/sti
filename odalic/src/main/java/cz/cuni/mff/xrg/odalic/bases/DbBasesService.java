@@ -8,6 +8,7 @@ import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.mapdb.serializer.SerializerArrayTuple;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
@@ -38,6 +39,7 @@ public final class DbBasesService implements BasesService {
 
   private final BTreeMap<Object[], Boolean> utilizingTasks;
 
+  @Autowired
   @SuppressWarnings("unchecked")
   public DbBasesService(final KnowledgeBaseProxiesService knowledgeBaseProxiesService,
       final GroupsService groupsService, final DbService dbService) {
@@ -89,12 +91,20 @@ public final class DbBasesService implements BasesService {
     final String baseId = base.getName();
 
     final KnowledgeBase previous = this.userAndBaseIdsToBases.put(new Object[] {userId, baseId}, base);
-    if (previous != null) {
-      this.groupsService.unsubscribe(previous);
+    
+    try {
+      if (previous != null) {
+        this.groupsService.unsubscribe(previous);
+      }
+  
+      this.knowledgeBaseProxiesService.set(base);
+      this.groupsService.subscribe(base);
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
     }
-
-    this.knowledgeBaseProxiesService.set(base);
-    this.groupsService.subscribe(base);
+    
+    this.db.commit();
   }
 
   @Override
@@ -150,8 +160,15 @@ public final class DbBasesService implements BasesService {
     final KnowledgeBase base = this.userAndBaseIdsToBases.remove(new Object[] {userId, name});
     Preconditions.checkArgument(base != null);
 
-    this.knowledgeBaseProxiesService.delete(base);
-    this.groupsService.unsubscribe(base);
+    try {
+      this.knowledgeBaseProxiesService.delete(base);
+      this.groupsService.unsubscribe(base);
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
+    
+    this.db.commit();
   }
 
   private void checkUtilization(final String userId, final String name)
@@ -174,9 +191,16 @@ public final class DbBasesService implements BasesService {
 
     final Set<KnowledgeBase> bases = task.getConfiguration().getUsedBases();
 
-    for (final KnowledgeBase base : bases) {
-      subscribe(taskOwner, taskId, base);
+    try {
+      for (final KnowledgeBase base : bases) {
+        subscribe(taskOwner, taskId, base);
+      }
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
     }
+    
+    this.db.commit();
   }
 
   private void subscribe(final User taskOwner, final String taskId, final KnowledgeBase base) {
@@ -205,9 +229,16 @@ public final class DbBasesService implements BasesService {
 
     final Set<KnowledgeBase> bases = task.getConfiguration().getUsedBases();
 
-    for (final KnowledgeBase base : bases) {
-      unsubscribe(taskOwner, taskId, base);
+    try {
+      for (final KnowledgeBase base : bases) {
+        unsubscribe(taskOwner, taskId, base);
+      }
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
     }
+    
+    this.db.commit();
   }
 
   private void unsubscribe(final User taskOwner, final String taskId, final KnowledgeBase base) {

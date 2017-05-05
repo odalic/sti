@@ -69,10 +69,17 @@ public final class DbTaskService implements TaskService {
   public void deleteAll(final String userId) {
     Preconditions.checkNotNull(userId);
 
-    final Map<Object[], Task> taskIdsToTasks = this.tasks.prefixSubMap(new Object[] {userId});
-    taskIdsToTasks.entrySet().stream().forEach(e -> this.fileService
-        .unsubscribe(e.getValue()));
-    taskIdsToTasks.clear();
+    try {
+      final Map<Object[], Task> taskIdsToTasks = this.tasks.prefixSubMap(new Object[] {userId});
+      taskIdsToTasks.entrySet().stream().forEach(e -> this.fileService
+          .unsubscribe(e.getValue()));
+      taskIdsToTasks.clear();
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
+    
+    this.db.commit();
   }
 
   @Override
@@ -80,10 +87,15 @@ public final class DbTaskService implements TaskService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(taskId);
 
-    final Task task = this.tasks.remove(new Object[] {userId, taskId});
-    Preconditions.checkArgument(task != null);
-
-    this.fileService.unsubscribe(task);
+    try {
+      final Task task = this.tasks.remove(new Object[] {userId, taskId});
+      Preconditions.checkArgument(task != null);
+  
+      this.fileService.unsubscribe(task);
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
 
     this.db.commit();
   }

@@ -96,11 +96,18 @@ public final class DbFileService implements FileService {
 
     final Object[] userIdKey = new Object[] {userId};
 
-    final Map<Object[], File> fileIdsToFiles = this.files.prefixSubMap(userIdKey);
-    fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
-    fileIdsToFiles.clear();
+    try {
+      final Map<Object[], File> fileIdsToFiles = this.files.prefixSubMap(userIdKey);
+      fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
+      fileIdsToFiles.clear();
 
-    this.data.prefixSubMap(userIdKey).clear();
+      this.data.prefixSubMap(userIdKey).clear();
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
+    
+    this.db.commit();
   }
 
   @Override
@@ -110,10 +117,15 @@ public final class DbFileService implements FileService {
 
     checkUtilization(userId, fileId);
 
-    final File file = this.files.remove(new Object[] {userId, fileId});
-    Preconditions.checkArgument(file != null);
-
-    this.data.remove(new Object[] {userId, file.getLocation().toString()});
+    try {
+      final File file = this.files.remove(new Object[] {userId, fileId});
+      Preconditions.checkArgument(file != null);
+  
+      this.data.remove(new Object[] {userId, file.getLocation().toString()});
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
 
     this.db.commit();
   }

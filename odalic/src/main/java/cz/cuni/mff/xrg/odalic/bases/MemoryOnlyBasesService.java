@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.NavigableSet;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
@@ -35,6 +36,7 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   private final Table<String, String, Set<String>> utilizingTasks;
 
+  @Autowired
   public MemoryOnlyBasesService(final KnowledgeBaseProxiesService knowledgeBaseProxiesService,
       final GroupsService groupsService) {
     this(knowledgeBaseProxiesService, groupsService, HashBasedTable.create(),

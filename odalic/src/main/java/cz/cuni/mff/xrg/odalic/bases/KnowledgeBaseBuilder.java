@@ -12,6 +12,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.springframework.stereotype.Component;
+
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.groups.Group;
@@ -23,6 +25,7 @@ import cz.cuni.mff.xrg.odalic.users.User;
  * @author Václav Brodec
  *
  */
+@Component
 public final class KnowledgeBaseBuilder implements Serializable {
 
   private static final long serialVersionUID = 2241360833757117714L;
