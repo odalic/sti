@@ -20,8 +20,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.Rio;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.complexible.pinto.MappingOptions;
 import com.complexible.pinto.RDFMapper;
 import com.google.common.base.Preconditions;
@@ -50,7 +48,6 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  * @author Václav Brodec
  *
  */
-@Component
 public class TurtleRdfMappingTaskSerializationService implements TaskSerializationService {
 
   private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V4/%s";

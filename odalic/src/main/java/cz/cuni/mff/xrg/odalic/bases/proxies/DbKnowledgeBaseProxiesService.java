@@ -10,8 +10,6 @@ import org.mapdb.serializer.SerializerArrayTuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
@@ -29,7 +27,6 @@ import uk.ac.shef.dcs.kbproxy.ProxiesFactory;
 /**
  * @author Václav Brodec
  */
-@Component
 public final class DbKnowledgeBaseProxiesService implements KnowledgeBaseProxiesService {
 
   @SuppressWarnings("unused")

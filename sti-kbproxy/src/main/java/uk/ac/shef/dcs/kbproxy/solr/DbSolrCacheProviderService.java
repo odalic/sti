@@ -16,6 +16,8 @@ import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
 
@@ -32,17 +34,19 @@ import uk.ac.shef.dcs.util.SolrCache;
  * @author Ziqi Zhang
  *
  */
+@Component
 public final class DbSolrCacheProviderService implements CacheProviderService {
 
+  private static final String BASE_PATH_PROPERTY_KEY = "sti.home";
   private static final String CACHES_DIRECTORY_PROPERTY_KEY = "sti.cache.main.dir";
+  private static final String TEMPLATE_SUBDIRECTORY_NAME = "empty";
   private static final String CACHE_VERSION_ID = "9274dff6-c606-4f5d-8bb5-d528c764e655";
   private static final String CACHE_VERSION = "1.0.18";
   
-  private static final String TEMPLATE_SUBDIRECTORY_NAME = "empty";
   
   private static final Logger log = LoggerFactory.getLogger(DbSolrCacheProviderService.class);
   
-  private final Path basePath;
+  private final Path cacheBasePath;
   
   private final Path templatePath;
   
@@ -53,11 +57,12 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   private final Map<String, CoreContainer> idsToCoreContainers;
 
   @SuppressWarnings("unchecked")
+  @Autowired
   public DbSolrCacheProviderService(final PropertiesService propertiesService, final DbService dbService) {
     Preconditions.checkNotNull(propertiesService);
     Preconditions.checkNotNull(dbService); 
     
-    this.basePath = readBasePath(propertiesService);
+    this.cacheBasePath = readCacheBasePath(propertiesService);
     this.templatePath = readTemplatePath(propertiesService);
     
     this.db = dbService.getDb();
@@ -67,7 +72,7 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   }
   
   private static Path readTemplatePath(final PropertiesService propertiesService) {
-    final Path templatePath = Paths.get(propertiesService.get().getProperty(CACHES_DIRECTORY_PROPERTY_KEY)).resolve(TEMPLATE_SUBDIRECTORY_NAME);
+    final Path templatePath = readCacheBasePath(propertiesService).resolve(TEMPLATE_SUBDIRECTORY_NAME);
     Preconditions.checkArgument(templatePath != null, "The template path key not found!");
     
     Preconditions.checkArgument(Files.exists(templatePath), String.format("The cache template on path %s does not exist!", templatePath));
@@ -75,8 +80,21 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
     return templatePath;
   }
 
-  private static Path readBasePath(final PropertiesService propertiesService) {
-    final Path basePath = Paths.get(propertiesService.get().getProperty(CACHES_DIRECTORY_PROPERTY_KEY));
+  private static Path readCacheBasePath(final PropertiesService propertiesService) {
+    final Path basePath = readApplicationBasePath(propertiesService);
+    
+    final Path relativePath = Paths.get(propertiesService.get().getProperty(CACHES_DIRECTORY_PROPERTY_KEY));
+    Preconditions.checkArgument(relativePath != null, "The caches base path key not found!");
+    
+    final Path resultPath = basePath.resolve(relativePath);
+    
+    Preconditions.checkArgument(Files.exists(resultPath), String.format("The caches base path %s does not exist!", resultPath));
+    
+    return resultPath;
+  }
+  
+  private static Path readApplicationBasePath(final PropertiesService propertiesService) {
+    final Path basePath = Paths.get(propertiesService.get().getProperty(BASE_PATH_PROPERTY_KEY));
     Preconditions.checkArgument(basePath != null, "The base path key not found!");
     
     Preconditions.checkArgument(Files.exists(basePath), String.format("The base path %s does not exist!", basePath));
@@ -119,7 +137,7 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   }
 
   private Path generateNewPath(final String id) {
-    final Path newCachePath = basePath.resolve(generateRelativePath());
+    final Path newCachePath = cacheBasePath.resolve(generateRelativePath());
     this.idsToPaths.put(id, newCachePath);
   
     this.db.commit();
