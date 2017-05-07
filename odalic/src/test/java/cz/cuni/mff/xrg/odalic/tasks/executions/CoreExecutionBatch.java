@@ -192,16 +192,12 @@ public class CoreExecutionBatch {
       return new Feedback();
     }
     else {
-      // subject columns example
-      HashMap<KnowledgeBase, ColumnPosition> subjectColumns = new HashMap<>();
-      subjectColumns.put(new KnowledgeBase("DBpedia Clone"), new ColumnPosition(0));
-
-      // other subject columns example
-      HashMap<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumns = new HashMap<>();
-      HashSet<ColumnPosition> otherSubjectPositions = new HashSet<>();
-      otherSubjectPositions.add(new ColumnPosition(1));
-      otherSubjectPositions.add(new ColumnPosition(2));
-      otherSubjectColumns.put(new KnowledgeBase("DBpedia Clone"), otherSubjectPositions);
+      // subject columns positions example
+      HashMap<KnowledgeBase, Set<ColumnPosition>> subjectColumnsPositions = new HashMap<>();
+      HashSet<ColumnPosition> subjectPositions = new HashSet<>();
+      subjectPositions.add(new ColumnPosition(0));
+      subjectPositions.add(new ColumnPosition(1));
+      subjectColumnsPositions.put(new KnowledgeBase("DBpedia Clone"), subjectPositions);
 
       // classifications example
       HashSet<EntityCandidate> candidatesClassification = new HashSet<>();
@@ -271,8 +267,8 @@ public class CoreExecutionBatch {
           "http://dbpedia.org/ontology/year", "Year"));
 
       // statistical data feedback example
-      return new Feedback(ImmutableMap.of(), ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(),
-          ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), dataCubeComponents);
+      return new Feedback(ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(),
+          ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of());
     }
   }
 

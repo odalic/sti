@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rest.values;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,9 +39,7 @@ public final class FeedbackValue implements Serializable {
 
   private static final long serialVersionUID = -7968455903789693405L;
 
-  private Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
-
-  private Map<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions;
+  private Map<KnowledgeBase, Set<ColumnPosition>> subjectColumnsPositions;
 
   private Set<ColumnIgnore> columnIgnores;
 
@@ -59,8 +58,7 @@ public final class FeedbackValue implements Serializable {
   private Set<DataCubeComponent> dataCubeComponents;
 
   public FeedbackValue() {
-    this.subjectColumnPositions = ImmutableMap.of();
-    this.otherSubjectColumnPositions = ImmutableMap.of();
+    this.subjectColumnsPositions = ImmutableMap.of();
     this.columnIgnores = ImmutableSet.of();
     this.columnCompulsory = ImmutableSet.of();
     this.columnAmbiguities = ImmutableSet.of();
@@ -72,8 +70,7 @@ public final class FeedbackValue implements Serializable {
   }
 
   public FeedbackValue(final Feedback adaptee) {
-    this.subjectColumnPositions = adaptee.getSubjectColumnPositions();
-    this.otherSubjectColumnPositions = adaptee.getOtherSubjectColumnPositions();
+    this.subjectColumnsPositions = adaptee.getSubjectColumnsPositions();
     this.columnIgnores = adaptee.getColumnIgnores();
     this.columnCompulsory = adaptee.getColumnCompulsory();
     this.columnAmbiguities = adaptee.getColumnAmbiguities();
@@ -151,21 +148,26 @@ public final class FeedbackValue implements Serializable {
   /**
    * @return the subject column positions
    */
+  @Deprecated
   @XmlElement
   @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
   @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
   public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
-    return this.subjectColumnPositions;
+    Map<KnowledgeBase, ColumnPosition> pos = new HashMap<>();
+    for (KnowledgeBase base : getSubjectColumnsPositions().keySet()) {
+      pos.put(base, getSubjectColumnsPositions().get(base).iterator().next());
+    }
+    return pos;
   }
 
   /**
-   * @return the other subject column positions
+   * @return the subject columns positions
    */
   @XmlElement
   @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
   @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
-  public Map<KnowledgeBase, Set<ColumnPosition>> getOtherSubjectColumnPositions() {
-    return this.otherSubjectColumnPositions;
+  public Map<KnowledgeBase, Set<ColumnPosition>> getSubjectColumnsPositions() {
+    return this.subjectColumnsPositions;
   }
 
   /**
@@ -241,23 +243,13 @@ public final class FeedbackValue implements Serializable {
   }
 
   /**
-   * @param subjectColumnPositions the subject column positions to set
+   * @param subjectColumnsPositions the subject columns positions to set
    */
-  public void setSubjectColumnPositions(
-      final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions) {
-    Preconditions.checkNotNull(subjectColumnPositions);
+  public void setSubjectColumnsPositions(
+      final Map<? extends KnowledgeBase, Set<ColumnPosition>> subjectColumnsPositions) {
+    Preconditions.checkNotNull(subjectColumnsPositions);
 
-    this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
-  }
-
-  /**
-   * @param otherSubjectColumnPositions the other subject column positions to set
-   */
-  public void setOtherSubjectColumnPositions(
-      final Map<? extends KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions) {
-    Preconditions.checkNotNull(otherSubjectColumnPositions);
-
-    this.otherSubjectColumnPositions = ImmutableMap.copyOf(otherSubjectColumnPositions);
+    this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
   }
 
   /* (non-Javadoc)
@@ -265,8 +257,7 @@ public final class FeedbackValue implements Serializable {
    */
   @Override
   public String toString() {
-    return "FeedbackValue [subjectColumnPositions=" + subjectColumnPositions
-        + ", otherSubjectColumnPositions=" + otherSubjectColumnPositions + ", columnIgnores="
+    return "FeedbackValue [subjectColumnsPositions=" + subjectColumnsPositions + ", columnIgnores="
         + columnIgnores + ", columnCompulsory=" + columnCompulsory + ", columnAmbiguities="
         + columnAmbiguities + ", classifications=" + classifications + ", columnRelations="
         + columnRelations + ", disambiguations=" + disambiguations + ", ambiguities=" + ambiguities
