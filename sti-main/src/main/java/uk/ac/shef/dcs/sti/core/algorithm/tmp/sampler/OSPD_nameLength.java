@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import uk.ac.shef.dcs.sti.core.model.TCell;
 import uk.ac.shef.dcs.sti.core.model.Table;
@@ -16,7 +17,7 @@ import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
  */
 public class OSPD_nameLength extends TContentCellRanker {
   @Override
-  public List<List<Integer>> select(final Table table, final int fromCol, final int subCol) {
+  public List<List<Integer>> select(final Table table, final int fromCol, final Set<Integer> subCols) {
     final List<List<Integer>> rs = new ArrayList<List<Integer>>();
 
 

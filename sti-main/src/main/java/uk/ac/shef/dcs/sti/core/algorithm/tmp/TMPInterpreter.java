@@ -1,6 +1,8 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -57,7 +59,7 @@ public class TMPInterpreter extends SemanticTableInterpreter {
           this.subjectColumnDetector.compute(table, ignoreColumnsArray);
 
       final TAnnotation tableAnnotations = new TAnnotation(table.getNumRows(), table.getNumCols());
-      tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
+      tableAnnotations.setSubjectColumns(new HashSet<>(Arrays.asList(subjectColumnScores.get(0).getKey())));
 
       final List<Integer> annotatedColumns = new ArrayList<>();
       LOG.info(">\t PHASE: LEARNING ...");

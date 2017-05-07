@@ -199,7 +199,7 @@ public class UPDATE {
       LOG.info("\t\t>> for column " + c);
       // sample ranking
       final List<List<Integer>> ranking =
-          this.selector.select(table, c, currentAnnotation.getSubjectColumn());
+          this.selector.select(table, c, currentAnnotation.getSubjectColumns());
 
       // get winning header annotation
       final List<TColumnHeaderAnnotation> winningColumnClazzAnnotations =

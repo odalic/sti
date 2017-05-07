@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.core.model.TCell;
@@ -26,10 +27,10 @@ public class OSPD_contextWords extends TContentCellRanker {
   }
 
   @Override
-  public List<List<Integer>> select(final Table table, final int fromCol, final int subCol) {
+  public List<List<Integer>> select(final Table table, final int fromCol, final Set<Integer> subCols) {
     final List<List<Integer>> rs = new ArrayList<List<Integer>>();
 
-    if (STIConstantProperty.ENFORCE_OSPD && (fromCol != subCol)) {
+    if (STIConstantProperty.ENFORCE_OSPD && !subCols.contains(fromCol)) {
       // firstly group by one-sense-per-discourse
       final Map<String, List<Integer>> grouped = new HashMap<String, List<Integer>>();
       for (int r = 0; r < table.getNumRows(); r++) {
