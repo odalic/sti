@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import cern.colt.matrix.DoubleMatrix2D;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentRowRanker;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.stopping.StoppingCriteriaInstantiator;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 import uk.ac.shef.dcs.sti.core.model.Table;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
@@ -66,7 +67,7 @@ public class SubjectColumnDetector {
    *         column is acronym column. (only NE likely columns can be considered main column)
    */
   public List<Pair<Integer, Pair<Double, Boolean>>> compute(final Table table,
-      final ColumnPosition suggestedSubject, final int... skipColumns)
+      final Constraints constraints, final int... skipColumns)
       throws IOException, ClassNotFoundException {
     final List<Pair<Integer, Pair<Double, Boolean>>> rs = new ArrayList<>();
 
@@ -91,11 +92,11 @@ public class SubjectColumnDetector {
     // 3. infer the most frequent datatype,
     this.featureGenerator.setMostFrequentDataTypes(featuresOfAllColumns, table);
 
-    // 3.5. (added): is the subject column position suggested by the user?
-    if ((suggestedSubject != null) && (suggestedSubject.getIndex() < table.getNumCols())) {
-      final Pair<Integer, Pair<Double, Boolean>> oo =
-          new Pair<>(suggestedSubject.getIndex(), new Pair<>(1.0, false));
-      rs.add(oo);
+    // 3.5. (added): are the subject column positions suggested by the user?
+    if (!constraints.getSubjectColumnsPositions().isEmpty()) {
+      for (ColumnPosition subjectPosition : constraints.getSubjectColumnsPositions()) {
+        rs.add(new Pair<>(subjectPosition.getIndex(), new Pair<>(1.0, false)));
+      }
       attachColumnFeature(table, featuresOfAllColumns);
       return rs;
     }
@@ -224,7 +225,7 @@ public class SubjectColumnDetector {
 
   public List<Pair<Integer, Pair<Double, Boolean>>> compute(final Table table,
       final int... skipColumns) throws IOException, ClassNotFoundException {
-    return compute(table, null, skipColumns);
+    return compute(table, new Constraints(), skipColumns);
   }
 
   private void computeWSScores(final Table table, final List<TColumnFeature> featuresOfNEColumns)

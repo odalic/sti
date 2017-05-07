@@ -1,6 +1,8 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,13 +61,13 @@ public class RELATIONENUMERATION {
       }
 
       if (interpretable) {
-        tableAnnotations.setSubjectColumn(subjectCol);
+        tableAnnotations.setSubjectColumns(new HashSet<>(Arrays.asList(subjectCol)));
         break;
       } else {
         // the current subject column could be wrong, try differently
         final double overallScore = scoreSolution(tableAnnotations, table, subjectCol);
         if (overallScore > winningSolutionScore) {
-          tableAnnotations.setSubjectColumn(subjectCol);
+          tableAnnotations.setSubjectColumns(new HashSet<>(Arrays.asList(subjectCol)));
           winningSolution = tableAnnotations;
           winningSolutionScore = overallScore;
         }
@@ -79,13 +81,25 @@ public class RELATIONENUMERATION {
       tableAnnotations = winningSolution;
     }
 
-    // relations with other subject columns
-    for (ColumnPosition otherSubjectCol : constraints.getOtherSubjectColumnPositions()) {
-      LOG.info(">>\t\t Let other subject column=" + otherSubjectCol.getIndex());
-      relationEnumerator.runRelationEnumeration(tableAnnotations, table,
-          otherSubjectCol.getIndex(), constraints);
-      tableAnnotations.addOtherSubjectColumn(otherSubjectCol.getIndex());
+    if (STIConstantProperty.REVISE_RELATION_ANNOTATION_BY_DC && (update != null)) {
+      final List<String> domain_rep =
+          update.createDomainRep(table, tableAnnotations, annotatedColumns);
+      reviseColumnColumnRelationAnnotations(tableAnnotations, domain_rep,
+          relationEnumerator.getRelationScorer());
     }
+  }
+
+  public void enumerate(final TColumnColumnRelationEnumerator relationEnumerator,
+      TAnnotation tableAnnotations, final Table table, final List<Integer> annotatedColumns,
+      final UPDATE update, final Constraints constraints) throws STIException {
+    Set<Integer> subjectColumns = new HashSet<>();
+    for (ColumnPosition subjectPosition : constraints.getSubjectColumnsPositions()) {
+      LOG.info(">>\t\t Let subject column=" + subjectPosition.getIndex());
+      relationEnumerator.runRelationEnumeration(tableAnnotations, table,
+          subjectPosition.getIndex(), constraints);
+      subjectColumns.add(subjectPosition.getIndex());
+    }
+    tableAnnotations.setSubjectColumns(subjectColumns);
 
     if (STIConstantProperty.REVISE_RELATION_ANNOTATION_BY_DC && (update != null)) {
       final List<String> domain_rep =
