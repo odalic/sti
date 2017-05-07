@@ -268,7 +268,7 @@ public class CoreExecutionBatch {
 
       // statistical data feedback example
       return new Feedback(ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(),
-          ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of());
+          ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), dataCubeComponents);
     }
   }
 
