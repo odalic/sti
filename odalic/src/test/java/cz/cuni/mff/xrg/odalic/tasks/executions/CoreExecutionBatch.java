@@ -197,6 +197,7 @@ public class CoreExecutionBatch {
       HashSet<ColumnPosition> subjectPositions = new HashSet<>();
       subjectPositions.add(new ColumnPosition(0));
       subjectPositions.add(new ColumnPosition(1));
+      subjectPositions.add(new ColumnPosition(2));
       subjectColumnsPositions.put(new KnowledgeBase("DBpedia Clone"), subjectPositions);
 
       // classifications example
