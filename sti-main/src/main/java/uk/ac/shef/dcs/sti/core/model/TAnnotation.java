@@ -437,8 +437,14 @@ public class TAnnotation {
     this.statisticalAnnotations.set(col, annotation);
   }
 
+  public void setSubjectColumn(final int subjectColumn) {
+    this.subjectColumns.clear();
+    this.subjectColumns.add(subjectColumn);
+  }
+
   public void setSubjectColumns(final Set<Integer> subjectColumns) {
-    this.subjectColumns = subjectColumns;
+    this.subjectColumns.clear();
+    this.subjectColumns.addAll(subjectColumns);
   }
 
   public Set<Integer> getSubjectColumns() {

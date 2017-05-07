@@ -175,12 +175,11 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
     try {
       final TAnnotation tableAnnotations = new TAnnotation(table.getNumRows(), table.getNumCols());
 
-      // find the subject columns of this table
+      // find the main subject column of this table
       LOG.info("\t> PHASE: Detecting subject column ...");
       final List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnScores =
-          this.subjectColumnDetector.compute(table, constraints, ignoreColumnsArray);
-      tableAnnotations.setSubjectColumns(subjectColumnScores.stream()
-          .map(e -> e.getKey()).collect(Collectors.toSet()));
+          this.subjectColumnDetector.compute(table, ignoreColumnsArray);
+      tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
 
       // set column processing annotations
       final Set<Ambiguity> newAmbiguities = setColumnProcessingAnnotationsAndAmbiguities(table,

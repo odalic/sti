@@ -1,6 +1,5 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -61,13 +60,13 @@ public class RELATIONENUMERATION {
       }
 
       if (interpretable) {
-        tableAnnotations.setSubjectColumns(new HashSet<>(Arrays.asList(subjectCol)));
+        tableAnnotations.setSubjectColumn(subjectCol);
         break;
       } else {
         // the current subject column could be wrong, try differently
         final double overallScore = scoreSolution(tableAnnotations, table, subjectCol);
         if (overallScore > winningSolutionScore) {
-          tableAnnotations.setSubjectColumns(new HashSet<>(Arrays.asList(subjectCol)));
+          tableAnnotations.setSubjectColumn(subjectCol);
           winningSolution = tableAnnotations;
           winningSolutionScore = overallScore;
         }
