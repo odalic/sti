@@ -3,6 +3,7 @@
  */
 package cz.cuni.mff.xrg.odalic.users;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.Duration;
 import java.time.Instant;
@@ -26,6 +27,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 
 import cz.cuni.mff.xrg.odalic.files.FileService;
+import cz.cuni.mff.xrg.odalic.groups.GroupsService;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.util.FixedSizeHashMap;
 import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
@@ -124,27 +126,29 @@ public final class MemoryOnlyUserService implements UserService {
   private final String signUpConfirmationUrlFormat;
   private final String passwordSettingConfirmationUrlFormat;
 
+  private final GroupsService groupsService;
+  
   private final Map<UUID, Credentials> tokenIdsToUnconfirmed;
 
   private final Map<UUID, User> tokenIdsToPasswordChanging;
 
-
   private final Map<String, User> userIdsToUsers;
 
-
   private final Multimap<String, UUID> userIdsToTokenIds;
+
 
   @Autowired
   public MemoryOnlyUserService(final PropertiesService propertiesService,
       final PasswordHashingService passwordHashingService, final MailService mailService,
       final TokenService tokenService, final TaskService taskService,
-      final FileService fileService) {
+      final FileService fileService, final GroupsService groupsService) throws IOException {
     Preconditions.checkNotNull(propertiesService);
     Preconditions.checkNotNull(passwordHashingService);
     Preconditions.checkNotNull(mailService);
     Preconditions.checkNotNull(tokenService);
     Preconditions.checkNotNull(taskService);
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(groupsService);
 
     final Properties properties = propertiesService.get();
 
@@ -153,6 +157,7 @@ public final class MemoryOnlyUserService implements UserService {
     this.tokenService = tokenService;
     this.taskService = taskService;
     this.fileService = fileService;
+    this.groupsService = groupsService;
 
     this.userIdsToUsers = new HashMap<>();
 
@@ -227,7 +232,7 @@ public final class MemoryOnlyUserService implements UserService {
   }
 
   @Override
-  public void activateUser(final Token token) {
+  public void activateUser(final Token token) throws IOException {
     final DecodedToken decodedToken = validateAndDecode(token);
 
     final Credentials credentials = matchCredentials(decodedToken);
@@ -268,7 +273,7 @@ public final class MemoryOnlyUserService implements UserService {
   }
 
   @Override
-  public void create(final Credentials credentials, final Role role) {
+  public void create(final Credentials credentials, final Role role) throws IOException {
     Preconditions.checkNotNull(credentials);
     Preconditions.checkNotNull(role);
     Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()));
@@ -276,10 +281,13 @@ public final class MemoryOnlyUserService implements UserService {
     final String email = credentials.getEmail();
     final String passwordHashed = hash(credentials.getPassword());
 
-    this.userIdsToUsers.put(email, new User(email, passwordHashed, role));
+    final User user = new User(email, passwordHashed, role);
+    
+    this.userIdsToUsers.put(email, user);
+    this.groupsService.initializeDefaults(user);
   }
 
-  private void createAdminIfNotPresent(final Properties properties) {
+  private void createAdminIfNotPresent(final Properties properties) throws IOException {
     final String adminEmail = properties.getProperty(ADMIN_EMAIL_PROPERTY_KEY);
     Preconditions.checkArgument(adminEmail != null,
         String.format("Missing key %s in the configuration!", ADMIN_EMAIL_PROPERTY_KEY));

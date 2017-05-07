@@ -21,7 +21,7 @@ import cz.cuni.mff.xrg.odalic.util.Lists;
  */
 @Immutable
 @XmlJavaTypeAdapter(GroupAdapter.class)
-public final class Group implements Serializable {
+public final class Group implements Serializable, Comparable<Group> {
 
   private static final long serialVersionUID = -4616072016202865174L;
   
@@ -46,11 +46,6 @@ public final class Group implements Serializable {
     Preconditions.checkNotNull(propertyTypes);
     
     Preconditions.checkArgument(!id.isEmpty(), "The name is empty!");
-    Preconditions.checkArgument(!labelPredicates.isEmpty(), "No label predicates provided!");
-    Preconditions.checkArgument(!descriptionPredicates.isEmpty(), "No description predicates provided!");
-    Preconditions.checkArgument(!instanceOfPredicates.isEmpty(), "No instance predicates provided!");
-    Preconditions.checkArgument(!classTypes.isEmpty(), "No class predicates provided!");
-    Preconditions.checkArgument(!propertyTypes.isEmpty(), "No property predicates provided!");
 
     this.owner = owner;
     this.id = id;
@@ -146,6 +141,19 @@ public final class Group implements Serializable {
       return false;
     }
     return true;
+  }
+  
+
+  @Override
+  public int compareTo(final Group other) {
+    Preconditions.checkArgument(other != null);
+    
+    final int idsComparison = this.id.compareTo(other.id);
+    if (idsComparison != 0) {
+      return idsComparison;
+    }
+    
+    return this.owner.compareTo(other.owner);
   }
 
   /* (non-Javadoc)

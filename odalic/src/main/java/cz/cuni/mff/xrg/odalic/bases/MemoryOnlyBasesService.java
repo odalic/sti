@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.bases;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
 
@@ -139,6 +140,16 @@ public final class MemoryOnlyBasesService implements BasesService {
     return this.userAndBaseIdsToBases.get(userId, name);
   }
 
+  @Override
+  public void deleteAll(final String userId) {
+    Preconditions.checkNotNull(userId);
+
+    final Map<String, KnowledgeBase> baseNamesToBases = this.userAndBaseIdsToBases.row(userId);
+    baseNamesToBases.entrySet().stream().forEach(e -> this.groupsService
+        .unsubscribe(e.getValue()));
+    baseNamesToBases.clear();
+  }
+  
   @Override
   public void deleteById(String userId, String name) throws IOException {
     Preconditions.checkNotNull(userId);

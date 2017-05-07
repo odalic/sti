@@ -45,4 +45,6 @@ public interface BasesService {
 
   void unsubscribe(Task previous);
 
+  void deleteAll(String userId);
+
 }

@@ -3,6 +3,7 @@
  */
 package cz.cuni.mff.xrg.odalic.users;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.Duration;
 import java.time.Instant;
@@ -27,6 +28,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSortedSet;
 
 import cz.cuni.mff.xrg.odalic.files.FileService;
+import cz.cuni.mff.xrg.odalic.groups.GroupsService;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
 import cz.cuni.mff.xrg.odalic.util.hash.PasswordHashingService;
@@ -204,6 +206,8 @@ public final class DbUserService implements UserService {
   private final TaskService taskService;
 
   private final FileService fileService;
+  
+  private final GroupsService groupsService;
 
   private final long signUpConfirmationWindowMinutes;
 
@@ -234,18 +238,20 @@ public final class DbUserService implements UserService {
    */
   private final BTreeMap<Object[], Boolean> userIdsToTokenIds;
 
+
   @SuppressWarnings("unchecked")
   @Autowired
   public DbUserService(final PropertiesService propertiesService,
       final PasswordHashingService passwordHashingService, final MailService mailService,
       final TokenService tokenService, final DbService dbService, final TaskService taskService,
-      final FileService fileService) {
+      final FileService fileService, final GroupsService groupsService) throws IOException {
     Preconditions.checkNotNull(propertiesService);
     Preconditions.checkNotNull(passwordHashingService);
     Preconditions.checkNotNull(mailService);
     Preconditions.checkNotNull(tokenService);
     Preconditions.checkNotNull(taskService);
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(groupsService);
 
     final Properties properties = propertiesService.get();
 
@@ -254,6 +260,7 @@ public final class DbUserService implements UserService {
     this.tokenService = tokenService;
     this.taskService = taskService;
     this.fileService = fileService;
+    this.groupsService = groupsService;
 
     this.db = dbService.getDb();
 
@@ -289,7 +296,7 @@ public final class DbUserService implements UserService {
   }
 
   @Override
-  public void activateUser(final Token token) {
+  public void activateUser(final Token token) throws IOException {
     final DecodedToken decodedToken = validateAndDecode(token);
 
     final Credentials credentials = matchCredentials(decodedToken);
@@ -345,16 +352,18 @@ public final class DbUserService implements UserService {
   }
 
   @Override
-  public void create(final Credentials credentials, final Role role) {
+  public void create(final Credentials credentials, final Role role) throws IOException {
     Preconditions.checkNotNull(credentials);
     Preconditions.checkNotNull(role);
 
-    doCreate(credentials, role);
+    final User user = doCreate(credentials, role);
 
     this.db.commit();
+    
+    this.groupsService.initializeDefaults(user);
   }
 
-  private void createAdminIfNotPresent(final Properties properties) {
+  private void createAdminIfNotPresent(final Properties properties) throws IOException {
     final String adminEmail = properties.getProperty(ADMIN_EMAIL_PROPERTY_KEY);
     Preconditions.checkArgument(adminEmail != null,
         String.format("Missing key %s in the configuration!", ADMIN_EMAIL_PROPERTY_KEY));
@@ -370,9 +379,10 @@ public final class DbUserService implements UserService {
       return;
     }
 
-    doCreate(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
-
+    final User admin = doCreate(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
     this.db.commit();
+    
+    this.groupsService.initializeDefaults(admin);
   }
 
   @Override
@@ -385,13 +395,17 @@ public final class DbUserService implements UserService {
     Preconditions.checkArgument(removed != null, "No such user exists!");
   }
 
-  private void doCreate(final Credentials credentials, final Role role) {
+  private User doCreate(final Credentials credentials, final Role role) throws IOException {
     Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()));
 
     final String email = credentials.getEmail();
     final String passwordHashed = hash(credentials.getPassword());
 
-    this.userIdsToUsers.put(email, new User(email, passwordHashed, role));
+    final User user = new User(email, passwordHashed, role);
+    
+    this.userIdsToUsers.put(email, user);
+    
+    return user;
   }
 
   private String generatePasswordChangingMessage(final Token token) {

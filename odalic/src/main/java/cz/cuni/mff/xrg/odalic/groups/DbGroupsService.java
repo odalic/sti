@@ -3,10 +3,22 @@
  */
 package cz.cuni.mff.xrg.odalic.groups;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
@@ -19,7 +31,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.users.User;
+import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
+import jersey.repackaged.com.google.common.collect.ImmutableList;
 
 /**
  * This {@link GroupsService} implementation persists the files in {@link DB}-backed maps.
@@ -29,6 +43,28 @@ import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 @Component
 public final class DbGroupsService implements GroupsService {
 
+  private static final String INITIAL_GROUP_INSTANCE_OF_PREDICATES_PROPERTY_KEY = "kb.structure.predicate.instanceOf";
+
+  private static final String INITIAL_GROUP_PROPERTY_TYPES_PROPERTY_KEY = "kb.structure.type.property";
+
+  private static final String INITIAL_GROUP_LABEL_PREDICATES_PROPERTY_KEY = "kb.structure.predicate.label";
+
+  private static final String INITIAL_GROUP_DESCRIPTION_PREDICATES_PROPERTY_KEY = "kb.structure.predicate.description";
+
+  private static final String PROPERTY_VALUES_SEPRATOR = " ";
+
+  private static final Set<String> GROUP_FILES_EXTENSIONS = ImmutableSet.of("properties");
+
+  private static final String INITIAL_GROUP_CLASS_TYPES_PROPERTY_KEY = "kb.structure.type.class";
+
+  private static final String BASE_PATH_PROPERTY_KEY = "sti.home";
+
+  private static final String INITIAL_GROUPS_PATH_PROPERTY_KEY = "sti.enums";
+
+  private static final Path DEFAULT_INITIAL_GROUPS_PATH = Paths.get("config", "enums");
+  
+  private final Path initialGroupsPath;
+  
   private final DB db;
 
   private final BTreeMap<Object[], Group> userAndGroupIdsToGroups;
@@ -37,9 +73,11 @@ public final class DbGroupsService implements GroupsService {
 
   @Autowired
   @SuppressWarnings("unchecked")
-  public DbGroupsService(final DbService dbService) {
+  public DbGroupsService(final DbService dbService, final PropertiesService propertiesService) {
     Preconditions.checkNotNull(dbService);
 
+    this.initialGroupsPath = initializeInitialGroupsPath(propertiesService);
+    
     this.db = dbService.getDb();
 
     this.userAndGroupIdsToGroups = this.db.treeMap("userAndGroupIdsToGroups")
@@ -51,6 +89,28 @@ public final class DbGroupsService implements GroupsService {
         .valueSerializer(Serializer.BOOLEAN).createOrOpen();
   }
 
+  private static Path initializeInitialGroupsPath(PropertiesService propertiesService) {
+    final Path basePath = readApplicationBasePath(propertiesService);
+    
+    final Properties properties = propertiesService.get();
+    
+    final String initialGroupsPathValue = properties.getProperty(INITIAL_GROUPS_PATH_PROPERTY_KEY);
+    if (initialGroupsPathValue == null) {
+      return basePath.resolve(DEFAULT_INITIAL_GROUPS_PATH);
+    }
+    
+    return basePath.resolve(Paths.get(initialGroupsPathValue));
+  }
+  
+  private static Path readApplicationBasePath(final PropertiesService propertiesService) {
+    final Path basePath = Paths.get(propertiesService.get().getProperty(BASE_PATH_PROPERTY_KEY));
+    Preconditions.checkArgument(basePath != null, "The base path key not found!");
+    
+    Preconditions.checkArgument(Files.exists(basePath), String.format("The base path %s does not exist!", basePath));
+    
+    return basePath;
+  }
+  
   @Override
   public SortedSet<Group> getGroups(final String userId) {
     return ImmutableSortedSet
@@ -185,6 +245,21 @@ public final class DbGroupsService implements GroupsService {
   }
 
   @Override
+  public void deleteAll(final String userId) {
+    Preconditions.checkNotNull(userId);
+
+    try {
+      final Map<Object[], Group> groupIdsToGroups = this.userAndGroupIdsToGroups.prefixSubMap(new Object[] {userId});
+      groupIdsToGroups.clear();
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
+    
+    this.db.commit();
+  }
+  
+  @Override
   public void deleteById(String userId, String groupId) {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(groupId);
@@ -227,5 +302,55 @@ public final class DbGroupsService implements GroupsService {
     replace(merged);
     
     return merged;
+  }
+  
+  @Override
+  public void initializeDefaults(final User owner) throws IOException {
+    Preconditions.checkNotNull(owner);
+    
+    final Iterator<File> groupPropertiesFileIterator = FileUtils.iterateFiles(this.initialGroupsPath.toFile(), GROUP_FILES_EXTENSIONS.toArray(new String[GROUP_FILES_EXTENSIONS.size()]), false);
+    try {
+      while (groupPropertiesFileIterator.hasNext()) {
+        initializeFromPropertiesFile(owner, groupPropertiesFileIterator.next());
+      }
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
+    
+    this.db.commit();
+  }
+
+  private void initializeFromPropertiesFile(final User owner, final File propertiesFile) throws IOException {
+    final Properties groupProperties = new Properties();
+    groupProperties.load(new FileInputStream(propertiesFile));
+    
+    final GroupBuilder groupBuilder = new DefaultGroupBuilder();
+    
+    groupBuilder.setId(extractId(propertiesFile));
+    groupBuilder.setOwner(owner);
+    
+    groupBuilder.setClassTypes(extractValues(INITIAL_GROUP_CLASS_TYPES_PROPERTY_KEY, groupProperties));
+    groupBuilder.setDescriptionPredicates(extractValues(INITIAL_GROUP_DESCRIPTION_PREDICATES_PROPERTY_KEY, groupProperties));
+    groupBuilder.setInstanceOfPredicates(extractValues(INITIAL_GROUP_INSTANCE_OF_PREDICATES_PROPERTY_KEY, groupProperties));
+    groupBuilder.setLabelPredicates(extractValues(INITIAL_GROUP_LABEL_PREDICATES_PROPERTY_KEY, groupProperties));
+    groupBuilder.setPropertyTypes(extractValues(INITIAL_GROUP_PROPERTY_TYPES_PROPERTY_KEY, groupProperties));
+    
+    final Group group = groupBuilder.build();
+    this.userAndGroupIdsToGroups.put(new Object[] { owner.getEmail(), group.getId()}, group);
+  }
+
+  private static List<String> extractValues(final String propertyKey,
+      final Properties properties) {
+    final String rawValues = properties.getProperty(propertyKey);
+    if (rawValues == null) {
+      return ImmutableList.of();
+    }
+    
+    return ImmutableList.copyOf(rawValues.split(PROPERTY_VALUES_SEPRATOR));
+  }
+
+  private static String extractId(File propertiesFile) {
+    return FilenameUtils.removeExtension(propertiesFile.getName());
   }
 }

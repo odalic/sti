@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.bases;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
 
@@ -150,6 +151,23 @@ public final class DbBasesService implements BasesService {
     return this.userAndBaseIdsToBases.get(new Object[] {userId, name});
   }
 
+  @Override
+  public void deleteAll(final String userId) {
+    Preconditions.checkNotNull(userId);
+
+    try {
+      final Map<Object[], KnowledgeBase> baseIdsToBases = this.userAndBaseIdsToBases.prefixSubMap(new Object[] {userId});
+      baseIdsToBases.entrySet().stream().forEach(e -> this.groupsService
+          .unsubscribe(e.getValue()));
+      baseIdsToBases.clear();
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
+    
+    this.db.commit();
+  }
+  
   @Override
   public void deleteById(String userId, String name) throws IOException {
     Preconditions.checkNotNull(userId);
