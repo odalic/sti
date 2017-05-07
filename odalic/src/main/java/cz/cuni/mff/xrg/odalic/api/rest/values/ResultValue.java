@@ -43,9 +43,7 @@ public final class ResultValue implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
-  private Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
-
-  private Map<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions;
+  private Map<KnowledgeBase, Set<ColumnPosition>> subjectColumnsPositions;
 
   private List<HeaderAnnotation> headerAnnotations;
 
@@ -60,8 +58,7 @@ public final class ResultValue implements Serializable {
   private List<String> warnings;
 
   public ResultValue() {
-    this.subjectColumnPositions = ImmutableMap.of();
-    this.otherSubjectColumnPositions = ImmutableMap.of();
+    this.subjectColumnsPositions = ImmutableMap.of();
     this.headerAnnotations = ImmutableList.of();
     this.cellAnnotations = new CellAnnotation[0][0];;
     this.columnRelationAnnotations = ImmutableMap.of();
@@ -71,8 +68,7 @@ public final class ResultValue implements Serializable {
   }
 
   public ResultValue(final Result adaptee) {
-    this.subjectColumnPositions = adaptee.getSubjectColumnPositions();
-    this.otherSubjectColumnPositions = adaptee.getOtherSubjectColumnPositions();
+    this.subjectColumnsPositions = adaptee.getSubjectColumnsPositions();
     this.headerAnnotations = adaptee.getHeaderAnnotations();
     this.cellAnnotations = adaptee.getCellAnnotations();
     this.statisticalAnnotations = adaptee.getStatisticalAnnotations();
@@ -127,23 +123,13 @@ public final class ResultValue implements Serializable {
   }
 
   /**
-   * @return the subject column position
+   * @return the subject columns positions
    */
   @XmlElement
   @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
   @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
-  public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
-    return this.subjectColumnPositions;
-  }
-
-  /**
-   * @return the other subject column positions
-   */
-  @XmlElement
-  @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
-  @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
-  public Map<KnowledgeBase, Set<ColumnPosition>> getOtherSubjectColumnPositions() {
-    return this.otherSubjectColumnPositions;
+  public Map<KnowledgeBase, Set<ColumnPosition>> getSubjectColumnsPositions() {
+    return this.subjectColumnsPositions;
   }
 
   /**
@@ -227,23 +213,13 @@ public final class ResultValue implements Serializable {
   }
 
   /**
-   * @param subjectColumnPositions the subject column position to set
+   * @param subjectColumnsPositions the subject columns positions to set
    */
-  public void setSubjectColumnPosition(
-      final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions) {
-    Preconditions.checkNotNull(subjectColumnPositions);
+  public void setSubjectColumnsPositions(
+      final Map<? extends KnowledgeBase, Set<ColumnPosition>> subjectColumnsPositions) {
+    Preconditions.checkNotNull(subjectColumnsPositions);
 
-    this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
-  }
-
-  /**
-   * @param otherSubjectColumnPositions the other subject column positions to set
-   */
-  public void setOtherSubjectColumnPosition(
-      final Map<? extends KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions) {
-    Preconditions.checkNotNull(otherSubjectColumnPositions);
-
-    this.otherSubjectColumnPositions = ImmutableMap.copyOf(otherSubjectColumnPositions);
+    this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
   }
 
   /**
@@ -257,8 +233,7 @@ public final class ResultValue implements Serializable {
 
   @Override
   public String toString() {
-    return "ResultValue [subjectColumnPositions=" + this.subjectColumnPositions
-        + ", otherSubjectColumnPositions=" + this.otherSubjectColumnPositions
+    return "ResultValue [subjectColumnsPositions=" + this.subjectColumnsPositions
         + ", headerAnnotations=" + this.headerAnnotations + ", cellAnnotations="
         + Arrays.toString(this.cellAnnotations) + ", columnRelationAnnotations="
         + this.columnRelationAnnotations + ", statisticalAnnotations=" + this.statisticalAnnotations
