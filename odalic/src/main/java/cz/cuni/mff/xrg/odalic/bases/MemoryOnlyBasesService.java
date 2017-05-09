@@ -78,6 +78,8 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   private static final String STOPLIST_COMMENT_LINE_START = "#";
 
+  private static final String LANGUAGE_TAG_SEPARATOR = "@";
+  
   private static final Set<String> BASE_FILES_EXTENSIONS = ImmutableSet.of("properties");
 
   private static final Path DEFAULT_INITIAL_BASES_RELATIVE_PATH = Paths.get("config");
@@ -386,7 +388,9 @@ public final class MemoryOnlyBasesService implements BasesService {
       baseBuilder.setUserResourcesPrefix(URI.create(userResourcesPrefixValue));
     }
 
-    baseBuilder.setLanguageTag(baseProperties.getProperty(LANGUAGE_TAG_PROPERTY_KEY));
+    final String languageTagValue = baseProperties.getProperty(LANGUAGE_TAG_PROPERTY_KEY);
+    final String languageTag = languageTagValue.startsWith(LANGUAGE_TAG_SEPARATOR) ? languageTagValue.substring(1, languageTagValue.length()) : languageTagValue;
+    baseBuilder.setLanguageTag(languageTag);
 
     baseBuilder.setSelectedGroups(this.groupsService.detectUsed(owner.getEmail(), endpointUrl));
 

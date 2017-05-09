@@ -17,7 +17,7 @@ public final class SparqlKnowledgeBaseDefinitionFactory
     final SparqlProxyDefinition.Builder builder = SparqlProxyDefinition.builder();
     
     // Name
-    builder.setName(deriveName(base));
+    builder.setName(base.getQualifiedName());
 
     // Insert
     builder.setInsertSupported(base.isInsertEnabled());
@@ -75,9 +75,4 @@ public final class SparqlKnowledgeBaseDefinitionFactory
       
     return builder.build();
   }
-
-  private static String deriveName(final KnowledgeBase base) {
-    return base.getOwner().getEmail() + "_" + base.getName();
-  }
-
 }

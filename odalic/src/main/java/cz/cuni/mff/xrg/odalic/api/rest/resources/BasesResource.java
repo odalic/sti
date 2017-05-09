@@ -190,7 +190,7 @@ public final class BasesResource {
   @Produces({MediaType.APPLICATION_JSON})
   public Response put(final @PathParam("name") String name, final KnowledgeBaseValue baseValue)
       throws MalformedURLException, IllegalStateException, IllegalArgumentException {
-    return put(this.securityContext.getUserPrincipal().getName(), baseValue);
+    return put(this.securityContext.getUserPrincipal().getName(), name, baseValue);
   }
   
   @DELETE

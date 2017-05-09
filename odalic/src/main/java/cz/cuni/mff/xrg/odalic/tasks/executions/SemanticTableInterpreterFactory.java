@@ -20,10 +20,11 @@ public interface SemanticTableInterpreterFactory {
   /**
    * Lazily initializes the interpreter.
    *
+   * @param userId the valid owner of the bases
    * @param the bases from which the interpreters are derived
    * @return the interpreter implementations
    * @throws IOException when the initialization process fails to load its configuration
    * @throws STIException when the interpreters fail to initialize
    */
-  Map<String, SemanticTableInterpreter> getInterpreters(Set<? extends KnowledgeBase> bases) throws STIException, IOException;
+  Map<String, SemanticTableInterpreter> getInterpreters(final String userId, Set<? extends KnowledgeBase> bases) throws STIException, IOException;
 }

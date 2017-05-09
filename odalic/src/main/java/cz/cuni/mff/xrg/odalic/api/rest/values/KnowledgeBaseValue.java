@@ -19,7 +19,7 @@ import cz.cuni.mff.xrg.odalic.bases.TextSearchingMethod;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 
 /**
- * Domain class {@link KnowledgeBase} adapted for REST API.
+ * Domain class {@link KnowledgeBase} adapted for REST API output.
  *
  * @author Václav Brodec
  *
@@ -240,9 +240,7 @@ public final class KnowledgeBaseValue {
   /**
    * @param insertGraph the insert graph to set
    */
-  public void setInsertGraph(final URI insertGraph) {
-    Preconditions.checkNotNull(insertGraph);
-    
+  public void setInsertGraph(@Nullable final URI insertGraph) {
     this.insertGraph = insertGraph;
   }
 
@@ -258,9 +256,7 @@ public final class KnowledgeBaseValue {
   /**
    * @param userClassesPrefix the user classes prefix to set
    */
-  public void setUserClassesPrefix(final URI userClassesPrefix) {
-    Preconditions.checkNotNull(userClassesPrefix);
-    
+  public void setUserClassesPrefix(@Nullable final URI userClassesPrefix) {
     this.userClassesPrefix = userClassesPrefix;
   }
 
@@ -276,9 +272,7 @@ public final class KnowledgeBaseValue {
   /**
    * @param userResourcesPrefix the user resources prefix to set
    */
-  public void setUserResourcesPrefix(final URI userResourcesPrefix) {
-    Preconditions.checkNotNull(userResourcesPrefix);
-    
+  public void setUserResourcesPrefix(@Nullable final URI userResourcesPrefix) {
     this.userResourcesPrefix = userResourcesPrefix;
   }
 
@@ -323,7 +317,7 @@ public final class KnowledgeBaseValue {
    */
   @Override
   public String toString() {
-    return "KnowledgeBaseValue [name=" + name + ", endpoint=" + endpoint + ", description="
+    return "KnowledgeBaseValueOutput [name=" + name + ", endpoint=" + endpoint + ", description="
         + description + ", textSearchingMethod=" + textSearchingMethod + ", languageTag="
         + languageTag + ", skippedAttributes=" + skippedAttributes + ", skippedClasses="
         + skippedClasses + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled

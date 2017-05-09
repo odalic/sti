@@ -77,6 +77,8 @@ public final class DbBasesService implements BasesService {
   private static final String STOPLIT_ATTRIBUTE_SECTION_START = "!invalid_attribute";
 
   private static final String STOPLIST_COMMENT_LINE_START = "#";
+  
+  private static final String LANGUAGE_TAG_SEPARATOR = "@";
 
   private static final Set<String> BASE_FILES_EXTENSIONS = ImmutableSet.of("properties");
 
@@ -413,7 +415,9 @@ public final class DbBasesService implements BasesService {
       baseBuilder.setUserResourcesPrefix(URI.create(userResourcesPrefixValue));
     }
 
-    baseBuilder.setLanguageTag(baseProperties.getProperty(LANGUAGE_TAG_PROPERTY_KEY));
+    final String languageTagValue = baseProperties.getProperty(LANGUAGE_TAG_PROPERTY_KEY);
+    final String languageTag = languageTagValue.startsWith(LANGUAGE_TAG_SEPARATOR) ? languageTagValue.substring(1, languageTagValue.length()) : languageTagValue;
+    baseBuilder.setLanguageTag(languageTag);
 
     baseBuilder.setSelectedGroups(this.groupsService.detectUsed(owner.getEmail(), endpointUrl));
 

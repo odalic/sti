@@ -279,7 +279,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
         final boolean isStatistical = configuration.isStatistical();
 
         final Map<String, SemanticTableInterpreter> interpreters =
-            this.semanticTableInterpreterFactory.getInterpreters(usedBases);
+            this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases);
 
         final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
 

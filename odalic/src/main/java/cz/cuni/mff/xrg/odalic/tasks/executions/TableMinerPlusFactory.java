@@ -104,8 +104,8 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   }
 
   @Override
-  public Map<String, SemanticTableInterpreter> getInterpreters(final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
-    return initializeInterpreters(bases);
+  public Map<String, SemanticTableInterpreter> getInterpreters(final String userId, final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
+    return initializeInterpreters(userId, bases);
   }
 
   private String getNLPResourcesDir() throws STIException {
@@ -136,12 +136,14 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   }
 
   // Initialize kbsearcher, websearcher
-  private synchronized Map<String, SemanticTableInterpreter> initializeInterpreters(final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
+  private synchronized Map<String, SemanticTableInterpreter> initializeInterpreters(final String userId, final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
       // object to fetch things from KB
       final Table<String, String, Proxy> kbProxyInstances = this.knowledgeBaseProxyFactory.toProxies(bases);
 
       final Map<String, SemanticTableInterpreter> interpreters = new HashMap<>();
-      for (final Proxy kbProxy : kbProxyInstances.values()) {
+      for (final Map.Entry<String, Proxy> kbProxyEntry : kbProxyInstances.row(userId).entrySet()) {
+        final Proxy kbProxy = kbProxyEntry.getValue();
+        
         final SubjectColumnDetector subcolDetector = initSubColDetector(kbProxy);
 
         final TCellDisambiguator disambiguator = initDisambiguator(kbProxy);
@@ -161,7 +163,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
         final SemanticTableInterpreter interpreter = new TMPOdalicInterpreter(subcolDetector,
             learning, update, relationEnumerator, literalColumnTagger);
 
-        interpreters.put(kbProxy.getName(), interpreter);
+        interpreters.put(kbProxyEntry.getKey(), interpreter);
       }
       
       return interpreters;

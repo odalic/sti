@@ -6,11 +6,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 
@@ -24,7 +20,6 @@ import uk.ac.shef.dcs.kbproxy.ProxiesFactory;
 /**
  * @author Václav Brodec
  */
-@Component
 public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBaseProxiesService {
 
   @SuppressWarnings("unused")
@@ -34,15 +29,9 @@ public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBas
   private final ProxiesFactory proxiesFactory;
   private final AdvancedBaseTypesService advancedBaseTypesService;
   private final PrefixMappingService prefixService;
-  
-  private final Table<String, String, Proxy> userIdsAndBaseNamesToProxies;
 
   @Autowired
   public MemoryOnlyKnowledgeBaseProxiesService(final ProxiesFactory proxiesFactory, final AdvancedBaseTypesService advancedBaseTypesService, final PrefixMappingService prefixService) {
-    this(proxiesFactory, advancedBaseTypesService, prefixService, HashBasedTable.create());
-  }
-  
-  private MemoryOnlyKnowledgeBaseProxiesService(final ProxiesFactory proxiesFactory, final AdvancedBaseTypesService advancedBaseTypesService, final PrefixMappingService prefixService, final Table<String, String, Proxy> userIdsAndBaseNamesToProxies) {
     Preconditions.checkNotNull(proxiesFactory);
     Preconditions.checkNotNull(advancedBaseTypesService);
     Preconditions.checkNotNull(prefixService);
@@ -50,7 +39,6 @@ public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBas
     this.advancedBaseTypesService = advancedBaseTypesService;
     this.proxiesFactory = proxiesFactory;
     this.prefixService = prefixService;
-    this.userIdsAndBaseNamesToProxies = userIdsAndBaseNamesToProxies;
   }
 
   @Override
@@ -60,26 +48,16 @@ public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBas
       return ImmutableTable.of();
     }
     
-    final String ownerId = bases.iterator().next().getOwner().getEmail();
-    Preconditions.checkArgument(bases.stream().allMatch(e -> e.getOwner().getEmail().equals(ownerId)));
+    final ImmutableTable.Builder<String, String, Proxy> builder = ImmutableTable.builder();
     
-    final Set<String> allowedBaseNames = bases.stream().map(e -> e.getName()).collect(ImmutableSet.toImmutableSet());
-    
-    final Table<String, String, Proxy> result = HashBasedTable.create();
-    
-    for (final Table.Cell<String, String, Proxy> cell : this.userIdsAndBaseNamesToProxies.cellSet()) {
-      if (!cell.getRowKey().equals(ownerId)) {
-        continue;
-      }
+    for (final KnowledgeBase base : bases) {
+      final ProxyDefinition definition = this.advancedBaseTypesService.toProxyDefinition(base);
+      final Proxy proxy = this.proxiesFactory.create(definition, this.prefixService.getPrefixToUriMap());
       
-      if (!allowedBaseNames.contains(cell.getColumnKey())) {
-        continue;
-      }
-      
-      result.put(cell.getRowKey(), cell.getColumnKey(), cell.getValue());
+      builder.put(base.getOwner().getEmail(), base.getName(), proxy);
     }
     
-    return ImmutableTable.copyOf(result);
+    return builder.build();
   }
 
   @Override
@@ -89,18 +67,13 @@ public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBas
 
   @Override
   public void set(final KnowledgeBase base) {
-    final ProxyDefinition definition = this.advancedBaseTypesService.toProxyDefinition(base);
-    
-    final Proxy proxy = this.proxiesFactory.create(definition, this.prefixService.getPrefixToUriMap());
-    
-    this.userIdsAndBaseNamesToProxies.put(base.getOwner().getEmail(), base.getName(), proxy);
+    // Do nothing for now. Maybe implement some instance caching later.
   }
 
   @Override
   public void delete(final KnowledgeBase base) throws IOException {
-    final Proxy previous = this.userIdsAndBaseNamesToProxies.remove(base.getOwner().getEmail(), base.getName());
-    Preconditions.checkArgument(previous != null);
+    Preconditions.checkNotNull(base);
     
-    this.proxiesFactory.dispose(previous.getName());
+    this.proxiesFactory.dispose(base.getQualifiedName());
   }
 }

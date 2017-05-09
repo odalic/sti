@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.google.common.base.Preconditions;
@@ -181,6 +182,11 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
 
   public Map<String, String> getAdvancedProperties() {
     return advancedProperties;
+  }
+  
+  @XmlTransient
+  public String getQualifiedName() {
+    return this.owner.getEmail() + "_" + this.name;
   }
 
   /**

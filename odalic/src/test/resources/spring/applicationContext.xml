@@ -52,7 +52,7 @@
 	<bean id="dbService" class="cz.cuni.mff.xrg.odalic.util.storage.FileDbService" />
 	<bean id="cacheProviderService" class="uk.ac.shef.dcs.kbproxy.solr.DbSolrCacheProviderService" />
 	<bean id="proxiesFactory" class="uk.ac.shef.dcs.kbproxy.DefaultProxiesFactory" />
-	<bean id="knowledgeBaseProxiesService" class="cz.cuni.mff.xrg.odalic.bases.proxies.DbKnowledgeBaseProxiesService" />
+	<bean id="knowledgeBaseProxiesService" class="cz.cuni.mff.xrg.odalic.bases.proxies.MemoryOnlyKnowledgeBaseProxiesService" />
 	<bean id="fileService" class="cz.cuni.mff.xrg.odalic.files.DbFileService" />
 	<bean id="configurationService"
 		class="cz.cuni.mff.xrg.odalic.tasks.configurations.DefaultConfigurationService" />
