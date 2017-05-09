@@ -6,8 +6,8 @@ import java.util.Map;
 
 public interface ProxiesFactory {
 
-  Proxy create(String id, ProxyDefinition definition, Map<String, String> prefixesToUris);
+  Proxy create(ProxyDefinition definition, Map<String, String> prefixesToUris);
 
-  void dispose(final String id) throws IOException;
+  void dispose(final String name) throws IOException;
 
 }

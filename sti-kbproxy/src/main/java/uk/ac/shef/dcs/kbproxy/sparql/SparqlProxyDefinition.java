@@ -437,7 +437,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   
   private final boolean uriLabelHeuristicApplied;
   
-  protected SparqlProxyDefinition(final Builder builder) {
+  private SparqlProxyDefinition(final Builder builder) {
     Preconditions.checkArgument(!builder.structurePredicateLabel.isEmpty(), "No label predicate defined!");
     Preconditions.checkArgument(!builder.structurePredicateType.isEmpty(), "No type predicate defined!");
     

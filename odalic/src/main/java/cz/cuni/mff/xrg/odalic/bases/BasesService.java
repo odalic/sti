@@ -5,6 +5,7 @@ import java.util.NavigableSet;
 import javax.annotation.Nullable;
 
 import cz.cuni.mff.xrg.odalic.tasks.Task;
+import cz.cuni.mff.xrg.odalic.users.User;
 
 /**
  * Provides basic capabilities of bases management.
@@ -46,5 +47,6 @@ public interface BasesService {
   void unsubscribe(Task previous);
 
   void deleteAll(String userId);
-
+  
+  void initializeDefaults(User owner) throws IOException;
 }

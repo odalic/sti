@@ -72,4 +72,9 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
     
     return factory.create(base);
   }
+
+  @Override
+  public AdvancedBaseType getDefault() {
+    return SPARQL_BASE_TYPE;
+  }
 }

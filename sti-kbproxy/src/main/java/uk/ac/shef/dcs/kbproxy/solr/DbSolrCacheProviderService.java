@@ -52,7 +52,7 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   
   private final DB db;
   
-  private final Map<String, Path> idsToPaths;
+  private final Map<String, String> idsToPaths;
   
   private final Map<String, CoreContainer> idsToCoreContainers;
 
@@ -103,42 +103,45 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   }
   
   @Override
-  public Cache getCache(final String id) {
-    final CoreContainer container = this.idsToCoreContainers.get(id);
+  public Cache getCache(final String containerId, final String coreId) {
+    Preconditions.checkNotNull(containerId);
+    Preconditions.checkNotNull(coreId);
+    
+    final CoreContainer container = this.idsToCoreContainers.get(containerId);
     
     if (container == null) {
-      return registerCache(id);
+      return registerCache(containerId, coreId);
     } else {
-      return wrap(id, container);
+      return wrap(container, coreId);
     }
   }
 
-  private SolrCache wrap(final String id, final CoreContainer container) {
-    return new SolrCache(new EmbeddedSolrServer(container, id));
+  private SolrCache wrap(final CoreContainer container, final String coreId) {
+    return new SolrCache(new EmbeddedSolrServer(container, coreId));
   }
 
-  private Cache registerCache(final String id) {
-    final Path instancePath = getInstancePath(id);
+  private Cache registerCache(final String containerId, final String coreId) {
+    final Path instancePath = getInstancePath(containerId);
     
-    final EmbeddedSolrServer server = initializeServer(instancePath, id);
-    this.idsToCoreContainers.put(id, server.getCoreContainer());
+    final EmbeddedSolrServer server = initializeServer(instancePath, coreId);
+    this.idsToCoreContainers.put(containerId, server.getCoreContainer());
     
     return new SolrCache(server);
   }
 
   private Path getInstancePath(final String id) {
-    final Path cachePath = this.idsToPaths.get(id);
+    final String cachePathValue = this.idsToPaths.get(id);
     
-    if (cachePath == null) {
+    if (cachePathValue == null) {
       return generateNewPath(id);
     } else {
-      return cachePath;      
+      return Paths.get(cachePathValue);      
     }
   }
 
   private Path generateNewPath(final String id) {
     final Path newCachePath = cacheBasePath.resolve(generateRelativePath());
-    this.idsToPaths.put(id, newCachePath);
+    this.idsToPaths.put(id, newCachePath.toString());
   
     this.db.commit();
   
@@ -149,7 +152,7 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
     return UUID.randomUUID().toString();
   }
 
-  private EmbeddedSolrServer initializeServer(final Path path, final String identifier) {
+  private EmbeddedSolrServer initializeServer(final Path path, final String coreId) {
     if (!Files.exists(path)) {
       if (!Files.exists(this.templatePath)) {
         final String error =
@@ -170,7 +173,7 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
       }
     }
     
-    final EmbeddedSolrServer server = new EmbeddedSolrServer(path, identifier);
+    final EmbeddedSolrServer server = new EmbeddedSolrServer(path, coreId);
     verifyServerVersion(server);
     
     return server;
@@ -195,12 +198,12 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   
   @Override
   public void removeCache(final String id) throws IOException {
-    final Path path = this.idsToPaths.remove(id);
+    final String pathValue = this.idsToPaths.remove(id);
     
     try {
-      Preconditions.checkArgument(path != null);
+      Preconditions.checkArgument(pathValue != null);
       
-      FileUtils.deleteDirectory(path.toFile());
+      FileUtils.deleteDirectory(Paths.get(pathValue).toFile());
       
       this.idsToCoreContainers.remove(id);
     } catch (final Exception e) {

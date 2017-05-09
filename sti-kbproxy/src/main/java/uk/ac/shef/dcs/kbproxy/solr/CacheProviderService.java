@@ -15,10 +15,11 @@ public interface CacheProviderService {
   /**
    * Provides a cache instance.
    * 
-   * @param identifier cache identifier
+   * @param containerId cache container ID
+   * @param containerId cache core ID within the container
    * @return cache instance
    */
-  Cache getCache(final String identifier);
+  Cache getCache(final String containerId, final String coreId);
 
-  void removeCache(String id) throws IOException;
+  void removeCache(String containerId) throws IOException;
 }

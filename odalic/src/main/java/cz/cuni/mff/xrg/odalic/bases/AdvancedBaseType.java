@@ -3,6 +3,7 @@
  */
 package cz.cuni.mff.xrg.odalic.bases;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.concurrent.Immutable;
@@ -21,7 +22,9 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.AdvancedBaseTypeAdapter;
  */
 @Immutable
 @XmlJavaTypeAdapter(AdvancedBaseTypeAdapter.class)
-public final class AdvancedBaseType {
+public final class AdvancedBaseType implements Serializable {
+
+  private static final long serialVersionUID = -5918981181938425624L;
 
   private final String name;
 

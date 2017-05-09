@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSortedSet;
 
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.groups.GroupsService;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
@@ -208,6 +209,8 @@ public final class DbUserService implements UserService {
   private final FileService fileService;
   
   private final GroupsService groupsService;
+  
+  private final BasesService basesService;
 
   private final long signUpConfirmationWindowMinutes;
 
@@ -239,12 +242,14 @@ public final class DbUserService implements UserService {
   private final BTreeMap<Object[], Boolean> userIdsToTokenIds;
 
 
+
   @SuppressWarnings("unchecked")
   @Autowired
   public DbUserService(final PropertiesService propertiesService,
       final PasswordHashingService passwordHashingService, final MailService mailService,
       final TokenService tokenService, final DbService dbService, final TaskService taskService,
-      final FileService fileService, final GroupsService groupsService) throws IOException {
+      final FileService fileService, final GroupsService groupsService,
+      final BasesService basesService) throws IOException {
     Preconditions.checkNotNull(propertiesService);
     Preconditions.checkNotNull(passwordHashingService);
     Preconditions.checkNotNull(mailService);
@@ -252,6 +257,7 @@ public final class DbUserService implements UserService {
     Preconditions.checkNotNull(taskService);
     Preconditions.checkNotNull(fileService);
     Preconditions.checkNotNull(groupsService);
+    Preconditions.checkNotNull(basesService);
 
     final Properties properties = propertiesService.get();
 
@@ -261,6 +267,7 @@ public final class DbUserService implements UserService {
     this.taskService = taskService;
     this.fileService = fileService;
     this.groupsService = groupsService;
+    this.basesService = basesService;
 
     this.db = dbService.getDb();
 
@@ -361,6 +368,7 @@ public final class DbUserService implements UserService {
     this.db.commit();
     
     this.groupsService.initializeDefaults(user);
+    this.basesService.initializeDefaults(user);
   }
 
   private void createAdminIfNotPresent(final Properties properties) throws IOException {
@@ -383,6 +391,7 @@ public final class DbUserService implements UserService {
     this.db.commit();
     
     this.groupsService.initializeDefaults(admin);
+    this.basesService.initializeDefaults(admin);
   }
 
   @Override

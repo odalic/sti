@@ -85,7 +85,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     Preconditions.checkNotNull(advancedProperties);
 
     Preconditions.checkArgument(!name.isEmpty(), "The name is empty!");
-    Preconditions.checkArgument(selectedGroups.isEmpty(), "No groups selected!");
+    Preconditions.checkArgument(!selectedGroups.isEmpty(), "No groups selected!");
 
     this.owner = owner;
     

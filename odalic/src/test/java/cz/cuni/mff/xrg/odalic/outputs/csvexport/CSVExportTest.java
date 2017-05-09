@@ -127,7 +127,7 @@ public class CSVExportTest {
       String filePath, KnowledgeBaseProxiesService kbf) {
 
     // Conversion from result to CSV extended input
-    Input extendedInput = new DefaultResultToCSVExportAdapter(kbf).toCSVExport(result, input, config);
+    Input extendedInput = new DefaultResultToCSVExportAdapter().toCSVExport(result, input, config);
 
     // Export CSV extended Input to CSV String
     String csv;

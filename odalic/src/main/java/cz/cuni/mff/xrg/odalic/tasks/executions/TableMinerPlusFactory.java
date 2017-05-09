@@ -228,7 +228,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
               this.properties.getProperty(PROPERTY_TMP_IINF_WEBSEARCH_STOPPING_CLASS_CONSTR_PARAM),
               ','),
           // new String[]{"0.0", "1", "0.01"},
-          this.cacheProviderService.getCache(PROPERTY_WEBSEARCH_CACHE_CORENAME), getNLPResourcesDir(),
+          this.cacheProviderService.getCache(kbProxy.getName(), PROPERTY_WEBSEARCH_CACHE_CORENAME), getNLPResourcesDir(),
           Boolean.valueOf(
               this.properties.getProperty(PROPERTY_TMP_SUBJECT_COLUMN_DETECTION_USE_WEBSEARCH)),
           getStopwords(), getAbsolutePath(PROPERTY_WEBSEARCH_PROP_FILE));

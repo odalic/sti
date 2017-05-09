@@ -6,6 +6,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
@@ -22,6 +24,7 @@ import uk.ac.shef.dcs.kbproxy.ProxiesFactory;
 /**
  * @author Václav Brodec
  */
+@Component
 public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBaseProxiesService {
 
   @SuppressWarnings("unused")
@@ -87,15 +90,10 @@ public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBas
   @Override
   public void set(final KnowledgeBase base) {
     final ProxyDefinition definition = this.advancedBaseTypesService.toProxyDefinition(base);
-    final String proxyId = createProxyId(base);
     
-    final Proxy proxy = this.proxiesFactory.create(proxyId, definition, this.prefixService.getPrefixToUriMap());
+    final Proxy proxy = this.proxiesFactory.create(definition, this.prefixService.getPrefixToUriMap());
     
     this.userIdsAndBaseNamesToProxies.put(base.getOwner().getEmail(), base.getName(), proxy);
-  }
-
-  private static String createProxyId(final KnowledgeBase base) {
-    return base.getOwner() + "_" + base.getName();
   }
 
   @Override

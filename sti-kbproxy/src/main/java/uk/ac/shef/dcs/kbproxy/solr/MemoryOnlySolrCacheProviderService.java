@@ -99,25 +99,25 @@ public final class MemoryOnlySolrCacheProviderService implements CacheProviderSe
   }
   
   @Override
-  public Cache getCache(final String id) {
-    final CoreContainer container = this.idsToCoreContainers.get(id);
+  public Cache getCache(final String containerId, final String coreId) {
+    final CoreContainer container = this.idsToCoreContainers.get(containerId);
     
     if (container == null) {
-      return registerCache(id);
+      return registerCache(containerId, coreId);
     } else {
-      return wrap(id, container);
+      return wrap(container, coreId);
     }
   }
 
-  private SolrCache wrap(final String id, final CoreContainer container) {
-    return new SolrCache(new EmbeddedSolrServer(container, id));
+  private SolrCache wrap(final CoreContainer container, final String coreId) {
+    return new SolrCache(new EmbeddedSolrServer(container, coreId));
   }
 
-  private Cache registerCache(final String id) {
-    final Path instancePath = getInstancePath(id);
+  private Cache registerCache(final String containerId, final String coreId) {
+    final Path instancePath = getInstancePath(containerId);
     
-    final EmbeddedSolrServer server = initializeServer(instancePath, id);
-    this.idsToCoreContainers.put(id, server.getCoreContainer());
+    final EmbeddedSolrServer server = initializeServer(instancePath, coreId);
+    this.idsToCoreContainers.put(containerId, server.getCoreContainer());
     
     return new SolrCache(server);
   }

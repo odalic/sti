@@ -26,6 +26,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.groups.GroupsService;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
@@ -128,6 +129,8 @@ public final class MemoryOnlyUserService implements UserService {
 
   private final GroupsService groupsService;
   
+  private final BasesService basesService;
+  
   private final Map<UUID, Credentials> tokenIdsToUnconfirmed;
 
   private final Map<UUID, User> tokenIdsToPasswordChanging;
@@ -136,12 +139,12 @@ public final class MemoryOnlyUserService implements UserService {
 
   private final Multimap<String, UUID> userIdsToTokenIds;
 
-
   @Autowired
   public MemoryOnlyUserService(final PropertiesService propertiesService,
       final PasswordHashingService passwordHashingService, final MailService mailService,
       final TokenService tokenService, final TaskService taskService,
-      final FileService fileService, final GroupsService groupsService) throws IOException {
+      final FileService fileService, final GroupsService groupsService,
+      final BasesService basesService) throws IOException {
     Preconditions.checkNotNull(propertiesService);
     Preconditions.checkNotNull(passwordHashingService);
     Preconditions.checkNotNull(mailService);
@@ -149,6 +152,7 @@ public final class MemoryOnlyUserService implements UserService {
     Preconditions.checkNotNull(taskService);
     Preconditions.checkNotNull(fileService);
     Preconditions.checkNotNull(groupsService);
+    Preconditions.checkNotNull(basesService);
 
     final Properties properties = propertiesService.get();
 
@@ -158,6 +162,7 @@ public final class MemoryOnlyUserService implements UserService {
     this.taskService = taskService;
     this.fileService = fileService;
     this.groupsService = groupsService;
+    this.basesService = basesService;
 
     this.userIdsToUsers = new HashMap<>();
 
@@ -285,6 +290,7 @@ public final class MemoryOnlyUserService implements UserService {
     
     this.userIdsToUsers.put(email, user);
     this.groupsService.initializeDefaults(user);
+    this.basesService.initializeDefaults(user);
   }
 
   private void createAdminIfNotPresent(final Properties properties) throws IOException {

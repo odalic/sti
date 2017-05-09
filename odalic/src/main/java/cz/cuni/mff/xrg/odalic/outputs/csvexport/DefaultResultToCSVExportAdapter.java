@@ -8,13 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
-
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
-import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
@@ -32,16 +26,6 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
   private static final String SEPARATOR = " ";
 
   private static final String OBSERVATION = "OBSERVATION";
-
-  private final KnowledgeBaseProxiesService knowledgeBaseProxyFactory;
-
-  @Autowired
-  public DefaultResultToCSVExportAdapter(
-      final KnowledgeBaseProxiesService knowledgeBaseProxyFactory) {
-    Preconditions.checkNotNull(knowledgeBaseProxyFactory);
-
-    this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
-  }
 
   private String alternativeUrlsFormat(final String text) {
     return String.format("%s_alternative_urls", text);
@@ -122,8 +106,7 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
     if (configuration.isStatistical()) {
       final KnowledgeBase primaryBase = configuration.getPrimaryBase();
       
-      final URI kbUri = this.knowledgeBaseProxyFactory.toProxies(ImmutableSet.of(primaryBase)).values().iterator().next().getDefinition()
-          .getInsertPrefixData();
+      final URI kbUri = primaryBase.getUserResourcesPrefix();
 
       builder.insertHeader(urlFormat(OBSERVATION), newPosition);
 

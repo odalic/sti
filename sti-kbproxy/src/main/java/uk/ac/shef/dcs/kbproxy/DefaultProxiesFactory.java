@@ -22,6 +22,8 @@ import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyCoreFactory;
 @Component
 public final class DefaultProxiesFactory implements ProxiesFactory {
   
+  private static final String DEFAULT_CORE_ID = "entity";
+
   @SuppressWarnings("unused")
   private final Logger logger = LoggerFactory.getLogger(DefaultProxiesFactory.class);
   
@@ -44,13 +46,13 @@ public final class DefaultProxiesFactory implements ProxiesFactory {
   
 
   @Override
-  public Proxy create(final String id, final ProxyDefinition definition, final Map<String, String> prefixesToUris) {
+  public Proxy create(final ProxyDefinition definition, final Map<String, String> prefixesToUris) {
       final ProxyCoreFactory factory = this.definitionClassesToCoreFactories.get(definition.getClass());
       Preconditions.checkArgument(factory != null, "Unknwon definition type!");
       
       final ProxyCore core = factory.create(definition, prefixesToUris);
       
-      final ProxyCore cachingCore = new CachingProxyCore(core, cacheProviderService.getCache(id), definition.getStructureDomain(), definition.getStructureRange());
+      final ProxyCore cachingCore = new CachingProxyCore(core, cacheProviderService.getCache(core.getName(), DEFAULT_CORE_ID), definition.getStructureDomain(), definition.getStructureRange());
       
       final ProxyResultFilter filter = new ProxyResultFilter(definition.getStoppedClasses(), definition.getStoppedAttributes());
       final ProxyCore filteringCore = new FilteringProxyCore(cachingCore, filter);

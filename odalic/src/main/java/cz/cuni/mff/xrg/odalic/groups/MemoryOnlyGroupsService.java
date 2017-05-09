@@ -41,7 +41,7 @@ import jersey.repackaged.com.google.common.collect.ImmutableList;
 @Component
 public final class MemoryOnlyGroupsService implements GroupsService {
 
-  private static final String INITIAL_GROUP_INSTANCE_OF_PREDICATES_PROPERTY_KEY = "kb.structure.predicate.instanceOf";
+  private static final String INITIAL_GROUP_TYPE_PREDICATES_PROPERTY_KEY = "kb.structure.predicate.type";
 
   private static final String INITIAL_GROUP_PROPERTY_TYPES_PROPERTY_KEY = "kb.structure.type.property";
 
@@ -250,7 +250,7 @@ public final class MemoryOnlyGroupsService implements GroupsService {
     Preconditions.checkNotNull(endpoint);
     
     // TODO: Implement used groups detection.
-    return ImmutableSet.of();
+    return ImmutableSet.copyOf(this.userAndGroupIdsToGroups.row(userId).values());
   }
 
   @Override
@@ -304,7 +304,7 @@ public final class MemoryOnlyGroupsService implements GroupsService {
     
     groupBuilder.setClassTypes(extractValues(INITIAL_GROUP_CLASS_TYPES_PROPERTY_KEY, groupProperties));
     groupBuilder.setDescriptionPredicates(extractValues(INITIAL_GROUP_DESCRIPTION_PREDICATES_PROPERTY_KEY, groupProperties));
-    groupBuilder.setInstanceOfPredicates(extractValues(INITIAL_GROUP_INSTANCE_OF_PREDICATES_PROPERTY_KEY, groupProperties));
+    groupBuilder.setInstanceOfPredicates(extractValues(INITIAL_GROUP_TYPE_PREDICATES_PROPERTY_KEY, groupProperties));
     groupBuilder.setLabelPredicates(extractValues(INITIAL_GROUP_LABEL_PREDICATES_PROPERTY_KEY, groupProperties));
     groupBuilder.setPropertyTypes(extractValues(INITIAL_GROUP_PROPERTY_TYPES_PROPERTY_KEY, groupProperties));
     

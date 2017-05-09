@@ -33,4 +33,6 @@ public interface AdvancedBaseTypesService {
   AdvancedBaseType verifyTypeExistenceByName(String name);
 
   ProxyDefinition toProxyDefinition(final KnowledgeBase base);
+
+  AdvancedBaseType getDefault();
 }
