@@ -123,7 +123,14 @@ public class TColumnColumnRelationEnumerator {
       // collect attributes from where candidate relations are created
       final List<Attribute> collectedAttributes = new ArrayList<>();
       for (final TCellAnnotation cellAnnotation : winningCellAnnotations) {
-        collectedAttributes.addAll(cellAnnotation.getAnnotation().getAttributes());
+        for (Attribute attr : cellAnnotation.getAnnotation().getAttributes()) {
+          int ind = attr.getValue().indexOf("^^");
+          if (ind > 0) {
+            attr.setValue(attr.getValue().substring(0, ind));
+            attr.setValueURI(null);
+          }
+          collectedAttributes.add(attr);
+        }
       }
 
       // collect cell values on the same row, from other columns
@@ -167,8 +174,7 @@ public class TColumnColumnRelationEnumerator {
       final Set<ColumnRelation> columnRelations) {
     for (final ColumnRelation relation : columnRelations) {
       if ((relation.getPosition().getFirstIndex() == subjectCol)
-          && (relation.getPosition().getSecondIndex() == objectCol)
-          && !relation.getAnnotation().getChosen().isEmpty()) {
+          && (relation.getPosition().getSecondIndex() == objectCol)) {
         this.suggestedRelationPositionsVisited++;
         return true;
       }
