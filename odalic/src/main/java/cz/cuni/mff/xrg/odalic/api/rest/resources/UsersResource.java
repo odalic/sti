@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.NavigableSet;
 
@@ -27,7 +28,9 @@ import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
 import cz.cuni.mff.xrg.odalic.api.rest.values.PasswordChangeValue;
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.files.FileService;
+import cz.cuni.mff.xrg.odalic.groups.GroupsService;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
 import cz.cuni.mff.xrg.odalic.users.Credentials;
@@ -49,29 +52,35 @@ public final class UsersResource {
   private final ExecutionService executionService;
   private final TaskService taskService;
   private final FileService fileService;
+  private final BasesService basesService;
+  private final GroupsService groupsService;
 
   @Context
   private UriInfo uriInfo;
 
   @Autowired
   public UsersResource(final UserService userService, final ExecutionService executionService,
-      final TaskService taskService, final FileService fileService) {
+      final TaskService taskService, final FileService fileService, final BasesService basesService, final GroupsService groupsService) {
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(executionService);
     Preconditions.checkNotNull(taskService);
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(basesService);
+    Preconditions.checkNotNull(groupsService);
 
     this.userService = userService;
     this.executionService = executionService;
     this.taskService = taskService;
     this.fileService = fileService;
+    this.basesService = basesService;
+    this.groupsService = groupsService;
   }
 
   @POST
   @Path("users/confirmations")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response activate(final Token token) {
+  public Response activate(final Token token) throws IOException {
     try {
       this.userService.activateUser(token);
     } catch (final IllegalArgumentException e) {
@@ -122,6 +131,8 @@ public final class UsersResource {
       this.executionService.unscheduleAll(userId);
       this.taskService.deleteAll(userId);
       this.fileService.deleteAll(userId);
+      this.basesService.deleteAll(userId);
+      this.groupsService.deleteAll(userId);
       this.userService.deleteUser(userId);
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);

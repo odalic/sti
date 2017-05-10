@@ -7,13 +7,13 @@ import com.google.common.base.Preconditions;
 @RdfsClass("http://odalic.eu/internal/KnowledgeBaseColumnPositionEntry")
 public class KnowledgeBaseColumnPositionEntry {
 
-  private KnowledgeBaseValue base;
+  private String base;
 
   private ColumnPositionValue value;
 
   public KnowledgeBaseColumnPositionEntry() {}
 
-  public KnowledgeBaseColumnPositionEntry(final KnowledgeBaseValue base,
+  public KnowledgeBaseColumnPositionEntry(final String base,
       final ColumnPositionValue value) {
     Preconditions.checkNotNull(base);
     Preconditions.checkNotNull(value);
@@ -26,7 +26,7 @@ public class KnowledgeBaseColumnPositionEntry {
    * @return the base
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseColumnPositionEntry/base")
-  public KnowledgeBaseValue getBase() {
+  public String getBase() {
     return this.base;
   }
 
@@ -41,7 +41,7 @@ public class KnowledgeBaseColumnPositionEntry {
   /**
    * @param base the base to set
    */
-  public void setBase(final KnowledgeBaseValue base) {
+  public void setBase(final String base) {
     Preconditions.checkNotNull(base);
 
     this.base = base;

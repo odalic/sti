@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rest.values;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.NavigableSet;
 import java.util.Set;
 
@@ -12,7 +13,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSortedSet;
 
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 
 /**
@@ -30,9 +30,9 @@ public final class ConfigurationValue implements Serializable {
 
   private Feedback feedback;
 
-  private NavigableSet<KnowledgeBase> usedBases;
+  private NavigableSet<KnowledgeBaseNameValue> usedBases;
 
-  private KnowledgeBase primaryBase;
+  private KnowledgeBaseNameValue primaryBase;
 
   private Integer rowsLimit;
 
@@ -43,8 +43,8 @@ public final class ConfigurationValue implements Serializable {
   public ConfigurationValue(final Configuration adaptee) {
     this.input = adaptee.getInput().getId();
     this.feedback = adaptee.getFeedback();
-    this.usedBases = ImmutableSortedSet.copyOf(adaptee.getUsedBases());
-    this.primaryBase = adaptee.getPrimaryBase();
+    this.usedBases = adaptee.getUsedBases().stream().map(e -> new KnowledgeBaseNameValue(e)).collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+    this.primaryBase = new KnowledgeBaseNameValue(adaptee.getPrimaryBase());
     this.rowsLimit =
         adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
     this.statistical = adaptee.isStatistical();
@@ -73,7 +73,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  public KnowledgeBase getPrimaryBase() {
+  public KnowledgeBaseNameValue getPrimaryBase() {
     return this.primaryBase;
   }
 
@@ -91,7 +91,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  public NavigableSet<KnowledgeBase> getUsedBases() {
+  public NavigableSet<KnowledgeBaseNameValue> getUsedBases() {
     return this.usedBases;
   }
 
@@ -125,7 +125,7 @@ public final class ConfigurationValue implements Serializable {
   /**
    * @param primaryBase the primary knowledge base to set
    */
-  public void setPrimaryBase(final KnowledgeBase primaryBase) {
+  public void setPrimaryBase(final KnowledgeBaseNameValue primaryBase) {
     Preconditions.checkNotNull(primaryBase);
 
     this.primaryBase = primaryBase;
@@ -150,7 +150,7 @@ public final class ConfigurationValue implements Serializable {
   /**
    * @param usedBases the bases selected for the task to set
    */
-  public void setUsedBases(final Set<? extends KnowledgeBase> usedBases) {
+  public void setUsedBases(final Set<? extends KnowledgeBaseNameValue> usedBases) {
     Preconditions.checkNotNull(usedBases);
 
     this.usedBases = ImmutableSortedSet.copyOf(usedBases);

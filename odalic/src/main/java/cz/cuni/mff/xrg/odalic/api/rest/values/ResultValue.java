@@ -20,15 +20,12 @@ import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionKeyJsonDeserial
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionKeyJsonSerializer;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionToColumnRelationAnnotationMapDeserializer;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionToColumnRelationAnnotationMapSerializer;
-import cz.cuni.mff.xrg.odalic.api.rest.conversions.KnowledgeBaseKeyJsonDeserializer;
-import cz.cuni.mff.xrg.odalic.api.rest.conversions.KnowledgeBaseKeyJsonSerializer;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
@@ -43,9 +40,9 @@ public final class ResultValue implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
-  private Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
+  private Map<String, ColumnPosition> subjectColumnPositions;
 
-  private Map<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions;
+  private Map<String, Set<ColumnPosition>> otherSubjectColumnPositions;
 
   private List<HeaderAnnotation> headerAnnotations;
 
@@ -130,9 +127,7 @@ public final class ResultValue implements Serializable {
    * @return the subject column position
    */
   @XmlElement
-  @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
-  @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
-  public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
+  public Map<String, ColumnPosition> getSubjectColumnPositions() {
     return this.subjectColumnPositions;
   }
 
@@ -140,9 +135,7 @@ public final class ResultValue implements Serializable {
    * @return the other subject column positions
    */
   @XmlElement
-  @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
-  @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
-  public Map<KnowledgeBase, Set<ColumnPosition>> getOtherSubjectColumnPositions() {
+  public Map<String, Set<ColumnPosition>> getOtherSubjectColumnPositions() {
     return this.otherSubjectColumnPositions;
   }
 
@@ -230,7 +223,7 @@ public final class ResultValue implements Serializable {
    * @param subjectColumnPositions the subject column position to set
    */
   public void setSubjectColumnPosition(
-      final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions) {
+      final Map<? extends String, ? extends ColumnPosition> subjectColumnPositions) {
     Preconditions.checkNotNull(subjectColumnPositions);
 
     this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
@@ -240,7 +233,7 @@ public final class ResultValue implements Serializable {
    * @param otherSubjectColumnPositions the other subject column positions to set
    */
   public void setOtherSubjectColumnPosition(
-      final Map<? extends KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions) {
+      final Map<String, Set<ColumnPosition>> otherSubjectColumnPositions) {
     Preconditions.checkNotNull(otherSubjectColumnPositions);
 
     this.otherSubjectColumnPositions = ImmutableMap.copyOf(otherSubjectColumnPositions);

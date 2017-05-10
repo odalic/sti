@@ -14,9 +14,8 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 
-import cz.cuni.mff.xrg.odalic.files.File;
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.files.FileService;
-import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 
 /**
  * This {@link TaskService} implementation provides no persistence.
@@ -28,11 +27,13 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 public final class MemoryOnlyTaskService implements TaskService {
 
   private final FileService fileService;
+  private final BasesService basesService;
 
   /**
    * Table of tasks where rows are indexed by user IDs and the columns by task IDs.
    */
   private final Table<String, String, Task> tasks;
+
 
   /**
    * Creates the task service with no registered tasks.
@@ -40,16 +41,18 @@ public final class MemoryOnlyTaskService implements TaskService {
    * @param fileService file service
    */
   @Autowired
-  public MemoryOnlyTaskService(final FileService fileService) {
-    this(fileService, HashBasedTable.create());
+  public MemoryOnlyTaskService(final FileService fileService, final BasesService basesService) {
+    this(fileService, basesService, HashBasedTable.create());
   }
 
-  private MemoryOnlyTaskService(final FileService fileService,
+  private MemoryOnlyTaskService(final FileService fileService, final BasesService basesService,
       final Table<String, String, Task> tasks) {
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(basesService);
     Preconditions.checkNotNull(tasks);
 
     this.fileService = fileService;
+    this.basesService = basesService;
     this.tasks = tasks;
   }
 
@@ -67,8 +70,10 @@ public final class MemoryOnlyTaskService implements TaskService {
     Preconditions.checkNotNull(userId);
 
     final Map<String, Task> taskIdsToTasks = this.tasks.row(userId);
-    taskIdsToTasks.entrySet().stream().forEach(e -> this.fileService
-        .unsubscribe(e.getValue().getConfiguration().getInput(), e.getValue()));
+    taskIdsToTasks.entrySet().stream().forEach(e -> {
+      this.fileService.unsubscribe(e.getValue());
+      this.basesService.unsubscribe(e.getValue());
+    });
     taskIdsToTasks.clear();
   }
 
@@ -80,8 +85,8 @@ public final class MemoryOnlyTaskService implements TaskService {
     final Task task = this.tasks.remove(userId, taskId);
     Preconditions.checkArgument(task != null);
 
-    final Configuration configuration = task.getConfiguration();
-    this.fileService.unsubscribe(configuration.getInput(), task);
+    this.fileService.unsubscribe(task);
+    this.basesService.unsubscribe(task);
   }
 
   @Override
@@ -122,15 +127,12 @@ public final class MemoryOnlyTaskService implements TaskService {
 
     final Task previous = this.tasks.put(task.getOwner().getEmail(), task.getId(), task);
     if (previous != null) {
-      final Configuration previousConfiguration = previous.getConfiguration();
-      final File previousInput = previousConfiguration.getInput();
-
-      this.fileService.unsubscribe(previousInput, previous);
+      this.fileService.unsubscribe(previous);
+      this.basesService.unsubscribe(previous);
     }
 
-    final Configuration configuration = task.getConfiguration();
-    final File input = configuration.getInput();
-    this.fileService.subscribe(input, task);
+    this.fileService.subscribe(task);
+    this.basesService.subscribe(task);
   }
 
   @Override

@@ -3,7 +3,7 @@ package cz.cuni.mff.xrg.odalic.api.rest.adapters;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.KnowledgeBaseValue;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 
 
 public final class KnowledgeBaseAdapter extends XmlAdapter<KnowledgeBaseValue, KnowledgeBase> {
@@ -15,6 +15,6 @@ public final class KnowledgeBaseAdapter extends XmlAdapter<KnowledgeBaseValue, K
 
   @Override
   public KnowledgeBase unmarshal(final KnowledgeBaseValue value) throws Exception {
-    return new KnowledgeBase(value.getName());
+    throw new UnsupportedOperationException();
   }
 }

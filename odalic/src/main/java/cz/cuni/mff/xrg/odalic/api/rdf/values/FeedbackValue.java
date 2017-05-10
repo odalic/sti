@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableSet;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Domain class {@link Feedback} adapted for RDF serialization.
@@ -60,7 +59,7 @@ public final class FeedbackValue implements Serializable {
 
   public FeedbackValue(final Feedback adaptee) {
     this.subjectColumnPositions = adaptee.getSubjectColumnPositions().entrySet().stream()
-        .map(e -> new KnowledgeBaseColumnPositionEntry(new KnowledgeBaseValue(e.getKey()),
+        .map(e -> new KnowledgeBaseColumnPositionEntry(e.getKey(),
             new ColumnPositionValue(e.getValue())))
         .collect(ImmutableSet.toImmutableSet());
     this.otherSubjectColumnPositions = Annotations.toPositionValues(adaptee.getOtherSubjectColumnPositions());
@@ -256,10 +255,10 @@ public final class FeedbackValue implements Serializable {
   }
 
   public Feedback toFeedback() {
-    final ImmutableMap.Builder<KnowledgeBase, ColumnPosition> subjectColumnPositionsMapBuilder =
+    final ImmutableMap.Builder<String, ColumnPosition> subjectColumnPositionsMapBuilder =
         ImmutableMap.builder();
     for (final KnowledgeBaseColumnPositionEntry entry : this.subjectColumnPositions) {
-      subjectColumnPositionsMapBuilder.put(entry.getBase().toKnowledgeBase(),
+      subjectColumnPositionsMapBuilder.put(entry.getBase(),
           entry.getValue().toColumnPosition());
     }
 

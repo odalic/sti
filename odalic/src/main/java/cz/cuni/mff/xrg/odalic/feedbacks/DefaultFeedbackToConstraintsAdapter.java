@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.positions.CellPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
@@ -19,7 +20,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
@@ -279,7 +279,7 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
 
   private Set<uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition> convertOtherSubjectColumns(
       final Feedback feedback, final KnowledgeBase base) {
-    final Set<ColumnPosition> otherSubjectColumnPositions = feedback.getOtherSubjectColumnPositions().get(base);
+    final Set<ColumnPosition> otherSubjectColumnPositions = feedback.getOtherSubjectColumnPositions().get(base.getName());
 
     if (otherSubjectColumnPositions != null) {
       return otherSubjectColumnPositions.stream()

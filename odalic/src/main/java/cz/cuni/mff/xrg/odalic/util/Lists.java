@@ -1,10 +1,15 @@
 package cz.cuni.mff.xrg.odalic.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Utility class for -- you guessed it -- working with collections.
@@ -41,10 +46,29 @@ public final class Lists {
     }
   }
 
+
+  /**
+   * Merges two lists in such way that all the items from the first one are preserved in order and
+   * all items from the second one not present in the first one are appended to them in order.
+   * 
+   * @param first first list
+   * @param second second list
+   * @return merged list
+   */
+  public static <T> List<T> merge(final List<T> first, final List<T> second) {
+    final Set<T> firstSet = ImmutableSet.copyOf(first);
+    final List<T> secondRemainder =
+        second.stream().filter(e -> !firstSet.contains(e)).collect(Collectors.toList());
+
+    final List<T> result = new ArrayList<>();
+    result.addAll(first);
+    result.addAll(secondRemainder);
+
+    return result;
+  }
+
   /**
    * We want to keep this class uninstantiable, so no visible constructor is available.
    */
   private Lists() {}
-
-
 }

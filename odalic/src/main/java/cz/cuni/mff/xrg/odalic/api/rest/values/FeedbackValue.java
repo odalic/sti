@@ -7,14 +7,10 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import cz.cuni.mff.xrg.odalic.api.rest.conversions.KnowledgeBaseKeyJsonDeserializer;
-import cz.cuni.mff.xrg.odalic.api.rest.conversions.KnowledgeBaseKeyJsonSerializer;
 import cz.cuni.mff.xrg.odalic.feedbacks.Ambiguity;
 import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnAmbiguity;
@@ -25,7 +21,6 @@ import cz.cuni.mff.xrg.odalic.feedbacks.DataCubeComponent;
 import cz.cuni.mff.xrg.odalic.feedbacks.Disambiguation;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Domain class {@link Feedback} adapted for REST API.
@@ -38,9 +33,9 @@ public final class FeedbackValue implements Serializable {
 
   private static final long serialVersionUID = -7968455903789693405L;
 
-  private Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
+  private Map<String, ColumnPosition> subjectColumnPositions;
 
-  private Map<KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions;
+  private Map<String, Set<ColumnPosition>> otherSubjectColumnPositions;
 
   private Set<ColumnIgnore> columnIgnores;
 
@@ -152,9 +147,7 @@ public final class FeedbackValue implements Serializable {
    * @return the subject column positions
    */
   @XmlElement
-  @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
-  @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
-  public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
+  public Map<String, ColumnPosition> getSubjectColumnPositions() {
     return this.subjectColumnPositions;
   }
 
@@ -162,9 +155,7 @@ public final class FeedbackValue implements Serializable {
    * @return the other subject column positions
    */
   @XmlElement
-  @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
-  @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
-  public Map<KnowledgeBase, Set<ColumnPosition>> getOtherSubjectColumnPositions() {
+  public Map<String, Set<ColumnPosition>> getOtherSubjectColumnPositions() {
     return this.otherSubjectColumnPositions;
   }
 
@@ -244,7 +235,7 @@ public final class FeedbackValue implements Serializable {
    * @param subjectColumnPositions the subject column positions to set
    */
   public void setSubjectColumnPositions(
-      final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions) {
+      final Map<? extends String, ? extends ColumnPosition> subjectColumnPositions) {
     Preconditions.checkNotNull(subjectColumnPositions);
 
     this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
@@ -254,7 +245,7 @@ public final class FeedbackValue implements Serializable {
    * @param otherSubjectColumnPositions the other subject column positions to set
    */
   public void setOtherSubjectColumnPositions(
-      final Map<? extends KnowledgeBase, Set<ColumnPosition>> otherSubjectColumnPositions) {
+      final Map<String, Set<ColumnPosition>> otherSubjectColumnPositions) {
     Preconditions.checkNotNull(otherSubjectColumnPositions);
 
     this.otherSubjectColumnPositions = ImmutableMap.copyOf(otherSubjectColumnPositions);

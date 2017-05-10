@@ -11,9 +11,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.ConfigurationAdapter;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.File;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Task configuration.

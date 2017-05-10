@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rdf.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 
 /**
@@ -34,7 +33,7 @@ public final class StatisticalAnnotationValue {
 
   public StatisticalAnnotationValue(final StatisticalAnnotation adaptee) {
     this.component = adaptee.getComponent().entrySet().stream()
-        .map(e -> new KnowledgeBaseComponentTypeValueEntry(new KnowledgeBaseValue(e.getKey()),
+        .map(e -> new KnowledgeBaseComponentTypeValueEntry(e.getKey(),
             e.getValue()))
         .collect(ImmutableSet.toImmutableSet());
     this.predicate = Annotations.toValues(adaptee.getPredicate());
@@ -71,10 +70,10 @@ public final class StatisticalAnnotationValue {
   }
 
   public StatisticalAnnotation toStatisticalAnnotation() {
-    final ImmutableMap.Builder<KnowledgeBase, ComponentTypeValue> componentMapBuilder =
+    final ImmutableMap.Builder<String, ComponentTypeValue> componentMapBuilder =
         ImmutableMap.builder();
     for (final KnowledgeBaseComponentTypeValueEntry entry : this.component) {
-      componentMapBuilder.put(entry.getBase().toKnowledgeBase(), entry.getValue());
+      componentMapBuilder.put(entry.getBase(), entry.getValue());
     }
 
     return new StatisticalAnnotation(componentMapBuilder.build(),

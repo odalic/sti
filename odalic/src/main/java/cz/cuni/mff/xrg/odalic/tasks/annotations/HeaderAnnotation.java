@@ -27,9 +27,9 @@ public final class HeaderAnnotation implements Serializable {
 
   private static final long serialVersionUID = -3116665248087475756L;
 
-  private final Map<KnowledgeBase, NavigableSet<EntityCandidate>> candidates;
+  private final Map<String, NavigableSet<EntityCandidate>> candidates;
 
-  private final Map<KnowledgeBase, Set<EntityCandidate>> chosen;
+  private final Map<String, Set<EntityCandidate>> chosen;
 
   /**
    * Creates new annotation.
@@ -38,27 +38,27 @@ public final class HeaderAnnotation implements Serializable {
    * @param chosen subset of candidates chosen to annotate the element
    */
   public HeaderAnnotation(
-      final Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidate>> candidates,
-      final Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidate>> chosen) {
+      final Map<? extends String, ? extends Set<? extends EntityCandidate>> candidates,
+      final Map<? extends String, ? extends Set<? extends EntityCandidate>> chosen) {
     Preconditions.checkNotNull(candidates);
     Preconditions.checkNotNull(chosen);
 
-    final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidate>> candidatesBuilder =
+    final ImmutableMap.Builder<String, NavigableSet<EntityCandidate>> candidatesBuilder =
         ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBase, ? extends Set<? extends EntityCandidate>> candidateEntry : candidates
+    for (final Map.Entry<? extends String, ? extends Set<? extends EntityCandidate>> candidateEntry : candidates
         .entrySet()) {
       candidatesBuilder.put(candidateEntry.getKey(),
           ImmutableSortedSet.copyOf(candidateEntry.getValue()));
     }
     this.candidates = candidatesBuilder.build();
 
-    final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> chosenBuilder =
+    final ImmutableMap.Builder<String, Set<EntityCandidate>> chosenBuilder =
         ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBase, ? extends Set<? extends EntityCandidate>> chosenEntry : chosen
+    for (final Map.Entry<? extends String, ? extends Set<? extends EntityCandidate>> chosenEntry : chosen
         .entrySet()) {
-      final KnowledgeBase chosenBase = chosenEntry.getKey();
+      final String chosenBaseName = chosenEntry.getKey();
 
-      final Set<EntityCandidate> baseCandidates = this.candidates.get(chosenBase);
+      final Set<EntityCandidate> baseCandidates = this.candidates.get(chosenBaseName);
       Preconditions.checkArgument(baseCandidates != null);
       Preconditions.checkArgument(baseCandidates.containsAll(chosenEntry.getValue()));
 
@@ -105,14 +105,14 @@ public final class HeaderAnnotation implements Serializable {
   /**
    * @return the candidates
    */
-  public Map<KnowledgeBase, NavigableSet<EntityCandidate>> getCandidates() {
+  public Map<String, NavigableSet<EntityCandidate>> getCandidates() {
     return this.candidates;
   }
 
   /**
    * @return the chosen
    */
-  public Map<KnowledgeBase, Set<EntityCandidate>> getChosen() {
+  public Map<String, Set<EntityCandidate>> getChosen() {
     return this.chosen;
   }
 
@@ -139,12 +139,12 @@ public final class HeaderAnnotation implements Serializable {
    *         from the same knowledge base
    */
   public HeaderAnnotation merge(final HeaderAnnotation other) throws IllegalArgumentException {
-    final ImmutableMap.Builder<KnowledgeBase, NavigableSet<EntityCandidate>> candidatesBuilder =
+    final ImmutableMap.Builder<String, NavigableSet<EntityCandidate>> candidatesBuilder =
         ImmutableMap.builder();
     candidatesBuilder.putAll(this.candidates);
     candidatesBuilder.putAll(other.candidates);
 
-    final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> chosenBuilder =
+    final ImmutableMap.Builder<String, Set<EntityCandidate>> chosenBuilder =
         ImmutableMap.builder();
     chosenBuilder.putAll(this.chosen);
     chosenBuilder.putAll(other.chosen);

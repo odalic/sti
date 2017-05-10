@@ -16,9 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
-import cz.cuni.mff.xrg.odalic.files.File;
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.files.FileService;
-import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
@@ -32,6 +31,8 @@ public final class DbTaskService implements TaskService {
 
   private final FileService fileService;
 
+  private final BasesService basesService;
+  
   /**
    * The shared database instance.
    */
@@ -43,14 +44,17 @@ public final class DbTaskService implements TaskService {
    */
   private final BTreeMap<Object[], Task> tasks;
 
+
   @SuppressWarnings("unchecked")
   @Autowired
-  public DbTaskService(final FileService fileService, final DbService dbService) {
+  public DbTaskService(final FileService fileService, final BasesService basesService, final DbService dbService) {
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(basesService);
     Preconditions.checkNotNull(dbService);
 
     this.fileService = fileService;
-
+    this.basesService = basesService;
+    
     this.db = dbService.getDb();
 
     this.tasks = this.db.treeMap("tasks")
@@ -71,10 +75,19 @@ public final class DbTaskService implements TaskService {
   public void deleteAll(final String userId) {
     Preconditions.checkNotNull(userId);
 
-    final Map<Object[], Task> taskIdsToTasks = this.tasks.prefixSubMap(new Object[] {userId});
-    taskIdsToTasks.entrySet().stream().forEach(e -> this.fileService
-        .unsubscribe(e.getValue().getConfiguration().getInput(), e.getValue()));
-    taskIdsToTasks.clear();
+    try {
+      final Map<Object[], Task> taskIdsToTasks = this.tasks.prefixSubMap(new Object[] {userId});
+      taskIdsToTasks.entrySet().stream().forEach(e -> {
+        this.fileService.unsubscribe(e.getValue());
+        this.basesService.unsubscribe(e.getValue());
+      });
+      taskIdsToTasks.clear();
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
+    
+    this.db.commit();
   }
 
   @Override
@@ -82,11 +95,16 @@ public final class DbTaskService implements TaskService {
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(taskId);
 
-    final Task task = this.tasks.remove(new Object[] {userId, taskId});
-    Preconditions.checkArgument(task != null);
-
-    final Configuration configuration = task.getConfiguration();
-    this.fileService.unsubscribe(configuration.getInput(), task);
+    try {
+      final Task task = this.tasks.remove(new Object[] {userId, taskId});
+      Preconditions.checkArgument(task != null);
+  
+      this.fileService.unsubscribe(task);
+      this.basesService.unsubscribe(task);
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
 
     this.db.commit();
   }
@@ -129,22 +147,18 @@ public final class DbTaskService implements TaskService {
     final Task previous =
         this.tasks.put(new Object[] {task.getOwner().getEmail(), task.getId()}, task);
     if (previous != null) {
-      final Configuration previousConfiguration = previous.getConfiguration();
-      final File previousInput = previousConfiguration.getInput();
-
       try {
-        this.fileService.unsubscribe(previousInput, previous);
+        this.fileService.unsubscribe(previous);
+        this.basesService.unsubscribe(previous);
       } catch (final Exception e) {
         this.db.rollback();
         throw e;
       }
     }
 
-    final Configuration configuration = task.getConfiguration();
-    final File input = configuration.getInput();
-
     try {
-      this.fileService.subscribe(input, task);
+      this.fileService.subscribe(task);
+      this.basesService.subscribe(task);
     } catch (final Exception e) {
       this.db.rollback();
       throw e;

@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +17,7 @@ import uk.ac.shef.dcs.sti.core.algorithm.tmp.stopping.StoppingCriteriaInstantiat
 import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 import uk.ac.shef.dcs.sti.core.model.Table;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
+import uk.ac.shef.dcs.util.Cache;
 import uk.ac.shef.dcs.util.Pair;
 import uk.ac.shef.dcs.websearch.WebSearchException;
 
@@ -37,7 +37,7 @@ public class SubjectColumnDetector {
 
   public SubjectColumnDetector(final TContentRowRanker tRowRanker,
       final String stoppingCriteriaClassname, final String[] stoppingCriteriaParams,
-      final EmbeddedSolrServer cache, final String nlpResource, final boolean useWS,
+      final Cache cache, final String nlpResource, final boolean useWS,
       final List<String> stopwords, final String webSearchPropFile)
       throws IOException, WebSearchException {
     this.featureGenerator =

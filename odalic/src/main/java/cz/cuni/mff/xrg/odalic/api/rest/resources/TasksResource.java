@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.NavigableSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,8 +30,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSortedSet;
 
-import cz.cuni.mff.xrg.odalic.api.rdf.TaskRdfSerializationService;
+import cz.cuni.mff.xrg.odalic.api.rdf.TaskSerializationService;
 import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
@@ -40,11 +42,11 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.StatefulTaskValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.TaskValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.util.States;
 import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
 import cz.cuni.mff.xrg.odalic.users.Role;
@@ -67,7 +69,7 @@ public final class TasksResource {
   private final FileService fileService;
   private final ExecutionService executionService;
   private final BasesService basesService;
-  private final TaskRdfSerializationService taskSerializationService;
+  private final TaskSerializationService taskSerializationService;
 
   @Context
   private SecurityContext securityContext;
@@ -78,7 +80,7 @@ public final class TasksResource {
   @Autowired
   public TasksResource(final UserService userService, final TaskService taskService,
       final FileService fileService, final ExecutionService executionService,
-      final BasesService basesService, final TaskRdfSerializationService taskSerializationService) {
+      final BasesService basesService, final TaskSerializationService taskSerializationService) {
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(taskService);
     Preconditions.checkNotNull(fileService);
@@ -291,14 +293,14 @@ public final class TasksResource {
 
     final NavigableSet<KnowledgeBase> usedBases;
     if (configurationValue.getUsedBases() == null) {
-      usedBases = this.basesService.getBases();
+      usedBases = this.basesService.getBases(userId);
     } else {
-      usedBases = configurationValue.getUsedBases();
+      usedBases = configurationValue.getUsedBases().stream().map(e -> this.basesService.getByName(userId, e.getName())).collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     }
 
     final Configuration configuration;
     try {
-      configuration = new Configuration(input, usedBases, configurationValue.getPrimaryBase(),
+      configuration = new Configuration(input, usedBases, this.basesService.getByName(userId, configurationValue.getPrimaryBase().getName()),
           configurationValue.getFeedback(), configurationValue.getRowsLimit(),
           configurationValue.isStatistical());
     } catch (final IllegalArgumentException e) {

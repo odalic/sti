@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentRowRanker;
@@ -20,7 +18,7 @@ import uk.ac.shef.dcs.sti.core.model.TColumnHeader;
 import uk.ac.shef.dcs.sti.core.model.Table;
 import uk.ac.shef.dcs.sti.nlp.NLPTools;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
-import uk.ac.shef.dcs.util.SolrCache;
+import uk.ac.shef.dcs.util.Cache;
 import uk.ac.shef.dcs.util.StringUtils;
 import uk.ac.shef.dcs.websearch.WebSearchException;
 import uk.ac.shef.dcs.websearch.WebSearchFactory;
@@ -99,11 +97,11 @@ public class TColumnFeatureGenerator {
 
   private final NLPTools nlpTools;
 
-  public TColumnFeatureGenerator(final EmbeddedSolrServer cache, final String nlpResource,
+  public TColumnFeatureGenerator(final Cache cache, final String nlpResource,
       final List<String> stopWords, final String webSearchPropFile)
       throws IOException, WebSearchException {
     this.cmScorer = new CMScorer(nlpResource);
-    this.wsScorer = new WSScorer(new SolrCache(cache),
+    this.wsScorer = new WSScorer(cache,
         new WebSearchFactory().createInstance(webSearchPropFile), stopWords);
     this.nlpTools = NLPTools.getInstance(nlpResource);
   }

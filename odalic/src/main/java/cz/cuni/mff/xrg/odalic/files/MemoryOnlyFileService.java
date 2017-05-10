@@ -21,6 +21,7 @@ import com.google.common.collect.Table;
 
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
+import cz.cuni.mff.xrg.odalic.users.User;
 
 /**
  * This {@link FileService} implementation provides no persistence.
@@ -196,8 +197,14 @@ public final class MemoryOnlyFileService implements FileService {
   }
 
   @Override
-  public void subscribe(final File file, final Task task) {
-    final String userId = file.getOwner().getEmail();
+  public void subscribe(final Task task) {
+    final File file = task.getConfiguration().getInput();
+
+    final User owner = file.getOwner();
+    Preconditions.checkArgument(owner.equals(task.getOwner()),
+        "The owner of the file is not the same as the owner of the task!");
+
+    final String userId = owner.getEmail();
     final String fileId = file.getId();
 
     Preconditions.checkArgument(this.files.get(userId, fileId).equals(file),
@@ -217,8 +224,14 @@ public final class MemoryOnlyFileService implements FileService {
   }
 
   @Override
-  public void unsubscribe(final File file, final Task task) {
-    final String userId = file.getOwner().getEmail();
+  public void unsubscribe(final Task task) {
+    final File file = task.getConfiguration().getInput();
+
+    final User owner = file.getOwner();
+    Preconditions.checkArgument(owner.equals(task.getOwner()),
+        "The owner of the file is not the same as the owner of the task!");
+
+    final String userId = owner.getEmail();
     final String fileId = file.getId();
 
     Preconditions.checkArgument(this.files.get(userId, fileId).equals(file),

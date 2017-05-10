@@ -3,15 +3,12 @@ package cz.cuni.mff.xrg.odalic.tasks.executions;
 import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.simmetrics.metrics.StringMetrics;
 import org.slf4j.Logger;
@@ -19,8 +16,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Table;
 
-import uk.ac.shef.dcs.kbproxy.KBProxy;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
+import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
+import uk.ac.shef.dcs.kbproxy.Proxy;
+import uk.ac.shef.dcs.kbproxy.solr.CacheProviderService;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
@@ -76,27 +78,24 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
 
   private static final Logger logger = LoggerFactory.getLogger(TableMinerPlusFactory.class);
 
-  private final String propertyFilePath;
+  private final KnowledgeBaseProxiesService knowledgeBaseProxyFactory;
+  private final CacheProviderService cacheProviderService;
 
-  private final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory;
-
-  private Map<String, SemanticTableInterpreter> interpreters;
-  private Properties properties;
-  private final Lock initLock = new ReentrantLock();
-  private boolean isInitialized = false;
+  private final Properties properties;
 
   @Autowired
-  public TableMinerPlusFactory(final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory) {
-    this(knowledgeBaseProxyFactory, System.getProperty("cz.cuni.mff.xrg.odalic.sti"));
+  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService, final PropertiesService propertiesService) {
+    this(knowledgeBaseProxyFactory, cacheProviderService, propertiesService.get());
   }
 
-  public TableMinerPlusFactory(final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory,
-      final String propertyFilePath) {
+  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService, final Properties properties) {
     Preconditions.checkNotNull(knowledgeBaseProxyFactory);
-    Preconditions.checkNotNull(propertyFilePath);
+    Preconditions.checkNotNull(cacheProviderService);
+    Preconditions.checkNotNull(properties);
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
-    this.propertyFilePath = propertyFilePath;
+    this.cacheProviderService = cacheProviderService;
+    this.properties = properties;
   }
 
   private String getAbsolutePath(final String propertyName) {
@@ -105,11 +104,8 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   }
 
   @Override
-  public Map<String, SemanticTableInterpreter> getInterpreters() throws STIException, IOException {
-    if (this.interpreters == null) {
-      initComponents();
-    }
-    return this.interpreters;
+  public Map<String, SemanticTableInterpreter> getInterpreters(final String userId, final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
+    return initializeInterpreters(userId, bases);
   }
 
   private String getNLPResourcesDir() throws STIException {
@@ -140,21 +136,14 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   }
 
   // Initialize kbsearcher, websearcher
-  private void initComponents() throws STIException, IOException {
-    this.initLock.lock();
-    try {
-      if (this.isInitialized) {
-        return;
-      }
-
-      this.properties = new Properties();
-      this.properties.load(new FileInputStream(this.propertyFilePath));
-
+  private synchronized Map<String, SemanticTableInterpreter> initializeInterpreters(final String userId, final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
       // object to fetch things from KB
-      final Map<String, KBProxy> kbProxyInstances = this.knowledgeBaseProxyFactory.getKBProxies();
+      final Table<String, String, Proxy> kbProxyInstances = this.knowledgeBaseProxyFactory.toProxies(bases);
 
-      this.interpreters = new HashMap<>();
-      for (final KBProxy kbProxy : kbProxyInstances.values()) {
+      final Map<String, SemanticTableInterpreter> interpreters = new HashMap<>();
+      for (final Map.Entry<String, Proxy> kbProxyEntry : kbProxyInstances.row(userId).entrySet()) {
+        final Proxy kbProxy = kbProxyEntry.getValue();
+        
         final SubjectColumnDetector subcolDetector = initSubColDetector(kbProxy);
 
         final TCellDisambiguator disambiguator = initDisambiguator(kbProxy);
@@ -174,16 +163,13 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
         final SemanticTableInterpreter interpreter = new TMPOdalicInterpreter(subcolDetector,
             learning, update, relationEnumerator, literalColumnTagger);
 
-        this.interpreters.put(kbProxy.getName(), interpreter);
-
-        this.isInitialized = true;
+        interpreters.put(kbProxyEntry.getKey(), interpreter);
       }
-    } finally {
-      this.initLock.unlock();
-    }
+      
+      return interpreters;
   }
 
-  private TCellDisambiguator initDisambiguator(final KBProxy kbProxy) throws STIException {
+  private TCellDisambiguator initDisambiguator(final Proxy kbProxy) throws STIException {
     try {
       return new TCellDisambiguator(kbProxy,
           new TMPEntityScorer(getStopwords(), STIConstantProperty.SCORER_ENTITY_CONTEXT_WEIGHT,
@@ -195,7 +181,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     }
   }
 
-  private LEARNING initLearning(final KBProxy kbProxy, final TContentCellRanker selector,
+  private LEARNING initLearning(final Proxy kbProxy, final TContentCellRanker selector,
       final TCellDisambiguator disambiguator, final TColumnClassifier classifier)
       throws STIException {
     logger.info("Initializing LEARNING components ...");
@@ -235,7 +221,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     }
   }
 
-  private SubjectColumnDetector initSubColDetector(final KBProxy kbProxy) throws STIException {
+  private SubjectColumnDetector initSubColDetector(final Proxy kbProxy) throws STIException {
     logger.info("Initializing SUBJECT COLUMN DETECTION components ...");
     try {
       return new SubjectColumnDetector(new TContentTContentRowRankerImpl(),
@@ -244,7 +230,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
               this.properties.getProperty(PROPERTY_TMP_IINF_WEBSEARCH_STOPPING_CLASS_CONSTR_PARAM),
               ','),
           // new String[]{"0.0", "1", "0.01"},
-          kbProxy.getSolrServer(PROPERTY_WEBSEARCH_CACHE_CORENAME), getNLPResourcesDir(),
+          this.cacheProviderService.getCache(kbProxy.getName(), PROPERTY_WEBSEARCH_CACHE_CORENAME), getNLPResourcesDir(),
           Boolean.valueOf(
               this.properties.getProperty(PROPERTY_TMP_SUBJECT_COLUMN_DETECTION_USE_WEBSEARCH)),
           getStopwords(), getAbsolutePath(PROPERTY_WEBSEARCH_PROP_FILE));
@@ -255,7 +241,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     }
   }
 
-  private UPDATE initUpdate(final KBProxy kbProxy, final TContentCellRanker selector,
+  private UPDATE initUpdate(final Proxy kbProxy, final TContentCellRanker selector,
       final TCellDisambiguator disambiguator, final TColumnClassifier classifier)
       throws STIException {
     logger.info("Initializing UPDATE components ...");

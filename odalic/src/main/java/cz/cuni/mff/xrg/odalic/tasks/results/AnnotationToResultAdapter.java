@@ -2,7 +2,7 @@ package cz.cuni.mff.xrg.odalic.tasks.results;
 
 import java.util.Map;
 
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 
 /**

@@ -20,20 +20,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
-import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
-import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.ProxyException;
+import uk.ac.shef.dcs.kbproxy.Proxy;
 
 /**
  * The default {@link ResultToAnnotatedTableAdapter} implementation.
@@ -93,17 +94,17 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
       Entity.of(PREFIX_SDMX_MEASURE, PREFIX_SDMX_MEASURE.getWhat() + "obsValue", "");
   private static final String SEPARATOR = " ";
   private static final String OBSERVATION = "OBSERVATION";
-  private final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory;
+  private final KnowledgeBaseProxiesService knowledgeBaseProxyFactory;
   private final TableColumnBuilder builder = new TableColumnBuilder();
   private List<String> headers;
   private boolean[] isDisambiguated;
 
-  private KBProxy kbProxy;
+  private Proxy kbProxy;
   private Map<String, String> prefixes;
 
   @Autowired
   public DefaultResultToAnnotatedTableAdapter(
-      final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory) {
+      final KnowledgeBaseProxiesService knowledgeBaseProxyFactory) {
     Preconditions.checkNotNull(knowledgeBaseProxyFactory);
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
@@ -192,7 +193,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
       List<String> ranges;
       try {
         ranges = this.kbProxy.getPropertyRanges(predicate.getResource());
-      } catch (final KBProxyException e) {
+      } catch (final ProxyException e) {
         log.warn("Ranges not found for predicate " + predicate.getResource(), e);
         ranges = new ArrayList<>();
       }
@@ -262,8 +263,9 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
     }
 
     this.isDisambiguated = new boolean[this.headers.size()];
+    final KnowledgeBase primaryBase = configuration.getPrimaryBase();
     this.kbProxy =
-        this.knowledgeBaseProxyFactory.getKBProxies().get(configuration.getPrimaryBase().getName());
+        this.knowledgeBaseProxyFactory.toProxies(ImmutableSet.of(primaryBase)).values().iterator().next();
 
     this.prefixes = new HashMap<>();
     putPrefix(PREFIX_XSD);
@@ -277,10 +279,10 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
       boolean addAlternatives = false;
 
       for (int j = 0; j < input.rowsCount(); j++) {
-        for (final Entry<KnowledgeBase, Set<EntityCandidate>> entry : result
+        for (final Entry<String, Set<EntityCandidate>> entry : result
             .getCellAnnotations()[j][i].getChosen().entrySet()) {
           if ((entry.getValue() != null) && !entry.getValue().isEmpty()) {
-            if (entry.getKey().getName().equals(configuration.getPrimaryBase().getName())) {
+            if (entry.getKey().equals(configuration.getPrimaryBase().getName())) {
               addPrimary = true;
             } else {
               addAlternatives = true;
@@ -332,7 +334,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
       final int obsIndex = this.headers.size() - 1;
       this.isDisambiguated[obsIndex] = true;
 
-      final URI kbUri = this.kbProxy.getKbDefinition().getInsertPrefixSchema();
+      final URI kbUri = primaryBase.getUserClassesPrefix();
       final Entity datasetEntity =
           Entity.of(String.format("%sdataset/%s", kbUri, generateStringUUID()), "");
       final Entity dsdEntity =

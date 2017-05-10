@@ -11,9 +11,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
-import uk.ac.shef.dcs.kbproxy.KBProxyResult;
+import uk.ac.shef.dcs.kbproxy.ProxyException;
+import uk.ac.shef.dcs.kbproxy.ProxyResult;
+import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.STIException;
@@ -37,13 +37,13 @@ public class UPDATE {
 
   private static final Logger LOG = LoggerFactory.getLogger(UPDATE.class.getName());
   private final TCellDisambiguator disambiguator;
-  private final KBProxy kbSearch;
+  private final Proxy kbSearch;
   private final TColumnClassifier classifier;
   private final String nlpResourcesDir;
   private final TContentCellRanker selector;
   private final List<String> stopWords;
 
-  public UPDATE(final TContentCellRanker selector, final KBProxy kbSearch,
+  public UPDATE(final TContentCellRanker selector, final Proxy kbSearch,
       final TCellDisambiguator disambiguator, final TColumnClassifier classifier,
       final List<String> stopwords, final String nlpResourcesDir) {
     this.selector = selector;
@@ -92,7 +92,7 @@ public class UPDATE {
 
   private Collection<? extends String> createEntityDomainRep(final Entity ec) throws IOException {
     final List<String> domain = new ArrayList<>();
-    final String desc = ec.getDescription(this.kbSearch.getKbDefinition());
+    final String desc = ec.getDescription(this.kbSearch.getDefinition());
     final String[] sentences =
         NLPTools.getInstance(this.nlpResourcesDir).getSentenceSplitter().sentDetect(desc);
     final String first = sentences.length > 0 ? sentences[0] : "";
@@ -113,11 +113,11 @@ public class UPDATE {
     final List<String> warnings = entityResult.getWarnings();
 
     if (candidates.isEmpty()) {
-      final KBProxyResult<List<Entity>> candidatesResult = this.kbSearch
+      final ProxyResult<List<Entity>> candidatesResult = this.kbSearch
           .findEntityCandidatesOfTypes(tcc.getText(), constrainedClazz.toArray(new String[0]));
 
       candidates = candidatesResult.getResult();
-      candidatesResult.appendWarning(warnings);
+      candidatesResult.appendExistingWarning(warnings);
     }
 
     int ignore = 0;
@@ -127,11 +127,11 @@ public class UPDATE {
       }
     }
     if (candidates.isEmpty()) {
-      final KBProxyResult<List<Entity>> candidatesResult =
+      final ProxyResult<List<Entity>> candidatesResult =
           this.kbSearch.findEntityCandidatesOfTypes(tcc.getText());
 
       candidates = candidatesResult.getResult();
-      candidatesResult.appendWarning(warnings);
+      candidatesResult.appendExistingWarning(warnings);
     }
     LOG.debug("\t\t>> Rows=" + rowBlock + "/" + totalRowBlocks + " (Total candidates="
         + candidates.size() + ", previously already processed=" + ignore + ")");
@@ -276,7 +276,7 @@ public class UPDATE {
    * @param interpretedColumnIndexes
    * @param table
    * @param currentAnnotation
-   * @throws KBProxyException
+   * @throws ProxyException
    * @throws STIException
    */
   public void update(final List<Integer> interpretedColumnIndexes, final Table table,
@@ -292,7 +292,7 @@ public class UPDATE {
    * @param table
    * @param currentAnnotation
    * @param constraints
-   * @throws KBProxyException
+   * @throws ProxyException
    * @throws STIException
    */
   public void update(final List<Integer> interpretedColumnIndexes, final Table table,
