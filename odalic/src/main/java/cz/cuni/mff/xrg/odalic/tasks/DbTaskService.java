@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
@@ -30,6 +31,8 @@ public final class DbTaskService implements TaskService {
 
   private final FileService fileService;
 
+  private final BasesService basesService;
+  
   /**
    * The shared database instance.
    */
@@ -41,14 +44,17 @@ public final class DbTaskService implements TaskService {
    */
   private final BTreeMap<Object[], Task> tasks;
 
+
   @SuppressWarnings("unchecked")
   @Autowired
-  public DbTaskService(final FileService fileService, final DbService dbService) {
+  public DbTaskService(final FileService fileService, final BasesService basesService, final DbService dbService) {
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(basesService);
     Preconditions.checkNotNull(dbService);
 
     this.fileService = fileService;
-
+    this.basesService = basesService;
+    
     this.db = dbService.getDb();
 
     this.tasks = this.db.treeMap("tasks")
@@ -71,8 +77,10 @@ public final class DbTaskService implements TaskService {
 
     try {
       final Map<Object[], Task> taskIdsToTasks = this.tasks.prefixSubMap(new Object[] {userId});
-      taskIdsToTasks.entrySet().stream().forEach(e -> this.fileService
-          .unsubscribe(e.getValue()));
+      taskIdsToTasks.entrySet().stream().forEach(e -> {
+        this.fileService.unsubscribe(e.getValue());
+        this.basesService.unsubscribe(e.getValue());
+      });
       taskIdsToTasks.clear();
     } catch (final Exception e) {
       this.db.rollback();
@@ -92,6 +100,7 @@ public final class DbTaskService implements TaskService {
       Preconditions.checkArgument(task != null);
   
       this.fileService.unsubscribe(task);
+      this.basesService.unsubscribe(task);
     } catch (final Exception e) {
       this.db.rollback();
       throw e;
@@ -140,6 +149,7 @@ public final class DbTaskService implements TaskService {
     if (previous != null) {
       try {
         this.fileService.unsubscribe(previous);
+        this.basesService.unsubscribe(previous);
       } catch (final Exception e) {
         this.db.rollback();
         throw e;
@@ -148,6 +158,7 @@ public final class DbTaskService implements TaskService {
 
     try {
       this.fileService.subscribe(task);
+      this.basesService.subscribe(task);
     } catch (final Exception e) {
       this.db.rollback();
       throw e;

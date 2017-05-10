@@ -67,9 +67,9 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
     this.skippedClasses = ImmutableList.copyOf(adaptee.getSkippedClasses());
     this.selectedGroups = adaptee.getSelectedGroups().stream().map(e -> new GroupValue(e)).collect(ImmutableSet.toImmutableSet());
     this.insertEnabled = adaptee.isInsertEnabled();
-    this.insertGraph = adaptee.getInsertGraph().toString();
-    this.userClassesPrefix = adaptee.getUserClassesPrefix().toString();
-    this.userResourcesPrefix = adaptee.getUserResourcesPrefix().toString();
+    this.insertGraph = adaptee.getInsertGraph() == null ? null : adaptee.getInsertGraph().toString();
+    this.userClassesPrefix = adaptee.getUserClassesPrefix() == null ? null : adaptee.getUserClassesPrefix().toString();
+    this.userResourcesPrefix = adaptee.getUserResourcesPrefix() == null ? null : adaptee.getUserResourcesPrefix().toString();
     this.advancedType = adaptee.getAdvancedType().toString();
     this.advancedProperties = adaptee.getAdvancedProperties().entrySet().stream().map(e -> new AdvancedPropertyEntry(e.getKey(), e.getValue())).collect(ImmutableSet.toImmutableSet());
   }

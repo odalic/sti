@@ -256,10 +256,10 @@ public final class DbBasesService implements BasesService {
 
     checkUtilization(userId, name);
 
-    final KnowledgeBase base = this.userAndBaseIdsToBases.remove(new Object[] {userId, name});
-    Preconditions.checkArgument(base != null);
-
     try {
+      final KnowledgeBase base = this.userAndBaseIdsToBases.remove(new Object[] {userId, name});
+      Preconditions.checkArgument(base != null);
+
       this.knowledgeBaseProxiesService.delete(base);
       this.groupsService.unsubscribe(base);
     } catch (final Exception e) {

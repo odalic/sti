@@ -190,7 +190,9 @@ public final class MemoryOnlySolrCacheProviderService implements CacheProviderSe
   @Override
   public void removeCache(final String id) throws IOException {
     final Path path = this.idsToPaths.remove(id);
-    Preconditions.checkArgument(path != null);
+    if (path == null) {
+      return;
+    }
     
     FileUtils.deleteDirectory(path.toFile());
     

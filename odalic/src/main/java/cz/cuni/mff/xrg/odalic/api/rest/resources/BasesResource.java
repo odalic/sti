@@ -24,6 +24,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Response.Status;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -64,7 +65,7 @@ public final class BasesResource {
   private final UserService userService;
   private final AdvancedBaseTypesService advancedBaseTypesService;
   private final GroupsService groupsService;
-  private final KnowledgeBaseSerializationService knowledgeBaseRdfSerializationService;
+  private final KnowledgeBaseSerializationService knowledgeBaseSerializationService;
 
   @Context
   private SecurityContext securityContext;
@@ -76,18 +77,18 @@ public final class BasesResource {
   @Autowired
   public BasesResource(final BasesService basesService, final UserService userService,
       final AdvancedBaseTypesService advancedBaseTypesService, final GroupsService groupsService,
-      final KnowledgeBaseSerializationService knowledgeBaseRdfSerializationService) {
+      final KnowledgeBaseSerializationService knowledgeBaseSerializationService) {
     Preconditions.checkNotNull(basesService);
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(advancedBaseTypesService);
     Preconditions.checkNotNull(groupsService);
-    Preconditions.checkNotNull(knowledgeBaseRdfSerializationService);
+    Preconditions.checkNotNull(knowledgeBaseSerializationService);
 
     this.basesService = basesService;
     this.userService = userService;
     this.advancedBaseTypesService = advancedBaseTypesService;
     this.groupsService = groupsService;
-    this.knowledgeBaseRdfSerializationService = knowledgeBaseRdfSerializationService;
+    this.knowledgeBaseSerializationService = knowledgeBaseSerializationService;
   }
 
   @GET
@@ -218,11 +219,38 @@ public final class BasesResource {
     return Message.of("Base deleted.").toResponse(Response.Status.OK, this.uriInfo);
   }
   
+  @GET
+  @Path("bases/{name}/")
+  @Produces(TURTLE_MIME_TYPE)
+  public Response exportBase(final @PathParam("name") String name) {
+    return exportBase(this.securityContext.getUserPrincipal().getName(), name);
+  }
+
+  @GET
+  @Path("users/{userId}/bases/{name}")
+  @Produces(TURTLE_MIME_TYPE)
+  public Response exportBase(final @PathParam("userId") String userId,
+      final @PathParam("name") String name) {
+    Security.checkAuthorization(this.securityContext, userId);
+
+    final KnowledgeBase base;
+    try {
+      base = this.basesService.getByName(userId, name);
+    } catch (final IllegalArgumentException e) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+
+    final String exportedBase =
+        this.knowledgeBaseSerializationService.serialize(base, this.uriInfo.getBaseUri());
+
+    return Response.ok(exportedBase).build();
+  }
+  
   @PUT
   @Path("bases/{name}")
   @Consumes(TURTLE_MIME_TYPE)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response importTaskId(final @PathParam("name") String name, final InputStream body)
+  public Response importBase(final @PathParam("name") String name, final InputStream body)
       throws IOException {
     return importTaskId(this.securityContext.getUserPrincipal().getName(), name, body);
   }
@@ -241,7 +269,7 @@ public final class BasesResource {
 
     final KnowledgeBase base;
     try {
-      base = this.knowledgeBaseRdfSerializationService.deserialize(body, userId, name,
+      base = this.knowledgeBaseSerializationService.deserialize(body, userId, name,
           this.uriInfo.getBaseUri());
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);

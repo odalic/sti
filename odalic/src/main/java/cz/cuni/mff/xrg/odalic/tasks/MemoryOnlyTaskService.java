@@ -70,8 +70,10 @@ public final class MemoryOnlyTaskService implements TaskService {
     Preconditions.checkNotNull(userId);
 
     final Map<String, Task> taskIdsToTasks = this.tasks.row(userId);
-    taskIdsToTasks.entrySet().stream().forEach(e -> this.fileService
-        .unsubscribe(e.getValue()));
+    taskIdsToTasks.entrySet().stream().forEach(e -> {
+      this.fileService.unsubscribe(e.getValue());
+      this.basesService.unsubscribe(e.getValue());
+    });
     taskIdsToTasks.clear();
   }
 
@@ -84,6 +86,7 @@ public final class MemoryOnlyTaskService implements TaskService {
     Preconditions.checkArgument(task != null);
 
     this.fileService.unsubscribe(task);
+    this.basesService.unsubscribe(task);
   }
 
   @Override

@@ -42,73 +42,80 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   private static final String TEMPLATE_SUBDIRECTORY_NAME = "empty";
   private static final String CACHE_VERSION_ID = "9274dff6-c606-4f5d-8bb5-d528c764e655";
   private static final String CACHE_VERSION = "1.0.18";
-  
-  
+
+
   private static final Logger log = LoggerFactory.getLogger(DbSolrCacheProviderService.class);
-  
+
   private final Path cacheBasePath;
-  
+
   private final Path templatePath;
-  
+
   private final DB db;
-  
+
   private final Map<String, String> idsToPaths;
-  
+
   private final Map<String, CoreContainer> idsToCoreContainers;
 
   @SuppressWarnings("unchecked")
   @Autowired
-  public DbSolrCacheProviderService(final PropertiesService propertiesService, final DbService dbService) {
+  public DbSolrCacheProviderService(final PropertiesService propertiesService,
+      final DbService dbService) {
     Preconditions.checkNotNull(propertiesService);
-    Preconditions.checkNotNull(dbService); 
-    
+    Preconditions.checkNotNull(dbService);
+
     this.cacheBasePath = readCacheBasePath(propertiesService);
     this.templatePath = readTemplatePath(propertiesService);
-    
+
     this.db = dbService.getDb();
-    
-    this.idsToPaths = this.db.hashMap("idsToPaths", Serializer.STRING, Serializer.JAVA).createOrOpen();
+
+    this.idsToPaths =
+        this.db.hashMap("idsToPaths", Serializer.STRING, Serializer.JAVA).createOrOpen();
     this.idsToCoreContainers = new HashMap<>();
   }
-  
+
   private static Path readTemplatePath(final PropertiesService propertiesService) {
-    final Path templatePath = readCacheBasePath(propertiesService).resolve(TEMPLATE_SUBDIRECTORY_NAME);
+    final Path templatePath =
+        readCacheBasePath(propertiesService).resolve(TEMPLATE_SUBDIRECTORY_NAME);
     Preconditions.checkArgument(templatePath != null, "The template path key not found!");
-    
-    Preconditions.checkArgument(Files.exists(templatePath), String.format("The cache template on path %s does not exist!", templatePath));
-    
+
+    Preconditions.checkArgument(Files.exists(templatePath),
+        String.format("The cache template on path %s does not exist!", templatePath));
+
     return templatePath;
   }
 
   private static Path readCacheBasePath(final PropertiesService propertiesService) {
     final Path basePath = readApplicationBasePath(propertiesService);
-    
-    final Path relativePath = Paths.get(propertiesService.get().getProperty(CACHES_DIRECTORY_PROPERTY_KEY));
+
+    final Path relativePath =
+        Paths.get(propertiesService.get().getProperty(CACHES_DIRECTORY_PROPERTY_KEY));
     Preconditions.checkArgument(relativePath != null, "The caches base path key not found!");
-    
+
     final Path resultPath = basePath.resolve(relativePath);
-    
-    Preconditions.checkArgument(Files.exists(resultPath), String.format("The caches base path %s does not exist!", resultPath));
-    
+
+    Preconditions.checkArgument(Files.exists(resultPath),
+        String.format("The caches base path %s does not exist!", resultPath));
+
     return resultPath;
   }
-  
+
   private static Path readApplicationBasePath(final PropertiesService propertiesService) {
     final Path basePath = Paths.get(propertiesService.get().getProperty(BASE_PATH_PROPERTY_KEY));
     Preconditions.checkArgument(basePath != null, "The base path key not found!");
-    
-    Preconditions.checkArgument(Files.exists(basePath), String.format("The base path %s does not exist!", basePath));
-    
+
+    Preconditions.checkArgument(Files.exists(basePath),
+        String.format("The base path %s does not exist!", basePath));
+
     return basePath;
   }
-  
+
   @Override
   public Cache getCache(final String containerId, final String coreId) {
     Preconditions.checkNotNull(containerId);
     Preconditions.checkNotNull(coreId);
-    
+
     final CoreContainer container = this.idsToCoreContainers.get(containerId);
-    
+
     if (container == null) {
       return registerCache(containerId, coreId);
     } else {
@@ -122,29 +129,29 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
 
   private Cache registerCache(final String containerId, final String coreId) {
     final Path instancePath = getInstancePath(containerId);
-    
+
     final EmbeddedSolrServer server = initializeServer(instancePath, coreId);
     this.idsToCoreContainers.put(containerId, server.getCoreContainer());
-    
+
     return new SolrCache(server);
   }
 
   private Path getInstancePath(final String id) {
     final String cachePathValue = this.idsToPaths.get(id);
-    
+
     if (cachePathValue == null) {
       return generateNewPath(id);
     } else {
-      return Paths.get(cachePathValue);      
+      return Paths.get(cachePathValue);
     }
   }
 
   private Path generateNewPath(final String id) {
     final Path newCachePath = cacheBasePath.resolve(generateRelativePath());
     this.idsToPaths.put(id, newCachePath.toString());
-  
+
     this.db.commit();
-  
+
     return newCachePath;
   }
 
@@ -155,27 +162,28 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   private EmbeddedSolrServer initializeServer(final Path path, final String coreId) {
     if (!Files.exists(path)) {
       if (!Files.exists(this.templatePath)) {
-        final String error =
-            String.format("Cannot proceed: the cache directory \"%s\" is not set or does not exist!", templatePath);
+        final String error = String.format(
+            "Cannot proceed: the cache directory \"%s\" is not set or does not exist!",
+            templatePath);
         log.error(error);
-        
+
         throw new IllegalStateException(error);
       }
-  
+
       try {
         FileUtils.copyDirectory(templatePath.toFile(), path.toFile());
       } catch (final IOException exception) {
         final String error = "Cannot proceed: the cache template cannot be copied (source: "
             + templatePath + ", target: " + path + ")!";
-  
+
         log.error(error);
         throw new IllegalStateException(error, exception);
       }
     }
-    
+
     final EmbeddedSolrServer server = new EmbeddedSolrServer(path, coreId);
     verifyServerVersion(server);
-    
+
     return server;
   }
 
@@ -183,7 +191,7 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
     try {
       final Cache cache = new SolrCache(server);
       final String cacheVersion = (String) cache.retrieve(CACHE_VERSION_ID);
-      
+
       if (!CACHE_VERSION.equals(cacheVersion)) {
         server.deleteByQuery("*:*");
         cache.cache(CACHE_VERSION_ID, CACHE_VERSION, true);
@@ -191,24 +199,27 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
     } catch (final SolrServerException | IOException e) {
       final String error = "Error initializing the cache!";
       log.error(error, e);
-      
+
       throw new IllegalStateException(error, e);
     }
   }
-  
+
   @Override
   public void removeCache(final String id) throws IOException {
-    final String pathValue = this.idsToPaths.remove(id);
-    
     try {
-      Preconditions.checkArgument(pathValue != null);
-      
+      final String pathValue = this.idsToPaths.remove(id);
+      if (pathValue == null) {
+        return;
+      }
+
       FileUtils.deleteDirectory(Paths.get(pathValue).toFile());
-      
+
       this.idsToCoreContainers.remove(id);
     } catch (final Exception e) {
       this.db.rollback();
       throw e;
     }
+
+    this.db.commit();
   }
 }
