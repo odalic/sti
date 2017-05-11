@@ -23,6 +23,10 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.FormatAdapter;
 @XmlJavaTypeAdapter(value = FormatAdapter.class)
 public final class Format implements Serializable {
 
+  private static final char DEFAULT_QUOTE_CHARACTER = '"';
+
+  private static final char DEFAULT_DELIMITER = ',';
+
   private static final long serialVersionUID = -1910540987387436314L;
 
   private final String charset;
@@ -40,9 +44,9 @@ public final class Format implements Serializable {
    */
   public Format() {
     this.charset = StandardCharsets.UTF_8.name();
-    this.delimiter = ';';
+    this.delimiter = DEFAULT_DELIMITER;
     this.emptyLinesIgnored = true;
-    this.quoteCharacter = '"';
+    this.quoteCharacter = DEFAULT_QUOTE_CHARACTER;
     this.escapeCharacter = null;
     this.commentMarker = null;
     this.lineSeparator = System.lineSeparator();
