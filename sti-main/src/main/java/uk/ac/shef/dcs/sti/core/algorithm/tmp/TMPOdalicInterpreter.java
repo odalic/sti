@@ -102,6 +102,43 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
     }
   }
 
+  private Set<Ambiguity> setColumnProcessingAnnotationsAndAmbiguities(final Table table,
+      final TAnnotation tableAnnotations, final Constraints constraints) {
+    final Set<Ambiguity> ambiguities = new HashSet<>(constraints.getAmbiguities());
+
+    for (int col = 0; col < table.getNumCols(); col++) {
+      if (getIgnoreColumns().contains(col)) {
+        // when the column is ignored, set processing type to IGNORED
+        tableAnnotations.setColumnProcessingAnnotation(col,
+            new TColumnProcessingAnnotation(TColumnProcessingType.IGNORED));
+      } else if (isCompulsoryColumn(col)) {
+        // when the column is compulsory, set processing type to COMPULSORY
+        tableAnnotations.setColumnProcessingAnnotation(col,
+            new TColumnProcessingAnnotation(TColumnProcessingType.COMPULSORY));
+      } else if (table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType()
+          .equals(DataTypeClassifier.DataType.NAMED_ENTITY)) {
+        // when the column's most frequent data type is Named entity,
+        // set processing type to NAMED_ENTITY
+        tableAnnotations.setColumnProcessingAnnotation(col,
+            new TColumnProcessingAnnotation(TColumnProcessingType.NAMED_ENTITY));
+      } else {
+        // otherwise (i.e. the column does not contain Named entity as the most frequent data type),
+        // set processing type to NON_NAMED_ENTITY
+        tableAnnotations.setColumnProcessingAnnotation(col,
+            new TColumnProcessingAnnotation(TColumnProcessingType.NON_NAMED_ENTITY));
+        // and in this case we will not disambiguate (and so classify) them,
+        // except for the user defined constraints
+        for (int row = 0; row < table.getNumRows(); row++) {
+          if (!constraints.existDisambChosenForCell(col, row)) {
+            ambiguities.add(new Ambiguity(new CellPosition(row, col)));
+          }
+        }
+      }
+    }
+
+    return ambiguities;
+  }
+
   @Override
   public TAnnotation start(final Table table, final boolean relationLearning) throws STIException {
     return start(table, !relationLearning, new Constraints());
@@ -112,6 +149,7 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       throws STIException {
     Preconditions.checkNotNull(constraints);
 
+    // set ignored columns
     final Set<Integer> ignoreCols = constraints.getColumnIgnores().stream()
         .map(e -> e.getPosition().getIndex()).collect(Collectors.toSet());
 
@@ -128,6 +166,7 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
         getIgnoreColumns().stream().mapToInt(e -> e.intValue()).sorted().toArray();
     this.literalColumnTagger.setIgnoreColumns(ignoreColumnsArray);
 
+    // set compulsory columns
     final Set<Integer> mustdoCols = constraints.getColumnCompulsory().stream()
         .map(e -> e.getPosition().getIndex()).collect(Collectors.toSet());
 
@@ -136,53 +175,23 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
     try {
       final TAnnotation tableAnnotations = new TAnnotation(table.getNumRows(), table.getNumCols());
 
-      // 1. find the main subject column of this table
+      // find the main subject column of this table
       LOG.info("\t> PHASE: Detecting subject column ...");
       final List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnScores =
-          this.subjectColumnDetector.compute(table, constraints.getSubjectColumnPosition(),
-              ignoreColumnsArray);
+          this.subjectColumnDetector.compute(table, ignoreColumnsArray);
       tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
 
-      // set column processing annotations:
-      // 1) when the column is ignored, set processing type to IGNORED
-      // 2) when the column is compulsory, set processing type to COMPULSORY
-      // 3) when the column's most frequent data type is Named entity,
-      // set processing type to NAMED_ENTITY
-      // 4) otherwise (i.e. the column does not contain Named entity as the most frequent data
-      // type),
-      // set processing type to NON_NAMED_ENTITY and in this case
-      // we will not disambiguate (and so classify) them, except for
-      // the user defined constraints
-      final Set<Ambiguity> newAmbiguities = new HashSet<>(constraints.getAmbiguities());
-      for (int col = 0; col < table.getNumCols(); col++) {
-        if (getIgnoreColumns().contains(col)) {
-          tableAnnotations.setColumnProcessingAnnotation(col,
-              new TColumnProcessingAnnotation(TColumnProcessingType.IGNORED));
-        } else if (isCompulsoryColumn(col)) {
-          tableAnnotations.setColumnProcessingAnnotation(col,
-              new TColumnProcessingAnnotation(TColumnProcessingType.COMPULSORY));
-        } else if (table.getColumnHeader(col).getFeature().getMostFrequentDataType().getType()
-            .equals(DataTypeClassifier.DataType.NAMED_ENTITY)) {
-          tableAnnotations.setColumnProcessingAnnotation(col,
-              new TColumnProcessingAnnotation(TColumnProcessingType.NAMED_ENTITY));
-        } else {
-          tableAnnotations.setColumnProcessingAnnotation(col,
-              new TColumnProcessingAnnotation(TColumnProcessingType.NON_NAMED_ENTITY));
+      // set column processing annotations
+      final Set<Ambiguity> newAmbiguities = setColumnProcessingAnnotationsAndAmbiguities(table,
+          tableAnnotations, constraints);
 
-          for (int row = 0; row < table.getNumRows(); row++) {
-            if (!constraints.existDisambChosenForCell(col, row)) {
-              newAmbiguities.add(new Ambiguity(new CellPosition(row, col)));
-            }
-          }
-        }
-      }
-      constraints = new Constraints(constraints.getSubjectColumnPosition(),
-          constraints.getOtherSubjectColumnPositions(),
+      constraints = new Constraints(constraints.getSubjectColumnsPositions(),
           constraints.getColumnIgnores(), constraints.getColumnCompulsory(),
           constraints.getColumnAmbiguities(),
           constraints.getClassifications(), constraints.getColumnRelations(),
           constraints.getDisambiguations(), newAmbiguities, constraints.getDataCubeComponents());
 
+      // learning phase
       final List<Integer> annotatedColumns = new ArrayList<>();
       LOG.info("\t> PHASE: LEARNING ...");
       for (int col = 0; col < table.getNumCols(); col++) {
@@ -195,24 +204,31 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
         this.learning.learn(table, tableAnnotations, col, constraints);
       }
 
+      // update phase
       if (this.update != null) {
         LOG.info("\t> PHASE: UPDATE phase ...");
         this.update.update(annotatedColumns, table, tableAnnotations, constraints);
       }
 
+      // set statistical annotations or discover relations
       if (statistical) {
         LOG.info("\t> PHASE: Statistical annotation enumeration ...");
         setStatisticalAnnotations(annotatedColumns, table, tableAnnotations, constraints);
       } else {
         LOG.info("\t> PHASE: RELATION ENUMERATION ...");
-        new RELATIONENUMERATION().enumerate(subjectColumnScores, getIgnoreColumns(),
-            this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
-            constraints);
+        if (constraints.getSubjectColumnsPositions().isEmpty()) {
+          new RELATIONENUMERATION().enumerate(subjectColumnScores, getIgnoreColumns(),
+              this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
+              constraints);
+        } else {
+          new RELATIONENUMERATION().enumerate(
+              this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
+              constraints);
+        }
 
-        // 4. consolidation - for columns that have relation with main subject column, if the column
-        // is
-        // entity column, do column typing and disambiguation; otherwise, simply create header
-        // annotation
+        // consolidation - for columns that have relation with subject columns:
+        // if the column is entity column, do column typing and disambiguation;
+        // otherwise, simply create header annotation
         LOG.info("\t\t>> Annotate literal-columns in relation with main column");
         this.literalColumnTagger.annotate(table, tableAnnotations,
             annotatedColumns.toArray(new Integer[0]));

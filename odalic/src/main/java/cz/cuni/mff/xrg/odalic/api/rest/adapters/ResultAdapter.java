@@ -37,8 +37,8 @@ public final class ResultAdapter extends XmlAdapter<ResultValue, Result> {
       }
     }
 
-    return new Result(value.getSubjectColumnPositions(), value.getOtherSubjectColumnPositions(),
-        value.getHeaderAnnotations(), value.getCellAnnotations(), columnRelationAnnotationsBuilder.build(),
+    return new Result(value.getSubjectColumnsPositions(), value.getHeaderAnnotations(),
+        value.getCellAnnotations(), columnRelationAnnotationsBuilder.build(),
         value.getStatisticalAnnotations(), value.getColumnProcessingAnnotations(),
         value.getWarnings());
   }

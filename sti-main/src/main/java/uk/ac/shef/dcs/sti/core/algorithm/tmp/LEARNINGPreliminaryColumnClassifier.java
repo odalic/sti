@@ -93,7 +93,7 @@ public class LEARNINGPreliminaryColumnClassifier {
 
     // 1. gather list of strings from this column to be interpreted, rank them (for sampling)
     final List<List<Integer>> ranking =
-        this.selector.select(table, column, tableAnnotation.getSubjectColumn());
+        this.selector.select(table, column, tableAnnotation.getSubjectColumns());
 
     // 2. computeElementScores column and also disambiguate initial rows in the selected sample
     final List<TColumnHeaderAnnotation> headerClazzScores = new ArrayList<>();

@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -29,13 +30,12 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
  *
  */
 @XmlRootElement(name = "feedback")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class FeedbackValue implements Serializable {
 
   private static final long serialVersionUID = -7968455903789693405L;
 
-  private Map<String, ColumnPosition> subjectColumnPositions;
-
-  private Map<String, Set<ColumnPosition>> otherSubjectColumnPositions;
+  private Map<String, Set<ColumnPosition>> subjectColumnsPositions;
 
   private Set<ColumnIgnore> columnIgnores;
 
@@ -54,8 +54,7 @@ public final class FeedbackValue implements Serializable {
   private Set<DataCubeComponent> dataCubeComponents;
 
   public FeedbackValue() {
-    this.subjectColumnPositions = ImmutableMap.of();
-    this.otherSubjectColumnPositions = ImmutableMap.of();
+    this.subjectColumnsPositions = ImmutableMap.of();
     this.columnIgnores = ImmutableSet.of();
     this.columnCompulsory = ImmutableSet.of();
     this.columnAmbiguities = ImmutableSet.of();
@@ -67,8 +66,7 @@ public final class FeedbackValue implements Serializable {
   }
 
   public FeedbackValue(final Feedback adaptee) {
-    this.subjectColumnPositions = adaptee.getSubjectColumnPositions();
-    this.otherSubjectColumnPositions = adaptee.getOtherSubjectColumnPositions();
+    this.subjectColumnsPositions = adaptee.getSubjectColumnsPositions();
     this.columnIgnores = adaptee.getColumnIgnores();
     this.columnCompulsory = adaptee.getColumnCompulsory();
     this.columnAmbiguities = adaptee.getColumnAmbiguities();
@@ -144,19 +142,11 @@ public final class FeedbackValue implements Serializable {
   }
 
   /**
-   * @return the subject column positions
+   * @return the subject columns positions
    */
   @XmlElement
-  public Map<String, ColumnPosition> getSubjectColumnPositions() {
-    return this.subjectColumnPositions;
-  }
-
-  /**
-   * @return the other subject column positions
-   */
-  @XmlElement
-  public Map<String, Set<ColumnPosition>> getOtherSubjectColumnPositions() {
-    return this.otherSubjectColumnPositions;
+  public Map<String, Set<ColumnPosition>> getSubjectColumnsPositions() {
+    return this.subjectColumnsPositions;
   }
 
   /**
@@ -232,23 +222,13 @@ public final class FeedbackValue implements Serializable {
   }
 
   /**
-   * @param subjectColumnPositions the subject column positions to set
+   * @param subjectColumnsPositions the subject columns positions to set
    */
-  public void setSubjectColumnPositions(
-      final Map<? extends String, ? extends ColumnPosition> subjectColumnPositions) {
-    Preconditions.checkNotNull(subjectColumnPositions);
+  public void setSubjectColumnsPositions(
+      final Map<? extends String, Set<ColumnPosition>> subjectColumnsPositions) {
+    Preconditions.checkNotNull(subjectColumnsPositions);
 
-    this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
-  }
-
-  /**
-   * @param otherSubjectColumnPositions the other subject column positions to set
-   */
-  public void setOtherSubjectColumnPositions(
-      final Map<String, Set<ColumnPosition>> otherSubjectColumnPositions) {
-    Preconditions.checkNotNull(otherSubjectColumnPositions);
-
-    this.otherSubjectColumnPositions = ImmutableMap.copyOf(otherSubjectColumnPositions);
+    this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
   }
 
   /* (non-Javadoc)
@@ -256,8 +236,7 @@ public final class FeedbackValue implements Serializable {
    */
   @Override
   public String toString() {
-    return "FeedbackValue [subjectColumnPositions=" + subjectColumnPositions
-        + ", otherSubjectColumnPositions=" + otherSubjectColumnPositions + ", columnIgnores="
+    return "FeedbackValue [subjectColumnsPositions=" + subjectColumnsPositions + ", columnIgnores="
         + columnIgnores + ", columnCompulsory=" + columnCompulsory + ", columnAmbiguities="
         + columnAmbiguities + ", classifications=" + classifications + ", columnRelations="
         + columnRelations + ", disambiguations=" + disambiguations + ", ambiguities=" + ambiguities

@@ -55,46 +55,27 @@ import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation;
 @Immutable
 public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapter {
 
-  private static ColumnPosition extractSubjectColumnPosition(final TAnnotation tableAnnotation) {
-    return new ColumnPosition(tableAnnotation.getSubjectColumn());
+  private static Set<ColumnPosition> extractSubjectColumnsPositionsSet(final TAnnotation tableAnnotation) {
+    Set<ColumnPosition> subjectPositions = new HashSet<>();
+    for (Integer columnIndex : tableAnnotation.getSubjectColumns()) {
+      subjectPositions.add(new ColumnPosition(columnIndex));
+    }
+    return subjectPositions;
   }
 
-  private static Map<String, ColumnPosition> extractSubjectColumnPositions(
+  private static Map<String, Set<ColumnPosition>> extractSubjectColumnsPositions(
       final Map<? extends KnowledgeBase, ? extends TAnnotation> basesToTableAnnotations) {
-    final ImmutableMap.Builder<String, ColumnPosition> subjectColumnPositionsBuilder =
+    final ImmutableMap.Builder<String, Set<ColumnPosition>> subjectColumnsPositionsBuilder =
         ImmutableMap.builder();
     for (final Map.Entry<? extends KnowledgeBase, ? extends TAnnotation> annotationEntry : basesToTableAnnotations
         .entrySet()) {
       final KnowledgeBase base = annotationEntry.getKey();
-      final ColumnPosition subjectColumnPosition =
-          extractSubjectColumnPosition(annotationEntry.getValue());
+      final Set<ColumnPosition> subjectColumnsPositions =
+          extractSubjectColumnsPositionsSet(annotationEntry.getValue());
 
-      subjectColumnPositionsBuilder.put(base.getName(), subjectColumnPosition);
+      subjectColumnsPositionsBuilder.put(base.getName(), subjectColumnsPositions);
     }
-    return subjectColumnPositionsBuilder.build();
-  }
-
-  private static Set<ColumnPosition> extractOtherSubjectColumnPositionSet(final TAnnotation tableAnnotation) {
-    Set<ColumnPosition> otherSubjectPositions = new HashSet<>();
-    for (Integer columnIndex : tableAnnotation.getOtherSubjectColumns()) {
-      otherSubjectPositions.add(new ColumnPosition(columnIndex));
-    }
-    return otherSubjectPositions;
-  }
-
-  private static Map<String, Set<ColumnPosition>> extractOtherSubjectColumnPositions(
-      final Map<? extends KnowledgeBase, ? extends TAnnotation> basesToTableAnnotations) {
-    final ImmutableMap.Builder<String, Set<ColumnPosition>> otherSubjectColumnPositionsBuilder =
-        ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBase, ? extends TAnnotation> annotationEntry : basesToTableAnnotations
-        .entrySet()) {
-      final String base = annotationEntry.getKey().getName();
-      final Set<ColumnPosition> otherSubjectColumnPositions =
-          extractOtherSubjectColumnPositionSet(annotationEntry.getValue());
-
-      otherSubjectColumnPositionsBuilder.put(base, otherSubjectColumnPositions);
-    }
-    return otherSubjectColumnPositionsBuilder.build();
+    return subjectColumnsPositionsBuilder.build();
   }
 
   
@@ -482,13 +463,9 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
       final Map<? extends KnowledgeBase, ? extends TAnnotation> basesToTableAnnotations) {
     Preconditions.checkArgument(!basesToTableAnnotations.isEmpty());
 
-    // Extract subject column positions.
-    final Map<String, ColumnPosition> subjectColumnPositions =
-        extractSubjectColumnPositions(basesToTableAnnotations);
-
-    // Extract other subject column positions.
-    final Map<String, Set<ColumnPosition>> otherSubjectColumnPositions =
-        extractOtherSubjectColumnPositions(basesToTableAnnotations);
+    // Extract subject columns positions.
+    final Map<String, Set<ColumnPosition>> subjectColumnsPositions =
+        extractSubjectColumnsPositions(basesToTableAnnotations);
 
     // Merge annotations.
     final Iterator<? extends Map.Entry<? extends KnowledgeBase, ? extends TAnnotation>> entrySetIterator =
@@ -521,7 +498,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
 
     Collections.sort(mergedWarnings);
 
-    return new Result(subjectColumnPositions, otherSubjectColumnPositions,
+    return new Result(subjectColumnsPositions,
         mergedHeaderAnnotations, mergedCellAnnotations, mergedColumnRelations,
         mergedStatisticalAnnotations, mergedColumnProcessingAnnotations,
         mergedWarnings);

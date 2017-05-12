@@ -84,8 +84,7 @@ public class TAnnotation {
 
   protected int rows;
   protected int cols;
-  protected int subjectColumn;
-  protected Set<Integer> otherSubjectColumns;
+  protected Set<Integer> subjectColumns;
   protected ObjectMatrix1D headerAnnotations; // each object in the matrix is an array of
                                               // TColumnHeaderAnnotation
   protected ObjectMatrix2D contentAnnotations; // each object in the matrix is an array of
@@ -124,7 +123,7 @@ public class TAnnotation {
     this.columncolumnRelations = new HashMap<>();
     this.statisticalAnnotations = new SparseObjectMatrix1D(cols);
     this.columnProcessingAnnotations = new SparseObjectMatrix1D(cols);
-    this.otherSubjectColumns = new HashSet<>();
+    this.subjectColumns = new HashSet<>();
   }
 
   public void addCellCellRelation(final TCellCellRelationAnotation toAdd) {
@@ -329,14 +328,6 @@ public class TAnnotation {
     return (TStatisticalAnnotation) o;
   }
 
-  public int getSubjectColumn() {
-    return this.subjectColumn;
-  }
-
-  public Set<Integer> getOtherSubjectColumns() {
-    return this.otherSubjectColumns;
-  }
-
   public java.util.List<TCellAnnotation> getWinningContentCellAnnotation(final int row,
       final int col) {
     final TCellAnnotation[] annotations = getContentCellAnnotations(row, col);
@@ -414,10 +405,6 @@ public class TAnnotation {
     this.columncolumnRelations.clear();
   }
 
-  public void resetOtherSubjectColumns() {
-    this.otherSubjectColumns.clear();
-  }
-
   public void setColumnProcessingAnnotation(final int col,
       final TColumnProcessingAnnotation annotation) {
     this.columnProcessingAnnotations.set(col, annotation);
@@ -451,10 +438,16 @@ public class TAnnotation {
   }
 
   public void setSubjectColumn(final int subjectColumn) {
-    this.subjectColumn = subjectColumn;
+    this.subjectColumns.clear();
+    this.subjectColumns.add(subjectColumn);
   }
 
-  public void addOtherSubjectColumn(final int otherSubjectColumn) {
-    this.otherSubjectColumns.add(otherSubjectColumn);
+  public void setSubjectColumns(final Set<Integer> subjectColumns) {
+    this.subjectColumns.clear();
+    this.subjectColumns.addAll(subjectColumns);
+  }
+
+  public Set<Integer> getSubjectColumns() {
+    return this.subjectColumns;
   }
 }
