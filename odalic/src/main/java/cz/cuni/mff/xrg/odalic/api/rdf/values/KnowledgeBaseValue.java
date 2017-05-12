@@ -55,6 +55,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
     this.skippedAttributes = ImmutableList.of();
     this.skippedClasses = ImmutableList.of();
     this.selectedGroups = ImmutableSet.of();
+    this.advancedProperties = ImmutableSet.of();
   }
 
   public KnowledgeBaseValue(final KnowledgeBase adaptee) {
@@ -70,7 +71,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
     this.insertGraph = adaptee.getInsertGraph() == null ? null : adaptee.getInsertGraph().toString();
     this.userClassesPrefix = adaptee.getUserClassesPrefix() == null ? null : adaptee.getUserClassesPrefix().toString();
     this.userResourcesPrefix = adaptee.getUserResourcesPrefix() == null ? null : adaptee.getUserResourcesPrefix().toString();
-    this.advancedType = adaptee.getAdvancedType().toString();
+    this.advancedType = adaptee.getAdvancedType().getName();
     this.advancedProperties = adaptee.getAdvancedProperties().entrySet().stream().map(e -> new AdvancedPropertyEntry(e.getKey(), e.getValue())).collect(ImmutableSet.toImmutableSet());
   }
 
