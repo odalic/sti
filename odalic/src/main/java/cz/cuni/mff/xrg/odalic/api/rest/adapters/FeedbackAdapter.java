@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.FeedbackValue;
+import cz.cuni.mff.xrg.odalic.api.rest.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 
 
@@ -24,7 +25,7 @@ public final class FeedbackAdapter extends XmlAdapter<FeedbackValue, Feedback> {
 
     return new Feedback(
         value.getSubjectColumnsPositions() == null ? ImmutableMap.of()
-            : value.getSubjectColumnsPositions(),
+            : Annotations.toColumnPositionsDomain(value.getSubjectColumnsPositions()),
         value.getColumnIgnores() == null ? ImmutableSet.of() : value.getColumnIgnores(),
         value.getColumnCompulsory() == null ? ImmutableSet.of() : value.getColumnCompulsory(),
         value.getColumnAmbiguities() == null ? ImmutableSet.of() : value.getColumnAmbiguities(),

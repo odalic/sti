@@ -18,6 +18,9 @@ import com.google.common.collect.ImmutableMap;
 
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionKeyJsonDeserializer;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionKeyJsonSerializer;
+import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionValueSetDeserializer;
+import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionValueSetSerializer;
+import cz.cuni.mff.xrg.odalic.api.rest.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionToColumnRelationAnnotationMapDeserializer;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionToColumnRelationAnnotationMapSerializer;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
@@ -40,7 +43,7 @@ public final class ResultValue implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
-  private Map<String, Set<ColumnPosition>> subjectColumnsPositions;
+  private Map<String, Set<ColumnPositionValue>> subjectColumnsPositions;
 
   private List<HeaderAnnotation> headerAnnotations;
 
@@ -65,7 +68,7 @@ public final class ResultValue implements Serializable {
   }
 
   public ResultValue(final Result adaptee) {
-    this.subjectColumnsPositions = adaptee.getSubjectColumnsPositions();
+    this.subjectColumnsPositions = Annotations.toColumnPositionValues(adaptee.getSubjectColumnsPositions());
     this.headerAnnotations = adaptee.getHeaderAnnotations();
     this.cellAnnotations = adaptee.getCellAnnotations();
     this.statisticalAnnotations = adaptee.getStatisticalAnnotations();
@@ -123,7 +126,9 @@ public final class ResultValue implements Serializable {
    * @return the subject columns positions
    */
   @XmlElement
-  public Map<String, Set<ColumnPosition>> getSubjectColumnsPositions() {
+  @JsonDeserialize(contentUsing = ColumnPositionValueSetDeserializer.class)
+  @JsonSerialize(contentUsing = ColumnPositionValueSetSerializer.class)
+  public Map<String, Set<ColumnPositionValue>> getSubjectColumnsPositions() {
     return this.subjectColumnsPositions;
   }
 
@@ -206,14 +211,14 @@ public final class ResultValue implements Serializable {
 
     this.statisticalAnnotations = ImmutableList.copyOf(statisticalAnnotations);
   }
-
+  
   /**
    * @param subjectColumnsPositions the subject columns positions to set
    */
   public void setSubjectColumnsPositions(
-      final Map<? extends String, Set<ColumnPosition>> subjectColumnsPositions) {
+      final Map<? extends String, Set<ColumnPositionValue>> subjectColumnsPositions) {
     Preconditions.checkNotNull(subjectColumnsPositions);
-
+    
     this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
   }
 

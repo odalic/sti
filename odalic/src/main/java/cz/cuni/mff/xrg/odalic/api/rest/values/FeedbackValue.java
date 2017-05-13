@@ -8,10 +8,15 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionValueSetDeserializer;
+import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionValueSetSerializer;
+import cz.cuni.mff.xrg.odalic.api.rest.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.feedbacks.Ambiguity;
 import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnAmbiguity;
@@ -21,7 +26,6 @@ import cz.cuni.mff.xrg.odalic.feedbacks.ColumnRelation;
 import cz.cuni.mff.xrg.odalic.feedbacks.DataCubeComponent;
 import cz.cuni.mff.xrg.odalic.feedbacks.Disambiguation;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
-import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 
 /**
  * Domain class {@link Feedback} adapted for REST API.
@@ -35,7 +39,7 @@ public final class FeedbackValue implements Serializable {
 
   private static final long serialVersionUID = -7968455903789693405L;
 
-  private Map<String, Set<ColumnPosition>> subjectColumnsPositions;
+  private Map<String, Set<ColumnPositionValue>> subjectColumnsPositions;
 
   private Set<ColumnIgnore> columnIgnores;
 
@@ -66,7 +70,7 @@ public final class FeedbackValue implements Serializable {
   }
 
   public FeedbackValue(final Feedback adaptee) {
-    this.subjectColumnsPositions = adaptee.getSubjectColumnsPositions();
+    this.subjectColumnsPositions = Annotations.toColumnPositionValues(adaptee.getSubjectColumnsPositions());
     this.columnIgnores = adaptee.getColumnIgnores();
     this.columnCompulsory = adaptee.getColumnCompulsory();
     this.columnAmbiguities = adaptee.getColumnAmbiguities();
@@ -145,7 +149,9 @@ public final class FeedbackValue implements Serializable {
    * @return the subject columns positions
    */
   @XmlElement
-  public Map<String, Set<ColumnPosition>> getSubjectColumnsPositions() {
+  @JsonDeserialize(contentUsing = ColumnPositionValueSetDeserializer.class)
+  @JsonSerialize(contentUsing = ColumnPositionValueSetSerializer.class)
+  public Map<String, Set<ColumnPositionValue>> getSubjectColumnsPositions() {
     return this.subjectColumnsPositions;
   }
 
@@ -220,14 +226,14 @@ public final class FeedbackValue implements Serializable {
 
     this.disambiguations = ImmutableSet.copyOf(disambiguations);
   }
-
+  
   /**
    * @param subjectColumnsPositions the subject columns positions to set
    */
   public void setSubjectColumnsPositions(
-      final Map<? extends String, Set<ColumnPosition>> subjectColumnsPositions) {
+      final Map<? extends String, Set<ColumnPositionValue>> subjectColumnsPositions) {
     Preconditions.checkNotNull(subjectColumnsPositions);
-
+    
     this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
   }
 
