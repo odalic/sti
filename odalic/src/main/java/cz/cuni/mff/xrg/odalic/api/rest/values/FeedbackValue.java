@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -148,7 +149,7 @@ public final class FeedbackValue implements Serializable {
   /**
    * @return the subject columns positions
    */
-  @XmlElement
+  @XmlAnyElement
   @JsonDeserialize(contentUsing = ColumnPositionValueSetDeserializer.class)
   @JsonSerialize(contentUsing = ColumnPositionValueSetSerializer.class)
   public Map<String, Set<ColumnPositionValue>> getSubjectColumnsPositions() {
