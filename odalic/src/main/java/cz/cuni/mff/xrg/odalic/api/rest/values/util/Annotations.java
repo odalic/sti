@@ -10,8 +10,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 
-import cz.cuni.mff.xrg.odalic.api.rest.values.EntityCandidateValue;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
+import cz.cuni.mff.xrg.odalic.api.rest.values.EntityCandidateValue;
+import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
+import cz.cuni.mff.xrg.odalic.api.rest.values.ColumnPositionValue;
 
 /**
  * Annotation conversion utilities.
@@ -80,6 +82,28 @@ public final class Annotations {
     final Map<String, Set<EntityCandidate>> chosen = chosenBuilder.build();
     return chosen;
   }
+  
+  /**
+   * Converts from values to domain objects.
+   * 
+   * @param chosenValues values
+   * @return domain objects
+   */
+  public static Map<String, Set<ColumnPosition>> toColumnPositionsDomain(
+      final Map<? extends String, ? extends Set<? extends ColumnPositionValue>> chosenValues) {
+    final ImmutableMap.Builder<String, Set<ColumnPosition>> chosenBuilder =
+        ImmutableMap.builder();
+    for (final Map.Entry<? extends String, ? extends Set<? extends ColumnPositionValue>> entry : chosenValues
+        .entrySet()) {
+      final String baseName = entry.getKey();
+      final Set<? extends ColumnPositionValue> values = entry.getValue();
+
+      chosenBuilder.put(baseName, ImmutableSet.copyOf(
+          values.stream().map(e -> new ColumnPosition(e.getIndex())).iterator()));
+    }
+    final Map<String, Set<ColumnPosition>> chosen = chosenBuilder.build();
+    return chosen;
+  }
 
   /**
    * Converts from values to domain objects.
@@ -142,6 +166,27 @@ public final class Annotations {
 
       final Set<EntityCandidateValue> values = baseChosen.stream()
           .map(e -> new EntityCandidateValue(e)).collect(ImmutableSet.toImmutableSet());
+      chosenBuilder.put(baseName, values);
+    }
+    return chosenBuilder.build();
+  }
+  
+  /**
+   * Converts from domain objects to values.
+   * 
+   * @param chosen domain objects
+   * @return values
+   */
+  public static Map<String, Set<ColumnPositionValue>> toColumnPositionValues(
+      final Map<String, Set<ColumnPosition>> chosen) {
+    final ImmutableMap.Builder<String, Set<ColumnPositionValue>> chosenBuilder =
+        ImmutableMap.builder();
+    for (final Map.Entry<String, Set<ColumnPosition>> entry : chosen.entrySet()) {
+      final String baseName = entry.getKey();
+      final Set<ColumnPosition> baseChosen = entry.getValue();
+
+      final Set<ColumnPositionValue> values = baseChosen.stream()
+          .map(e -> new ColumnPositionValue(e)).collect(ImmutableSet.toImmutableSet());
       chosenBuilder.put(baseName, values);
     }
     return chosenBuilder.build();
