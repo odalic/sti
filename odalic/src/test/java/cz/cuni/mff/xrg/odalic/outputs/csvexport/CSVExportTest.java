@@ -6,13 +6,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,23 +24,27 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.collect.ImmutableSet;
 
-import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
+import cz.cuni.mff.xrg.odalic.bases.MemoryOnlyAdvancedBaseTypesService;
+import cz.cuni.mff.xrg.odalic.bases.MemoryOnlyBasesService;
 import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
-import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.bases.proxies.MemoryOnlyKnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.groups.DefaultGroupBuilder;
-import cz.cuni.mff.xrg.odalic.groups.GroupBuilder;
+import cz.cuni.mff.xrg.odalic.groups.MemoryOnlyGroupsService;
 import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.DefaultResultToAnnotatedTableAdapter;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import cz.cuni.mff.xrg.odalic.users.Role;
 import cz.cuni.mff.xrg.odalic.users.User;
+import cz.cuni.mff.xrg.odalic.util.configuration.DefaultPropertiesService;
+import uk.ac.shef.dcs.kbproxy.DefaultProxiesFactory;
+import uk.ac.shef.dcs.kbproxy.solr.MemoryOnlySolrCacheProviderService;
 
 /**
  * JUnit test for CSV export
@@ -64,14 +67,23 @@ public class CSVExportTest {
   }
 
   @Test
-  @Ignore // TODO: Fix and then remove.
   public void TestConversionToCSV() {
 
+    User user = new User("test@odalic.eu", "passwordHash", Role.USER);
     KnowledgeBaseProxiesService kbf;
+    MemoryOnlyBasesService mbs;
     try {
       System.setProperty("cz.cuni.mff.xrg.odalic.sti", Paths.get("").toAbsolutePath()
           .resolveSibling("config").resolve("sti.properties").toString());
-      kbf = null; // TODO: Instantiate with knowledge base proxies service.
+      DefaultPropertiesService dps = new DefaultPropertiesService();
+      MemoryOnlyAdvancedBaseTypesService abs = new MemoryOnlyAdvancedBaseTypesService();
+      kbf = new MemoryOnlyKnowledgeBaseProxiesService(new DefaultProxiesFactory(
+          new MemoryOnlySolrCacheProviderService(dps)), abs,
+          new TurtleConfigurablePrefixMappingService(dps));
+      MemoryOnlyGroupsService mgs = new MemoryOnlyGroupsService(dps);
+      mbs = new MemoryOnlyBasesService(kbf, mgs, abs, dps);
+      mgs.initializeDefaults(user);
+      mbs.initializeDefaults(user);
     } catch (final Exception e) {
       log.info("KnowledgeBaseProxyFactory is not available, so test was stopped: " + e.getMessage());
       return;
@@ -80,10 +92,12 @@ public class CSVExportTest {
     Configuration config;
     try {
       config = new Configuration(new cz.cuni.mff.xrg.odalic.files.File(
-          new User("test@odalic.eu", "passwordHash", Role.USER), inputFile.getName(),
-          inputFile.toURI().toURL(), new Format(), true), ImmutableSet.of(getDummyBase("DBpedia"),
-              getDummyBase("DBpedia Clone"), getDummyBase("German DBpedia")),
-          getDummyBase("DBpedia"), new Feedback(), null, false);
+          user, inputFile.getName(), inputFile.toURI().toURL(), new Format(
+              StandardCharsets.UTF_8, ';', true, '"', null, null), true),
+          ImmutableSet.of(mbs.getByName(user.getEmail(), "DBpedia"),
+              mbs.getByName(user.getEmail(), "DBpedia Clone"),
+              mbs.getByName(user.getEmail(), "German DBpedia")),
+          mbs.getByName(user.getEmail(), "DBpedia"), new Feedback(), null, false);
     } catch (MalformedURLException e) {
       log.error("Error - configuration settings:", e);
       return;
@@ -116,7 +130,7 @@ public class CSVExportTest {
 
     // Export from result (and input) to CSV file
     testExportToCSVFile(result, input, config, inputFile.getParent() + File.separator
-        + FilenameUtils.getBaseName(inputFile.getName()) + "-export.csv", kbf);
+        + FilenameUtils.getBaseName(inputFile.getName()) + "-export.csv");
 
     // Export from result (and input) to JSON annotated table
     testExportToAnnotatedTable(result, input, config, inputFile.getParent() + File.separator
@@ -124,7 +138,7 @@ public class CSVExportTest {
   }
 
   public static Input testExportToCSVFile(Result result, Input input, Configuration config,
-      String filePath, KnowledgeBaseProxiesService kbf) {
+      String filePath) {
 
     // Conversion from result to CSV extended input
     Input extendedInput = new DefaultResultToCSVExportAdapter().toCSVExport(result, input, config);
@@ -180,28 +194,5 @@ public class CSVExportTest {
       log.error("Error - saving JSON export file:", e);
       return null;
     }
-  }
-  
-  private static KnowledgeBase getDummyBase(final String name) {    
-    final User owner = new User("dummy@dummy.com", "dummyHash", Role.ADMINISTRATOR);
-    
-    final GroupBuilder groupBuilder = new DefaultGroupBuilder();
-    groupBuilder.setId("DummyGroup");
-    groupBuilder.setOwner(owner);
-    
-    final KnowledgeBaseBuilder builder = new KnowledgeBaseBuilder();
-    
-    builder.setName(name);
-    builder.setOwner(owner);
-    
-    try {
-      builder.setEndpoint(new URL("http://dummy.com"));
-    } catch (final MalformedURLException e) {
-      throw new RuntimeException(e);
-    }
-    
-    builder.addSelectedGroup(groupBuilder.build());
-        
-    return builder.build();
   }
 }

@@ -21,7 +21,6 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -94,7 +93,6 @@ public class TaskCreateTest {
   }
 
   @Test
-  @Ignore // TODO: Fix and then remove.
   public void TestFileCreateTask() {
 
     if (!run) {
@@ -120,9 +118,9 @@ public class TaskCreateTest {
     ConfigurationValue configuration = new ConfigurationValue();
     configuration.setInput(file.getName());
     configuration.setFeedback(CoreExecutionBatch.createFeedback(true));
-    configuration.setUsedBases(ImmutableSet.of(getDummyBase("DBpedia"),
-        getDummyBase("DBpedia Clone"), getDummyBase("German DBpedia")));
-    configuration.setPrimaryBase(getDummyBase("DBpedia"));
+    configuration.setUsedBases(ImmutableSet.of(getBase("DBpedia"),
+        getBase("DBpedia Clone"), getBase("German DBpedia")));
+    configuration.setPrimaryBase(getBase("DBpedia"));
     configuration.setRowsLimit(rowsLimit);
     configuration.setStatistical(statistical);
 
@@ -142,10 +140,10 @@ public class TaskCreateTest {
 
     client.close();
   }
-  
-  private static KnowledgeBaseNameValue getDummyBase(final String name) {    
-    final KnowledgeBaseNameValue result = new KnowledgeBaseNameValue();
-    result.setName(name);
-    return result;
+
+  private static KnowledgeBaseNameValue getBase(final String name) {
+    final KnowledgeBaseNameValue base = new KnowledgeBaseNameValue();
+    base.setName(name);
+    return base;
   }
 }

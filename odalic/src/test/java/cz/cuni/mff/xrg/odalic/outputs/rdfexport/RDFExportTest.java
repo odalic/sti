@@ -5,13 +5,13 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,18 +40,17 @@ public class RDFExportTest {
 
   private static final Logger log = LoggerFactory.getLogger(RDFExportTest.class);
 
-  static File inputJsonFile;
-  static File inputFile;
+  private static File inputJsonFile;
+  private static File inputFile;
 
   @BeforeClass
   public static void beforeClass() throws URISyntaxException, IOException {
 
-    inputJsonFile = new File(RDFExportTest.class.getClassLoader().getResource("LIVEBIRTHS-5.json").toURI());
-    inputFile = new File(RDFExportTest.class.getClassLoader().getResource("LIVEBIRTHS-5.csv").toURI());
+    inputJsonFile = new File(RDFExportTest.class.getClassLoader().getResource("book.json").toURI());
+    inputFile = new File(RDFExportTest.class.getClassLoader().getResource("book.csv").toURI());
   }
 
   @Test
-  @Ignore // TODO: Fix and then remove.
   public void TestConversionToTurtle() {
 
     // Convert JSON file to Java Object AnnotatedTable
@@ -67,7 +66,7 @@ public class RDFExportTest {
     }
 
     // Convert CSV file to Java Object Input
-    Format format = new Format();
+    Format format = new Format(StandardCharsets.UTF_8, ';', true, '"', null, null);
     Input extendedInput;
     try (final FileInputStream inputFileStream = new FileInputStream(inputFile)) {
       extendedInput = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
@@ -83,9 +82,6 @@ public class RDFExportTest {
     // Export from annotated table (and extended input) to RDF file
     testExportToRDFFile(annotatedTable, extendedInput, inputFile.getParent() + File.separator
         + FilenameUtils.getBaseName(inputFile.getName()) + ".rdf");
-
-    // TODO write some assert which e.g. checks that the resulting turtle file contains some triples
-
   }
 
   public static void testExportToRDFFile(AnnotatedTable annotatedTable, Input extendedInput,
