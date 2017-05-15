@@ -12,9 +12,16 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,11 +29,9 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
-import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
+import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.Input;
-import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
 
 /**
@@ -36,9 +41,28 @@ import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
  * @author Tomáš Knap
  *
  */
+@ContextConfiguration(locations = {"classpath:spring/applicationContext.xml"})
 public class RDFExportTest {
 
   private static final Logger log = LoggerFactory.getLogger(RDFExportTest.class);
+
+  @ClassRule
+  public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
+
+  @Rule
+  public final SpringMethodRule springMethodRule = new SpringMethodRule();
+
+  @Autowired
+  @Lazy
+  private CsvInputParser csvInputParser;
+
+  @Autowired
+  @Lazy
+  private AnnotatedTableToRDFExportAdapter annotatedTableToRdfExportAdapter;
+
+  @Autowired
+  @Lazy
+  private RDFExporter rdfExporter;
 
   private static File inputJsonFile;
   private static File inputFile;
@@ -69,8 +93,7 @@ public class RDFExportTest {
     Format format = new Format(StandardCharsets.UTF_8, ';', true, '"', null, null);
     Input extendedInput;
     try (final FileInputStream inputFileStream = new FileInputStream(inputFile)) {
-      extendedInput = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
-          new DefaultApacheCsvFormatAdapter()).parse(
+      extendedInput = csvInputParser.parse(
               IOUtils.toString(inputFileStream, format.getCharset()),
               inputFile.getName(), format, Integer.MAX_VALUE).getInput();
       log.info("Input CSV file loaded.");
@@ -81,18 +104,18 @@ public class RDFExportTest {
 
     // Export from annotated table (and extended input) to RDF file
     testExportToRDFFile(annotatedTable, extendedInput, inputFile.getParent() + File.separator
-        + FilenameUtils.getBaseName(inputFile.getName()) + ".rdf");
+        + FilenameUtils.getBaseName(inputFile.getName()) + ".rdf", annotatedTableToRdfExportAdapter, rdfExporter);
   }
 
   public static void testExportToRDFFile(AnnotatedTable annotatedTable, Input extendedInput,
-      String filePath) {
+      String filePath, AnnotatedTableToRDFExportAdapter adapter, RDFExporter exporter) {
 
     // Conversion from annotated table to RDF model
     Model rdfModel =
-        new DefaultAnnotatedTableToRDFExportAdapter().toRDFExport(annotatedTable, extendedInput);
+        adapter.toRDFExport(annotatedTable, extendedInput);
 
     // Export RDF Model to RDF String (in turtle format)
-    String rdf = new DefaultRDFExporter().export(rdfModel, RDFFormat.TURTLE);
+    String rdf = exporter.export(rdfModel, RDFFormat.TURTLE);
     log.info("Resulting RDF is: " + rdf);
 
     // Write RDF String to file
