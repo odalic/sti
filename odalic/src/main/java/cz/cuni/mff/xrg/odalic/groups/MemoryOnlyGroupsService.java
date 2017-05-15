@@ -59,7 +59,7 @@ public final class MemoryOnlyGroupsService implements GroupsService {
 
   private static final String INITIAL_GROUPS_PATH_PROPERTY_KEY = "sti.enums";
 
-  private static final Path DEFAULT_INITIAL_GROUPS_PATH = Paths.get("resources", "enums");
+  private static final Path DEFAULT_INITIAL_GROUPS_PATH = Paths.get("config", "enums");
 
   private final Table<String, String, Group> userAndGroupIdsToGroups;
   
@@ -301,6 +301,7 @@ public final class MemoryOnlyGroupsService implements GroupsService {
     final GroupBuilder groupBuilder = new DefaultGroupBuilder();
     
     groupBuilder.setId(extractId(propertiesFile));
+    groupBuilder.setOwner(owner);
     
     groupBuilder.setClassTypes(extractValues(INITIAL_GROUP_CLASS_TYPES_PROPERTY_KEY, groupProperties));
     groupBuilder.setDescriptionPredicates(extractValues(INITIAL_GROUP_DESCRIPTION_PREDICATES_PROPERTY_KEY, groupProperties));

@@ -3,91 +3,99 @@
     "owl" : "http://www.w3.org/2002/07/owl#",
     "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "xsd" : "http://www.w3.org/2001/XMLSchema#",
-    "dcterms" : "http://purl.org/dc/terms/"
+    "yago" : "http://dbpedia.org/class/yago/",
+    "dcterms" : "http://purl.org/dc/terms/",
+    "schema-org" : "http://schema.org/"
   } ],
-  "url": "book-input.csv",
-  "tableSchema": {
-    "columns": [
-      {
-        "name": "Book",
-        "titles": [
-          "Book"
-        ],
-        "dataType": "xsd:string",
-        "aboutUrl": "{Book_url}",
-        "propertyUrl": "dcterms:title"
-      },
-      {
-        "name": "Book_url",
-        "dataType": "xsd:anyURI",
-        "suppressOutput": true,
-        "valueUrl": "{Book_url}"
-      },
-      {
-        "name": "Book_type",
-        "virtual": true,
-        "aboutUrl": "{Book_url}",
-        "propertyUrl": "rdf:type",
-        "valueUrl": "http://schema.org/Book"
-      },
-      {
-        "name": "Author",
-        "titles": [
-          "Author"
-        ],
-        "dataType": "xsd:string",
-        "aboutUrl": "{Author_url}",
-        "propertyUrl": "dcterms:title"
-      },
-      {
-        "name": "Author_url",
-        "dataType": "xsd:anyURI",
-        "suppressOutput": true,
-        "valueUrl": "{Author_url}"
-      },
-      {
-        "name": "Author_type",
-        "virtual": true,
-        "aboutUrl": "{Author_url}",
-        "propertyUrl": "rdf:type",
-        "valueUrl": "http://dbpedia.org/class/yago/CanadianFantasyWriters"
-      },
-      {
-        "name": "Series",
-        "titles": [
-          "Series"
-        ],
-        "dataType": "xsd:string",
-        "aboutUrl": "{Series_url}",
-        "propertyUrl": "dcterms:title"
-      },
-      {
-        "name": "Series_url",
-        "dataType": "xsd:anyURI",
-        "suppressOutput": true,
-        "valueUrl": "{Series_url}"
-      },
-      {
-        "name": "Series_type",
-        "virtual": true,
-        "aboutUrl": "{Series_url}",
-        "propertyUrl": "rdf:type",
-        "valueUrl": "http://www.wikidata.org/entity/Q277759"
-      },
-      {
-        "name": "http://dbpedia.org/property/author_type",
-        "virtual": true,
-        "aboutUrl": "{Book_url}",
-        "propertyUrl": "http://dbpedia.org/property/author",
-        "valueUrl": "{Author_url}"
-      },
-      {
-        "name": "http://dbpedia.org/property/series_type",
-        "virtual": true,
-        "aboutUrl": "{Book_url}",
-        "propertyUrl": "http://dbpedia.org/property/series",
-        "valueUrl": "{Series_url}"
-      }
-    ]
+  "url" : "book-input.csv",
+  "tableSchema" : {
+    "columns" : [ {
+      "name" : "Book",
+      "titles" : [ "Book" ],
+      "dataType" : "xsd:string",
+      "aboutUrl" : "{Book_url}",
+      "propertyUrl" : "dcterms:title"
+    }, {
+      "name" : "Book_url",
+      "dataType" : "xsd:anyURI",
+      "suppressOutput" : true,
+      "valueUrl" : "{Book_url}"
+    }, {
+      "name" : "Book_alternative_urls",
+      "aboutUrl" : "{Book_url}",
+      "separator" : " ",
+      "propertyUrl" : "owl:sameAs",
+      "valueUrl" : "{Book_alternative_urls}"
+    }, {
+      "name" : "Book_type",
+      "virtual" : true,
+      "aboutUrl" : "{Book_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "schema-org:Book"
+    }, {
+      "name" : "Book_type",
+      "virtual" : true,
+      "aboutUrl" : "{Book_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "schema-org:Book"
+    }, {
+      "name" : "Author",
+      "titles" : [ "Author" ],
+      "dataType" : "xsd:string",
+      "aboutUrl" : "{Author_url}",
+      "propertyUrl" : "dcterms:title"
+    }, {
+      "name" : "Author_url",
+      "dataType" : "xsd:anyURI",
+      "suppressOutput" : true,
+      "valueUrl" : "{Author_url}"
+    }, {
+      "name" : "Author_alternative_urls",
+      "aboutUrl" : "{Author_url}",
+      "separator" : " ",
+      "propertyUrl" : "owl:sameAs",
+      "valueUrl" : "{Author_alternative_urls}"
+    }, {
+      "name" : "Author_type",
+      "virtual" : true,
+      "aboutUrl" : "{Author_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "yago:WikicatCanadianFantasyWriters"
+    }, {
+      "name" : "Author_type",
+      "virtual" : true,
+      "aboutUrl" : "{Author_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#NaturalPerson"
+    }, {
+      "name" : "Series",
+      "titles" : [ "Series" ],
+      "dataType" : "xsd:string",
+      "aboutUrl" : "{Series_url}",
+      "propertyUrl" : "dcterms:title"
+    }, {
+      "name" : "Series_url",
+      "dataType" : "xsd:anyURI",
+      "suppressOutput" : true,
+      "valueUrl" : "{Series_url}"
+    }, {
+      "name" : "Series_alternative_urls",
+      "aboutUrl" : "{Series_url}",
+      "separator" : " ",
+      "propertyUrl" : "owl:sameAs",
+      "valueUrl" : "{Series_alternative_urls}"
+    }, {
+      "name" : "Series_type",
+      "virtual" : true,
+      "aboutUrl" : "{Series_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "http://www.wikidata.org/entity/Q277759"
+    }, {
+      "name" : "Series_type",
+      "virtual" : true,
+      "aboutUrl" : "{Series_url}",
+      "propertyUrl" : "rdf:type",
+      "valueUrl" : "schema-org:Book"
+    } ]
   }
 }

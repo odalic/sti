@@ -3,7 +3,8 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context
-		http://www.springframework.org/schema/context/spring-context.xsd">
+		http://www.springframework.org/schema/context/spring-context.xsd"
+		default-lazy-init="true">
 
 	<context:component-scan base-package="cz.cuni.mff.xrg.odalic.*" />
 	<context:component-scan base-package="uk.ac.shef.dcs.kbproxy.*" />
@@ -50,17 +51,17 @@
 
 	<!-- Services -->
 	<bean id="dbService" class="cz.cuni.mff.xrg.odalic.util.storage.FileDbService" />
-	<bean id="cacheProviderService" class="uk.ac.shef.dcs.kbproxy.solr.DbSolrCacheProviderService" />
+	<bean id="cacheProviderService" class="uk.ac.shef.dcs.kbproxy.solr.MemoryOnlySolrCacheProviderService" />
 	<bean id="proxiesFactory" class="uk.ac.shef.dcs.kbproxy.DefaultProxiesFactory" />
 	<bean id="knowledgeBaseProxiesService" class="cz.cuni.mff.xrg.odalic.bases.proxies.MemoryOnlyKnowledgeBaseProxiesService" />
-	<bean id="fileService" class="cz.cuni.mff.xrg.odalic.files.DbFileService" />
+	<bean id="fileService" class="cz.cuni.mff.xrg.odalic.files.MemoryOnlyFileService" />
 	<bean id="configurationService"
 		class="cz.cuni.mff.xrg.odalic.tasks.configurations.DefaultConfigurationService" />
 	<bean id="executionService"
-		class="cz.cuni.mff.xrg.odalic.tasks.executions.DbCachedFutureBasedExecutionService" />
+		class="cz.cuni.mff.xrg.odalic.tasks.executions.FutureBasedExecutionService" />
 	<bean id="feedbackService"
-		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.DbFeedbackService" />
-	<bean id="taskService" class="cz.cuni.mff.xrg.odalic.tasks.DbTaskService" />
+		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.MemoryOnlyFeedbackService" />
+	<bean id="taskService" class="cz.cuni.mff.xrg.odalic.tasks.MemoryOnlyTaskService" />
 	<bean id="annotatedTableService"
 		class="cz.cuni.mff.xrg.odalic.outputs.annotatedtable.ResultAdaptingAnnotatedTableService" />
 	<bean id="csvExportService"
@@ -68,7 +69,7 @@
 	<bean id="rdfExportService"
 		class="cz.cuni.mff.xrg.odalic.outputs.rdfexport.RioBackedRdfExportService" />
 	<bean id="entitiesService" class="cz.cuni.mff.xrg.odalic.entities.DefaultEntitiesService" />
-	<bean id="basesService" class="cz.cuni.mff.xrg.odalic.bases.DbBasesService" />
+	<bean id="basesService" class="cz.cuni.mff.xrg.odalic.bases.MemoryOnlyBasesService" />
 	<bean id="advancedBaseTypesService" class="cz.cuni.mff.xrg.odalic.bases.MemoryOnlyAdvancedBaseTypesService" />
 	<bean id="prefixMappingService"
 		class="cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService" />
@@ -76,10 +77,10 @@
 	<bean id="passwordHashingService" class="cz.cuni.mff.xrg.odalic.util.hash.ScryptPasswordHashingService" />
 	<bean id="mailService" class="cz.cuni.mff.xrg.odalic.util.mail.SmtpMailService" />
 	<bean id="tokenService" class="cz.cuni.mff.xrg.odalic.users.AuthZeroTokenService" />
-	<bean id="userService" class="cz.cuni.mff.xrg.odalic.users.DbUserService" />
+	<bean id="userService" class="cz.cuni.mff.xrg.odalic.users.MemoryOnlyUserService" />
 	<bean id="taskSerializationService" class="cz.cuni.mff.xrg.odalic.api.rdf.TurtleRdfMappingTaskSerializationService" />
 	<bean id="knowledgeBaseSerializationService" class="cz.cuni.mff.xrg.odalic.api.rdf.TurtleRdfMappingKnowledgeBaseSerializationService" />
-	<bean id="groupsService" class="cz.cuni.mff.xrg.odalic.groups.DbGroupsService" />
+	<bean id="groupsService" class="cz.cuni.mff.xrg.odalic.groups.MemoryOnlyGroupsService" />
 
 	<!-- Resources -->
 	<bean id="configurationResource"

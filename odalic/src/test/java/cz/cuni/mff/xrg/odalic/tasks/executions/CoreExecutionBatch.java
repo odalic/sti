@@ -8,6 +8,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.shef.dcs.kbproxy.DefaultProxiesFactory;
+import uk.ac.shef.dcs.kbproxy.solr.MemoryOnlySolrCacheProviderService;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
@@ -16,8 +18,6 @@ import uk.ac.shef.dcs.sti.core.model.Table;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,8 +27,10 @@ import java.util.Map;
 import java.util.Set;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
-import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
+import cz.cuni.mff.xrg.odalic.bases.MemoryOnlyAdvancedBaseTypesService;
+import cz.cuni.mff.xrg.odalic.bases.MemoryOnlyBasesService;
 import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
+import cz.cuni.mff.xrg.odalic.bases.proxies.MemoryOnlyKnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.entities.PrefixMappingEntitiesFactory;
 import cz.cuni.mff.xrg.odalic.feedbacks.Ambiguity;
@@ -44,8 +46,7 @@ import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.groups.DefaultGroupBuilder;
-import cz.cuni.mff.xrg.odalic.groups.GroupBuilder;
+import cz.cuni.mff.xrg.odalic.groups.MemoryOnlyGroupsService;
 import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.DefaultInputToTableAdapter;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
@@ -127,28 +128,48 @@ public class CoreExecutionBatch {
     file = new File(file.getOwner(), file.getId(), file.getUploaded(), file.getLocation(),
         parsingResult.getFormat(), file.isCached());
 
-    // Configuration settings
-    Configuration configuration = new Configuration(file, ImmutableSet.of(getDummyBase("DBpedia"),
-        getDummyBase("DBpedia Clone"), getDummyBase("German DBpedia")),
-        getDummyBase("DBpedia"), createFeedback(true), rowsLimit, false);
-
     // input Table creation
     final Table table = new DefaultInputToTableAdapter().toTable(parsingResult.getInput());
 
-    // PrefixMappingService
+    // services for bases
+    DefaultPropertiesService dps;
     TurtleConfigurablePrefixMappingService pms;
     try {
-      pms = new TurtleConfigurablePrefixMappingService(new DefaultPropertiesService());
+      dps = new DefaultPropertiesService();
+      pms = new TurtleConfigurablePrefixMappingService(dps);
     } catch (IOException e) {
-      log.error("Error - prefix mapping service loading:", e);
+      log.error("Error - services loading:", e);
       return null;
     }
+    MemoryOnlySolrCacheProviderService cps = new MemoryOnlySolrCacheProviderService(dps);
+    DefaultProxiesFactory dpf = new DefaultProxiesFactory(cps);
+    MemoryOnlyAdvancedBaseTypesService abs = new MemoryOnlyAdvancedBaseTypesService();
+    kbf = new MemoryOnlyKnowledgeBaseProxiesService(dpf, abs, pms);
+    MemoryOnlyGroupsService mgs = new MemoryOnlyGroupsService(dps);
+    MemoryOnlyBasesService mbs = new MemoryOnlyBasesService(kbf, mgs, abs, dps);
+
+    // groups and bases initialization
+    try {
+      mgs.initializeDefaults(file.getOwner());
+      mbs.initializeDefaults(file.getOwner());
+    } catch (IOException e) {
+      log.error("Error - groups and bases initialization:", e);
+      return null;
+    }
+
+    // Configuration settings
+    Configuration configuration = new Configuration(file, ImmutableSet.of(
+        mbs.getByName(file.getOwner().getEmail(), "DBpedia"),
+        mbs.getByName(file.getOwner().getEmail(), "DBpedia Clone"),
+        mbs.getByName(file.getOwner().getEmail(), "German DBpedia")),
+        mbs.getByName(file.getOwner().getEmail(), "DBpedia"),
+        createFeedback(true), rowsLimit, false);
 
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
-      kbf = null; // TODO: Instantiate with pms!
-      semanticTableInterpreters = null; // TODO: Instantiate factory first, with cache service.
+      semanticTableInterpreters = new TableMinerPlusFactory(kbf, cps, dps).getInterpreters(
+          configuration.getInput().getOwner().getEmail(), configuration.getUsedBases());
     } catch (final Exception e) {
       log.error("Error - TMP interpreters failed to initialize:", e);
       return null;
@@ -160,10 +181,8 @@ public class CoreExecutionBatch {
     try {
       for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : semanticTableInterpreters
           .entrySet()) {
-        final KnowledgeBase base = getDummyBase(interpreterEntry.getKey());
-        if (!configuration.getUsedBases().contains(base)) {
-          continue;
-        }
+        final KnowledgeBase base = mbs.getByName(configuration.getInput().getOwner().getEmail(),
+            interpreterEntry.getKey());
 
         Constraints constraints = new DefaultFeedbackToConstraintsAdapter().toConstraints(
             configuration.getFeedback(), base);
@@ -196,12 +215,11 @@ public class CoreExecutionBatch {
     }
     else {
       // subject columns positions example
-      HashMap<KnowledgeBase, Set<ColumnPosition>> subjectColumnsPositions = new HashMap<>();
       HashSet<ColumnPosition> subjectPositions = new HashSet<>();
       subjectPositions.add(new ColumnPosition(0));
       subjectPositions.add(new ColumnPosition(1));
-      subjectPositions.add(new ColumnPosition(2));
-      subjectColumnsPositions.put(getDummyBase("DBpedia Clone"), subjectPositions);
+      HashMap<String, Set<ColumnPosition>> subjectColumnsPositions = new HashMap<>();
+      subjectColumnsPositions.put("DBpedia Clone", subjectPositions);
 
       // classifications example
       HashSet<EntityCandidate> candidatesClassification = new HashSet<>();
@@ -284,28 +302,5 @@ public class CoreExecutionBatch {
     HashMap<String, HashSet<EntityCandidate>> predicateMap = new HashMap<>();
     predicateMap.put("DBpedia", predicateSet);
     return new DataCubeComponent(new ColumnPosition(col), new StatisticalAnnotation(compMap, predicateMap));
-  }
-  
-  private static KnowledgeBase getDummyBase(final String name) {    
-    final User owner = new User("dummy@dummy.com", "dummyHash", Role.ADMINISTRATOR);
-    
-    final GroupBuilder groupBuilder = new DefaultGroupBuilder();
-    groupBuilder.setId("DummyGroup");
-    groupBuilder.setOwner(owner);
-    
-    final KnowledgeBaseBuilder builder = new KnowledgeBaseBuilder();
-    
-    builder.setName(name);
-    builder.setOwner(owner);
-    
-    try {
-      builder.setEndpoint(new URL("http://dummy.com"));
-    } catch (final MalformedURLException e) {
-      throw new RuntimeException(e);
-    }
-    
-    builder.addSelectedGroup(groupBuilder.build());
-        
-    return builder.build();
   }
 }

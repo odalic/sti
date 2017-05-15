@@ -6,16 +6,22 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
@@ -25,19 +31,14 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.collect.ImmutableSet;
 
-import cz.cuni.mff.xrg.odalic.bases.KnowledgeBaseBuilder;
-import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
-import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
-import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.groups.DefaultGroupBuilder;
-import cz.cuni.mff.xrg.odalic.groups.GroupBuilder;
-import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
+import cz.cuni.mff.xrg.odalic.groups.GroupsService;
+import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.Input;
-import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
-import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.DefaultResultToAnnotatedTableAdapter;
+import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.ResultToAnnotatedTableAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import cz.cuni.mff.xrg.odalic.users.Role;
@@ -49,9 +50,40 @@ import cz.cuni.mff.xrg.odalic.users.User;
  * @author Josef Janoušek
  *
  */
+@ContextConfiguration(locations = {"classpath:spring/applicationContext.xml"})
 public class CSVExportTest {
 
   private static final Logger log = LoggerFactory.getLogger(CSVExportTest.class);
+
+  @ClassRule
+  public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
+
+  @Rule
+  public final SpringMethodRule springMethodRule = new SpringMethodRule();
+
+  @Autowired
+  @Lazy
+  private GroupsService groupsService;
+
+  @Autowired
+  @Lazy
+  private BasesService basesService;
+
+  @Autowired
+  @Lazy
+  private CsvInputParser csvInputParser;
+
+  @Autowired
+  @Lazy
+  private ResultToCSVExportAdapter resultToCsvExportAdapter;
+
+  @Autowired
+  @Lazy
+  private CSVExporter csvExporter;
+
+  @Autowired
+  @Lazy
+  private ResultToAnnotatedTableAdapter resultToAnnotatedTableAdapter;
 
   private static File inputResultFile;
   private static File inputFile;
@@ -59,19 +91,20 @@ public class CSVExportTest {
   @BeforeClass
   public static void beforeClass() throws URISyntaxException, IOException {
 
+    System.setProperty("cz.cuni.mff.xrg.odalic.sti", Paths.get("").toAbsolutePath()
+        .resolveSibling("config").resolve("sti.properties").toString());
+
     inputResultFile = new File(CSVExportTest.class.getClassLoader().getResource("book-result.json").toURI());
     inputFile = new File(CSVExportTest.class.getClassLoader().getResource("book-input.csv").toURI());
   }
 
   @Test
-  @Ignore // TODO: Fix and then remove.
   public void TestConversionToCSV() {
 
-    KnowledgeBaseProxiesService kbf;
+    User user = new User("test@odalic.eu", "passwordHash", Role.USER);
     try {
-      System.setProperty("cz.cuni.mff.xrg.odalic.sti", Paths.get("").toAbsolutePath()
-          .resolveSibling("config").resolve("sti.properties").toString());
-      kbf = null; // TODO: Instantiate with knowledge base proxies service.
+      groupsService.initializeDefaults(user);
+      basesService.initializeDefaults(user);
     } catch (final Exception e) {
       log.info("KnowledgeBaseProxyFactory is not available, so test was stopped: " + e.getMessage());
       return;
@@ -80,10 +113,12 @@ public class CSVExportTest {
     Configuration config;
     try {
       config = new Configuration(new cz.cuni.mff.xrg.odalic.files.File(
-          new User("test@odalic.eu", "passwordHash", Role.USER), inputFile.getName(),
-          inputFile.toURI().toURL(), new Format(), true), ImmutableSet.of(getDummyBase("DBpedia"),
-              getDummyBase("DBpedia Clone"), getDummyBase("German DBpedia")),
-          getDummyBase("DBpedia"), new Feedback(), null, false);
+          user, inputFile.getName(), inputFile.toURI().toURL(), new Format(
+              StandardCharsets.UTF_8, ';', true, '"', null, null), true),
+          ImmutableSet.of(basesService.getByName(user.getEmail(), "DBpedia"),
+              basesService.getByName(user.getEmail(), "DBpedia Clone"),
+              basesService.getByName(user.getEmail(), "German DBpedia")),
+          basesService.getByName(user.getEmail(), "DBpedia"), new Feedback(), null, false);
     } catch (MalformedURLException e) {
       log.error("Error - configuration settings:", e);
       return;
@@ -104,8 +139,7 @@ public class CSVExportTest {
     // Convert CSV file to Java Object Input
     Input input;
     try (final FileInputStream inputFileStream = new FileInputStream(inputFile)) {
-      input = new DefaultCsvInputParser(new ListsBackedInputBuilder(),
-          new DefaultApacheCsvFormatAdapter()).parse(IOUtils.toString(inputFileStream,
+      input = csvInputParser.parse(IOUtils.toString(inputFileStream,
               config.getInput().getFormat().getCharset()), config.getInput().getId(),
               config.getInput().getFormat(), config.getRowsLimit()).getInput();
       log.info("Input CSV file loaded.");
@@ -116,24 +150,23 @@ public class CSVExportTest {
 
     // Export from result (and input) to CSV file
     testExportToCSVFile(result, input, config, inputFile.getParent() + File.separator
-        + FilenameUtils.getBaseName(inputFile.getName()) + "-export.csv", kbf);
+        + FilenameUtils.getBaseName(inputFile.getName()) + "-export.csv", resultToCsvExportAdapter, csvExporter);
 
     // Export from result (and input) to JSON annotated table
     testExportToAnnotatedTable(result, input, config, inputFile.getParent() + File.separator
-        + FilenameUtils.getBaseName(inputFile.getName()) + "-export.json", kbf);
+        + FilenameUtils.getBaseName(inputFile.getName()) + "-export.json", resultToAnnotatedTableAdapter);
   }
 
   public static Input testExportToCSVFile(Result result, Input input, Configuration config,
-      String filePath, KnowledgeBaseProxiesService kbf) {
+      String filePath, ResultToCSVExportAdapter adapter, CSVExporter exporter) {
 
     // Conversion from result to CSV extended input
-    Input extendedInput = new DefaultResultToCSVExportAdapter().toCSVExport(result, input, config);
+    Input extendedInput = adapter.toCSVExport(result, input, config);
 
     // Export CSV extended Input to CSV String
     String csv;
     try {
-      csv = new DefaultCSVExporter(new DefaultApacheCsvFormatAdapter()).export(extendedInput,
-          config.getInput().getFormat());
+      csv = exporter.export(extendedInput, config.getInput().getFormat());
     } catch (IOException e) {
       log.error("Error - exporting extended Input to CSV:", e);
       return null;
@@ -152,11 +185,11 @@ public class CSVExportTest {
   }
 
   public static AnnotatedTable testExportToAnnotatedTable(Result result, Input input,
-      Configuration config, String filePath, KnowledgeBaseProxiesService kbf) {
+      Configuration config, String filePath, ResultToAnnotatedTableAdapter adapter) {
 
     // Conversion from result to annotated table
     AnnotatedTable annotatedTable =
-        new DefaultResultToAnnotatedTableAdapter(kbf).toAnnotatedTable(result, input, config);
+        adapter.toAnnotatedTable(result, input, config);
 
     // Export Annotated Table to JSON String
     String json;
@@ -180,28 +213,5 @@ public class CSVExportTest {
       log.error("Error - saving JSON export file:", e);
       return null;
     }
-  }
-  
-  private static KnowledgeBase getDummyBase(final String name) {    
-    final User owner = new User("dummy@dummy.com", "dummyHash", Role.ADMINISTRATOR);
-    
-    final GroupBuilder groupBuilder = new DefaultGroupBuilder();
-    groupBuilder.setId("DummyGroup");
-    groupBuilder.setOwner(owner);
-    
-    final KnowledgeBaseBuilder builder = new KnowledgeBaseBuilder();
-    
-    builder.setName(name);
-    builder.setOwner(owner);
-    
-    try {
-      builder.setEndpoint(new URL("http://dummy.com"));
-    } catch (final MalformedURLException e) {
-      throw new RuntimeException(e);
-    }
-    
-    builder.addSelectedGroup(groupBuilder.build());
-        
-    return builder.build();
   }
 }
