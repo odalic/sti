@@ -47,6 +47,9 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   private String userClassesPrefix;
   private String userResourcesPrefix;
   
+  private String login;
+  private String password;
+  
   private String advancedType;
   private Set<AdvancedPropertyEntry> advancedProperties;
   
@@ -73,6 +76,8 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
     this.insertGraph = adaptee.getInsertGraph() == null ? null : adaptee.getInsertGraph().toString();
     this.userClassesPrefix = adaptee.getUserClassesPrefix() == null ? null : adaptee.getUserClassesPrefix().toString();
     this.userResourcesPrefix = adaptee.getUserResourcesPrefix() == null ? null : adaptee.getUserResourcesPrefix().toString();
+    this.login = adaptee.getLogin();
+    this.password = adaptee.getPassword();
     this.advancedType = adaptee.getAdvancedType().getName();
     this.advancedProperties = adaptee.getAdvancedProperties().entrySet().stream().map(e -> new AdvancedPropertyEntry(e.getKey(), e.getValue())).collect(ImmutableSet.toImmutableSet());
   }
@@ -306,6 +311,40 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   }
 
   /**
+   * @return the login
+   */
+  @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/login",
+      datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @Nullable
+  public String getLogin() {
+    return login;
+  }
+
+  /**
+   * @param login the login to set
+   */
+  public void setLogin(String login) {
+    this.login = login;
+  }
+  
+  /**
+   * @return the password
+   */
+  @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/password",
+      datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @Nullable
+  public String getPassword() {
+    return password;
+  }
+
+  /**
+   * @param login the password to set
+   */
+  public void setPassword(String password) {
+    this.password = password;
+  }
+  
+  /**
    * @return the advancedType
    */
   @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/advancedType",
@@ -345,7 +384,8 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
         + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected + ", selectedGroups="
         + selectedGroups + ", insertEnabled=" + insertEnabled + ", insertGraph=" + insertGraph
         + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
-        + userResourcesPrefix + ", advancedType=" + advancedType + ", advancedProperties="
-        + advancedProperties + ", identifiableResource=" + identifiableResource + "]";
+        + userResourcesPrefix + ", login=" + login + ", password=****, advancedType="
+        + advancedType + ", advancedProperties=" + advancedProperties + ", identifiableResource="
+        + identifiableResource + "]";
   }
 }

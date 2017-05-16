@@ -60,7 +60,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 public final class BasesResource {
 
   private static final String TURTLE_MIME_TYPE = "text/turtle";
-  
+
   private final BasesService basesService;
   private final UserService userService;
   private final AdvancedBaseTypesService advancedBaseTypesService;
@@ -164,10 +164,13 @@ public final class BasesResource {
         .map(e -> this.groupsService.getGroup(userId, e)).collect(ImmutableSet.toImmutableSet());
 
     final KnowledgeBase base = new KnowledgeBase(owner, name, baseValue.getEndpoint(),
-        baseValue.getDescription() == null ? "" : baseValue.getDescription(), baseValue.getTextSearchingMethod(), baseValue.getLanguageTag(),
-        baseValue.getSkippedAttributes(), baseValue.getSkippedClasses(), baseValue.getGroupsAutoSelected(), selectedGroups,
-        baseValue.isInsertEnabled(), baseValue.getInsertGraph(), baseValue.getUserClassesPrefix(),
-        baseValue.getUserResourcesPrefix(), advancedType, baseValue.getAdvancedProperties());
+        baseValue.getDescription() == null ? "" : baseValue.getDescription(),
+        baseValue.getTextSearchingMethod(), baseValue.getLanguageTag(),
+        baseValue.getSkippedAttributes(), baseValue.getSkippedClasses(),
+        baseValue.getGroupsAutoSelected(), selectedGroups, baseValue.isInsertEnabled(),
+        baseValue.getInsertGraph(), baseValue.getUserClassesPrefix(),
+        baseValue.getUserResourcesPrefix(), baseValue.getLogin(), baseValue.getPassword(),
+        advancedType, baseValue.getAdvancedProperties());
 
     final KnowledgeBase baseById = this.basesService.verifyBaseExistenceByName(userId, name);
 
@@ -185,7 +188,7 @@ public final class BasesResource {
           .toResponse(Response.Status.OK, location, this.uriInfo);
     }
   }
-  
+
   @PUT
   @Path("bases/{name}")
   @Produces({MediaType.APPLICATION_JSON})
@@ -193,7 +196,7 @@ public final class BasesResource {
       throws MalformedURLException, IllegalStateException, IllegalArgumentException {
     return put(this.securityContext.getUserPrincipal().getName(), name, baseValue);
   }
-  
+
   @DELETE
   @Path("bases/{name}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -218,7 +221,7 @@ public final class BasesResource {
 
     return Message.of("Base deleted.").toResponse(Response.Status.OK, this.uriInfo);
   }
-  
+
   @GET
   @Path("bases/{name}/")
   @Produces(TURTLE_MIME_TYPE)
@@ -245,7 +248,7 @@ public final class BasesResource {
 
     return Response.ok(exportedBase).build();
   }
-  
+
   @PUT
   @Path("bases/{name}")
   @Consumes(TURTLE_MIME_TYPE)

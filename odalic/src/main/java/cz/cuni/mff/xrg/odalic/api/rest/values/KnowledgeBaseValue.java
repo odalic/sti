@@ -28,31 +28,35 @@ import jersey.repackaged.com.google.common.collect.ImmutableList;
 public final class KnowledgeBaseValue {
 
   private String name;
-  
-  private URL endpoint;  
+
+  private URL endpoint;
   private String description;
-  
+
   private TextSearchingMethod textSearchingMethod;
   private String languageTag;
 
   private List<String> skippedAttributes;
   private List<String> skippedClasses;
-  
+
   private boolean groupsAutoSelected;
   private Set<String> selectedGroups;
-  
+
   private boolean insertEnabled;
   private URI insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
-  
+
+  private String login;
+  private String password;
+
   private String advancedType;
   private Map<String, String> advancedProperties;
 
   public KnowledgeBaseValue() {
     this.skippedAttributes = ImmutableList.of();
     this.skippedClasses = ImmutableList.of();
-    
+
+    this.groupsAutoSelected = true;
     this.selectedGroups = ImmutableSet.of();
     
     this.advancedProperties = ImmutableMap.of();
@@ -62,20 +66,24 @@ public final class KnowledgeBaseValue {
     this.name = adaptee.getName();
     this.endpoint = adaptee.getEndpoint();
     this.description = adaptee.getDescription();
-    
+
     this.textSearchingMethod = adaptee.getTextSearchingMethod();
     this.languageTag = adaptee.getLanguageTag();
     this.skippedAttributes = ImmutableList.copyOf(adaptee.getSkippedAttributes());
     this.skippedClasses = ImmutableList.copyOf(adaptee.getSkippedClasses());
-    
+
     this.groupsAutoSelected = adaptee.getGroupsAutoSelected();
-    this.selectedGroups = adaptee.getSelectedGroups().stream().map(e -> e.getId()).collect(ImmutableSet.toImmutableSet());
-    
+    this.selectedGroups = adaptee.getSelectedGroups().stream().map(e -> e.getId())
+        .collect(ImmutableSet.toImmutableSet());
+
     this.insertEnabled = adaptee.isInsertEnabled();
     this.insertGraph = adaptee.getInsertGraph();
     this.userClassesPrefix = adaptee.getUserClassesPrefix();
     this.userResourcesPrefix = adaptee.getUserResourcesPrefix();
-    
+
+    this.login = adaptee.getLogin();
+    this.password = adaptee.getPassword();
+
     this.advancedType = adaptee.getAdvancedType().getName();
     this.advancedProperties = ImmutableMap.copyOf(adaptee.getAdvancedProperties());
   }
@@ -176,7 +184,7 @@ public final class KnowledgeBaseValue {
    */
   public void setSkippedAttributes(final List<String> skippedAttributes) {
     Preconditions.checkNotNull(skippedAttributes);
-    
+
     this.skippedAttributes = ImmutableList.copyOf(skippedAttributes);
   }
 
@@ -194,7 +202,7 @@ public final class KnowledgeBaseValue {
    */
   public void setSkippedClasses(final List<String> skippedClasses) {
     Preconditions.checkNotNull(skippedClasses);
-    
+
     this.skippedClasses = ImmutableList.copyOf(skippedClasses);
   }
 
@@ -212,7 +220,7 @@ public final class KnowledgeBaseValue {
   public void setGroupsAutoSelected(final boolean groupsAutoSelected) {
     this.groupsAutoSelected = groupsAutoSelected;
   }
-  
+
   /**
    * @return the selectedGroups
    */
@@ -227,7 +235,7 @@ public final class KnowledgeBaseValue {
    */
   public void setSelectedGroups(final Set<String> selectedGroups) {
     Preconditions.checkNotNull(selectedGroups);
-    
+
     this.selectedGroups = ImmutableSet.copyOf(selectedGroups);
   }
 
@@ -294,6 +302,39 @@ public final class KnowledgeBaseValue {
   }
 
   /**
+   * @return the login
+   */
+  @XmlElement
+  @Nullable
+  public String getLogin() {
+    return login;
+  }
+
+  /**
+   * @param login the login to set
+   */
+  public void setLogin(final String login) {
+    this.login = login;
+  }
+
+  /**
+   * @return the password
+   */
+  @XmlElement
+  @Nullable
+  public String getPassword() {
+    return password;
+  }
+
+  /**
+   * @param password the password to set
+   */
+  public void setPassword(final String password) {
+
+    this.password = password;
+  }
+
+  /**
    * @return the advanced type
    */
   @XmlElement
@@ -307,7 +348,7 @@ public final class KnowledgeBaseValue {
    */
   public void setAdvancedType(final String advancedType) {
     Preconditions.checkNotNull(advancedType);
-    
+
     this.advancedType = advancedType;
   }
 
@@ -325,7 +366,7 @@ public final class KnowledgeBaseValue {
    */
   public void setAdvancedProperties(final Map<String, String> advancedProperties) {
     Preconditions.checkNotNull(advancedProperties);
-    
+
     this.advancedProperties = ImmutableMap.copyOf(advancedProperties);
   }
 
@@ -337,7 +378,7 @@ public final class KnowledgeBaseValue {
         + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected + ", selectedGroups="
         + selectedGroups + ", insertEnabled=" + insertEnabled + ", insertGraph=" + insertGraph
         + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
-        + userResourcesPrefix + ", advancedType=" + advancedType + ", advancedProperties="
-        + advancedProperties + "]";
+        + userResourcesPrefix + ", login=" + login + ", password=****, advancedType=" + advancedType
+        + ", advancedProperties=" + advancedProperties + "]";
   }
 }

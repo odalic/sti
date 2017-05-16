@@ -34,25 +34,28 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   private static final long serialVersionUID = 2241360833757117714L;
 
   private final User owner;
-  
+
   private final String name;
-  private final URL endpoint;  
+  private final URL endpoint;
   private final String description;
-  
+
   private final TextSearchingMethod textSearchingMethod;
   private final String languageTag;
 
   private final List<String> skippedAttributes;
   private final List<String> skippedClasses;
-  
+
   private final boolean groupsAutoSelected;
   private final Set<Group> selectedGroups;
-  
+
   private final boolean insertEnabled;
   private final URI insertGraph;
   private final URI userClassesPrefix;
   private final URI userResourcesPrefix;
-  
+
+  private final String login;
+  private final String password;
+
   private final AdvancedBaseType advancedType;
   private final Map<String, String> advancedProperties;
 
@@ -66,15 +69,19 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
    * @param insertEnabled whether the base supports insertion of new concepts
    * @param groupsAutoSelected whether the used groups are determined automatically
    * @param selectedGroups the groups selected for use
+   * @param login login
+   * @param password password
    * @param advancedType knowledge base type, affects the applicable properties
    * @param advancedProperties advanced configuration properties
    */
-  public KnowledgeBase(final User owner, final String name, final URL endpoint, final String description,
-      final TextSearchingMethod textSearchingMethod, final String languageTag,
-      final List<? extends String> skippedAttributes, final List<? extends String> skippedClasses,
-      final boolean groupsAutoSelected, final Set<? extends Group> selectedGroups, final boolean insertEnabled, final URI insertGraph,
-      final URI userClassesPrefix, final URI userResourcesPrefix,
-      final AdvancedBaseType advancedType, final Map<? extends String, ? extends String> advancedProperties) {
+  public KnowledgeBase(final User owner, final String name, final URL endpoint,
+      final String description, final TextSearchingMethod textSearchingMethod,
+      final String languageTag, final List<? extends String> skippedAttributes,
+      final List<? extends String> skippedClasses, final boolean groupsAutoSelected,
+      final Set<? extends Group> selectedGroups, final boolean insertEnabled, final URI insertGraph,
+      final URI userClassesPrefix, final URI userResourcesPrefix, @Nullable final String login,
+      @Nullable final String password, final AdvancedBaseType advancedType,
+      final Map<? extends String, ? extends String> advancedProperties) {
     Preconditions.checkNotNull(owner);
     Preconditions.checkNotNull(name);
     Preconditions.checkNotNull(endpoint);
@@ -88,10 +95,11 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     Preconditions.checkNotNull(advancedProperties);
 
     Preconditions.checkArgument(!name.isEmpty(), "The name is empty!");
-    Preconditions.checkArgument(groupsAutoSelected || !selectedGroups.isEmpty(), "Groups to be selected manually but none selected!");
+    Preconditions.checkArgument(groupsAutoSelected || !selectedGroups.isEmpty(),
+        "Groups to be selected manually but none selected!");
 
     this.owner = owner;
-    
+
     this.name = name;
     this.endpoint = endpoint;
     this.description = description;
@@ -100,15 +108,18 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     this.languageTag = languageTag;
     this.skippedAttributes = ImmutableList.copyOf(skippedAttributes);
     this.skippedClasses = ImmutableList.copyOf(skippedClasses);
-    
+
     this.groupsAutoSelected = groupsAutoSelected;
     this.selectedGroups = ImmutableSet.copyOf(selectedGroups);
-    
+
     this.insertEnabled = insertEnabled;
     this.insertGraph = insertGraph;
     this.userClassesPrefix = userClassesPrefix;
     this.userResourcesPrefix = userResourcesPrefix;
-    
+
+    this.login = login;
+    this.password = password;
+
     this.advancedType = advancedType;
     this.advancedProperties = ImmutableMap.copyOf(advancedProperties);
   }
@@ -119,7 +130,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   public User getOwner() {
     return this.owner;
   }
-  
+
   public String getName() {
     return this.name;
   }
@@ -143,9 +154,19 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   public boolean getGroupsAutoSelected() {
     return this.groupsAutoSelected;
   }
-  
+
   public Set<Group> getSelectedGroups() {
     return this.selectedGroups;
+  }
+
+  @Nullable
+  public String getLogin() {
+    return this.login;
+  }
+
+  @Nullable
+  public String getPassword() {
+    return this.password;
   }
 
   public Map<String, String> getProperties() {
@@ -158,7 +179,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   public String getLanguageTag() {
     return languageTag;
   }
-  
+
 
   public TextSearchingMethod getTextSearchingMethod() {
     return textSearchingMethod;
@@ -190,7 +211,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   public Map<String, String> getAdvancedProperties() {
     return advancedProperties;
   }
-  
+
   @XmlTransient
   public String getQualifiedName() {
     return this.owner.getEmail() + "_" + this.name;
@@ -248,7 +269,9 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
@@ -259,7 +282,10 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
         + ", skippedClasses=" + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected
         + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
         + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
-        + ", userResourcesPrefix=" + userResourcesPrefix + ", advancedType=" + advancedType
-        + ", advancedProperties=" + advancedProperties + "]";
+        + ", userResourcesPrefix=" + userResourcesPrefix + ", login=" + login
+        + ", password=****, advancedType=" + advancedType + ", advancedProperties="
+        + advancedProperties + "]";
   }
+
+
 }

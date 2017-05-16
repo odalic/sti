@@ -50,6 +50,9 @@ public final class KnowledgeBaseBuilder implements Serializable {
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
 
+  private String login;
+  private String password;
+
   private AdvancedBaseType advancedType;
   private Map<String, String> advancedProperties;
 
@@ -75,6 +78,9 @@ public final class KnowledgeBaseBuilder implements Serializable {
     this.userClassesPrefix = null;
     this.userResourcesPrefix = null;
 
+    this.login = null;
+    this.password = null;
+
     this.advancedType = null;
 
     this.skippedAttributes = new ArrayList<>();
@@ -89,7 +95,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
   public KnowledgeBase build() {
     return new KnowledgeBase(owner, name, endpoint, description, textSearchingMethod, languageTag,
         skippedAttributes, skippedClasses, groupsAutoSelected, selectedGroups, insertEnabled,
-        insertGraph, userClassesPrefix, userResourcesPrefix, advancedType, advancedProperties);
+        insertGraph, userClassesPrefix, userResourcesPrefix, login, password, advancedType,
+        advancedProperties);
   }
 
   /**
@@ -170,6 +177,16 @@ public final class KnowledgeBaseBuilder implements Serializable {
   @Nullable
   public URI getUserResourcesPrefix() {
     return userResourcesPrefix;
+  }
+
+  @Nullable
+  public String getLogin() {
+    return login;
+  }
+
+  @Nullable
+  public String getPassword() {
+    return password;
   }
 
   public Map<String, String> getAdvancedProperties() {
@@ -329,6 +346,24 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   /**
+   * @param login the login to set
+   */
+  public KnowledgeBaseBuilder setLogin(@Nullable String login) {
+    this.login = login;
+
+    return this;
+  }
+
+  /**
+   * @param login the password to set
+   */
+  public KnowledgeBaseBuilder setPassword(@Nullable String password) {
+    this.password = password;
+
+    return this;
+  }
+
+  /**
    * @param advancedType the advancedType to set
    */
   public KnowledgeBaseBuilder setAdvancedType(@Nullable AdvancedBaseType advancedType) {
@@ -368,7 +403,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
         + ", skippedClasses=" + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected
         + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
         + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
-        + ", userResourcesPrefix=" + userResourcesPrefix + ", advancedType=" + advancedType
-        + ", advancedProperties=" + advancedProperties + "]";
+        + ", userResourcesPrefix=" + userResourcesPrefix + ", login=" + login
+        + ", password=****, advancedType=" + advancedType + ", advancedProperties="
+        + advancedProperties + "]";
   }
 }

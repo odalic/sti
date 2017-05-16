@@ -53,9 +53,11 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  * @author Václav Brodec
  *
  */
-public class TurtleRdfMappingKnowledgeBaseSerializationService implements KnowledgeBaseSerializationService {
+public class TurtleRdfMappingKnowledgeBaseSerializationService
+    implements KnowledgeBaseSerializationService {
 
-  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedKnowledgeBase/V2/%s";
+  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT =
+      "SerializedKnowledgeBase/V3/%s";
 
   private static String format(final Model model) {
     final StringWriter stringWriter = new StringWriter();
@@ -93,7 +95,8 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService implements Knowle
     return model;
   }
 
-  private static void setRootSubjectIdentifier(final URI baseUri, final KnowledgeBaseValue knowledgeBaseValue) {
+  private static void setRootSubjectIdentifier(final URI baseUri,
+      final KnowledgeBaseValue knowledgeBaseValue) {
     knowledgeBaseValue.id(getRootSubjectIri(baseUri));
   }
 
@@ -116,7 +119,7 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService implements Knowle
     Preconditions.checkNotNull(userService);
     Preconditions.checkNotNull(advancedBaseTypesService);
     Preconditions.checkNotNull(groupsService);
-    
+
     this.rdfMapperBuilder = rdfMapperBuilder;
     this.userService = userService;
     this.advancedBaseTypesService = advancedBaseTypesService;
@@ -124,7 +127,8 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService implements Knowle
   }
 
   @Autowired
-  public TurtleRdfMappingKnowledgeBaseSerializationService(final UserService userService, final AdvancedBaseTypesService advancedBaseTypesService, final GroupsService groupsService) {
+  public TurtleRdfMappingKnowledgeBaseSerializationService(final UserService userService,
+      final AdvancedBaseTypesService advancedBaseTypesService, final GroupsService groupsService) {
     this(
         RDFMapper.builder().set(MappingOptions.IGNORE_CARDINALITY_VIOLATIONS, false)
             .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false),
@@ -132,13 +136,13 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService implements Knowle
   }
 
   private RDFMapper buildMapper(final URI baseUri) {
-    return this.rdfMapperBuilder.namespace("", baseUri.resolve("SerializedKnowledgeBase/Node/").toString())
-        .build();
+    return this.rdfMapperBuilder
+        .namespace("", baseUri.resolve("SerializedKnowledgeBase/Node/").toString()).build();
   }
 
   @Override
-  public KnowledgeBase deserialize(final InputStream knowledgeBaseStream, final String userId, final String knowledgeBaseId,
-      final URI baseUri) throws IOException {
+  public KnowledgeBase deserialize(final InputStream knowledgeBaseStream, final String userId,
+      final String knowledgeBaseId, final URI baseUri) throws IOException {
     final Model model = parse(knowledgeBaseStream);
 
     final KnowledgeBaseValue knowledgeBaseValue;
@@ -157,14 +161,26 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService implements Knowle
     return buildMapper(baseUri).readValue(model, KnowledgeBaseValue.class, getRootResource(model));
   }
 
-  private KnowledgeBase fromProxies(final String userId, final String knowledgeBaseId, final KnowledgeBaseValue knowledgeBaseValue) {
+  private KnowledgeBase fromProxies(final String userId, final String knowledgeBaseId,
+      final KnowledgeBaseValue knowledgeBaseValue) {
     final User owner = this.userService.getUser(userId);
-    
+
     final Set<Group> selectedGroups = extractSelectedGroups(knowledgeBaseValue, owner);
     final Map<String, String> advancedProperties = extractAdvancedProperties(knowledgeBaseValue);
-    
+
     try {
-      return new KnowledgeBase(owner, knowledgeBaseId, new URL(knowledgeBaseValue.getEndpoint()), knowledgeBaseValue.getDescription(), TextSearchingMethod.valueOf(knowledgeBaseValue.getTextSearchingMethod()), knowledgeBaseValue.getLanguageTag(), knowledgeBaseValue.getSkippedAttributes(), knowledgeBaseValue.getSkippedClasses(), knowledgeBaseValue.getGroupsAutoSelected(), selectedGroups, knowledgeBaseValue.isInsertEnabled(), URI.create(knowledgeBaseValue.getInsertGraph()), URI.create(knowledgeBaseValue.getUserClassesPrefix()), URI.create(knowledgeBaseValue.getUserResourcesPrefix()), this.advancedBaseTypesService.getType(knowledgeBaseValue.getAdvancedType()), advancedProperties);
+      return new KnowledgeBase(owner, knowledgeBaseId, new URL(knowledgeBaseValue.getEndpoint()),
+          knowledgeBaseValue.getDescription(),
+          TextSearchingMethod.valueOf(knowledgeBaseValue.getTextSearchingMethod()),
+          knowledgeBaseValue.getLanguageTag(), knowledgeBaseValue.getSkippedAttributes(),
+          knowledgeBaseValue.getSkippedClasses(), knowledgeBaseValue.getGroupsAutoSelected(),
+          selectedGroups, knowledgeBaseValue.isInsertEnabled(),
+          URI.create(knowledgeBaseValue.getInsertGraph()),
+          URI.create(knowledgeBaseValue.getUserClassesPrefix()),
+          URI.create(knowledgeBaseValue.getUserResourcesPrefix()), knowledgeBaseValue.getLogin(),
+          knowledgeBaseValue.getPassword(),
+          this.advancedBaseTypesService.getType(knowledgeBaseValue.getAdvancedType()),
+          advancedProperties);
     } catch (final MalformedURLException e) {
       throw new IllegalArgumentException(e);
     }
@@ -174,10 +190,12 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService implements Knowle
       final User owner) {
     final ImmutableSet.Builder<Group> selectedGroupsBuilder = ImmutableSet.builder();
     for (final GroupValue groupValue : knowledgeBaseValue.getSelectedGroups()) {
-      final Group group = new Group(owner, groupValue.getId(), groupValue.getLabelPredicates(), groupValue.getDescriptionPredicates(), groupValue.getInstanceOfPredicates(), groupValue.getClassTypes(), groupValue.getPropertyTypes());
-      
+      final Group group = new Group(owner, groupValue.getId(), groupValue.getLabelPredicates(),
+          groupValue.getDescriptionPredicates(), groupValue.getInstanceOfPredicates(),
+          groupValue.getClassTypes(), groupValue.getPropertyTypes());
+
       this.groupsService.merge(group);
-      
+
       selectedGroupsBuilder.add(group);
     }
     final Set<Group> selectedGroups = selectedGroupsBuilder.build();
@@ -186,8 +204,7 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService implements Knowle
 
   private Map<String, String> extractAdvancedProperties(
       final KnowledgeBaseValue knowledgeBaseValue) {
-    final ImmutableMap.Builder<String, String> advancedPropertiesBuilder =
-        ImmutableMap.builder();
+    final ImmutableMap.Builder<String, String> advancedPropertiesBuilder = ImmutableMap.builder();
     for (final AdvancedPropertyEntry entry : knowledgeBaseValue.getAdvancedProperties()) {
       advancedPropertiesBuilder.put(entry.getKey(), entry.getValue());
     }
@@ -213,7 +230,8 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService implements Knowle
   }
 
   @Override
-  public KnowledgeBase deserialize(final String userId, final KnowledgeBaseValue knowledgeBaseValue) {
+  public KnowledgeBase deserialize(final String userId,
+      final KnowledgeBaseValue knowledgeBaseValue) {
     return fromProxies(userId, knowledgeBaseValue.getName(), knowledgeBaseValue);
   }
 }
