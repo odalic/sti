@@ -31,24 +31,25 @@ public final class KnowledgeBaseBuilder implements Serializable {
   private static final long serialVersionUID = 2241360833757117714L;
 
   private User owner;
-  
+
   private String name;
-  private URL endpoint;  
+  private URL endpoint;
   private String description;
-  
+
   private TextSearchingMethod textSearchingMethod;
   private String languageTag;
 
   private List<String> skippedAttributes;
   private List<String> skippedClasses;
-  
+
+  private boolean groupsAutoSelected;
   private Set<Group> selectedGroups;
-  
+
   private boolean insertEnabled;
   private URI insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
-  
+
   private AdvancedBaseType advancedType;
   private Map<String, String> advancedProperties;
 
@@ -58,41 +59,39 @@ public final class KnowledgeBaseBuilder implements Serializable {
   public KnowledgeBaseBuilder() {
     reset();
   }
-  
+
   public KnowledgeBaseBuilder reset() {
     this.owner = null;
-    
+
     this.name = null;
     this.endpoint = null;
     this.description = "";
 
     this.textSearchingMethod = null;
     this.languageTag = null;
-    
+
     this.insertEnabled = false;
     this.insertGraph = null;
     this.userClassesPrefix = null;
     this.userResourcesPrefix = null;
-    
+
     this.advancedType = null;
-    
+
     this.skippedAttributes = new ArrayList<>();
     this.skippedClasses = new ArrayList<>();
+    this.groupsAutoSelected = true;
     this.selectedGroups = new HashSet<>();
     this.advancedProperties = new HashMap<>();
-    
+
     return this;
   }
 
   public KnowledgeBase build() {
-    return new KnowledgeBase(owner, name, endpoint, description,
-        textSearchingMethod, languageTag,
-        skippedAttributes, skippedClasses,
-        selectedGroups, insertEnabled, insertGraph,
-        userClassesPrefix, userResourcesPrefix,
-        advancedType, advancedProperties);
+    return new KnowledgeBase(owner, name, endpoint, description, textSearchingMethod, languageTag,
+        skippedAttributes, skippedClasses, groupsAutoSelected, selectedGroups, insertEnabled,
+        insertGraph, userClassesPrefix, userResourcesPrefix, advancedType, advancedProperties);
   }
-  
+
   /**
    * @return the owner
    */
@@ -100,7 +99,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   public User getOwner() {
     return this.owner;
   }
-  
+
   @Nullable
   public String getName() {
     return this.name;
@@ -125,6 +124,10 @@ public final class KnowledgeBaseBuilder implements Serializable {
     return this.advancedType;
   }
 
+  public boolean getGroupsAutoSelected() {
+    return this.groupsAutoSelected;
+  }
+
   public Set<Group> getSelectedGroups() {
     return this.selectedGroups;
   }
@@ -140,7 +143,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   public String getLanguageTag() {
     return languageTag;
   }
-  
+
   @Nullable
   public TextSearchingMethod getTextSearchingMethod() {
     return textSearchingMethod;
@@ -172,7 +175,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   public Map<String, String> getAdvancedProperties() {
     return advancedProperties;
   }
-  
+
   /**
    * @param owner the owner to set
    */
@@ -212,7 +215,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
   /**
    * @param textSearchingMethod the textSearchingMethod to set
    */
-  public KnowledgeBaseBuilder setTextSearchingMethod(@Nullable TextSearchingMethod textSearchingMethod) {
+  public KnowledgeBaseBuilder setTextSearchingMethod(
+      @Nullable TextSearchingMethod textSearchingMethod) {
     this.textSearchingMethod = textSearchingMethod;
 
     return this;
@@ -235,15 +239,15 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
     return this;
   }
-  
+
   public KnowledgeBaseBuilder addSkippedAttribute(final String attribute) {
     Preconditions.checkNotNull(attribute);
-    
+
     this.skippedAttributes.add(attribute);
-    
+
     return this;
   }
-  
+
   /**
    * @param skippedClasses the skippedClasses to set
    */
@@ -252,12 +256,22 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
     return this;
   }
-  
+
   public KnowledgeBaseBuilder addSkippedClass(final String klass) {
     Preconditions.checkNotNull(klass);
-    
+
     this.skippedClasses.add(klass);
-    
+
+    return this;
+  }
+
+  /**
+   * @param groupsAutoSelected whether the selected groups are ignored and the actually used ones
+   *        are auto-detected
+   */
+  public KnowledgeBaseBuilder setGroupsAutoSelected(final boolean groupsAutoSelected) {
+    this.groupsAutoSelected = groupsAutoSelected;
+
     return this;
   }
 
@@ -269,12 +283,12 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
     return this;
   }
-  
+
   public KnowledgeBaseBuilder addSelectedGroup(final Group group) {
     Preconditions.checkNotNull(group);
-    
+
     this.selectedGroups.add(group);
-    
+
     return this;
   }
 
@@ -310,7 +324,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
    */
   public KnowledgeBaseBuilder setUserResourcesPrefix(@Nullable URI userResourcesPrefix) {
     this.userResourcesPrefix = userResourcesPrefix;
-    
+
     return this;
   }
 
@@ -319,7 +333,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
    */
   public KnowledgeBaseBuilder setAdvancedType(@Nullable AdvancedBaseType advancedType) {
     this.advancedType = advancedType;
-    
+
     return this;
   }
 
@@ -331,24 +345,30 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
     return this;
   }
-  
+
   public KnowledgeBaseBuilder addAdvancedProperty(final String key, final String value) {
     Preconditions.checkNotNull(key);
     Preconditions.checkNotNull(value);
-    
+
     this.advancedProperties.put(key, value);
-    
+
     return this;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#toString()
+   */
+  @Override
   public String toString() {
-    return "KnowledgeBaseBuilder [owner=" + owner + ", name=" + name + ", endpoint="
-        + endpoint + ", description=" + description + ", textSearchingMethod=" + textSearchingMethod
+    return "KnowledgeBaseBuilder [owner=" + owner + ", name=" + name + ", endpoint=" + endpoint
+        + ", description=" + description + ", textSearchingMethod=" + textSearchingMethod
         + ", languageTag=" + languageTag + ", skippedAttributes=" + skippedAttributes
-        + ", skippedClasses=" + skippedClasses + ", selectedGroups=" + selectedGroups
-        + ", insertEnabled=" + insertEnabled + ", insertGraph=" + insertGraph
-        + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
-        + userResourcesPrefix + ", advancedType=" + advancedType + ", advancedProperties="
-        + advancedProperties + "]";
+        + ", skippedClasses=" + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected
+        + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
+        + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
+        + ", userResourcesPrefix=" + userResourcesPrefix + ", advancedType=" + advancedType
+        + ", advancedProperties=" + advancedProperties + "]";
   }
 }

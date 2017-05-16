@@ -2,7 +2,6 @@ package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Set;
 import java.util.SortedSet;
 
 import javax.ws.rs.BadRequestException;
@@ -13,7 +12,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -170,30 +168,5 @@ public final class GroupsResource {
     }
 
     return Message.of("Group deleted.").toResponse(Response.Status.OK, this.uriInfo);
-  }
-  
-  @GET
-  @Path("users/{userId}/groups/detected")
-  @Produces({MediaType.APPLICATION_JSON})
-  public Response detectUsed(final @PathParam("userId") String userId, final @QueryParam("endpoint") URL endpoint) {
-    if (endpoint == null) {
-      throw new BadRequestException("Endpoint URL must be provided!");
-    }
-    
-    final Set<Group> detectedGroups;
-    try {
-      detectedGroups = this.groupsService.detectUsed(userId, endpoint);
-    } catch (final IllegalArgumentException e) {
-      throw new NotFoundException("No group with the provided name exists!", e);
-    }
-    
-    return Reply.data(Response.Status.OK, detectedGroups, this.uriInfo).toResponse();
-  }
-  
-  @GET
-  @Path("groups/detected")
-  @Produces({MediaType.APPLICATION_JSON})
-  public Response detectUsed(final @QueryParam("endpoint") URL endpoint) {
-    return detectUsed(this.securityContext.getUserPrincipal().getName(), endpoint);
   }
 }

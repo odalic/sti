@@ -38,6 +38,7 @@ public final class KnowledgeBaseValue {
   private List<String> skippedAttributes;
   private List<String> skippedClasses;
   
+  private boolean groupsAutoSelected;
   private Set<String> selectedGroups;
   
   private boolean insertEnabled;
@@ -67,6 +68,7 @@ public final class KnowledgeBaseValue {
     this.skippedAttributes = ImmutableList.copyOf(adaptee.getSkippedAttributes());
     this.skippedClasses = ImmutableList.copyOf(adaptee.getSkippedClasses());
     
+    this.groupsAutoSelected = adaptee.getGroupsAutoSelected();
     this.selectedGroups = adaptee.getSelectedGroups().stream().map(e -> e.getId()).collect(ImmutableSet.toImmutableSet());
     
     this.insertEnabled = adaptee.isInsertEnabled();
@@ -197,6 +199,21 @@ public final class KnowledgeBaseValue {
   }
 
   /**
+   * @return whether the groups are auto-selected
+   */
+  @XmlElement
+  public boolean getGroupsAutoSelected() {
+    return this.groupsAutoSelected;
+  }
+
+  /**
+   * @param groupsAutoSelected whether the groups are auto-selected
+   */
+  public void setGroupsAutoSelected(final boolean groupsAutoSelected) {
+    this.groupsAutoSelected = groupsAutoSelected;
+  }
+  
+  /**
    * @return the selectedGroups
    */
   @XmlElement
@@ -312,17 +329,15 @@ public final class KnowledgeBaseValue {
     this.advancedProperties = ImmutableMap.copyOf(advancedProperties);
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
-    return "KnowledgeBaseValueOutput [name=" + name + ", endpoint=" + endpoint + ", description="
+    return "KnowledgeBaseValue [name=" + name + ", endpoint=" + endpoint + ", description="
         + description + ", textSearchingMethod=" + textSearchingMethod + ", languageTag="
         + languageTag + ", skippedAttributes=" + skippedAttributes + ", skippedClasses="
-        + skippedClasses + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
-        + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
-        + ", userResourcesPrefix=" + userResourcesPrefix + ", advancedType=" + advancedType
-        + ", advancedProperties=" + advancedProperties + "]";
+        + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected + ", selectedGroups="
+        + selectedGroups + ", insertEnabled=" + insertEnabled + ", insertGraph=" + insertGraph
+        + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
+        + userResourcesPrefix + ", advancedType=" + advancedType + ", advancedProperties="
+        + advancedProperties + "]";
   }
 }

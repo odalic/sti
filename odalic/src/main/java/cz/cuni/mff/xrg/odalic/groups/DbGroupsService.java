@@ -6,7 +6,6 @@ package cz.cuni.mff.xrg.odalic.groups;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -232,15 +231,6 @@ public final class DbGroupsService implements GroupsService {
     Preconditions.checkNotNull(groupId);
 
     return this.userAndGroupIdsToGroups.get(new Object[] {userId, groupId});
-  }
-
-  @Override
-  public Set<Group> detectUsed(final String userId, final URL endpoint) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(endpoint);
-
-    // TODO: Implement used groups detection.
-    return ImmutableSet.copyOf(this.userAndGroupIdsToGroups.prefixSubMap(new Object[] {userId}).values());
   }
 
   @Override

@@ -165,7 +165,7 @@ public final class BasesResource {
 
     final KnowledgeBase base = new KnowledgeBase(owner, name, baseValue.getEndpoint(),
         baseValue.getDescription() == null ? "" : baseValue.getDescription(), baseValue.getTextSearchingMethod(), baseValue.getLanguageTag(),
-        baseValue.getSkippedAttributes(), baseValue.getSkippedClasses(), selectedGroups,
+        baseValue.getSkippedAttributes(), baseValue.getSkippedClasses(), baseValue.getGroupsAutoSelected(), selectedGroups,
         baseValue.isInsertEnabled(), baseValue.getInsertGraph(), baseValue.getUserClassesPrefix(),
         baseValue.getUserResourcesPrefix(), advancedType, baseValue.getAdvancedProperties());
 

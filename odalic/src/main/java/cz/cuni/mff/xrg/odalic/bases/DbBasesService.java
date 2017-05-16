@@ -419,7 +419,8 @@ public final class DbBasesService implements BasesService {
     final String languageTag = languageTagValue.startsWith(LANGUAGE_TAG_SEPARATOR) ? languageTagValue.substring(1, languageTagValue.length()) : languageTagValue;
     baseBuilder.setLanguageTag(languageTag);
 
-    baseBuilder.setSelectedGroups(this.groupsService.detectUsed(owner.getEmail(), endpointUrl));
+    baseBuilder.setGroupsAutoSelected(true);
+    baseBuilder.setSelectedGroups(ImmutableSet.of());
 
     baseBuilder.setTextSearchingMethod(extractTextSearchingMethod(baseProperties));
 
