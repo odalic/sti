@@ -55,7 +55,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  */
 public class TurtleRdfMappingKnowledgeBaseSerializationService implements KnowledgeBaseSerializationService {
 
-  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedKnowledgeBase/V1/%s";
+  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedKnowledgeBase/V2/%s";
 
   private static String format(final Model model) {
     final StringWriter stringWriter = new StringWriter();
@@ -164,7 +164,7 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService implements Knowle
     final Map<String, String> advancedProperties = extractAdvancedProperties(knowledgeBaseValue);
     
     try {
-      return new KnowledgeBase(owner, knowledgeBaseId, new URL(knowledgeBaseValue.getEndpoint()), knowledgeBaseValue.getDescription(), TextSearchingMethod.valueOf(knowledgeBaseValue.getTextSearchingMethod()), knowledgeBaseValue.getLanguageTag(), knowledgeBaseValue.getSkippedAttributes(), knowledgeBaseValue.getSkippedClasses(), selectedGroups, knowledgeBaseValue.isInsertEnabled(), URI.create(knowledgeBaseValue.getInsertGraph()), URI.create(knowledgeBaseValue.getUserClassesPrefix()), URI.create(knowledgeBaseValue.getUserResourcesPrefix()), this.advancedBaseTypesService.getType(knowledgeBaseValue.getAdvancedType()), advancedProperties);
+      return new KnowledgeBase(owner, knowledgeBaseId, new URL(knowledgeBaseValue.getEndpoint()), knowledgeBaseValue.getDescription(), TextSearchingMethod.valueOf(knowledgeBaseValue.getTextSearchingMethod()), knowledgeBaseValue.getLanguageTag(), knowledgeBaseValue.getSkippedAttributes(), knowledgeBaseValue.getSkippedClasses(), knowledgeBaseValue.getGroupsAutoSelected(), selectedGroups, knowledgeBaseValue.isInsertEnabled(), URI.create(knowledgeBaseValue.getInsertGraph()), URI.create(knowledgeBaseValue.getUserClassesPrefix()), URI.create(knowledgeBaseValue.getUserResourcesPrefix()), this.advancedBaseTypesService.getType(knowledgeBaseValue.getAdvancedType()), advancedProperties);
     } catch (final MalformedURLException e) {
       throw new IllegalArgumentException(e);
     }

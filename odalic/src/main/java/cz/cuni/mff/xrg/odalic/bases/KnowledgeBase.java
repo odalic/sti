@@ -45,6 +45,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   private final List<String> skippedAttributes;
   private final List<String> skippedClasses;
   
+  private final boolean groupsAutoSelected;
   private final Set<Group> selectedGroups;
   
   private final boolean insertEnabled;
@@ -63,6 +64,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
    * @param endpoint end-point URL
    * @param description knowledge base description
    * @param insertEnabled whether the base supports insertion of new concepts
+   * @param groupsAutoSelected whether the used groups are determined automatically
    * @param selectedGroups the groups selected for use
    * @param advancedType knowledge base type, affects the applicable properties
    * @param advancedProperties advanced configuration properties
@@ -70,7 +72,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   public KnowledgeBase(final User owner, final String name, final URL endpoint, final String description,
       final TextSearchingMethod textSearchingMethod, final String languageTag,
       final List<? extends String> skippedAttributes, final List<? extends String> skippedClasses,
-      final Set<? extends Group> selectedGroups, final boolean insertEnabled, final URI insertGraph,
+      final boolean groupsAutoSelected, final Set<? extends Group> selectedGroups, final boolean insertEnabled, final URI insertGraph,
       final URI userClassesPrefix, final URI userResourcesPrefix,
       final AdvancedBaseType advancedType, final Map<? extends String, ? extends String> advancedProperties) {
     Preconditions.checkNotNull(owner);
@@ -86,7 +88,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     Preconditions.checkNotNull(advancedProperties);
 
     Preconditions.checkArgument(!name.isEmpty(), "The name is empty!");
-    Preconditions.checkArgument(!selectedGroups.isEmpty(), "No groups selected!");
+    Preconditions.checkArgument(groupsAutoSelected || !selectedGroups.isEmpty(), "Groups to be selected manually but none selected!");
 
     this.owner = owner;
     
@@ -99,6 +101,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     this.skippedAttributes = ImmutableList.copyOf(skippedAttributes);
     this.skippedClasses = ImmutableList.copyOf(skippedClasses);
     
+    this.groupsAutoSelected = groupsAutoSelected;
     this.selectedGroups = ImmutableSet.copyOf(selectedGroups);
     
     this.insertEnabled = insertEnabled;
@@ -137,6 +140,10 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     return this.advancedType;
   }
 
+  public boolean getGroupsAutoSelected() {
+    return this.groupsAutoSelected;
+  }
+  
   public Set<Group> getSelectedGroups() {
     return this.selectedGroups;
   }
@@ -241,8 +248,18 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     return result;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   @Override
   public String toString() {
-    return "KnowledgeBase [name=" + this.name + "]";
+    return "KnowledgeBase [owner=" + owner + ", name=" + name + ", endpoint=" + endpoint
+        + ", description=" + description + ", textSearchingMethod=" + textSearchingMethod
+        + ", languageTag=" + languageTag + ", skippedAttributes=" + skippedAttributes
+        + ", skippedClasses=" + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected
+        + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
+        + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
+        + ", userResourcesPrefix=" + userResourcesPrefix + ", advancedType=" + advancedType
+        + ", advancedProperties=" + advancedProperties + "]";
   }
 }

@@ -1,8 +1,6 @@
 package cz.cuni.mff.xrg.odalic.groups;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.Set;
 import java.util.SortedSet;
 
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
@@ -35,8 +33,6 @@ public interface GroupsService {
   void subscribe(KnowledgeBase base);
   
   void unsubscribe(KnowledgeBase base);
-
-  Set<Group> detectUsed(String userId, URL endpoint);
 
   Group merge(Group group);
 

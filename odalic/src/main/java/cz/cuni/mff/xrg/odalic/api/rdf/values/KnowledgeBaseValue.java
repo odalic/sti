@@ -39,6 +39,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   private List<String> skippedAttributes;
   private List<String> skippedClasses;
   
+  private boolean groupsAutoSelected;
   private Set<GroupValue> selectedGroups;
   
   private boolean insertEnabled;
@@ -66,6 +67,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
     this.languageTag = adaptee.getLanguageTag();
     this.skippedAttributes = ImmutableList.copyOf(adaptee.getSkippedAttributes());
     this.skippedClasses = ImmutableList.copyOf(adaptee.getSkippedClasses());
+    this.groupsAutoSelected = adaptee.getGroupsAutoSelected();
     this.selectedGroups = adaptee.getSelectedGroups().stream().map(e -> new GroupValue(e)).collect(ImmutableSet.toImmutableSet());
     this.insertEnabled = adaptee.isInsertEnabled();
     this.insertGraph = adaptee.getInsertGraph() == null ? null : adaptee.getInsertGraph().toString();
@@ -205,6 +207,22 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   }
 
   /**
+   * @return whether the groups are auto-selected
+   */
+  @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/groupsAutoSelected",
+      datatype = "http://www.w3.org/2001/XMLSchema#boolean")
+  public boolean getGroupsAutoSelected() {
+    return this.groupsAutoSelected;
+  }
+
+  /**
+   * @param groupsAutoSelected whether the groups are auto-selected
+   */
+  public void setGroupsAutoSelected(boolean groupsAutoSelected) {
+    this.groupsAutoSelected = groupsAutoSelected;
+  }
+  
+  /**
    * @return the selectedGroups
    */
   @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/selectedGroup",
@@ -321,6 +339,13 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
 
   @Override
   public String toString() {
-    return "KnowledgeBaseValue [name=" + this.name + "]";
+    return "KnowledgeBaseValue [name=" + name + ", endpoint=" + endpoint + ", description="
+        + description + ", textSearchingMethod=" + textSearchingMethod + ", languageTag="
+        + languageTag + ", skippedAttributes=" + skippedAttributes + ", skippedClasses="
+        + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected + ", selectedGroups="
+        + selectedGroups + ", insertEnabled=" + insertEnabled + ", insertGraph=" + insertGraph
+        + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
+        + userResourcesPrefix + ", advancedType=" + advancedType + ", advancedProperties="
+        + advancedProperties + ", identifiableResource=" + identifiableResource + "]";
   }
 }

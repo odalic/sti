@@ -1,6 +1,10 @@
 package cz.cuni.mff.xrg.odalic.bases.types;
 
+import java.util.Set;
+
 import org.springframework.stereotype.Component;
+
+import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.bases.ProxyDefinitionFactory;
@@ -13,7 +17,7 @@ public final class SparqlKnowledgeBaseDefinitionFactory
     implements ProxyDefinitionFactory {
 
   @Override
-  public SparqlProxyDefinition create(final KnowledgeBase base) {
+  public SparqlProxyDefinition create(final KnowledgeBase base, final Set<? extends Group> availableGroups) {
     final SparqlProxyDefinition.Builder builder = SparqlProxyDefinition.builder();
     
     // Name
@@ -42,14 +46,15 @@ public final class SparqlKnowledgeBaseDefinitionFactory
     builder.setClassTypeMode(SparqlProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
 
     // Loading structure
-    for (final Group group : base.getSelectedGroups()) {
-        builder.addAllStructurePredicateLabel(group.getLabelPredicates());
-        builder.addAllStructurePredicateDescription(group.getDescriptionPredicates());
-        builder.addAllStructureTypeClass(group.getClassTypes());
-        builder.addAllStructureTypeProperty(group.getPropertyTypes());
-        builder.addAllStructurePredicateType(group.getInstanceOfPredicates());
+    final Set<? extends Group> usedGroups = getUsedGroups(base, availableGroups);
+    for (final Group group : usedGroups) {
+      builder.addAllStructurePredicateLabel(group.getLabelPredicates());
+      builder.addAllStructurePredicateDescription(group.getDescriptionPredicates());
+      builder.addAllStructureTypeClass(group.getClassTypes());
+      builder.addAllStructureTypeProperty(group.getPropertyTypes());
+      builder.addAllStructurePredicateType(group.getInstanceOfPredicates());
     }
-
+    
     builder.setStructureInstanceOf(SparqlProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_INSTANCE_OF);
     builder.setStructureDomain(SparqlProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_DOMAIN);
     builder.setStructureRange(SparqlProxyDefinition.DEFAULT_STRUCTURE_PREDICATE_RANGE);
@@ -74,5 +79,14 @@ public final class SparqlKnowledgeBaseDefinitionFactory
     builder.setUriLabelHeuristicApplied(true);
       
     return builder.build();
+  }
+
+  private Set<Group> getUsedGroups(final KnowledgeBase base, final Set<? extends Group> availableGroups) {
+    if (base.getGroupsAutoSelected()) {
+      // TODO: Implement groups detection.
+      return ImmutableSet.copyOf(availableGroups);
+    } else {
+      return base.getSelectedGroups(); // If auto-detection turned off, just use the ones manually set.
+    }
   }
 }
