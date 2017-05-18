@@ -22,7 +22,9 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     private URI insertPrefixSchema;
     
     private String endpoint;
-    
+    private String login;
+    private String password;
+
     private Set<String> structurePredicateLabel = new HashSet<>();
     private Set<String> structurePredicateDescription = new HashSet<>();
     private Set<String> structurePredicateType = new HashSet<>();
@@ -163,6 +165,18 @@ public class SparqlProxyDefinition implements ProxyDefinition {
 
     public Builder setEndpoint(final String endpoint) {
       this.endpoint = endpoint;
+
+      return this;
+    }
+
+    public Builder setLogin(final String login) {
+      this.login = login;
+
+      return this;
+    }
+
+    public Builder setPassword(final String password) {
+      this.password = password;
 
       return this;
     }
@@ -405,7 +419,9 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   private final URI insertPrefixSchema;
   
   private final String endpoint;
-  
+  private final String login;
+  private final String password;
+
   private final Set<String> structurePredicateLabel;
   private final Set<String> structurePredicateDescription;
   private final Set<String> structurePredicateType;
@@ -447,6 +463,9 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     this.insertPrefixSchema = builder.insertPrefixSchema;
     
     this.endpoint = builder.endpoint;
+    this.login = builder.login;
+    this.password = builder.password;
+
     this.structurePredicateLabel = ImmutableSet.copyOf(builder.structurePredicateLabel);
     this.structurePredicateDescription = ImmutableSet.copyOf(builder.structurePredicateDescription);
     this.structurePredicateType = ImmutableSet.copyOf(builder.structurePredicateType);
@@ -499,12 +518,26 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   public URI getInsertPrefixSchema() {
     return insertPrefixSchema;
   }
-  
+
   /**
    * @return the endpoint
    */
   public String getEndpoint() {
     return endpoint;
+  }
+
+  /**
+   * @return the login
+   */
+  public String getLogin() {
+    return login;
+  }
+
+  /**
+   * @return the password
+   */
+  public String getPassword() {
+    return password;
   }
 
   /**

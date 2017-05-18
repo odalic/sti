@@ -1,6 +1,13 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.Asserts;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -86,6 +93,8 @@ public final class SparqlProxyCore implements ProxyCore {
   private final StringMetric stringMetric;
   
   private static final Logger log = LoggerFactory.getLogger(SparqlProxyCore.class);
+
+  private final HttpClient httpClient;
   
   public SparqlProxyCore(final SparqlProxyDefinition definition,
       final Map<String, String> prefixToUriMap) {
@@ -102,6 +111,20 @@ public final class SparqlProxyCore implements ProxyCore {
     this.definition = definition;
     this.prefixToUriMap = ImmutableMap.copyOf(prefixToUriMap);
     this.stringMetric = stringMetric;
+
+    if (!isNullOrEmpty(definition.getLogin())) {
+      Credentials credentials = new UsernamePasswordCredentials(definition.getLogin(), definition.getPassword());
+
+      CredentialsProvider provider = new BasicCredentialsProvider();
+      provider.setCredentials(AuthScope.ANY, credentials);
+
+      httpClient = HttpClients.custom()
+              .setDefaultCredentialsProvider(provider)
+              .build();
+    }
+    else {
+      httpClient = null;
+    }
   }
 
   /**
@@ -230,10 +253,7 @@ public final class SparqlProxyCore implements ProxyCore {
   }
 
   protected boolean ask(Query sparqlQuery) {
-    log.info("SPARQL query: \n" + sparqlQuery.toString());
-
-    QueryExecution queryExecution = QueryExecutionFactory.sparqlService(definition.getEndpoint(), sparqlQuery);
-
+    QueryExecution queryExecution = getQueryExecution(sparqlQuery);
     return queryExecution.execAsk();
   }
 
@@ -250,9 +270,7 @@ public final class SparqlProxyCore implements ProxyCore {
   }
 
   protected List<Pair<RDFNode, RDFNode>> queryReturnNodeTuples(Query query) {
-    log.info("SPARQL query: \n" + query.toString());
-
-    QueryExecution qExec = QueryExecutionFactory.sparqlService(definition.getEndpoint(), query);
+    QueryExecution qExec = getQueryExecution(query);
 
     List<Pair<RDFNode, RDFNode>> out = new ArrayList<>();
     ResultSet rs = qExec.execSelect();
@@ -281,9 +299,7 @@ public final class SparqlProxyCore implements ProxyCore {
   }
 
   protected List<RDFNode> queryReturnSingleNodes(Query query, String columnName) {
-    log.info("SPARQL query: \n" + query.toString());
-
-    QueryExecution qExec = QueryExecutionFactory.sparqlService(definition.getEndpoint(), query);
+    QueryExecution qExec = getQueryExecution(query);
 
     List<RDFNode> out = new ArrayList<>();
     ResultSet rs = qExec.execSelect();
@@ -574,9 +590,19 @@ public final class SparqlProxyCore implements ProxyCore {
       }
     }
 
-    return result.values().stream().collect(Collectors.toList());
+    return new ArrayList<>(result.values());
   }
 
+  QueryExecution getQueryExecution(Query query) {
+    log.info("SPARQL query: \n" + query.toString());
+
+    if (httpClient != null) {
+      return QueryExecutionFactory.sparqlService(definition.getEndpoint(), query, httpClient);
+    }
+    else {
+      return QueryExecutionFactory.sparqlService(definition.getEndpoint(), query);
+    }
+  }
 
   private void performInsertChecks(String label) throws ProxyException {
     if (!isInsertSupported()){
@@ -796,9 +822,7 @@ public final class SparqlProxyCore implements ProxyCore {
             .addWhere(createSPARQLResource(resourceId), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
 
     Query query = builder.build();
-    log.info("SPARQL query: \n" + query.toString());
-
-    QueryExecution qExec = QueryExecutionFactory.sparqlService(definition.getEndpoint(), query);
+    QueryExecution qExec = getQueryExecution(query);
 
     ResultSet rs = qExec.execSelect();
     while (rs.hasNext()) {

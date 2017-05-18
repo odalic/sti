@@ -34,6 +34,8 @@ public final class SparqlKnowledgeBaseDefinitionFactory
     
     // Endpoint
     builder.setEndpoint(base.getEndpoint().toString());
+    builder.setLogin(base.getLogin());
+    builder.setPassword(base.getPassword());
 
     // Fulltext settings
     builder.setFulltextEnabled(base.getTextSearchingMethod() == TextSearchingMethod.SUBSTRING || base.getTextSearchingMethod() == TextSearchingMethod.FULLTEXT);
