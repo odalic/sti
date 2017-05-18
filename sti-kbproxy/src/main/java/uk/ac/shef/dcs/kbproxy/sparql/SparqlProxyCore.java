@@ -125,6 +125,11 @@ public final class SparqlProxyCore implements ProxyCore {
     else {
       httpClient = null;
     }
+
+    if (definition.isGroupsAutoSelected()) {
+      filterStructurePredicates();
+      filterStructureTypes();
+    }
   }
 
   /**
@@ -883,6 +888,47 @@ public final class SparqlProxyCore implements ProxyCore {
     builder = addTypeRestriction(builder, Arrays.asList(types));
 
     return builder;
+  }
+
+  private void filterStructurePredicates() {
+    definition.setStructurePredicateType(filterStructurePredicates(definition.getStructurePredicateType()));
+    definition.setStructurePredicateDescription(filterStructurePredicates(definition.getStructurePredicateDescription()));
+    definition.setStructurePredicateLabel(filterStructurePredicates(definition.getStructurePredicateLabel()));
+  }
+
+  private Collection<String> filterStructurePredicates(Collection<? extends String> predicates) {
+    List<String> result = new ArrayList<>();
+
+    for (String predicate : predicates) {
+      final AskBuilder builder = getAskBuilder().addWhere("?subject", createSPARQLResource(predicate), "?object");
+      boolean askSuccess = ask(builder.build());
+
+      if (askSuccess) {
+        result.add(predicate);
+      }
+    }
+
+    return result;
+  }
+
+  private void filterStructureTypes() {
+    definition.setStructureTypeProperty(filterStructureTypes(definition.getStructureTypeProperty()));
+    definition.setStructureTypeClass(filterStructureTypes(definition.getStructureTypeClass()));
+  }
+
+  private Collection<String> filterStructureTypes(Collection<? extends String> types) {
+    List<String> result = new ArrayList<>();
+
+    for (String type : types) {
+      final AskBuilder builder = getAskBuilder().addWhere("?subject", createSPARQLResource(definition.getStructureInstanceOf()), createSPARQLResource(type));
+      boolean askSuccess = ask(builder.build());
+
+      if (askSuccess) {
+        result.add(type);
+      }
+    }
+
+    return result;
   }
 
   private SelectBuilder createExactMatchQueryBuilder(String content, Integer limit, String... types) {

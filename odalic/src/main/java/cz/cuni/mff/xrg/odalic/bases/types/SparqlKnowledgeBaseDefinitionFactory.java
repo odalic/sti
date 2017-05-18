@@ -48,6 +48,7 @@ public final class SparqlKnowledgeBaseDefinitionFactory
     builder.setClassTypeMode(SparqlProxyDefinition.SEARCH_CLASS_TYPE_MODE_VALUE.INDIRECT);
 
     // Loading structure
+    builder.setGroupsAutoSelected(base.getGroupsAutoSelected());
     final Set<? extends Group> usedGroups = getUsedGroups(base, availableGroups);
     for (final Group group : usedGroups) {
       builder.addAllStructurePredicateLabel(group.getLabelPredicates());
@@ -85,6 +86,7 @@ public final class SparqlKnowledgeBaseDefinitionFactory
 
   private Set<Group> getUsedGroups(final KnowledgeBase base, final Set<? extends Group> availableGroups) {
     if (base.getGroupsAutoSelected()) {
+
       // TODO: Implement groups detection.
       return ImmutableSet.copyOf(availableGroups);
     } else {

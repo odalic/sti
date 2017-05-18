@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
 
 public class SparqlProxyDefinition implements ProxyDefinition {
-  
+
   public static class Builder {
     
     private String name;  
@@ -55,6 +55,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     private Set<String> stoppedAttributes;
     
     public boolean uriLabelHeuristicApplied;
+    private boolean groupsAutoSelected;
 
 
     /**
@@ -369,6 +370,10 @@ public class SparqlProxyDefinition implements ProxyDefinition {
       
       return this;
     }
+
+    public void setGroupsAutoSelected(boolean groupsAutoSelected) {
+      this.groupsAutoSelected = groupsAutoSelected;
+    }
   }
   
   public static enum SEARCH_CLASS_TYPE_MODE_VALUE {
@@ -422,11 +427,12 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   private final String login;
   private final String password;
 
-  private final Set<String> structurePredicateLabel;
-  private final Set<String> structurePredicateDescription;
-  private final Set<String> structurePredicateType;
-  private final Set<String> structureTypeClass;
-  private final Set<String> structureTypeProperty;
+  private final boolean groupsAutoSelected;
+  private Set<String> structurePredicateLabel;
+  private Set<String> structurePredicateDescription;
+  private Set<String> structurePredicateType;
+  private Set<String> structureTypeClass;
+  private Set<String> structureTypeProperty;
   
   private final boolean fulltextEnabled;
   private final boolean useBifContains;
@@ -466,11 +472,12 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     this.login = builder.login;
     this.password = builder.password;
 
-    this.structurePredicateLabel = ImmutableSet.copyOf(builder.structurePredicateLabel);
-    this.structurePredicateDescription = ImmutableSet.copyOf(builder.structurePredicateDescription);
-    this.structurePredicateType = ImmutableSet.copyOf(builder.structurePredicateType);
-    this.structureTypeClass = ImmutableSet.copyOf(builder.structureTypeClass);
-    this.structureTypeProperty = ImmutableSet.copyOf(builder.structureTypeProperty);
+    this.groupsAutoSelected = builder.groupsAutoSelected;
+    setStructurePredicateLabel(builder.structurePredicateLabel);
+    setStructurePredicateDescription(builder.structurePredicateDescription);
+    setStructurePredicateType(builder.structurePredicateType);
+    setStructureTypeClass(builder.structureTypeClass);
+    setStructureTypeProperty(builder.structureTypeProperty);
     this.fulltextEnabled = builder.fulltextEnabled;
     this.useBifContains = builder.useBifContains;
     this.languageSuffix = builder.languageSuffix;
@@ -541,6 +548,13 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   }
 
   /**
+   * @return true is groups autodetection is enabled
+   */
+  public boolean isGroupsAutoSelected() {
+    return groupsAutoSelected;
+  }
+
+  /**
    * @return the structurePredicateLabel
    */
   public Set<String> getStructurePredicateLabel() {
@@ -573,6 +587,26 @@ public class SparqlProxyDefinition implements ProxyDefinition {
    */
   public Set<String> getStructureTypeProperty() {
     return structureTypeProperty;
+  }
+
+  public void setStructurePredicateLabel(Collection<? extends String> values) {
+    structurePredicateLabel = ImmutableSet.copyOf(values);
+  }
+
+  public void setStructurePredicateDescription(Collection<? extends String> values) {
+    structurePredicateDescription = ImmutableSet.copyOf(values);
+  }
+
+  public void setStructurePredicateType(Collection<? extends String> values) {
+    structurePredicateType = ImmutableSet.copyOf(values);
+  }
+
+  public void setStructureTypeClass(Collection<? extends String> values) {
+    structureTypeClass = ImmutableSet.copyOf(values);
+  }
+
+  public void setStructureTypeProperty(Collection<? extends String> values) {
+    structureTypeProperty = ImmutableSet.copyOf(values);
   }
 
   /**
