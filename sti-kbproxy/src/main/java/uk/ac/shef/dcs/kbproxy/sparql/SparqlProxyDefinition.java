@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
 
 public class SparqlProxyDefinition implements ProxyDefinition {
-  
+
   public static class Builder {
     
     private String name;  
@@ -22,7 +22,9 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     private URI insertPrefixSchema;
     
     private String endpoint;
-    
+    private String login;
+    private String password;
+
     private Set<String> structurePredicateLabel = new HashSet<>();
     private Set<String> structurePredicateDescription = new HashSet<>();
     private Set<String> structurePredicateType = new HashSet<>();
@@ -53,6 +55,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     private Set<String> stoppedAttributes;
     
     public boolean uriLabelHeuristicApplied;
+    private boolean groupsAutoSelected;
 
 
     /**
@@ -163,6 +166,18 @@ public class SparqlProxyDefinition implements ProxyDefinition {
 
     public Builder setEndpoint(final String endpoint) {
       this.endpoint = endpoint;
+
+      return this;
+    }
+
+    public Builder setLogin(final String login) {
+      this.login = login;
+
+      return this;
+    }
+
+    public Builder setPassword(final String password) {
+      this.password = password;
 
       return this;
     }
@@ -355,6 +370,10 @@ public class SparqlProxyDefinition implements ProxyDefinition {
       
       return this;
     }
+
+    public void setGroupsAutoSelected(boolean groupsAutoSelected) {
+      this.groupsAutoSelected = groupsAutoSelected;
+    }
   }
   
   public static enum SEARCH_CLASS_TYPE_MODE_VALUE {
@@ -405,12 +424,15 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   private final URI insertPrefixSchema;
   
   private final String endpoint;
-  
-  private final Set<String> structurePredicateLabel;
-  private final Set<String> structurePredicateDescription;
-  private final Set<String> structurePredicateType;
-  private final Set<String> structureTypeClass;
-  private final Set<String> structureTypeProperty;
+  private final String login;
+  private final String password;
+
+  private final boolean groupsAutoSelected;
+  private Set<String> structurePredicateLabel;
+  private Set<String> structurePredicateDescription;
+  private Set<String> structurePredicateType;
+  private Set<String> structureTypeClass;
+  private Set<String> structureTypeProperty;
   
   private final boolean fulltextEnabled;
   private final boolean useBifContains;
@@ -447,11 +469,15 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     this.insertPrefixSchema = builder.insertPrefixSchema;
     
     this.endpoint = builder.endpoint;
-    this.structurePredicateLabel = ImmutableSet.copyOf(builder.structurePredicateLabel);
-    this.structurePredicateDescription = ImmutableSet.copyOf(builder.structurePredicateDescription);
-    this.structurePredicateType = ImmutableSet.copyOf(builder.structurePredicateType);
-    this.structureTypeClass = ImmutableSet.copyOf(builder.structureTypeClass);
-    this.structureTypeProperty = ImmutableSet.copyOf(builder.structureTypeProperty);
+    this.login = builder.login;
+    this.password = builder.password;
+
+    this.groupsAutoSelected = builder.groupsAutoSelected;
+    setStructurePredicateLabel(builder.structurePredicateLabel);
+    setStructurePredicateDescription(builder.structurePredicateDescription);
+    setStructurePredicateType(builder.structurePredicateType);
+    setStructureTypeClass(builder.structureTypeClass);
+    setStructureTypeProperty(builder.structureTypeProperty);
     this.fulltextEnabled = builder.fulltextEnabled;
     this.useBifContains = builder.useBifContains;
     this.languageSuffix = builder.languageSuffix;
@@ -499,12 +525,33 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   public URI getInsertPrefixSchema() {
     return insertPrefixSchema;
   }
-  
+
   /**
    * @return the endpoint
    */
   public String getEndpoint() {
     return endpoint;
+  }
+
+  /**
+   * @return the login
+   */
+  public String getLogin() {
+    return login;
+  }
+
+  /**
+   * @return the password
+   */
+  public String getPassword() {
+    return password;
+  }
+
+  /**
+   * @return true is groups autodetection is enabled
+   */
+  public boolean isGroupsAutoSelected() {
+    return groupsAutoSelected;
   }
 
   /**
@@ -540,6 +587,26 @@ public class SparqlProxyDefinition implements ProxyDefinition {
    */
   public Set<String> getStructureTypeProperty() {
     return structureTypeProperty;
+  }
+
+  public void setStructurePredicateLabel(Collection<? extends String> values) {
+    structurePredicateLabel = ImmutableSet.copyOf(values);
+  }
+
+  public void setStructurePredicateDescription(Collection<? extends String> values) {
+    structurePredicateDescription = ImmutableSet.copyOf(values);
+  }
+
+  public void setStructurePredicateType(Collection<? extends String> values) {
+    structurePredicateType = ImmutableSet.copyOf(values);
+  }
+
+  public void setStructureTypeClass(Collection<? extends String> values) {
+    structureTypeClass = ImmutableSet.copyOf(values);
+  }
+
+  public void setStructureTypeProperty(Collection<? extends String> values) {
+    structureTypeProperty = ImmutableSet.copyOf(values);
   }
 
   /**
