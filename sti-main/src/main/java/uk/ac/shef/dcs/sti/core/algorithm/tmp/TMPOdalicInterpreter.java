@@ -16,7 +16,6 @@ import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 import uk.ac.shef.dcs.sti.core.extension.annotations.ComponentTypeValue;
 import uk.ac.shef.dcs.sti.core.extension.annotations.EntityCandidate;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Ambiguity;
-import uk.ac.shef.dcs.sti.core.extension.constraints.Classification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.extension.constraints.DataCubeComponent;
 import uk.ac.shef.dcs.sti.core.extension.positions.CellPosition;
@@ -153,13 +152,6 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
     final Set<Integer> ignoreCols = constraints.getColumnIgnores().stream()
         .map(e -> e.getPosition().getIndex()).collect(Collectors.toSet());
 
-    for (final Classification classification : constraints.getClassifications()) {
-      // if the chosen classification is empty, we also want to ignore this column
-      if (classification.getAnnotation().getChosen().isEmpty()) {
-        ignoreCols.add(classification.getPosition().getIndex());
-      }
-    }
-
     setIgnoreColumns(ignoreCols);
 
     final int[] ignoreColumnsArray =
@@ -230,7 +222,7 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
         // if the column is entity column, do column typing and disambiguation;
         // otherwise, simply create header annotation
         LOG.info("\t\t>> Annotate literal-columns in relation with main column");
-        this.literalColumnTagger.annotate(table, tableAnnotations,
+        this.literalColumnTagger.annotate(table, tableAnnotations, constraints,
             annotatedColumns.toArray(new Integer[0]));
       }
 

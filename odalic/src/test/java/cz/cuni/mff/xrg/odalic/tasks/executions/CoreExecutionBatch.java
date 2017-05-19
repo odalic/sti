@@ -143,9 +143,9 @@ public class CoreExecutionBatch {
     }
     MemoryOnlySolrCacheProviderService cps = new MemoryOnlySolrCacheProviderService(dps);
     DefaultProxiesFactory dpf = new DefaultProxiesFactory(cps);
-    MemoryOnlyAdvancedBaseTypesService abs = new MemoryOnlyAdvancedBaseTypesService(new MemoryOnlyGroupsService(dps));
-    kbf = new MemoryOnlyKnowledgeBaseProxiesService(dpf, abs, pms);
     MemoryOnlyGroupsService mgs = new MemoryOnlyGroupsService(dps);
+    MemoryOnlyAdvancedBaseTypesService abs = new MemoryOnlyAdvancedBaseTypesService(mgs);
+    kbf = new MemoryOnlyKnowledgeBaseProxiesService(dpf, abs, pms);
     MemoryOnlyBasesService mbs = new MemoryOnlyBasesService(kbf, mgs, abs, dps);
 
     // groups and bases initialization

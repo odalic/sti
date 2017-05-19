@@ -102,8 +102,7 @@ public class LEARNINGPreliminaryColumnClassifier {
 
     // 3. (added): if the classification is suggested by the user, then set it and return
     for (final Classification classification : constraints.getClassifications()) {
-      if ((classification.getPosition().getIndex() == column)
-          && !classification.getAnnotation().getChosen().isEmpty()) {
+      if (classification.getPosition().getIndex() == column) {
         for (final EntityCandidate suggestion : classification.getAnnotation().getChosen()) {
           headerClazzScores.add(new TColumnHeaderAnnotation(
               table.getColumnHeader(column).getHeaderText(),
