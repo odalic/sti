@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE configuration>
 <configuration>
+	<property name="ODALIC_LOG_HOME" value="../logs/odalic" />
+	
 	<appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
 		<layout class="ch.qos.logback.classic.PatternLayout">
 			<Pattern>.%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg %n
@@ -10,14 +12,33 @@
 			<level>TRACE</level>
 		</filter>
 	</appender>
+	<appender name="fileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${ODALIC_LOG_HOME}/odalic.log</file>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>.%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg %n
+			</Pattern>
+		</encoder>
+
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- rollover daily -->
+			<fileNamePattern>${ODALIC_LOG_HOME}/archived/odalic.%d{yyyy-MM-dd}.%i.log
+                        </fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>10MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+	</appender>
   		
 	<logger name="cz.cuni.mff.xrg.odalic" additivity="false">
 	    <level value="DEBUG" />
-		<appender-ref ref="consoleAppender" />
+	    <appender-ref ref="consoleAppender" />
+	    <appender-ref ref="fileAppender" />
 	</logger>
 
 	<root>
 		<level value="INFO" />
 		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
 	</root>
 </configuration> 
