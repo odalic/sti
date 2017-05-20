@@ -282,7 +282,7 @@ public final class Feedback implements Serializable {
         if (this.columnIgnores.stream()
             .anyMatch(e -> e.getPosition().getIndex() == subjCol.getIndex())) {
           throw new IllegalArgumentException("The column (position: " + subjCol.getIndex()
-              + ") which is ignored does not have to be a subject column.");
+              + ") which is ignored cannot be a subject column.");
         }
 
         for (final Classification classification : this.classifications) {
@@ -291,7 +291,7 @@ public final class Feedback implements Serializable {
               && classification.getAnnotation().getChosen().get(baseName).isEmpty()) {
             throw new IllegalArgumentException("The column (position: " + subjCol.getIndex()
                 + ") which has empty chosen classification set (for " + baseName
-                + " KB) does not have to be a subject column (for that KB).");
+                + " KB) cannot be a subject column (for that KB).");
           }
         }
       }
@@ -302,7 +302,7 @@ public final class Feedback implements Serializable {
       if (this.columnIgnores.stream()
           .anyMatch(e -> e.getPosition().getIndex() == compCol.getPosition().getIndex())) {
         throw new IllegalArgumentException("The column (position: " + compCol.getPosition().getIndex()
-            + ") which is ignored does not have to be a compulsory column.");
+            + ") which is ignored cannot be a compulsory column.");
       }
     }
   }
