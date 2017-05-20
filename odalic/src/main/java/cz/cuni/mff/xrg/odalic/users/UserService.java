@@ -22,7 +22,7 @@ public interface UserService {
 
   void requestPasswordChange(User user, String password);
 
-  void signUp(Credentials credentials);
+  void signUp(Credentials credentials) throws IOException;
 
   User validateToken(Token token);
 }

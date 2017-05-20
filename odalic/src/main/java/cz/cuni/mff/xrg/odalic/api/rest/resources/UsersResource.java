@@ -187,7 +187,7 @@ public final class UsersResource {
     }
 
     return Message
-        .of("Password change requested. Please confirm via the code sent to the provided e-mail.")
+        .of("Password change requested.")
         .toResponse(Response.Status.OK, this.uriInfo);
   }
 
@@ -195,7 +195,7 @@ public final class UsersResource {
   @Path("users")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response signUp(final Credentials credentials) throws MalformedURLException {
+  public Response signUp(final Credentials credentials) throws IOException {
     try {
       this.userService.signUp(credentials);
     } catch (final IllegalArgumentException e) {
@@ -203,7 +203,7 @@ public final class UsersResource {
     }
 
     return Message
-        .of("An account created. Please activate via the code sent to the provided e-mail before the first use.")
+        .of("An account created. Activation may be required before the first use.")
         .toResponse(Response.Status.OK, this.uriInfo);
   }
 }
