@@ -284,16 +284,6 @@ public final class Feedback implements Serializable {
           throw new IllegalArgumentException("The column (position: " + subjCol.getIndex()
               + ") which is ignored cannot be a subject column.");
         }
-
-        for (final Classification classification : this.classifications) {
-          if ((classification.getPosition().getIndex() == subjCol.getIndex())
-              && (classification.getAnnotation().getChosen().get(baseName) != null)
-              && classification.getAnnotation().getChosen().get(baseName).isEmpty()) {
-            throw new IllegalArgumentException("The column (position: " + subjCol.getIndex()
-                + ") which has empty chosen classification set (for " + baseName
-                + " KB) cannot be a subject column (for that KB).");
-          }
-        }
       }
     }
 
