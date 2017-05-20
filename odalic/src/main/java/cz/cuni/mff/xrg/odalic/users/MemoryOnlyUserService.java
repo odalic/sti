@@ -69,6 +69,7 @@ public final class MemoryOnlyUserService implements UserService {
   private static final String ADMIN_EMAIL_PROPERTY_KEY = "cz.cuni.mff.xrg.odalic.users.admin.email";
   private static final String ADMIN_INITIAL_PASSWORD_PROPERTY_KEY =
       "cz.cuni.mff.xrg.odalic.users.admin.password";
+  private static final String EMAIL_CONFIRMATIONS_REQUIRED_PROPERTY_KEY = "mail.confirmations";
 
 
   private static final Logger logger = LoggerFactory.getLogger(MemoryOnlyUserService.class);
@@ -131,6 +132,8 @@ public final class MemoryOnlyUserService implements UserService {
   
   private final BasesService basesService;
   
+  private final boolean confirmationsRequired;
+  
   private final Map<UUID, Credentials> tokenIdsToUnconfirmed;
 
   private final Map<UUID, User> tokenIdsToPasswordChanging;
@@ -164,6 +167,8 @@ public final class MemoryOnlyUserService implements UserService {
     this.groupsService = groupsService;
     this.basesService = basesService;
 
+    this.confirmationsRequired = getConfirmationsRequired(properties);
+    
     this.userIdsToUsers = new HashMap<>();
 
     final String maximumCodesKeptString = properties.getProperty(MAXIMUM_CODES_KEPT_PROPERTY_KEY);
@@ -234,6 +239,15 @@ public final class MemoryOnlyUserService implements UserService {
     this.userIdsToTokenIds = HashMultimap.create();
 
     createAdminIfNotPresent(properties);
+  }
+  
+  private static boolean getConfirmationsRequired(Properties properties) {
+    final String confirmationsRequiredValue = properties.getProperty(EMAIL_CONFIRMATIONS_REQUIRED_PROPERTY_KEY);
+    if (confirmationsRequiredValue == null) {
+      return false;
+    }
+    
+    return Boolean.parseBoolean(confirmationsRequiredValue);
   }
 
   @Override
@@ -445,12 +459,16 @@ public final class MemoryOnlyUserService implements UserService {
     this.tokenIdsToPasswordChanging.put(tokenId,
         new User(user.getEmail(), hash(newPassword), user.getRole()));
 
-    this.mailService.send(ODALIC_PASSWORD_CHANGING_CONFIRMATION_SUBJECT,
+    if (this.confirmationsRequired) {
+      this.mailService.send(ODALIC_PASSWORD_CHANGING_CONFIRMATION_SUBJECT,
         generatePasswordChangingMessage(token), new Address[] {address});
+    } else {
+      confirmPasswordChange(token);
+    }
   }
 
   @Override
-  public void signUp(final Credentials credentials) {
+  public void signUp(final Credentials credentials) throws IOException {
     Preconditions.checkNotNull(credentials);
 
     final Address address = extractAddress(credentials);
@@ -459,7 +477,11 @@ public final class MemoryOnlyUserService implements UserService {
 
     final String message = generateSignUpMessage(token);
 
-    this.mailService.send(ODALIC_SIGN_UP_CONFIRMATION_SUBJECT, message, new Address[] {address});
+    if (this.confirmationsRequired) {
+      this.mailService.send(ODALIC_SIGN_UP_CONFIRMATION_SUBJECT, message, new Address[] {address});
+    } else {
+      activateUser(token);
+    }
   }
 
   private DecodedToken validateAndDecode(final Token token) {
