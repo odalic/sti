@@ -51,4 +51,9 @@ public final class FileDbService implements DbService {
   public DB getDb() {
     return this.db;
   }
+  
+  @Override
+  public void dispose() {
+    this.db.close();
+  }
 }

@@ -15,4 +15,6 @@ public interface DbService {
    * @return a shared {@link DB} instance
    */
   DB getDb();
+
+  void dispose();
 }
