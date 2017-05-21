@@ -391,8 +391,9 @@ public final class DbBasesService implements BasesService {
     if (advancedTypeId == null) {
       baseBuilder.setAdvancedType(this.advancedBaseTypesService.getDefault());
     } else {
-      baseBuilder.setAdvancedProperties(extractAdvancedProperties(baseProperties));
+      baseBuilder.setAdvancedType(this.advancedBaseTypesService.getType(advancedTypeId));
     }
+    baseBuilder.setAdvancedProperties(extractAdvancedProperties(baseProperties));
 
     final URL endpointUrl = new URL(baseProperties.getProperty(ENDPOINT_PROPERTY_KEY));
     baseBuilder.setEndpoint(endpointUrl);
