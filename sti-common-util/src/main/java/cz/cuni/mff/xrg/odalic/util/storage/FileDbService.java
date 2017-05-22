@@ -3,6 +3,8 @@
  */
 package cz.cuni.mff.xrg.odalic.util.storage;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.mapdb.DB;
@@ -21,17 +23,25 @@ import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
  */
 public final class FileDbService implements DbService {
 
-  private static final String FILE_NAME_PROPERTY_KEY = "cz.cuni.mff.xrg.odalic.db.file";
+  private static final String ROOT_PATH_PROPERTY_KEY = "sti.home";
+  private static final String FILE_PATH_PROPERTY_KEY = "cz.cuni.mff.xrg.odalic.db.file";
 
   private static DB initializeDb(final PropertiesService propertiesService) {
     Preconditions.checkNotNull(propertiesService);
 
     final Properties properties = propertiesService.get();
-    final String fileName = properties.getProperty(FILE_NAME_PROPERTY_KEY);
-    Preconditions.checkArgument(fileName != null,
-        String.format("Missing key %s in the configuration!", FILE_NAME_PROPERTY_KEY));
+    
+    final String filePath = properties.getProperty(FILE_PATH_PROPERTY_KEY);
+    Preconditions.checkArgument(filePath != null,
+        String.format("Missing key %s in the configuration!", FILE_PATH_PROPERTY_KEY));
+    
+    final String rootPathValue = properties.getProperty(ROOT_PATH_PROPERTY_KEY);
+    Preconditions.checkArgument(rootPathValue != null,
+        String.format("Missing key %s in the configuration!", ROOT_PATH_PROPERTY_KEY));
+    
+    final Path rootPath = Paths.get(rootPathValue);
 
-    return DBMaker.fileDB(fileName).closeOnJvmShutdown().transactionEnable().make();
+    return DBMaker.fileDB(rootPath.resolve(filePath).toFile()).closeOnJvmShutdown().transactionEnable().make();
   }
 
   private final DB db;
