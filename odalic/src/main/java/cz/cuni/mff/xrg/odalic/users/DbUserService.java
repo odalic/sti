@@ -209,13 +209,13 @@ public final class DbUserService implements UserService {
   private final TaskService taskService;
 
   private final FileService fileService;
-  
+
   private final GroupsService groupsService;
-  
+
   private final BasesService basesService;
 
   private final boolean confirmationsRequired;
-  
+
   private final long signUpConfirmationWindowMinutes;
 
   private final long passwordSettingConfirmationWindowMinutes;
@@ -279,7 +279,7 @@ public final class DbUserService implements UserService {
         this.db.hashMap("userIdsToUsers", Serializer.STRING, Serializer.JAVA).createOrOpen();
 
     this.confirmationsRequired = getConfirmationsRequired(properties);
-    
+
     final int maximumCodesKept = getMaxCodesKept(properties);
 
     this.tokenIdsToUnconfirmed =
@@ -309,11 +309,12 @@ public final class DbUserService implements UserService {
   }
 
   private static boolean getConfirmationsRequired(Properties properties) {
-    final String confirmationsRequiredValue = properties.getProperty(EMAIL_CONFIRMATIONS_REQUIRED_PROPERTY_KEY);
+    final String confirmationsRequiredValue =
+        properties.getProperty(EMAIL_CONFIRMATIONS_REQUIRED_PROPERTY_KEY);
     if (confirmationsRequiredValue == null) {
       return false;
     }
-    
+
     return Boolean.parseBoolean(confirmationsRequiredValue);
   }
 
@@ -332,7 +333,7 @@ public final class DbUserService implements UserService {
     }
 
     this.db.commit();
-    
+
     this.groupsService.initializeDefaults(user);
     this.basesService.initializeDefaults(user);
   }
@@ -385,7 +386,7 @@ public final class DbUserService implements UserService {
     final User user = doCreate(credentials, role);
 
     this.db.commit();
-    
+
     this.groupsService.initializeDefaults(user);
     this.basesService.initializeDefaults(user);
   }
@@ -406,9 +407,10 @@ public final class DbUserService implements UserService {
       return;
     }
 
-    final User admin = doCreate(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
+    final User admin =
+        doCreate(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
     this.db.commit();
-    
+
     this.groupsService.initializeDefaults(admin);
     this.basesService.initializeDefaults(admin);
   }
@@ -424,15 +426,16 @@ public final class DbUserService implements UserService {
   }
 
   private User doCreate(final Credentials credentials, final Role role) throws IOException {
-    Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()));
+    Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()),
+        String.format("The user %s", credentials.getEmail()));
 
     final String email = credentials.getEmail();
     final String passwordHashed = hash(credentials.getPassword());
 
     final User user = new User(email, passwordHashed, role);
-    
+
     this.userIdsToUsers.put(email, user);
-    
+
     return user;
   }
 

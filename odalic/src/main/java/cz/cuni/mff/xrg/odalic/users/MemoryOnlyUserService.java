@@ -129,11 +129,11 @@ public final class MemoryOnlyUserService implements UserService {
   private final String passwordSettingConfirmationUrlFormat;
 
   private final GroupsService groupsService;
-  
+
   private final BasesService basesService;
-  
+
   private final boolean confirmationsRequired;
-  
+
   private final Map<UUID, Credentials> tokenIdsToUnconfirmed;
 
   private final Map<UUID, User> tokenIdsToPasswordChanging;
@@ -145,9 +145,8 @@ public final class MemoryOnlyUserService implements UserService {
   @Autowired
   public MemoryOnlyUserService(final PropertiesService propertiesService,
       final PasswordHashingService passwordHashingService, final MailService mailService,
-      final TokenService tokenService, final TaskService taskService,
-      final FileService fileService, final GroupsService groupsService,
-      final BasesService basesService) throws IOException {
+      final TokenService tokenService, final TaskService taskService, final FileService fileService,
+      final GroupsService groupsService, final BasesService basesService) throws IOException {
     Preconditions.checkNotNull(propertiesService);
     Preconditions.checkNotNull(passwordHashingService);
     Preconditions.checkNotNull(mailService);
@@ -168,7 +167,7 @@ public final class MemoryOnlyUserService implements UserService {
     this.basesService = basesService;
 
     this.confirmationsRequired = getConfirmationsRequired(properties);
-    
+
     this.userIdsToUsers = new HashMap<>();
 
     final String maximumCodesKeptString = properties.getProperty(MAXIMUM_CODES_KEPT_PROPERTY_KEY);
@@ -240,13 +239,14 @@ public final class MemoryOnlyUserService implements UserService {
 
     createAdminIfNotPresent(properties);
   }
-  
+
   private static boolean getConfirmationsRequired(Properties properties) {
-    final String confirmationsRequiredValue = properties.getProperty(EMAIL_CONFIRMATIONS_REQUIRED_PROPERTY_KEY);
+    final String confirmationsRequiredValue =
+        properties.getProperty(EMAIL_CONFIRMATIONS_REQUIRED_PROPERTY_KEY);
     if (confirmationsRequiredValue == null) {
       return false;
     }
-    
+
     return Boolean.parseBoolean(confirmationsRequiredValue);
   }
 
@@ -295,13 +295,14 @@ public final class MemoryOnlyUserService implements UserService {
   public void create(final Credentials credentials, final Role role) throws IOException {
     Preconditions.checkNotNull(credentials);
     Preconditions.checkNotNull(role);
-    Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()));
+    Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()),
+        String.format("The user %s already exists!", credentials.getEmail()));
 
     final String email = credentials.getEmail();
     final String passwordHashed = hash(credentials.getPassword());
 
     final User user = new User(email, passwordHashed, role);
-    
+
     this.userIdsToUsers.put(email, user);
     this.groupsService.initializeDefaults(user);
     this.basesService.initializeDefaults(user);
@@ -461,7 +462,7 @@ public final class MemoryOnlyUserService implements UserService {
 
     if (this.confirmationsRequired) {
       this.mailService.send(ODALIC_PASSWORD_CHANGING_CONFIRMATION_SUBJECT,
-        generatePasswordChangingMessage(token), new Address[] {address});
+          generatePasswordChangingMessage(token), new Address[] {address});
     } else {
       confirmPasswordChange(token);
     }
