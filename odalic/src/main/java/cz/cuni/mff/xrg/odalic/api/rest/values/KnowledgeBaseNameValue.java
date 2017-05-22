@@ -48,9 +48,6 @@ public final class KnowledgeBaseNameValue implements Serializable, Comparable<Kn
     this.name = name;
   }
   
-  /* (non-Javadoc)
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -59,9 +56,6 @@ public final class KnowledgeBaseNameValue implements Serializable, Comparable<Kn
     return result;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -99,9 +93,6 @@ public final class KnowledgeBaseNameValue implements Serializable, Comparable<Kn
     return this.name.compareTo(other.name);    
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "KnowledgeBaseValueInput [name=" + name + "]";

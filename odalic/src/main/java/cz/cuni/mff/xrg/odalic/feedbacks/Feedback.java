@@ -297,9 +297,6 @@ public final class Feedback implements Serializable {
     }
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Feedback [subjectColumnsPositions=" + subjectColumnsPositions + ", columnIgnores="
