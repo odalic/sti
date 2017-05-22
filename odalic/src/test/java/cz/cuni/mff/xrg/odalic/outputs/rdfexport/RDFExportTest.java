@@ -41,7 +41,7 @@ import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
  * @author Tomáš Knap
  *
  */
-@ContextConfiguration(locations = {"classpath:spring/applicationContext.xml"})
+@ContextConfiguration(locations = {"classpath:spring/testApplicationContext.xml"})
 public class RDFExportTest {
 
   private static final Logger log = LoggerFactory.getLogger(RDFExportTest.class);

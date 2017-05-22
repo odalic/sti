@@ -49,7 +49,7 @@
 		class="cz.cuni.mff.xrg.odalic.feedbacks.DefaultFeedbackToConstraintsAdapter" />
 
 	<!-- Services -->
-	<bean id="dbService" class="cz.cuni.mff.xrg.odalic.util.storage.FileDbService" destroy-method="dispose"/>
+	<bean id="dbService" class="cz.cuni.mff.xrg.odalic.util.storage.FileDbService" destroy-method="cleanUp"/>
 	<bean id="cacheProviderService" class="uk.ac.shef.dcs.kbproxy.solr.DbSolrCacheProviderService" />
 	<bean id="proxiesFactory" class="uk.ac.shef.dcs.kbproxy.DefaultProxiesFactory" />
 	<bean id="knowledgeBaseProxiesService" class="cz.cuni.mff.xrg.odalic.bases.proxies.MemoryOnlyKnowledgeBaseProxiesService" />

@@ -46,7 +46,7 @@ public final class FileDbService implements DbService {
 
   private final DB db;
 
-  public FileDbService(final DB db) {
+  private FileDbService(final DB db) {
     Preconditions.checkNotNull(db);
 
     this.db = db;
@@ -62,8 +62,7 @@ public final class FileDbService implements DbService {
     return this.db;
   }
   
-  @Override
-  public void dispose() {
+  public void cleanUp() throws Exception {
     this.db.close();
   }
 }

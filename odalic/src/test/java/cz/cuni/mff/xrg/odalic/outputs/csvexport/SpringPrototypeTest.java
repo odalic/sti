@@ -24,7 +24,7 @@ import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
  * @author Josef Janoušek
  *
  */
-@ContextConfiguration(locations = {"classpath:spring/applicationContext.xml"})
+@ContextConfiguration(locations = {"classpath:spring/testApplicationContext.xml"})
 public class SpringPrototypeTest {
 
   private static final Logger log = LoggerFactory.getLogger(SpringPrototypeTest.class);

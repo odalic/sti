@@ -175,9 +175,10 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService
           knowledgeBaseValue.getLanguageTag(), knowledgeBaseValue.getSkippedAttributes(),
           knowledgeBaseValue.getSkippedClasses(), knowledgeBaseValue.getGroupsAutoSelected(),
           selectedGroups, knowledgeBaseValue.isInsertEnabled(),
-          URI.create(knowledgeBaseValue.getInsertGraph()),
-          URI.create(knowledgeBaseValue.getUserClassesPrefix()),
-          URI.create(knowledgeBaseValue.getUserResourcesPrefix()), knowledgeBaseValue.getLogin(),
+          knowledgeBaseValue.getInsertGraph() == null ? null : URI.create(knowledgeBaseValue.getInsertGraph()),
+          knowledgeBaseValue.getUserClassesPrefix() == null ? null : URI.create(knowledgeBaseValue.getUserClassesPrefix()),
+          knowledgeBaseValue.getUserResourcesPrefix() == null ? null : URI.create(knowledgeBaseValue.getUserResourcesPrefix()),
+          knowledgeBaseValue.getLogin(),
           knowledgeBaseValue.getPassword(),
           this.advancedBaseTypesService.getType(knowledgeBaseValue.getAdvancedType()),
           advancedProperties);

@@ -323,14 +323,18 @@ public final class DbUserService implements UserService {
 
     final Credentials credentials = matchCredentials(decodedToken);
 
+    final User user;
     try {
-      doCreate(credentials, Role.USER);
+      user = doCreate(credentials, Role.USER);
     } catch (final Exception e) {
       this.db.rollback();
       throw e;
     }
 
     this.db.commit();
+    
+    this.groupsService.initializeDefaults(user);
+    this.basesService.initializeDefaults(user);
   }
 
 

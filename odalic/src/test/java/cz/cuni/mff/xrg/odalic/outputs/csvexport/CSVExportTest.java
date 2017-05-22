@@ -50,7 +50,7 @@ import cz.cuni.mff.xrg.odalic.users.User;
  * @author Josef Janoušek
  *
  */
-@ContextConfiguration(locations = {"classpath:spring/applicationContext.xml"})
+@ContextConfiguration(locations = {"classpath:spring/testApplicationContext.xml"})
 public class CSVExportTest {
 
   private static final Logger log = LoggerFactory.getLogger(CSVExportTest.class);
