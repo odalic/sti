@@ -62,9 +62,8 @@ public class LiteralColumnTaggerImpl implements LiteralColumnTagger {
       // check if the object column is an ne column, and whether that ne column is already annotated
       // if so we do not need to annotate this column, we just need to skip it
       for (final int i : neColumns) {
-        final boolean isColumn_acronym_or_code =
-            table.getColumnHeader(i).getFeature().isAcronymColumn();
-        if ((i == subcol_objcol.getObjectCol()) && !isColumn_acronym_or_code) {
+        // final boolean isColumn_acronym_or_code = table.getColumnHeader(i).getFeature().isAcronymColumn();
+        if (i == subcol_objcol.getObjectCol()) {
           if ((annotations.getHeaderAnnotation(i) != null && annotations.getHeaderAnnotation(i).length > 0) ||
               (constraints.getClassifications().stream().anyMatch(ec -> (ec.getPosition().getIndex() == i)))) {
             skip = true;
