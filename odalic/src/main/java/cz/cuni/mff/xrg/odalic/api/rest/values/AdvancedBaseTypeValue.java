@@ -117,9 +117,6 @@ public final class AdvancedBaseTypeValue implements Serializable {
     this.keysToComments = ImmutableMap.copyOf(keysToComments);
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "AdvancedBaseTypeValue [name=" + name + ", keys=" + keys + ", keysToDefaultValues="

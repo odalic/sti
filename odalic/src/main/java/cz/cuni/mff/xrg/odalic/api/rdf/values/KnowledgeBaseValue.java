@@ -43,6 +43,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   private Set<GroupValue> selectedGroups;
   
   private boolean insertEnabled;
+  private String insertEndpoint;
   private String insertGraph;
   private String userClassesPrefix;
   private String userResourcesPrefix;
@@ -73,6 +74,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
     this.groupsAutoSelected = adaptee.getGroupsAutoSelected();
     this.selectedGroups = adaptee.getSelectedGroups().stream().map(e -> new GroupValue(e)).collect(ImmutableSet.toImmutableSet());
     this.insertEnabled = adaptee.isInsertEnabled();
+    this.insertEndpoint = adaptee.getInsertEndpoint() == null ? null : adaptee.getInsertEndpoint().toString();
     this.insertGraph = adaptee.getInsertGraph() == null ? null : adaptee.getInsertGraph().toString();
     this.userClassesPrefix = adaptee.getUserClassesPrefix() == null ? null : adaptee.getUserClassesPrefix().toString();
     this.userResourcesPrefix = adaptee.getUserResourcesPrefix() == null ? null : adaptee.getUserResourcesPrefix().toString();
@@ -253,10 +255,27 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   }
 
   /**
-   * @param insertEnabled the insertEnabled to set
+   * @param insertEnabled whtether the insert is enabled
    */
   public void setInsertEnabled(boolean insertEnabled) {
     this.insertEnabled = insertEnabled;
+  }
+  
+  /**
+   * @return the insert endpoint
+   */
+  @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/insertEndpoint",
+      datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @Nullable
+  public String getInsertEndpoint() {
+    return insertEndpoint;
+  }
+
+  /**
+   * @param insertGraph the insert graph to set
+   */
+  public void setInsertEndpoint(String insertEndpoint) {
+    this.insertEndpoint = insertEndpoint;
   }
 
   /**
@@ -382,10 +401,10 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
         + description + ", textSearchingMethod=" + textSearchingMethod + ", languageTag="
         + languageTag + ", skippedAttributes=" + skippedAttributes + ", skippedClasses="
         + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected + ", selectedGroups="
-        + selectedGroups + ", insertEnabled=" + insertEnabled + ", insertGraph=" + insertGraph
-        + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
-        + userResourcesPrefix + ", login=" + login + ", password=****, advancedType="
-        + advancedType + ", advancedProperties=" + advancedProperties + ", identifiableResource="
-        + identifiableResource + "]";
+        + selectedGroups + ", insertEnabled=" + insertEnabled + ", insertEndpoint=" + insertEndpoint
+        + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
+        + ", userResourcesPrefix=" + userResourcesPrefix + ", login=" + login + ", password="
+        + password + ", advancedType=" + advancedType + ", advancedProperties=" + advancedProperties
+        + ", identifiableResource=" + identifiableResource + "]";
   }
 }

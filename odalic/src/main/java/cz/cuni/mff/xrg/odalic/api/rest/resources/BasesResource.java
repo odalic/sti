@@ -168,7 +168,7 @@ public final class BasesResource {
         baseValue.getTextSearchingMethod(), baseValue.getLanguageTag(),
         baseValue.getSkippedAttributes(), baseValue.getSkippedClasses(),
         baseValue.getGroupsAutoSelected(), selectedGroups, baseValue.isInsertEnabled(),
-        baseValue.getInsertGraph(), baseValue.getUserClassesPrefix(),
+        baseValue.getInsertEndpoint(), baseValue.getInsertGraph(), baseValue.getUserClassesPrefix(),
         baseValue.getUserResourcesPrefix(), baseValue.getLogin(), baseValue.getPassword(),
         advancedType, baseValue.getAdvancedProperties());
 

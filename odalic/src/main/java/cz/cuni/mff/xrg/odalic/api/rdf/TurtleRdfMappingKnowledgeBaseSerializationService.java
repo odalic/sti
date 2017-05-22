@@ -175,6 +175,7 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService
           knowledgeBaseValue.getLanguageTag(), knowledgeBaseValue.getSkippedAttributes(),
           knowledgeBaseValue.getSkippedClasses(), knowledgeBaseValue.getGroupsAutoSelected(),
           selectedGroups, knowledgeBaseValue.isInsertEnabled(),
+          knowledgeBaseValue.getInsertEndpoint() == null ? null : new URL(knowledgeBaseValue.getInsertEndpoint()),
           knowledgeBaseValue.getInsertGraph() == null ? null : URI.create(knowledgeBaseValue.getInsertGraph()),
           knowledgeBaseValue.getUserClassesPrefix() == null ? null : URI.create(knowledgeBaseValue.getUserClassesPrefix()),
           knowledgeBaseValue.getUserResourcesPrefix() == null ? null : URI.create(knowledgeBaseValue.getUserResourcesPrefix()),
