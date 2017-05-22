@@ -27,6 +27,12 @@ public final class SparqlKnowledgeBaseDefinitionFactory
     builder.setInsertSupported(base.isInsertEnabled());
     
     if (base.isInsertEnabled()) {
+      if (base.getInsertEndpoint() == null) {
+        builder.setInsertEndpoint(base.getEndpoint().toString());
+      } else {
+        builder.setInsertEndpoint(base.getInsertEndpoint().toString());
+      }
+      
       builder.setInsertPrefixData(base.getUserResourcesPrefix());
       builder.setInsertPrefixSchema(base.getUserClassesPrefix());
       builder.setInsertGraph(base.getInsertGraph().toString());
@@ -87,8 +93,7 @@ public final class SparqlKnowledgeBaseDefinitionFactory
   private Set<Group> getUsedGroups(final KnowledgeBase base, final Set<? extends Group> availableGroups) {
     if (base.getGroupsAutoSelected()) {
 
-      // TODO: Implement groups detection.
-      return ImmutableSet.copyOf(availableGroups);
+      return ImmutableSet.copyOf(availableGroups); // Will be filtered later.
     } else {
       return base.getSelectedGroups(); // If auto-detection turned off, just use the ones manually set.
     }

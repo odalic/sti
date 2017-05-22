@@ -18,6 +18,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     private String name;  
     
     private boolean insertSupported;
+    private String insertEndpoint;
     private URI insertPrefixData;
     private URI insertPrefixSchema;
     
@@ -72,6 +73,15 @@ public class SparqlProxyDefinition implements ProxyDefinition {
      */
     public Builder setInsertSupported(boolean insertSupported) {
       this.insertSupported = insertSupported;
+
+      return this;
+    }
+    
+    /**
+     * @param insertEndpoint the insert endpoint
+     */
+    public Builder setInsertEndpoint(final String insertEndpoint) {
+      this.insertEndpoint = insertEndpoint;
 
       return this;
     }
@@ -420,6 +430,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   private final String name;
   
   private final boolean insertSupported;
+  private final String insertEndpoint;
   private final URI insertPrefixData;
   private final URI insertPrefixSchema;
   
@@ -465,6 +476,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     
     this.name = builder.name;
     this.insertSupported = builder.insertSupported;
+    this.insertEndpoint = builder.insertEndpoint;
     this.insertPrefixData = builder.insertPrefixData;
     this.insertPrefixSchema = builder.insertPrefixSchema;
     
@@ -733,5 +745,12 @@ public class SparqlProxyDefinition implements ProxyDefinition {
    */
   public boolean isUriLabelHeuristicApplied() {
     return uriLabelHeuristicApplied;
+  }
+
+  /**
+   * @return insert endpoint
+   */
+  public String getInsertEndpoint() {
+    return insertEndpoint;
   }
 }
