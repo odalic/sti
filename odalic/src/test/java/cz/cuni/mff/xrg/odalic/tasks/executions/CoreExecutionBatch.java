@@ -31,6 +31,7 @@ import cz.cuni.mff.xrg.odalic.bases.MemoryOnlyAdvancedBaseTypesService;
 import cz.cuni.mff.xrg.odalic.bases.MemoryOnlyBasesService;
 import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.bases.proxies.MemoryOnlyKnowledgeBaseProxiesService;
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.entities.PrefixMappingEntitiesFactory;
 import cz.cuni.mff.xrg.odalic.feedbacks.Ambiguity;
@@ -76,6 +77,8 @@ public class CoreExecutionBatch {
 
   private static KnowledgeBaseProxiesService kbf;
 
+  private static MemoryOnlyBasesService mbs;
+
   /**
    * Expects sti.properties file path as the first and test input CSV file path as the second
    * command line argument
@@ -100,7 +103,7 @@ public class CoreExecutionBatch {
 
     // File settings
     final Path path = Paths.get(testInputFilePath);
-    File file;
+    final File file;
     try {
       file = new File(new User("test@odalic.eu", "passwordHash", Role.USER),
           path.getFileName().toString(), path.toUri().toURL(), new Format(
@@ -125,7 +128,7 @@ public class CoreExecutionBatch {
     }
 
     // Parsed format settings
-    file = new File(file.getOwner(), file.getId(), file.getUploaded(), file.getLocation(),
+    final File parsedFile = new File(file.getOwner(), file.getId(), file.getUploaded(), file.getLocation(),
         parsingResult.getFormat(), file.isCached());
 
     // input Table creation
@@ -146,12 +149,12 @@ public class CoreExecutionBatch {
     MemoryOnlyGroupsService mgs = new MemoryOnlyGroupsService(dps);
     MemoryOnlyAdvancedBaseTypesService abs = new MemoryOnlyAdvancedBaseTypesService(mgs);
     kbf = new MemoryOnlyKnowledgeBaseProxiesService(dpf, abs, pms);
-    MemoryOnlyBasesService mbs = new MemoryOnlyBasesService(kbf, mgs, abs, dps);
+    mbs = new MemoryOnlyBasesService(kbf, mgs, abs, dps);
 
     // groups and bases initialization
     try {
-      mgs.initializeDefaults(file.getOwner());
-      mbs.initializeDefaults(file.getOwner());
+      mgs.initializeDefaults(parsedFile.getOwner());
+      mbs.initializeDefaults(parsedFile.getOwner());
     } catch (IOException e) {
       log.error("Error - groups and bases initialization:", e);
       return null;
@@ -159,17 +162,17 @@ public class CoreExecutionBatch {
 
     // Configuration settings
     Configuration configuration = new Configuration(file, ImmutableSet.of(
-        mbs.getByName(file.getOwner().getEmail(), "DBpedia"),
-        mbs.getByName(file.getOwner().getEmail(), "DBpedia Clone"),
-        mbs.getByName(file.getOwner().getEmail(), "German DBpedia")),
-        mbs.getByName(file.getOwner().getEmail(), "DBpedia"),
+        mbs.getByName(parsedFile.getOwner().getEmail(), "DBpedia").getName(),
+        mbs.getByName(parsedFile.getOwner().getEmail(), "DBpedia Clone").getName(),
+        mbs.getByName(parsedFile.getOwner().getEmail(), "German DBpedia").getName()),
+        mbs.getByName(parsedFile.getOwner().getEmail(), "DBpedia").getName(),
         createFeedback(true), rowsLimit, false);
 
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
       semanticTableInterpreters = new TableMinerPlusFactory(kbf, cps, dps).getInterpreters(
-          configuration.getInput().getOwner().getEmail(), configuration.getUsedBases());
+          configuration.getInput().getOwner().getEmail(), configuration.getUsedBases().stream().map(e -> mbs.getByName(file.getOwner().getEmail(), e)).collect(ImmutableSet.toImmutableSet()));
     } catch (final Exception e) {
       log.error("Error - TMP interpreters failed to initialize:", e);
       return null;
@@ -207,6 +210,10 @@ public class CoreExecutionBatch {
 
   public static KnowledgeBaseProxiesService getKnowledgeBaseProxyFactory() {
     return kbf;
+  }
+  
+  public static BasesService getKnowledgeBaseService() {
+    return mbs;
   }
 
   public static Feedback createFeedback(boolean emptyFeedback) {

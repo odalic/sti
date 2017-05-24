@@ -12,20 +12,30 @@ import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 
 /**
  * Domain class {@link KnowledgeBase} adapted for REST API input.
+ * 
+ * Introduced to maintain backward compatibility with the previous version of REST API which kept
+ * the name encapsulated within an object.
  *
  * @author Václav Brodec
  *
  */
 @XmlRootElement(name = "knowledgeBase")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class KnowledgeBaseNameValue implements Serializable, Comparable<KnowledgeBaseNameValue> {
+public final class KnowledgeBaseNameValue
+    implements Serializable, Comparable<KnowledgeBaseNameValue> {
 
   private static final long serialVersionUID = -1264923889540290812L;
-  
+
   private String name;
-  
+
   public KnowledgeBaseNameValue() {}
 
+  public KnowledgeBaseNameValue(final String name) {
+    Preconditions.checkNotNull(name);
+    
+    this.name = name;
+  }
+  
   public KnowledgeBaseNameValue(final KnowledgeBase adaptee) {
     this.name = adaptee.getName();
   }
@@ -47,7 +57,7 @@ public final class KnowledgeBaseNameValue implements Serializable, Comparable<Kn
 
     this.name = name;
   }
-  
+
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -84,13 +94,13 @@ public final class KnowledgeBaseNameValue implements Serializable, Comparable<Kn
       if (other.name == null) {
         return 0;
       }
-      
+
       return -1;
     } else if (other.name == null) {
       return 1;
     }
-    
-    return this.name.compareTo(other.name);    
+
+    return this.name.compareTo(other.name);
   }
 
   @Override

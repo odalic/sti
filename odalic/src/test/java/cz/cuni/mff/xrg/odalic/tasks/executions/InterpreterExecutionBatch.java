@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
@@ -60,14 +61,16 @@ public class InterpreterExecutionBatch {
     // Result export
     resultExport(coreSnapshot.getResult(), baseExportPath + "-result.json");
 
+    final KnowledgeBase primaryBase = CoreExecutionBatch.getKnowledgeBaseService().getByName("test@odalic.eu", "DBpedia");
+    
     // JSON export
     AnnotatedTable annotatedTable = CSVExportTest.testExportToAnnotatedTable(coreSnapshot.getResult(),
-        coreSnapshot.getInput(), coreSnapshot.getConfiguration(), baseExportPath + ".json",
+        coreSnapshot.getInput(), coreSnapshot.getConfiguration(), primaryBase, baseExportPath + ".json",
         new DefaultResultToAnnotatedTableAdapter(CoreExecutionBatch.getKnowledgeBaseProxyFactory()));
 
     // CSV export
     Input extendedInput = CSVExportTest.testExportToCSVFile(coreSnapshot.getResult(),
-        coreSnapshot.getInput(), coreSnapshot.getConfiguration(), baseExportPath + ".csv",
+        coreSnapshot.getInput(), coreSnapshot.getConfiguration(), primaryBase, baseExportPath + ".csv",
         new DefaultResultToCSVExportAdapter(), new DefaultCSVExporter(new DefaultApacheCsvFormatAdapter()));
 
     // RDF export

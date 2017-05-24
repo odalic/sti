@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 
 import cz.cuni.mff.xrg.odalic.api.rdf.TaskSerializationService;
@@ -295,14 +296,27 @@ public final class TasksResource {
     if (configurationValue.getUsedBases() == null) {
       usedBases = this.basesService.getBases(userId);
     } else {
-      usedBases = configurationValue.getUsedBases().stream().map(e -> this.basesService.getByName(userId, e.getName())).collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+      try {
+        usedBases = configurationValue.getUsedBases().stream()
+            .map(e -> this.basesService.getByName(userId, e.getName()))
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+      } catch (final IllegalArgumentException e) {
+        throw new BadRequestException("Unknown used base!", e);
+      }
+    }
+
+    final KnowledgeBase primaryBase =
+        this.basesService.getByName(userId, configurationValue.getPrimaryBase().getName());
+    if (!usedBases.contains(primaryBase)) {
+      throw new BadRequestException("The primary base is not among the used!");
     }
 
     final Configuration configuration;
     try {
-      configuration = new Configuration(input, usedBases, this.basesService.getByName(userId, configurationValue.getPrimaryBase().getName()),
-          configurationValue.getFeedback(), configurationValue.getRowsLimit(),
-          configurationValue.isStatistical());
+      configuration = new Configuration(input,
+          usedBases.stream().map(e -> e.getName()).collect(ImmutableSet.toImmutableSet()),
+          primaryBase.getName(), configurationValue.getFeedback(),
+          configurationValue.getRowsLimit(), configurationValue.isStatistical());
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }

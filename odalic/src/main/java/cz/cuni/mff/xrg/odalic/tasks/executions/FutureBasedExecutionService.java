@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
@@ -231,7 +232,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
     final String fileId = configuration.getInput().getId();
     final Feedback feedback = configuration.getFeedback();
-    final Set<KnowledgeBase> usedBases = configuration.getUsedBases();
+    final Set<String> usedBaseNames = configuration.getUsedBases();
     final int rowsLimit = configuration.getRowsLimit();
 
     final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
@@ -243,6 +244,10 @@ public final class FutureBasedExecutionService implements ExecutionService {
       try {
         final Table table = this.inputToTableAdapter.toTable(input);
         final boolean isStatistical = configuration.isStatistical();
+
+        final Set<KnowledgeBase> usedBases =
+            usedBaseNames.stream().map(e -> this.basesService.getByName(userId, e))
+                .collect(ImmutableSet.toImmutableSet());
 
         final Map<String, SemanticTableInterpreter> interpreters =
             this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases);
