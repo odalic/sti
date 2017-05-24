@@ -68,6 +68,8 @@ public final class DbBasesService implements BasesService {
 
   private static final String ENDPOINT_PROPERTY_KEY = "kb.endpoint";
   
+  private static final String INSERT_ENDPOINT_PROPERTY_KEY = "kb.insert.endpoint";
+  
   private static final String USE_BIF_CONTAINS_PROPERTY_KEY = "kb.useBifContains";
 
   private static final String FULLTEXT_ENABLED_PROPERTY_KEY = "kb.fulltextEnabled";
@@ -400,6 +402,12 @@ public final class DbBasesService implements BasesService {
 
     baseBuilder
         .setInsertEnabled(Boolean.parseBoolean(baseProperties.getProperty(INSERT_SUPPORTED_PROEPRTY_KEY)));
+    
+    final String insertEndpointUrlValue = baseProperties.getProperty(INSERT_ENDPOINT_PROPERTY_KEY);
+    if (insertEndpointUrlValue != null) {
+      final URL insertEndpointUrl = new URL(insertEndpointUrlValue);
+      baseBuilder.setInsertEndpoint(insertEndpointUrl);
+    }
 
     final String insertGraphValue = baseProperties.getProperty(INSERT_GRAPH_PROPERTY_KEY);
     if (insertGraphValue != null) {

@@ -64,6 +64,8 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   private static final String INSERT_GRAPH_PROPERTY_KEY = "kb.insert.graph";
 
+  private static final String INSERT_ENDPOINT_PROPERTY_KEY = "kb.insert.endpoint";
+  
   private static final String INSERT_SUPPORTED_PROEPRTY_KEY = "kb.insert.supported";
 
   private static final String ENDPOINT_PROPERTY_KEY = "kb.endpoint";
@@ -372,6 +374,12 @@ public final class MemoryOnlyBasesService implements BasesService {
 
     baseBuilder
         .setInsertEnabled(Boolean.parseBoolean(baseProperties.getProperty(INSERT_SUPPORTED_PROEPRTY_KEY)));
+    
+    final String insertEndpointUrlValue = baseProperties.getProperty(INSERT_ENDPOINT_PROPERTY_KEY);
+    if (insertEndpointUrlValue != null) {
+      final URL insertEndpointUrl = new URL(insertEndpointUrlValue);
+      baseBuilder.setInsertEndpoint(insertEndpointUrl);
+    }
 
     final String insertGraphValue = baseProperties.getProperty(INSERT_GRAPH_PROPERTY_KEY);
     if (insertGraphValue != null) {
