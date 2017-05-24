@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.bases.TextSearchingMethod;
+import cz.cuni.mff.xrg.odalic.groups.Group;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 
 /**
@@ -46,6 +47,8 @@ public final class KnowledgeBaseValue {
   private URI insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
+  private URI datatypeProperty;
+  private URI objectProperty;
 
   private String login;
   private String password;
@@ -74,7 +77,7 @@ public final class KnowledgeBaseValue {
     this.skippedClasses = ImmutableList.copyOf(adaptee.getSkippedClasses());
 
     this.groupsAutoSelected = adaptee.getGroupsAutoSelected();
-    this.selectedGroups = adaptee.getSelectedGroups().stream().map(e -> e.getId())
+    this.selectedGroups = adaptee.getSelectedGroups().stream().map(Group::getId)
         .collect(ImmutableSet.toImmutableSet());
 
     this.insertEnabled = adaptee.isInsertEnabled();
@@ -82,6 +85,8 @@ public final class KnowledgeBaseValue {
     this.insertGraph = adaptee.getInsertGraph();
     this.userClassesPrefix = adaptee.getUserClassesPrefix();
     this.userResourcesPrefix = adaptee.getUserResourcesPrefix();
+    this.datatypeProperty = adaptee.getDatatypeProperty();
+    this.objectProperty = adaptee.getObjectProperty();
 
     this.login = adaptee.getLogin();
     this.password = adaptee.getPassword();
@@ -254,7 +259,7 @@ public final class KnowledgeBaseValue {
   public void setInsertEnabled(final boolean insertEnabled) {
     this.insertEnabled = insertEnabled;
   }
-  
+
   /**
    * @return the insert endpoint
    */
@@ -317,6 +322,38 @@ public final class KnowledgeBaseValue {
    */
   public void setUserResourcesPrefix(@Nullable final URI userResourcesPrefix) {
     this.userResourcesPrefix = userResourcesPrefix;
+  }
+
+  /**
+   * @return the property type used when inserting datatype properties
+   */
+  @XmlElement
+  @Nullable
+  public URI getDatatypeProperty() {
+    return datatypeProperty;
+  }
+
+  /**
+   * @param datatypeProperty the property type used when inserting datatype properties
+   */
+  public void setDatatypeProperty(@Nullable final URI datatypeProperty) {
+    this.datatypeProperty = datatypeProperty;
+  }
+
+  /**
+   * @return the property type used when inserting object properties
+   */
+  @XmlElement
+  @Nullable
+  public URI getObjectProperty() {
+    return objectProperty;
+  }
+
+  /**
+   * @param objectProperty the property type used when inserting object properties
+   */
+  public void setInsertObjectPropertyType(@Nullable final URI objectProperty) {
+    this.objectProperty = objectProperty;
   }
 
   /**
@@ -396,8 +433,11 @@ public final class KnowledgeBaseValue {
         + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected + ", selectedGroups="
         + selectedGroups + ", insertEnabled=" + insertEnabled + ", insertEndpoint=" + insertEndpoint
         + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
-        + ", userResourcesPrefix=" + userResourcesPrefix + ", login=" + login + ", password="
-        + password + ", advancedType=" + advancedType + ", advancedProperties=" + advancedProperties
+        + ", userResourcesPrefix=" + userResourcesPrefix + ", datatypeProperty=" + datatypeProperty
+        + ", objectProperty=" + objectProperty + ", login=" + login
+        + ", password="
+        + password + ", advancedType=" + advancedType + ", advancedProperties="
+        + advancedProperties
         + "]";
   }
 }

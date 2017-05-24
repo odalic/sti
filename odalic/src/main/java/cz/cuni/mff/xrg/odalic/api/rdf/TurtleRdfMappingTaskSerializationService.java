@@ -50,7 +50,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  */
 public class TurtleRdfMappingTaskSerializationService implements TaskSerializationService {
 
-  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V4/%s";
+  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V5/%s";
 
   private static String format(final Model model) {
     final StringWriter stringWriter = new StringWriter();

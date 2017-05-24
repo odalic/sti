@@ -53,6 +53,8 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   private final URI insertGraph;
   private final URI userClassesPrefix;
   private final URI userResourcesPrefix;
+  private final URI datatypeProperty;
+  private final URI objectProperty;
 
   private final String login;
   private final String password;
@@ -68,6 +70,8 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
    * @param endpoint end-point URL
    * @param description knowledge base description
    * @param insertEnabled whether the base supports insertion of new concepts
+   * @param insertDataPropertyType type used when inserting data properties
+   * @param insertObjectPropertyType type used when inserting object properties
    * @param groupsAutoSelected whether the used groups are determined automatically
    * @param selectedGroups the groups selected for use
    * @param login login
@@ -81,7 +85,8 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
       final List<? extends String> skippedClasses, final boolean groupsAutoSelected,
       final Set<? extends Group> selectedGroups, final boolean insertEnabled,
       final URL insertEndpoint, final URI insertGraph,
-      final URI userClassesPrefix, final URI userResourcesPrefix, @Nullable final String login,
+      final URI userClassesPrefix, final URI userResourcesPrefix,
+      final URI insertDataPropertyType, final URI insertObjectPropertyType, @Nullable final String login,
       @Nullable final String password, final AdvancedBaseType advancedType,
       final Map<? extends String, ? extends String> advancedProperties) {
     Preconditions.checkNotNull(owner);
@@ -119,6 +124,8 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     this.insertGraph = insertGraph;
     this.userClassesPrefix = userClassesPrefix;
     this.userResourcesPrefix = userResourcesPrefix;
+    this.datatypeProperty = insertDataPropertyType;
+    this.objectProperty = insertObjectPropertyType;
 
     this.login = login;
     this.password = password;
@@ -141,7 +148,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   public boolean isInsertEnabled() {
     return this.insertEnabled;
   }
-  
+
   public URL getInsertEndpoint() {
     return this.insertEndpoint;
   }
@@ -215,6 +222,16 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     return userResourcesPrefix;
   }
 
+  @Nullable
+  public URI getDatatypeProperty() {
+    return datatypeProperty;
+  }
+
+  @Nullable
+  public URI getObjectProperty() {
+    return objectProperty;
+  }
+
   public Map<String, String> getAdvancedProperties() {
     return advancedProperties;
   }
@@ -283,9 +300,11 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
         + ", languageTag=" + languageTag + ", skippedAttributes=" + skippedAttributes
         + ", skippedClasses=" + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected
         + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
-        + ", insertEndpoint=" + insertEndpoint + ", insertGraph=" + insertGraph
-        + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
-        + userResourcesPrefix + ", login=" + login + ", password=" + password + ", advancedType="
-        + advancedType + ", advancedProperties=" + advancedProperties + "]";
+        + ", insertEndpoint=" + insertEndpoint + ",insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix+ ", userResourcesPrefix="
+        +  userResourcesPrefix + ", datatypeProperty="
+        + datatypeProperty + ", objectProperty=" + objectProperty
+        + ",login=" + login
+        + ", password= "+ password+ ", advancedType=" + advancedType
+        + ",advancedProperties=" + advancedProperties + "]";
   }
 }

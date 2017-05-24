@@ -6,17 +6,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * Text searching method type adapted for REST API.
+ * Property type types adapter for REST API.
  *
  * @author Václav Brodec
  */
 @XmlType
 @XmlEnum(String.class)
-@XmlRootElement(name = "textSearchingMethod")
-public enum TextSearchingMethodValue {
-  @XmlEnumValue("exact") EXACT,
+@XmlRootElement(name = "propertyType")
+public enum PropertyTypeValue {
+  @XmlEnumValue("data") DATA,
 
-  @XmlEnumValue("fulltext") FULLTEXT,
-
-  @XmlEnumValue("substring") SUBSTRING
+  @XmlEnumValue("object") OBJECT
 }

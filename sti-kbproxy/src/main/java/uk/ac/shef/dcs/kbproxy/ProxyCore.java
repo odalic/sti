@@ -7,6 +7,7 @@ import java.util.List;
 
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
+import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 
 
 public interface ProxyCore {
@@ -133,7 +134,7 @@ public interface ProxyCore {
    * Inserts a new property into the knowledge base
    */
   Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels,
-      String superProperty, String domain, String range) throws ProxyException;
+                        String superProperty, String domain, String range, PropertyType type) throws ProxyException;
 
   /**
    * Information about whether the knowledge base supports inserting new concepts

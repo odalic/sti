@@ -50,6 +50,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
   private URI insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
+  private URI datatypeProperty;
+  private URI objectProperty;
 
   private String login;
   private String password;
@@ -79,6 +81,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
     this.insertGraph = null;
     this.userClassesPrefix = null;
     this.userResourcesPrefix = null;
+    this.datatypeProperty = null;
+    this.objectProperty = null;
 
     this.login = null;
     this.password = null;
@@ -97,8 +101,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
   public KnowledgeBase build() {
     return new KnowledgeBase(owner, name, endpoint, description, textSearchingMethod, languageTag,
         skippedAttributes, skippedClasses, groupsAutoSelected, selectedGroups, insertEnabled,
-        insertEndpoint, insertGraph, userClassesPrefix, userResourcesPrefix, login, password, advancedType,
-        advancedProperties);
+        insertEndpoint, insertGraph, userClassesPrefix, userResourcesPrefix, datatypeProperty,
+        objectProperty, login, password, advancedType, advancedProperties);
   }
 
   /**
@@ -117,7 +121,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   public boolean isInsertEnabled() {
     return this.insertEnabled;
   }
-  
+
   public URL getInsertEndpoint() {
     return this.insertEndpoint;
   }
@@ -183,6 +187,16 @@ public final class KnowledgeBaseBuilder implements Serializable {
   @Nullable
   public URI getUserResourcesPrefix() {
     return userResourcesPrefix;
+  }
+
+  @Nullable
+  public URI getDatatypeProperty() {
+    return datatypeProperty;
+  }
+
+  @Nullable
+  public URI getObjectProperty() {
+    return objectProperty;
   }
 
   @Nullable
@@ -323,13 +337,13 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
     return this;
   }
-  
+
   /**
    * @param insertEndpoint insert end-point URL
    */
   public KnowledgeBaseBuilder setInsertEndpoint(final URL insertEndpoint) {
     this.insertEndpoint = insertEndpoint;
-    
+
     return this;
   }
 
@@ -361,6 +375,24 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   /**
+   * @param datatypeProperty the datatype property type to set
+   */
+  public KnowledgeBaseBuilder setDatatypeProperty(@Nullable URI datatypeProperty) {
+    this.datatypeProperty = datatypeProperty;
+
+    return this;
+  }
+
+  /**
+   * @param objectProperty the object property type to set
+   */
+  public KnowledgeBaseBuilder setInsertObjectPropertyType(@Nullable URI objectProperty) {
+    this.objectProperty = objectProperty;
+
+    return this;
+  }
+
+  /**
    * @param login the login to set
    */
   public KnowledgeBaseBuilder setLogin(@Nullable String login) {
@@ -370,7 +402,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   /**
-   * @param login the password to set
+   * @param password the password to set
    */
   public KnowledgeBaseBuilder setPassword(@Nullable String password) {
     this.password = password;
@@ -414,7 +446,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
         + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
         + ", insertEndpoint=" + insertEndpoint + ", insertGraph=" + insertGraph
         + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
-        + userResourcesPrefix + ", login=" + login + ", password=" + password + ", advancedType="
+        + userResourcesPrefix + ", datatypeProperty=" + datatypeProperty + ", objectProperty="
+        + objectProperty + ", login=" + login + ", password=" + password + ", advancedType="
         + advancedType + ", advancedProperties=" + advancedProperties + "]";
   }
 }

@@ -64,9 +64,13 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   private static final String INSERT_GRAPH_PROPERTY_KEY = "kb.insert.graph";
 
+  private static final String INSERT_DATA_PROPERTY_TYPE_PROPERTY_KEY = "kb.insert.type.dataProperty";
+
+  private static final String INSERT_OBJECT_PROPERTY_TYPE_PROPERTY_KEY = "kb.insert.type.objectProperty";
+
+  private static final String INSERT_SUPPORTED_PROPERTY_KEY = "kb.insert.supported";
+
   private static final String INSERT_ENDPOINT_PROPERTY_KEY = "kb.insert.endpoint";
-  
-  private static final String INSERT_SUPPORTED_PROEPRTY_KEY = "kb.insert.supported";
 
   private static final String ENDPOINT_PROPERTY_KEY = "kb.endpoint";
   
@@ -269,7 +273,7 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   private void subscribe(final Task task, final String baseName) {
     final String taskId = task.getId();
-    
+
     final User owner = task.getOwner();
     final String userId = owner.getEmail();
 
@@ -300,7 +304,7 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   private void unsubscribe(final Task task, final String baseName) {
     final String taskId = task.getId();
-    
+
     final User owner = task.getOwner();
     final String userId = owner.getEmail();
 
@@ -363,8 +367,8 @@ public final class MemoryOnlyBasesService implements BasesService {
     baseBuilder.setEndpoint(endpointUrl);
 
     baseBuilder
-        .setInsertEnabled(Boolean.parseBoolean(baseProperties.getProperty(INSERT_SUPPORTED_PROEPRTY_KEY)));
-    
+        .setInsertEnabled(Boolean.parseBoolean(baseProperties.getProperty(INSERT_SUPPORTED_PROPERTY_KEY)));
+
     final String insertEndpointUrlValue = baseProperties.getProperty(INSERT_ENDPOINT_PROPERTY_KEY);
     if (insertEndpointUrlValue != null) {
       final URL insertEndpointUrl = new URL(insertEndpointUrlValue);
@@ -384,6 +388,16 @@ public final class MemoryOnlyBasesService implements BasesService {
     final String userResourcesPrefixValue = baseProperties.getProperty(USER_RESOURCES_PREFIX_PROPERTY_KEY);
     if (userResourcesPrefixValue != null) {
       baseBuilder.setUserResourcesPrefix(URI.create(userResourcesPrefixValue));
+    }
+
+    final String insertDataPropertyType = baseProperties.getProperty(INSERT_DATA_PROPERTY_TYPE_PROPERTY_KEY);
+    if (insertDataPropertyType != null) {
+      baseBuilder.setDatatypeProperty(URI.create(insertDataPropertyType));
+    }
+
+    final String insertObjectPropertyType = baseProperties.getProperty(INSERT_OBJECT_PROPERTY_TYPE_PROPERTY_KEY);
+    if (insertObjectPropertyType != null) {
+      baseBuilder.setInsertObjectPropertyType(URI.create(insertObjectPropertyType));
     }
 
     final String languageTagValue = baseProperties.getProperty(LANGUAGE_TAG_PROPERTY_KEY);
