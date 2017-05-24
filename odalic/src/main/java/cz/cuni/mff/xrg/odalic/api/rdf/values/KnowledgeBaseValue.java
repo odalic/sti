@@ -46,7 +46,9 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   private String insertGraph;
   private String userClassesPrefix;
   private String userResourcesPrefix;
-  
+  private String insertDataPropertyType;
+  private String insertObjectPropertyType;
+
   private String login;
   private String password;
   
@@ -76,6 +78,8 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
     this.insertGraph = adaptee.getInsertGraph() == null ? null : adaptee.getInsertGraph().toString();
     this.userClassesPrefix = adaptee.getUserClassesPrefix() == null ? null : adaptee.getUserClassesPrefix().toString();
     this.userResourcesPrefix = adaptee.getUserResourcesPrefix() == null ? null : adaptee.getUserResourcesPrefix().toString();
+    this.insertDataPropertyType = adaptee.getInsertDataPropertyType() == null ? null : adaptee.getInsertDataPropertyType().toString();
+    this.insertObjectPropertyType = adaptee.getInsertObjectPropertyType() == null ? null : adaptee.getInsertObjectPropertyType().toString();
     this.login = adaptee.getLogin();
     this.password = adaptee.getPassword();
     this.advancedType = adaptee.getAdvancedType().getName();
@@ -311,6 +315,40 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   }
 
   /**
+   * @return the insertDataPropertyType
+   */
+  @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/insertDataPropertyType",
+          datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @Nullable
+  public String getInsertDataPropertyType() {
+    return insertDataPropertyType;
+  }
+
+  /**
+   * @param insertDataPropertyType the insertDataPropertyType to set
+   */
+  public void setInsertDataPropertyType(String insertDataPropertyType) {
+    this.insertDataPropertyType = insertDataPropertyType;
+  }
+
+  /**
+   * @return the insertObjectPropertyType
+   */
+  @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/insertObjectPropertyType",
+          datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @Nullable
+  public String getInsertObjectPropertyType() {
+    return insertObjectPropertyType;
+  }
+
+  /**
+   * @param insertObjectPropertyType the insertObjectPropertyType to set
+   */
+  public void setInsertObjectPropertyType(String insertObjectPropertyType) {
+    this.insertObjectPropertyType = insertObjectPropertyType;
+  }
+
+  /**
    * @return the login
    */
   @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/login",
@@ -338,7 +376,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   }
 
   /**
-   * @param login the password to set
+   * @param password the password to set
    */
   public void setPassword(String password) {
     this.password = password;

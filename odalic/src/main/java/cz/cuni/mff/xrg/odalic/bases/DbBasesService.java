@@ -62,9 +62,13 @@ public final class DbBasesService implements BasesService {
 
   private static final String USER_CLASSES_PREFIX_PROPERTY_KEY = "kb.insert.prefix.schema";
 
+  private static final String INSERT_DATA_PROPERTY_TYPE_PROPERTY_KEY = "kb.insert.type.dataProperty";
+
+  private static final String INSERT_OBJECT_PROPERTY_TYPE_PROPERTY_KEY = "kb.insert.type.objectProperty";
+
   private static final String INSERT_GRAPH_PROPERTY_KEY = "kb.insert.graph";
 
-  private static final String INSERT_SUPPORTED_PROEPRTY_KEY = "kb.insert.supported";
+  private static final String INSERT_SUPPORTED_PROPERTY_KEY = "kb.insert.supported";
 
   private static final String ENDPOINT_PROPERTY_KEY = "kb.endpoint";
   
@@ -399,7 +403,7 @@ public final class DbBasesService implements BasesService {
     baseBuilder.setEndpoint(endpointUrl);
 
     baseBuilder
-        .setInsertEnabled(Boolean.parseBoolean(baseProperties.getProperty(INSERT_SUPPORTED_PROEPRTY_KEY)));
+        .setInsertEnabled(Boolean.parseBoolean(baseProperties.getProperty(INSERT_SUPPORTED_PROPERTY_KEY)));
 
     final String insertGraphValue = baseProperties.getProperty(INSERT_GRAPH_PROPERTY_KEY);
     if (insertGraphValue != null) {
@@ -414,6 +418,16 @@ public final class DbBasesService implements BasesService {
     final String userResourcesPrefixValue = baseProperties.getProperty(USER_RESOURCES_PREFIX_PROPERTY_KEY);
     if (userResourcesPrefixValue != null) {
       baseBuilder.setUserResourcesPrefix(URI.create(userResourcesPrefixValue));
+    }
+
+    final String insertDataPropertyType = baseProperties.getProperty(INSERT_DATA_PROPERTY_TYPE_PROPERTY_KEY);
+    if (insertDataPropertyType != null) {
+      baseBuilder.setInsertDataPropertyType(URI.create(insertDataPropertyType));
+    }
+
+    final String insertObjectPropertyType = baseProperties.getProperty(INSERT_OBJECT_PROPERTY_TYPE_PROPERTY_KEY);
+    if (insertObjectPropertyType != null) {
+      baseBuilder.setInsertObjectPropertyType(URI.create(insertObjectPropertyType));
     }
 
     final String languageTagValue = baseProperties.getProperty(LANGUAGE_TAG_PROPERTY_KEY);

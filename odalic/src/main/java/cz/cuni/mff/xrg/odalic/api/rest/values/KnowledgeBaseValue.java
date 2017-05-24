@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.bases.TextSearchingMethod;
+import cz.cuni.mff.xrg.odalic.groups.Group;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 
 /**
@@ -45,6 +46,8 @@ public final class KnowledgeBaseValue {
   private URI insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
+  private URI insertDataPropertyType;
+  private URI insertObjectPropertyType;
 
   private String login;
   private String password;
@@ -73,13 +76,15 @@ public final class KnowledgeBaseValue {
     this.skippedClasses = ImmutableList.copyOf(adaptee.getSkippedClasses());
 
     this.groupsAutoSelected = adaptee.getGroupsAutoSelected();
-    this.selectedGroups = adaptee.getSelectedGroups().stream().map(e -> e.getId())
+    this.selectedGroups = adaptee.getSelectedGroups().stream().map(Group::getId)
         .collect(ImmutableSet.toImmutableSet());
 
     this.insertEnabled = adaptee.isInsertEnabled();
     this.insertGraph = adaptee.getInsertGraph();
     this.userClassesPrefix = adaptee.getUserClassesPrefix();
     this.userResourcesPrefix = adaptee.getUserResourcesPrefix();
+    this.insertDataPropertyType = adaptee.getInsertDataPropertyType();
+    this.insertObjectPropertyType = adaptee.getInsertObjectPropertyType();
 
     this.login = adaptee.getLogin();
     this.password = adaptee.getPassword();
@@ -302,6 +307,38 @@ public final class KnowledgeBaseValue {
   }
 
   /**
+   * @return the insertDataPropertyType
+   */
+  @XmlElement
+  @Nullable
+  public URI getInsertDataPropertyType() {
+    return insertDataPropertyType;
+  }
+
+  /**
+   * @param insertDataPropertyType the property type used when inserting datatype properties
+   */
+  public void setInsertDataPropertyType(@Nullable final URI insertDataPropertyType) {
+    this.insertDataPropertyType = insertDataPropertyType;
+  }
+
+  /**
+   * @return the insertObjectPropertyType
+   */
+  @XmlElement
+  @Nullable
+  public URI getInsertObjectPropertyType() {
+    return insertObjectPropertyType;
+  }
+
+  /**
+   * @param insertObjectPropertyType the property type used when inserting object properties
+   */
+  public void setInsertObjectPropertyType(@Nullable final URI insertObjectPropertyType) {
+    this.insertObjectPropertyType = insertObjectPropertyType;
+  }
+
+  /**
    * @return the login
    */
   @XmlElement
@@ -378,7 +415,9 @@ public final class KnowledgeBaseValue {
         + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected + ", selectedGroups="
         + selectedGroups + ", insertEnabled=" + insertEnabled + ", insertGraph=" + insertGraph
         + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
-        + userResourcesPrefix + ", login=" + login + ", password=****, advancedType=" + advancedType
-        + ", advancedProperties=" + advancedProperties + "]";
+        + userResourcesPrefix + ", insertDataPropertyType=" + insertDataPropertyType
+        + ", insertObjectPropertyType=" + insertObjectPropertyType + ", login=" + login
+        + ", password=****, advancedType=" + advancedType + ", advancedProperties="
+        + advancedProperties + "]";
   }
 }

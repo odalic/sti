@@ -49,7 +49,8 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     private String insertPredicateSubclassOf;
     private String insertPredicateSubPropertyOf;
     private String insertTypeClass;
-    private String insertTypeProperty;
+    private String insertTypeObjectProperty;
+    private String insertTypeDataProperty;
 
     private Set<String> stoppedClasses;
     private Set<String> stoppedAttributes;
@@ -128,8 +129,14 @@ public class SparqlProxyDefinition implements ProxyDefinition {
       return this;
     }
 
-    public Builder setInsertTypeProperty(final String insertTypeProperty) {
-      this.insertTypeProperty = insertTypeProperty;
+    public Builder setInsertTypeObjectProperty(final String insertTypeObjectProperty) {
+      this.insertTypeObjectProperty = insertTypeObjectProperty;
+
+      return this;
+    }
+
+    public Builder setInsertTypeDataProperty(final String insertTypeDataProperty) {
+      this.insertTypeDataProperty = insertTypeDataProperty;
 
       return this;
     }
@@ -410,9 +417,13 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   public static final String INSERT_TYPE_CLASS = "kb.insert.type.class";
   public static final String DEFAULT_INSERT_TYPE_CLASS = "http://www.w3.org/2002/07/owl#Class";
   
-  public static final String INSERT_TYPE_PROPERTY = "kb.insert.type.property";
-  public static final String DEFAULT_INSERT_TYPE_PROPERTY = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property";  
-  
+  public static final String INSERT_TYPE_OBJECT_PROPERTY = "kb.insert.type.objectProperty";
+  public static final String DEFAULT_INSERT_TYPE_OBJECT_PROPERTY = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property";
+
+  public static final String INSERT_TYPE_DATA_PROPERTY = "kb.insert.type.dataProperty";
+  public static final String DEFAULT_INSERT_TYPE_DATA_PROPERTY = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property";
+
+
   public static Builder builder() {
     return new Builder();
   }
@@ -452,8 +463,9 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   private final String insertPredicateSubclassOf;
   private final String insertPredicateSubPropertyOf;
   private final String insertTypeClass;
-  private final String insertTypeProperty;
-  
+  private final String insertTypeObjectProperty;
+  private final String insertTypeDataProperty;
+
   private final Set<String> stoppedClasses;
   private final Set<String> stoppedAttributes;
   
@@ -492,7 +504,8 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     this.insertPredicateSubclassOf = builder.insertPredicateSubclassOf;
     this.insertPredicateSubPropertyOf = builder.insertPredicateSubPropertyOf;
     this.insertTypeClass = builder.insertTypeClass;
-    this.insertTypeProperty = builder.insertTypeProperty;
+    this.insertTypeObjectProperty = builder.insertTypeObjectProperty;
+    this.insertTypeDataProperty = builder.insertTypeDataProperty;
     this.stoppedClasses = ImmutableSet.copyOf(builder.stoppedClasses);
     this.stoppedAttributes = ImmutableSet.copyOf(builder.stoppedAttributes);
     this.uriLabelHeuristicApplied = builder.uriLabelHeuristicApplied;
@@ -708,10 +721,17 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   }
 
   /**
-   * @return the insertTypeProperty
+   * @return the insertTypeObjectProperty
    */
-  public String getInsertTypeProperty() {
-    return insertTypeProperty;
+  public String getInsertTypeObjectProperty() {
+    return insertTypeObjectProperty;
+  }
+
+  /**
+   * @return the insertTypeDataProperty
+   */
+  public String getInsertTypeDataProperty() {
+    return insertTypeDataProperty;
   }
 
   /**

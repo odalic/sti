@@ -49,6 +49,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
   private URI insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
+  private URI insertDataPropertyType;
+  private URI insertObjectPropertyType;
 
   private String login;
   private String password;
@@ -77,6 +79,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
     this.insertGraph = null;
     this.userClassesPrefix = null;
     this.userResourcesPrefix = null;
+    this.insertDataPropertyType = null;
+    this.insertObjectPropertyType = null;
 
     this.login = null;
     this.password = null;
@@ -95,8 +99,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
   public KnowledgeBase build() {
     return new KnowledgeBase(owner, name, endpoint, description, textSearchingMethod, languageTag,
         skippedAttributes, skippedClasses, groupsAutoSelected, selectedGroups, insertEnabled,
-        insertGraph, userClassesPrefix, userResourcesPrefix, login, password, advancedType,
-        advancedProperties);
+        insertGraph, userClassesPrefix, userResourcesPrefix, insertDataPropertyType,
+        insertObjectPropertyType, login, password, advancedType, advancedProperties);
   }
 
   /**
@@ -177,6 +181,16 @@ public final class KnowledgeBaseBuilder implements Serializable {
   @Nullable
   public URI getUserResourcesPrefix() {
     return userResourcesPrefix;
+  }
+
+  @Nullable
+  public URI getInsertDataPropertyType() {
+    return insertDataPropertyType;
+  }
+
+  @Nullable
+  public URI getInsertObjectPropertyType() {
+    return insertObjectPropertyType;
   }
 
   @Nullable
@@ -346,6 +360,24 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   /**
+   * @param insertDataPropertyType the insertDataPropertyType to set
+   */
+  public KnowledgeBaseBuilder setInsertDataPropertyType(@Nullable URI insertDataPropertyType) {
+    this.insertDataPropertyType = insertDataPropertyType;
+
+    return this;
+  }
+
+  /**
+   * @param insertObjectPropertyType the insertObjectPropertyType to set
+   */
+  public KnowledgeBaseBuilder setInsertObjectPropertyType(@Nullable URI insertObjectPropertyType) {
+    this.insertObjectPropertyType = insertObjectPropertyType;
+
+    return this;
+  }
+
+  /**
    * @param login the login to set
    */
   public KnowledgeBaseBuilder setLogin(@Nullable String login) {
@@ -355,7 +387,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   /**
-   * @param login the password to set
+   * @param password the password to set
    */
   public KnowledgeBaseBuilder setPassword(@Nullable String password) {
     this.password = password;
@@ -403,8 +435,9 @@ public final class KnowledgeBaseBuilder implements Serializable {
         + ", skippedClasses=" + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected
         + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
         + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
-        + ", userResourcesPrefix=" + userResourcesPrefix + ", login=" + login
-        + ", password=****, advancedType=" + advancedType + ", advancedProperties="
-        + advancedProperties + "]";
+        + ", userResourcesPrefix=" + userResourcesPrefix + ", insertDataPropertyType="
+        + insertDataPropertyType + ", insertObjectPropertyType=" + insertObjectPropertyType
+        + ", login=" + login + ", password=****, advancedType=" + advancedType
+        + ", advancedProperties=" + advancedProperties + "]";
   }
 }

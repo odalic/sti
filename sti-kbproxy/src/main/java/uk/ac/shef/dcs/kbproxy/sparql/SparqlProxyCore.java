@@ -33,6 +33,7 @@ import uk.ac.shef.dcs.kbproxy.ProxyCore;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
+import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 import uk.ac.shef.dcs.kbproxy.utils.Uris;
 import uk.ac.shef.dcs.util.Pair;
 import uk.ac.shef.dcs.util.StringUtils;
@@ -553,14 +554,23 @@ public final class SparqlProxyCore implements ProxyCore {
   }
 
   @Override
-  public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range) throws ProxyException {
+  public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range, PropertyType type) throws ProxyException {
     performInsertChecks(label);
 
     String url = checkOrGenerateUrl(definition.getInsertPrefixSchema(), uri);
 
     StringBuilder tripleDefinition = createTripleDefinitionBase(url, label);
     appendCollection(tripleDefinition, definition.getInsertPredicateAlternativeLabel(), alternativeLabels, true);
-    appendValue(tripleDefinition, definition.getStructureInstanceOf(), definition.getInsertTypeProperty(), false);
+
+    switch (type)
+    {
+      case Object:
+        appendValue(tripleDefinition, definition.getStructureInstanceOf(), definition.getInsertTypeObjectProperty(), false);
+        break;
+      case Data:
+        appendValue(tripleDefinition, definition.getStructureInstanceOf(), definition.getInsertTypeDataProperty(), false);
+        break;
+    }
 
     appendValueIfNotEmpty(tripleDefinition, definition.getInsertPredicateSubPropertyOf(), superProperty, false);
     appendValueIfNotEmpty(tripleDefinition, definition.getStructureDomain(), domain, false);

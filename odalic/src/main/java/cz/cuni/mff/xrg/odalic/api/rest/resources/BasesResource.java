@@ -169,6 +169,7 @@ public final class BasesResource {
         baseValue.getSkippedAttributes(), baseValue.getSkippedClasses(),
         baseValue.getGroupsAutoSelected(), selectedGroups, baseValue.isInsertEnabled(),
         baseValue.getInsertGraph(), baseValue.getUserClassesPrefix(),
+        baseValue.getInsertDataPropertyType(), baseValue.getInsertObjectPropertyType(),
         baseValue.getUserResourcesPrefix(), baseValue.getLogin(), baseValue.getPassword(),
         advancedType, baseValue.getAdvancedProperties());
 

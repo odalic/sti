@@ -81,10 +81,20 @@ public final class DefaultEntitiesService implements EntitiesService {
 
     final uk.ac.shef.dcs.kbproxy.model.Entity entity = kbProxy.insertProperty(proposal.getSuffix(),
         proposal.getLabel(), proposal.getAlternativeLabels(), superPropertyUri,
-        proposal.getDomain(), proposal.getRange());
+        proposal.getDomain(), proposal.getRange(), convertPropertyType(proposal.getType()));
     //TODO: Implement data-type or object-type property proposal.
 
     return this.entitiesFactory.create(entity.getId(), entity.getLabel());
+  }
+
+  private uk.ac.shef.dcs.kbproxy.model.PropertyType convertPropertyType(PropertyType type) {
+    switch (type) {
+      case DATA:
+        return uk.ac.shef.dcs.kbproxy.model.PropertyType.Data;
+      case OBJECT:
+      default:
+        return uk.ac.shef.dcs.kbproxy.model.PropertyType.Object;
+    }
   }
 
   @Override

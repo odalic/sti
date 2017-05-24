@@ -29,7 +29,6 @@ public final class SparqlKnowledgeBaseDefinitionFactory
     if (base.isInsertEnabled()) {
       builder.setInsertPrefixData(base.getUserResourcesPrefix());
       builder.setInsertPrefixSchema(base.getUserClassesPrefix());
-      builder.setInsertGraph(base.getInsertGraph().toString());
     }
     
     // Endpoint
@@ -72,7 +71,8 @@ public final class SparqlKnowledgeBaseDefinitionFactory
       builder.setInsertPredicateSubclassOf(SparqlProxyDefinition.DEFAULT_INSERT_PREDICATE_SUBCLASS_OF);
       builder.setInsertPredicateSubPropertyOf(SparqlProxyDefinition.DEFAULT_INSERT_PREDICATE_SUB_PROPERTY_OF);
       builder.setInsertTypeClass(SparqlProxyDefinition.DEFAULT_INSERT_TYPE_CLASS);
-      builder.setInsertTypeProperty(SparqlProxyDefinition.DEFAULT_INSERT_TYPE_PROPERTY);
+      builder.setInsertTypeDataProperty(base.getInsertDataPropertyType().toString());
+      builder.setInsertTypeObjectProperty(base.getInsertObjectPropertyType().toString());
     }
     
     builder.setStoppedClasses(base.getSkippedClasses());

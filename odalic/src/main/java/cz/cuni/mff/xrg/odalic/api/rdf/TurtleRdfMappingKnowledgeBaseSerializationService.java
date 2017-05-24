@@ -169,7 +169,8 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService
     final Map<String, String> advancedProperties = extractAdvancedProperties(knowledgeBaseValue);
 
     try {
-      return new KnowledgeBase(owner, knowledgeBaseId, new URL(knowledgeBaseValue.getEndpoint()),
+      return new KnowledgeBase(owner, knowledgeBaseId,
+          knowledgeBaseValue.getEndpoint() == null ? null : new URL(knowledgeBaseValue.getEndpoint()),
           knowledgeBaseValue.getDescription(),
           TextSearchingMethod.valueOf(knowledgeBaseValue.getTextSearchingMethod()),
           knowledgeBaseValue.getLanguageTag(), knowledgeBaseValue.getSkippedAttributes(),
@@ -178,6 +179,8 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService
           knowledgeBaseValue.getInsertGraph() == null ? null : URI.create(knowledgeBaseValue.getInsertGraph()),
           knowledgeBaseValue.getUserClassesPrefix() == null ? null : URI.create(knowledgeBaseValue.getUserClassesPrefix()),
           knowledgeBaseValue.getUserResourcesPrefix() == null ? null : URI.create(knowledgeBaseValue.getUserResourcesPrefix()),
+          knowledgeBaseValue.getInsertDataPropertyType() == null ? null : URI.create(knowledgeBaseValue.getInsertDataPropertyType()),
+          knowledgeBaseValue.getInsertObjectPropertyType() == null ? null : URI.create(knowledgeBaseValue.getInsertObjectPropertyType()),
           knowledgeBaseValue.getLogin(),
           knowledgeBaseValue.getPassword(),
           this.advancedBaseTypesService.getType(knowledgeBaseValue.getAdvancedType()),

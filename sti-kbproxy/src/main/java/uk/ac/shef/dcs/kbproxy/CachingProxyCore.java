@@ -7,6 +7,7 @@ import com.google.common.base.Preconditions;
 
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
+import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 import uk.ac.shef.dcs.kbproxy.solr.CacheQueries;
 import uk.ac.shef.dcs.util.Cache;
 import java.net.URI;
@@ -264,8 +265,8 @@ public class CachingProxyCore implements ProxyCore {
 
   @Override
   public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels,
-      String superProperty, String domain, String range) throws ProxyException {
-    return this.core.insertProperty(uri, label, alternativeLabels, superProperty, domain, range);
+                               String superProperty, String domain, String range, PropertyType type) throws ProxyException {
+    return this.core.insertProperty(uri, label, alternativeLabels, superProperty, domain, range, type);
   }
 
   @Override
