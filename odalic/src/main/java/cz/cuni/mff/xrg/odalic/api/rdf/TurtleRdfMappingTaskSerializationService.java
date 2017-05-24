@@ -92,8 +92,13 @@ public class TurtleRdfMappingTaskSerializationService implements TaskSerializati
     taskValue.id(getRootSubjectIri(baseUri));
   }
 
-  private static TaskValue toProxy(final Task task) {
-    return new TaskValue(task);
+  private TaskValue toProxy(final Task task) {
+    final String userId = task.getOwner().getEmail();
+
+    final Set<KnowledgeBase> usedBases = task.getConfiguration().getUsedBases().stream()
+        .map(e -> this.basesService.getByName(userId, e)).collect(ImmutableSet.toImmutableSet());
+
+    return new TaskValue(task, usedBases);
   }
 
   private final RDFMapper.Builder rdfMapperBuilder;
@@ -185,9 +190,13 @@ public class TurtleRdfMappingTaskSerializationService implements TaskSerializati
     final String primaryBaseName = configurationValue.getPrimaryBase();
     final KnowledgeBase primaryBase = this.basesService.getByName(userId, primaryBaseName);
 
-    return new Configuration(input, usedBases, primaryBase,
-        configurationValue.getFeedback().toFeedback(), configurationValue.getRowsLimit(),
-        configurationValue.isStatistical());
+    Preconditions.checkArgument(usedBases.contains(primaryBase),
+        "The primary base not among the used ones!");
+
+    return new Configuration(input,
+        usedBases.stream().map(e -> e.getName()).collect(ImmutableSet.toImmutableSet()),
+        primaryBase.getName(), configurationValue.getFeedback().toFeedback(),
+        configurationValue.getRowsLimit(), configurationValue.isStatistical());
   }
 
   private Set<KnowledgeBase> extractUsedBases(final String userId,
@@ -195,11 +204,11 @@ public class TurtleRdfMappingTaskSerializationService implements TaskSerializati
     final Set<KnowledgeBase> usedBases = configurationValue.getUsedBases().stream()
         .map(e -> this.knowledgeBaseSerializationService.deserialize(userId, e))
         .collect(ImmutableSet.toImmutableSet());
-    
+
     for (final KnowledgeBase usedBase : usedBases) {
       this.basesService.merge(usedBase);
     }
-    
+
     return usedBases;
   }
 

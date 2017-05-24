@@ -157,9 +157,6 @@ public final class GroupValue implements Serializable {
     this.propertyTypes = ImmutableList.copyOf(propertyTypes);
   }
   
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "GroupValue [id=" + id + ", labelPredicates=" + labelPredicates

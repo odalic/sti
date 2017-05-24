@@ -99,9 +99,6 @@ public final class Group implements Serializable, Comparable<Group> {
     );
   }
   
-  /* (non-Javadoc)
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -111,9 +108,6 @@ public final class Group implements Serializable, Comparable<Group> {
     return result;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -156,9 +150,6 @@ public final class Group implements Serializable, Comparable<Group> {
     return this.owner.compareTo(other.owner);
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "Group [owner=" + owner + ", id=" + id + ", labelPredicates=" + labelPredicates

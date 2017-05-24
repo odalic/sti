@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
@@ -41,6 +43,8 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
 
   private final FileService fileService;
 
+  private final BasesService basesService;
+
   private final ResultToCSVExportAdapter resultToCsvExportAdapter;
 
   private final CSVExporter csvExporter;
@@ -48,12 +52,13 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
   @Autowired
   public ResultAdaptingCsvExportService(final ExecutionService executionService,
       final FeedbackService feedbackService, final ConfigurationService configurationService,
-      final FileService fileService, final ResultToCSVExportAdapter resultToCsvExportAdapter,
-      final CSVExporter csvExporter) {
+      final FileService fileService, final BasesService basesService,
+      final ResultToCSVExportAdapter resultToCsvExportAdapter, final CSVExporter csvExporter) {
     Preconditions.checkNotNull(feedbackService);
     Preconditions.checkNotNull(executionService);
     Preconditions.checkNotNull(configurationService);
     Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(basesService);
     Preconditions.checkNotNull(resultToCsvExportAdapter);
     Preconditions.checkNotNull(csvExporter);
 
@@ -61,6 +66,7 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
     this.feedbackService = feedbackService;
     this.configurationService = configurationService;
     this.fileService = fileService;
+    this.basesService = basesService;
     this.resultToCsvExportAdapter = resultToCsvExportAdapter;
     this.csvExporter = csvExporter;
   }
@@ -82,8 +88,11 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
     final Result result = this.executionService.getResultForTaskId(userId, taskId);
     final Input input = this.feedbackService.getInputSnapshotForTaskId(userId, taskId);
     final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
+    final KnowledgeBase primaryBase =
+        this.basesService.getByName(userId, configuration.getPrimaryBase());
 
-    final Input output = this.resultToCsvExportAdapter.toCSVExport(result, input, configuration);
+    final Input output = this.resultToCsvExportAdapter.toCSVExport(result, input,
+        configuration.isStatistical(), primaryBase);
 
     return output;
   }

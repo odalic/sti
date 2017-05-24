@@ -43,6 +43,7 @@ public final class KnowledgeBaseValue {
   private Set<String> selectedGroups;
 
   private boolean insertEnabled;
+  private URL insertEndpoint;
   private URI insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
@@ -80,6 +81,7 @@ public final class KnowledgeBaseValue {
         .collect(ImmutableSet.toImmutableSet());
 
     this.insertEnabled = adaptee.isInsertEnabled();
+    this.insertEndpoint = adaptee.getInsertEndpoint();
     this.insertGraph = adaptee.getInsertGraph();
     this.userClassesPrefix = adaptee.getUserClassesPrefix();
     this.userResourcesPrefix = adaptee.getUserResourcesPrefix();
@@ -259,6 +261,22 @@ public final class KnowledgeBaseValue {
   }
 
   /**
+   * @return the insert endpoint
+   */
+  @XmlElement
+  @Nullable
+  public URL getInsertEndpoint() {
+    return insertEndpoint;
+  }
+
+  /**
+   * @param insertGraph the insert endpoint to set
+   */
+  public void setInsertEndpoint(@Nullable final URL insertEndpoint) {
+    this.insertEndpoint = insertEndpoint;
+  }
+
+  /**
    * @return the insert graph
    */
   @XmlElement
@@ -413,11 +431,13 @@ public final class KnowledgeBaseValue {
         + description + ", textSearchingMethod=" + textSearchingMethod + ", languageTag="
         + languageTag + ", skippedAttributes=" + skippedAttributes + ", skippedClasses="
         + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected + ", selectedGroups="
-        + selectedGroups + ", insertEnabled=" + insertEnabled + ", insertGraph=" + insertGraph
-        + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
-        + userResourcesPrefix + ", insertDataPropertyType=" + insertDataPropertyType
+        + selectedGroups + ", insertEnabled=" + insertEnabled + ", insertEndpoint=" + insertEndpoint
+        + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
+        + ", userResourcesPrefix=" + userResourcesPrefix + ", insertDataPropertyType=" + insertDataPropertyType
         + ", insertObjectPropertyType=" + insertObjectPropertyType + ", login=" + login
-        + ", password=****, advancedType=" + advancedType + ", advancedProperties="
-        + advancedProperties + "]";
+        + ", password="
+        + password + ", advancedType=" + advancedType + ", advancedProperties="
+        + advancedProperties
+        + "]";
   }
 }

@@ -11,7 +11,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.ConfigurationAdapter;
-import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.File;
 
@@ -36,9 +35,9 @@ public final class Configuration implements Serializable {
 
   private final Feedback feedback;
 
-  private final Set<KnowledgeBase> usedBases;
+  private final Set<String> usedBases;
 
-  private final KnowledgeBase primaryBase;
+  private final String primaryBase;
 
   private final int rowsLimit;
 
@@ -58,8 +57,8 @@ public final class Configuration implements Serializable {
    *
    * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number or zero
    */
-  public Configuration(final File input, final Set<? extends KnowledgeBase> usedBases,
-      final KnowledgeBase primaryBase, final @Nullable Feedback feedback,
+  public Configuration(final File input, final Set<? extends String> usedBases,
+      final String primaryBase, final @Nullable Feedback feedback,
       @Nullable final Integer rowsLimit, @Nullable final Boolean statistical) {
     Preconditions.checkNotNull(input);
     Preconditions.checkNotNull(usedBases);
@@ -126,7 +125,7 @@ public final class Configuration implements Serializable {
   /**
    * @return the primary knowledge base
    */
-  public KnowledgeBase getPrimaryBase() {
+  public String getPrimaryBase() {
     return this.primaryBase;
   }
 
@@ -140,7 +139,7 @@ public final class Configuration implements Serializable {
   /**
    * @return the bases selected for the task
    */
-  public Set<KnowledgeBase> getUsedBases() {
+  public Set<String> getUsedBases() {
     return this.usedBases;
   }
 

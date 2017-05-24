@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rdf.values;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -10,7 +11,7 @@ import com.complexible.pinto.Identifiable;
 import com.complexible.pinto.annotations.RdfProperty;
 import com.complexible.pinto.annotations.RdfsClass;
 import com.google.common.base.Preconditions;
-
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 
 /**
@@ -32,9 +33,11 @@ public final class TaskValue implements Serializable, Identifiable {
 
   public TaskValue() {}
 
-  public TaskValue(final Task adaptee) {
+  public TaskValue(final Task adaptee, final Set<? extends KnowledgeBase> usedBases) {
+    Preconditions.checkNotNull(usedBases);
+    
     this.description = adaptee.getDescription();
-    this.configuration = new ConfigurationValue(adaptee.getConfiguration());
+    this.configuration = new ConfigurationValue(adaptee.getConfiguration(), usedBases);
   }
 
   /**

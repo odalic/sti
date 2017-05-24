@@ -49,6 +49,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   private final Set<Group> selectedGroups;
 
   private final boolean insertEnabled;
+  private final URL insertEndpoint;
   private final URI insertGraph;
   private final URI userClassesPrefix;
   private final URI userResourcesPrefix;
@@ -82,7 +83,8 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
       final String description, final TextSearchingMethod textSearchingMethod,
       final String languageTag, final List<? extends String> skippedAttributes,
       final List<? extends String> skippedClasses, final boolean groupsAutoSelected,
-      final Set<? extends Group> selectedGroups, final boolean insertEnabled, final URI insertGraph,
+      final Set<? extends Group> selectedGroups, final boolean insertEnabled,
+      final URL insertEndpoint, final URI insertGraph,
       final URI userClassesPrefix, final URI userResourcesPrefix,
       final URI insertDataPropertyType, final URI insertObjectPropertyType, @Nullable final String login,
       @Nullable final String password, final AdvancedBaseType advancedType,
@@ -118,6 +120,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     this.selectedGroups = ImmutableSet.copyOf(selectedGroups);
 
     this.insertEnabled = insertEnabled;
+    this.insertEndpoint = insertEndpoint;
     this.insertGraph = insertGraph;
     this.userClassesPrefix = userClassesPrefix;
     this.userResourcesPrefix = userResourcesPrefix;
@@ -144,6 +147,10 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
 
   public boolean isInsertEnabled() {
     return this.insertEnabled;
+  }
+
+  public URL getInsertEndpoint() {
+    return this.insertEndpoint;
   }
 
   public String getDescription() {
@@ -286,11 +293,6 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "KnowledgeBase [owner=" + owner + ", name=" + name + ", endpoint=" + endpoint
@@ -298,12 +300,11 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
         + ", languageTag=" + languageTag + ", skippedAttributes=" + skippedAttributes
         + ", skippedClasses=" + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected
         + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
-        + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
-        + ", userResourcesPrefix=" + userResourcesPrefix + ", insertDataPropertyType="
+        + ", insertEndpoint=" + insertEndpoint + ",insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix+ ", userResourcesPrefix="
+        +  userResourcesPrefix + ", insertDataPropertyType="
         + insertDataPropertyType + ", insertObjectPropertyType=" + insertObjectPropertyType
-        + ", login=" + login + ", password=****, advancedType=" + advancedType
-        + ", advancedProperties=" + advancedProperties + "]";
+        + ",login=" + login
+        + ", password= "+ password+ ", advancedType=" + advancedType
+        + ",advancedProperties=" + advancedProperties + "]";
   }
-
-
 }

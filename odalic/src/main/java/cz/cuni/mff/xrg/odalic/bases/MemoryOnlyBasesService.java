@@ -68,7 +68,7 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   private static final String INSERT_OBJECT_PROPERTY_TYPE_PROPERTY_KEY = "kb.insert.type.objectProperty";
 
-  private static final String INSERT_SUPPORTED_PROEPRTY_KEY = "kb.insert.supported";
+  private static final String INSERT_ENDPOINT_PROPERTY_KEY = "kb.insert.supported";
 
   private static final String ENDPOINT_PROPERTY_KEY = "kb.endpoint";
   
@@ -262,26 +262,21 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public void subscribe(final Task task) {
-    final User taskOwner = task.getOwner();
-    final String taskId = task.getId();
+    final Set<String> bases = task.getConfiguration().getUsedBases();
 
-    final Set<KnowledgeBase> bases = task.getConfiguration().getUsedBases();
-
-    for (final KnowledgeBase base : bases) {
-      subscribe(taskOwner, taskId, base);
+    for (final String base : bases) {
+      subscribe(task, base);
     }
   }
 
-  private void subscribe(final User taskOwner, final String taskId, final KnowledgeBase base) {
-    final User owner = base.getOwner();
-    Preconditions.checkArgument(owner.equals(taskOwner),
-        "The owner of the base is not the same as the owner of the task!");
+  private void subscribe(final Task task, final String baseName) {
+    final String taskId = task.getId();
 
+    final User owner = task.getOwner();
     final String userId = owner.getEmail();
-    final String baseName = base.getName();
 
-    Preconditions.checkArgument(this.userAndBaseIdsToBases.get(userId, baseName).equals(base),
-        "The base is not registered!");
+    Preconditions.checkArgument(this.userAndBaseIdsToBases.contains(userId, baseName),
+        "The base is not registered to the task owner!");
 
     final Set<String> tasks = this.utilizingTasks.get(userId, baseName);
 
@@ -298,26 +293,21 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public void unsubscribe(final Task task) {
-    final User taskOwner = task.getOwner();
-    final String taskId = task.getId();
+    final Set<String> bases = task.getConfiguration().getUsedBases();
 
-    final Set<KnowledgeBase> bases = task.getConfiguration().getUsedBases();
-
-    for (final KnowledgeBase base : bases) {
-      unsubscribe(taskOwner, taskId, base);
+    for (final String base : bases) {
+      unsubscribe(task, base);
     }
   }
 
-  private void unsubscribe(final User taskOwner, final String taskId, final KnowledgeBase base) {
-    final User owner = base.getOwner();
-    Preconditions.checkArgument(owner.equals(taskOwner),
-        "The owner of the base is not the same as the owner of the task!");
+  private void unsubscribe(final Task task, final String baseName) {
+    final String taskId = task.getId();
 
+    final User owner = task.getOwner();
     final String userId = owner.getEmail();
-    final String baseName = base.getName();
 
-    Preconditions.checkArgument(this.userAndBaseIdsToBases.get(userId, baseName).equals(base),
-        "The base is not registered!");
+    Preconditions.checkArgument(this.userAndBaseIdsToBases.contains(userId, baseName),
+        "The base is not registered to the task owner!");
 
     final Set<String> tasks = this.utilizingTasks.get(userId, baseName);
 
@@ -376,6 +366,12 @@ public final class MemoryOnlyBasesService implements BasesService {
 
     baseBuilder
         .setInsertEnabled(Boolean.parseBoolean(baseProperties.getProperty(INSERT_SUPPORTED_PROEPRTY_KEY)));
+
+    final String insertEndpointUrlValue = baseProperties.getProperty(INSERT_ENDPOINT_PROPERTY_KEY);
+    if (insertEndpointUrlValue != null) {
+      final URL insertEndpointUrl = new URL(insertEndpointUrlValue);
+      baseBuilder.setInsertEndpoint(insertEndpointUrl);
+    }
 
     final String insertGraphValue = baseProperties.getProperty(INSERT_GRAPH_PROPERTY_KEY);
     if (insertGraphValue != null) {

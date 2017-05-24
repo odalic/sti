@@ -247,9 +247,6 @@ public final class FeedbackValue implements Serializable {
             .collect(ImmutableSet.toImmutableSet()));
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "FeedbackValue [subjectColumnsPositions=" + subjectColumnsPositions + ", columnIgnores="

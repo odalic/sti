@@ -46,6 +46,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   private Set<Group> selectedGroups;
 
   private boolean insertEnabled;
+  private URL insertEndpoint;
   private URI insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
@@ -76,6 +77,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
     this.languageTag = null;
 
     this.insertEnabled = false;
+    this.insertEndpoint = null;
     this.insertGraph = null;
     this.userClassesPrefix = null;
     this.userResourcesPrefix = null;
@@ -99,7 +101,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   public KnowledgeBase build() {
     return new KnowledgeBase(owner, name, endpoint, description, textSearchingMethod, languageTag,
         skippedAttributes, skippedClasses, groupsAutoSelected, selectedGroups, insertEnabled,
-        insertGraph, userClassesPrefix, userResourcesPrefix, insertDataPropertyType,
+        insertEndpoint, insertGraph, userClassesPrefix, userResourcesPrefix, insertDataPropertyType,
         insertObjectPropertyType, login, password, advancedType, advancedProperties);
   }
 
@@ -118,6 +120,10 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   public boolean isInsertEnabled() {
     return this.insertEnabled;
+  }
+
+  public URL getInsertEndpoint() {
+    return this.insertEndpoint;
   }
 
   @Nullable
@@ -333,6 +339,15 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   /**
+   * @param insertEndpoint insert end-point URL
+   */
+  public KnowledgeBaseBuilder setInsertEndpoint(final URL insertEndpoint) {
+    this.insertEndpoint = insertEndpoint;
+
+    return this;
+  }
+
+  /**
    * @param insertGraph the insertGraph to set
    */
   public KnowledgeBaseBuilder setInsertGraph(@Nullable URI insertGraph) {
@@ -422,11 +437,6 @@ public final class KnowledgeBaseBuilder implements Serializable {
     return this;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return "KnowledgeBaseBuilder [owner=" + owner + ", name=" + name + ", endpoint=" + endpoint
@@ -434,10 +444,11 @@ public final class KnowledgeBaseBuilder implements Serializable {
         + ", languageTag=" + languageTag + ", skippedAttributes=" + skippedAttributes
         + ", skippedClasses=" + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected
         + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
-        + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
-        + ", userResourcesPrefix=" + userResourcesPrefix + ", insertDataPropertyType="
+        + ", insertEndpoint=" + insertEndpoint + ",insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix+ ", userResourcesPrefix="
+        +  userResourcesPrefix + ", insertDataPropertyType="
         + insertDataPropertyType + ", insertObjectPropertyType=" + insertObjectPropertyType
-        + ", login=" + login + ", password=****, advancedType=" + advancedType
-        + ", advancedProperties=" + advancedProperties + "]";
+        + ",login=" + login
+        + ", password= "+ password+ ", advancedType=" + advancedType
+        + ",advancedProperties=" + advancedProperties + "]";
   }
 }

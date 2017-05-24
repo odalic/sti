@@ -2,6 +2,7 @@ package cz.cuni.mff.xrg.odalic.api.rdf.values;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
@@ -11,7 +12,9 @@ import com.complexible.pinto.annotations.RdfProperty;
 import com.complexible.pinto.annotations.RdfsClass;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 
 /**
@@ -40,15 +43,23 @@ public final class ConfigurationValue implements Serializable {
 
   public ConfigurationValue() {}
 
-  public ConfigurationValue(final Configuration adaptee) {
+  public ConfigurationValue(final Configuration adaptee,
+      final Set<? extends KnowledgeBase> usedBases) {
     this.input = adaptee.getInput().getId();
     this.feedback = adaptee.getFeedback() == null ? null : new FeedbackValue(adaptee.getFeedback());
-    this.usedBases = adaptee.getUsedBases().stream().map(KnowledgeBaseValue::new)
-        .collect(ImmutableList.toImmutableList());
-    this.primaryBase = adaptee.getPrimaryBase().getName();
+    this.usedBases =
+        usedBases.stream().map(KnowledgeBaseValue::new).collect(ImmutableList.toImmutableList());
+    this.primaryBase = adaptee.getPrimaryBase();
     this.rowsLimit =
         adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
     this.statistical = adaptee.isStatistical();
+
+    Preconditions
+        .checkArgument(
+            adaptee.getUsedBases()
+                .equals(usedBases.stream().map(e -> e.getName())
+                    .collect(ImmutableSet.toImmutableSet())),
+            "The configuration is not compatible with the provided used bases!");
   }
 
   /**

@@ -251,7 +251,7 @@ public final class EntitiesResource {
       @DefaultValue("20") @QueryParam("limit") final Integer limit,
       @QueryParam("domain") final URI domain, @QueryParam("range") final URI range)
       throws ProxyException, STIException, IOException {
-    return searchProperties(baseName, query, limit, domain, range);
+    return searchProperties(this.securityContext.getUserPrincipal().getName(), baseName, query, limit, domain, range);
   }
 
   @GET

@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 
 public final class SparqlProxyCore implements ProxyCore {
 
+  private static final String LANGUAGE_TAG_SEPARATOR = "@";
   private static final String SPARQL_PREFIX = "PREFIX %1$s: <%2$s>";
   private static final String INSERT_BASE = "INSERT DATA {GRAPH <%1$s> {%2$s .}}";
 
@@ -330,7 +331,7 @@ public final class SparqlProxyCore implements ProxyCore {
     // Filter language tags
     String suffix = definition.getLanguageSuffix();
     if (!isNullOrEmpty(suffix)) {
-      if (suffix.startsWith("@")) {
+      if (suffix.startsWith(LANGUAGE_TAG_SEPARATOR)) {
         suffix = suffix.substring(1);
       }
       final String finalSuffix = suffix;
@@ -694,7 +695,7 @@ public final class SparqlProxyCore implements ProxyCore {
     log.info("SPARQL query: \n" + sparqlQuery);
 
     UpdateRequest query = UpdateFactory.create(sparqlQuery);
-    UpdateProcessor queryExecution = UpdateExecutionFactory.createRemote(query, definition.getEndpoint());
+    UpdateProcessor queryExecution = UpdateExecutionFactory.createRemote(query, definition.getInsertEndpoint());
 
     queryExecution.execute();
   }
@@ -1073,7 +1074,7 @@ public final class SparqlProxyCore implements ProxyCore {
     String result = String.format(SPARQL_STRING_LITERAL, escapeSPARQLLiteral(value));
 
     if (addLanguageSuffix){
-      result += definition.getLanguageSuffix();
+      result += LANGUAGE_TAG_SEPARATOR + definition.getLanguageSuffix();
     }
 
     return result;
