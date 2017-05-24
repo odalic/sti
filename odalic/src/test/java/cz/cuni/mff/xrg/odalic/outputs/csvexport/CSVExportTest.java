@@ -32,6 +32,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.groups.GroupsService;
@@ -110,15 +111,17 @@ public class CSVExportTest {
       return;
     }
 
+    final KnowledgeBase primaryBase = basesService.getByName(user.getEmail(), "DBpedia");
+    
     Configuration config;
     try {
       config = new Configuration(new cz.cuni.mff.xrg.odalic.files.File(
           user, inputFile.getName(), inputFile.toURI().toURL(), new Format(
               StandardCharsets.UTF_8, ';', true, '"', null, null), true),
-          ImmutableSet.of(basesService.getByName(user.getEmail(), "DBpedia"),
-              basesService.getByName(user.getEmail(), "DBpedia Clone"),
-              basesService.getByName(user.getEmail(), "German DBpedia")),
-          basesService.getByName(user.getEmail(), "DBpedia"), new Feedback(), null, false);
+          ImmutableSet.of(primaryBase.getName(),
+              basesService.getByName(user.getEmail(), "DBpedia Clone").getName(),
+              basesService.getByName(user.getEmail(), "German DBpedia").getName()),
+          primaryBase.getName(), new Feedback(), null, false);
     } catch (MalformedURLException e) {
       log.error("Error - configuration settings:", e);
       return;
@@ -149,19 +152,19 @@ public class CSVExportTest {
     }
 
     // Export from result (and input) to CSV file
-    testExportToCSVFile(result, input, config, inputFile.getParent() + File.separator
+    testExportToCSVFile(result, input, config, primaryBase, inputFile.getParent() + File.separator
         + FilenameUtils.getBaseName(inputFile.getName()) + "-export.csv", resultToCsvExportAdapter, csvExporter);
 
     // Export from result (and input) to JSON annotated table
-    testExportToAnnotatedTable(result, input, config, inputFile.getParent() + File.separator
+    testExportToAnnotatedTable(result, input, config, primaryBase, inputFile.getParent() + File.separator
         + FilenameUtils.getBaseName(inputFile.getName()) + "-export.json", resultToAnnotatedTableAdapter);
   }
 
-  public static Input testExportToCSVFile(Result result, Input input, Configuration config,
+  public static Input testExportToCSVFile(Result result, Input input, Configuration config, KnowledgeBase primaryBase,
       String filePath, ResultToCSVExportAdapter adapter, CSVExporter exporter) {
 
     // Conversion from result to CSV extended input
-    Input extendedInput = adapter.toCSVExport(result, input, config);
+    Input extendedInput = adapter.toCSVExport(result, input, config.isStatistical(), primaryBase);
 
     // Export CSV extended Input to CSV String
     String csv;
@@ -185,11 +188,11 @@ public class CSVExportTest {
   }
 
   public static AnnotatedTable testExportToAnnotatedTable(Result result, Input input,
-      Configuration config, String filePath, ResultToAnnotatedTableAdapter adapter) {
+      Configuration config, KnowledgeBase primaryBase, String filePath, ResultToAnnotatedTableAdapter adapter) {
 
     // Conversion from result to annotated table
     AnnotatedTable annotatedTable =
-        adapter.toAnnotatedTable(result, input, config);
+        adapter.toAnnotatedTable(result, input, config.isStatistical(), primaryBase);
 
     // Export Annotated Table to JSON String
     String json;
