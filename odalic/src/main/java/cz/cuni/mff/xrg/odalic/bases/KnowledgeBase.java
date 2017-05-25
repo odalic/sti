@@ -50,11 +50,11 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
 
   private final boolean insertEnabled;
   private final URL insertEndpoint;
-  private final URI insertGraph;
+  private final String insertGraph;
   private final URI userClassesPrefix;
   private final URI userResourcesPrefix;
-  private final URI datatypeProperty;
-  private final URI objectProperty;
+  private final String datatypeProperty;
+  private final String objectProperty;
 
   private final String login;
   private final String password;
@@ -69,11 +69,19 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
    * @param name knowledge base name
    * @param endpoint end-point URL
    * @param description knowledge base description
-   * @param insertEnabled whether the base supports insertion of new concepts
-   * @param insertDataPropertyType type used when inserting data properties
-   * @param insertObjectPropertyType type used when inserting object properties
+   * @param textSearchingMethod
+   * @param languageTag
+   * @param skippedAttributes
+   * @param skippedClasses
    * @param groupsAutoSelected whether the used groups are determined automatically
    * @param selectedGroups the groups selected for use
+   * @param insertEnabled whether the base supports insertion of new concepts
+   * @param insertEndpoint
+   * @param insertGraph
+   * @param userClassesPrefix
+   * @param userResourcesPrefix
+   * @param datatypeProperty type used when inserting data properties
+   * @param objectTypeProperty type used when inserting object properties
    * @param login login
    * @param password password
    * @param advancedType knowledge base type, affects the applicable properties
@@ -84,9 +92,9 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
       final String languageTag, final List<? extends String> skippedAttributes,
       final List<? extends String> skippedClasses, final boolean groupsAutoSelected,
       final Set<? extends Group> selectedGroups, final boolean insertEnabled,
-      final URL insertEndpoint, final URI insertGraph,
+      final URL insertEndpoint, final String insertGraph,
       final URI userClassesPrefix, final URI userResourcesPrefix,
-      final URI insertDataPropertyType, final URI insertObjectPropertyType, @Nullable final String login,
+      final String datatypeProperty, final String objectTypeProperty, @Nullable final String login,
       @Nullable final String password, final AdvancedBaseType advancedType,
       final Map<? extends String, ? extends String> advancedProperties) {
     Preconditions.checkNotNull(owner);
@@ -124,8 +132,8 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     this.insertGraph = insertGraph;
     this.userClassesPrefix = userClassesPrefix;
     this.userResourcesPrefix = userResourcesPrefix;
-    this.datatypeProperty = insertDataPropertyType;
-    this.objectProperty = insertObjectPropertyType;
+    this.datatypeProperty = datatypeProperty;
+    this.objectProperty = objectTypeProperty;
 
     this.login = login;
     this.password = password;
@@ -208,7 +216,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   }
 
   @Nullable
-  public URI getInsertGraph() {
+  public String getInsertGraph() {
     return insertGraph;
   }
 
@@ -223,12 +231,12 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   }
 
   @Nullable
-  public URI getDatatypeProperty() {
+  public String getDatatypeProperty() {
     return datatypeProperty;
   }
 
   @Nullable
-  public URI getObjectProperty() {
+  public String getObjectProperty() {
     return objectProperty;
   }
 

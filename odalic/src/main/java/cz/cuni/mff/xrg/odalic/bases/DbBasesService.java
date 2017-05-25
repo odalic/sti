@@ -410,7 +410,7 @@ public final class DbBasesService implements BasesService {
 
     final String insertGraphValue = baseProperties.getProperty(INSERT_GRAPH_PROPERTY_KEY);
     if (insertGraphValue != null) {
-      baseBuilder.setInsertGraph(URI.create(insertGraphValue));
+      baseBuilder.setInsertGraph(insertGraphValue);
     }
 
     final String userClassesPrefixValue =
@@ -427,12 +427,12 @@ public final class DbBasesService implements BasesService {
 
     final String insertDataPropertyType = baseProperties.getProperty(INSERT_DATA_PROPERTY_TYPE_PROPERTY_KEY);
     if (insertDataPropertyType != null) {
-      baseBuilder.setDatatypeProperty(URI.create(insertDataPropertyType));
+      baseBuilder.setDatatypeProperty(insertDataPropertyType);
     }
 
     final String insertObjectPropertyType = baseProperties.getProperty(INSERT_OBJECT_PROPERTY_TYPE_PROPERTY_KEY);
     if (insertObjectPropertyType != null) {
-      baseBuilder.setInsertObjectPropertyType(URI.create(insertObjectPropertyType));
+      baseBuilder.setInsertObjectPropertyType(insertObjectPropertyType);
     }
 
     final String languageTagValue = baseProperties.getProperty(LANGUAGE_TAG_PROPERTY_KEY);

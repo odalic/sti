@@ -47,11 +47,11 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   private boolean insertEnabled;
   private URL insertEndpoint;
-  private URI insertGraph;
+  private String insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
-  private URI datatypeProperty;
-  private URI objectProperty;
+  private String datatypeProperty;
+  private String objectProperty;
 
   private String login;
   private String password;
@@ -175,7 +175,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   @Nullable
-  public URI getInsertGraph() {
+  public String getInsertGraph() {
     return insertGraph;
   }
 
@@ -190,12 +190,12 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   @Nullable
-  public URI getDatatypeProperty() {
+  public String getDatatypeProperty() {
     return datatypeProperty;
   }
 
   @Nullable
-  public URI getObjectProperty() {
+  public String getObjectProperty() {
     return objectProperty;
   }
 
@@ -350,7 +350,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   /**
    * @param insertGraph the insertGraph to set
    */
-  public KnowledgeBaseBuilder setInsertGraph(@Nullable URI insertGraph) {
+  public KnowledgeBaseBuilder setInsertGraph(@Nullable String insertGraph) {
     this.insertGraph = insertGraph;
 
     return this;
@@ -377,7 +377,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   /**
    * @param datatypeProperty the datatype property type to set
    */
-  public KnowledgeBaseBuilder setDatatypeProperty(@Nullable URI datatypeProperty) {
+  public KnowledgeBaseBuilder setDatatypeProperty(@Nullable String datatypeProperty) {
     this.datatypeProperty = datatypeProperty;
 
     return this;
@@ -386,7 +386,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   /**
    * @param objectProperty the object property type to set
    */
-  public KnowledgeBaseBuilder setInsertObjectPropertyType(@Nullable URI objectProperty) {
+  public KnowledgeBaseBuilder setInsertObjectPropertyType(@Nullable String objectProperty) {
     this.objectProperty = objectProperty;
 
     return this;

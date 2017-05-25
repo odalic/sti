@@ -169,8 +169,9 @@ public final class BasesResource {
         baseValue.getSkippedAttributes(), baseValue.getSkippedClasses(),
         baseValue.getGroupsAutoSelected(), selectedGroups, baseValue.isInsertEnabled(),
         baseValue.getInsertEndpoint(), baseValue.getInsertGraph(), baseValue.getUserClassesPrefix(),
+        baseValue.getUserResourcesPrefix(),
         baseValue.getDatatypeProperty(), baseValue.getObjectProperty(),
-        baseValue.getUserResourcesPrefix(), baseValue.getLogin(), baseValue.getPassword(),
+        baseValue.getLogin(), baseValue.getPassword(),
         advancedType, baseValue.getAdvancedProperties());
 
     final KnowledgeBase baseById = this.basesService.verifyBaseExistenceByName(userId, name);

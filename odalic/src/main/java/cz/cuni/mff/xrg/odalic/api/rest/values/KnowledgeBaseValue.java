@@ -44,11 +44,11 @@ public final class KnowledgeBaseValue {
 
   private boolean insertEnabled;
   private URL insertEndpoint;
-  private URI insertGraph;
+  private String insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
-  private URI datatypeProperty;
-  private URI objectProperty;
+  private String datatypeProperty;
+  private String objectProperty;
 
   private String login;
   private String password;
@@ -281,14 +281,14 @@ public final class KnowledgeBaseValue {
    */
   @XmlElement
   @Nullable
-  public URI getInsertGraph() {
+  public String getInsertGraph() {
     return insertGraph;
   }
 
   /**
    * @param insertGraph the insert graph to set
    */
-  public void setInsertGraph(@Nullable final URI insertGraph) {
+  public void setInsertGraph(@Nullable final String insertGraph) {
     this.insertGraph = insertGraph;
   }
 
@@ -329,14 +329,14 @@ public final class KnowledgeBaseValue {
    */
   @XmlElement
   @Nullable
-  public URI getDatatypeProperty() {
+  public String getDatatypeProperty() {
     return datatypeProperty;
   }
 
   /**
    * @param datatypeProperty the property type used when inserting datatype properties
    */
-  public void setDatatypeProperty(@Nullable final URI datatypeProperty) {
+  public void setDatatypeProperty(@Nullable final String datatypeProperty) {
     this.datatypeProperty = datatypeProperty;
   }
 
@@ -345,14 +345,14 @@ public final class KnowledgeBaseValue {
    */
   @XmlElement
   @Nullable
-  public URI getObjectProperty() {
+  public String getObjectProperty() {
     return objectProperty;
   }
 
   /**
    * @param objectProperty the property type used when inserting object properties
    */
-  public void setInsertObjectPropertyType(@Nullable final URI objectProperty) {
+  public void setInsertObjectPropertyType(@Nullable final String objectProperty) {
     this.objectProperty = objectProperty;
   }
 
