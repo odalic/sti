@@ -17,7 +17,7 @@ public class ObjectListPropertyTriplePattern extends ObjectPropertyTriplePattern
   public ObjectListPropertyTriplePattern(final String subjectPattern, final IRI predicate,
       final String objectPattern, final String separator) {
     super(subjectPattern, predicate, objectPattern, null);
-    Preconditions.checkNotNull(separator);
+    Preconditions.checkNotNull(separator, "The separator cannot be null!");
     this.separator = separator;
   }
 

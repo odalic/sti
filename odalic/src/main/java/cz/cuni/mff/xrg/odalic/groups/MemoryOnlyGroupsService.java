@@ -95,8 +95,8 @@ public final class MemoryOnlyGroupsService implements GroupsService {
 
   private MemoryOnlyGroupsService(final Table<String, String, Group> usersAndNamesToGroups,
       final Table<String, String, Set<String>> utilizingBases, final Path initialGroupsPath) {
-    Preconditions.checkNotNull(usersAndNamesToGroups);
-    Preconditions.checkNotNull(utilizingBases);
+    Preconditions.checkNotNull(usersAndNamesToGroups, "The usersAndNamesToGroups cannot be null!");
+    Preconditions.checkNotNull(utilizingBases, "The utilizingBases cannot be null!");
     
     this.userAndGroupIdsToGroups = usersAndNamesToGroups;
     this.utilizingBases = utilizingBases;
@@ -110,8 +110,8 @@ public final class MemoryOnlyGroupsService implements GroupsService {
 
   @Override
   public Group getGroup(final String userId, String groupId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(groupId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(groupId, "The groupId cannot be null!");
     
     final Group group = this.userAndGroupIdsToGroups.get(userId, groupId);
     Preconditions.checkArgument(group != null, "Unknown group!");
@@ -121,14 +121,14 @@ public final class MemoryOnlyGroupsService implements GroupsService {
 
   @Override
   public void replace(final Group group) {
-    Preconditions.checkNotNull(group);
+    Preconditions.checkNotNull(group, "The group cannot be null!");
 
     this.userAndGroupIdsToGroups.put(group.getOwner().getEmail(), group.getId(), group);
   }
   
   @Override
   public Group merge(final Group group) {
-    Preconditions.checkNotNull(group);
+    Preconditions.checkNotNull(group, "The group cannot be null!");
 
     final String userId = group.getOwner().getEmail();
     final String groupId = group.getId();
@@ -154,8 +154,8 @@ public final class MemoryOnlyGroupsService implements GroupsService {
   
   @Override
   public boolean existsGroupWithId(final String userId, final String groupId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(groupId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(groupId, "The groupId cannot be null!");
 
     return this.userAndGroupIdsToGroups.contains(userId, groupId);
   }
@@ -237,15 +237,15 @@ public final class MemoryOnlyGroupsService implements GroupsService {
 
   @Override
   public Group verifyGroupExistenceById(final String userId, final String groupId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(groupId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(groupId, "The groupId cannot be null!");
 
     return this.userAndGroupIdsToGroups.get(userId, groupId);
   }
 
   @Override
   public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     final Map<String, Group> groupIdsToGroups = this.userAndGroupIdsToGroups.row(userId);
     groupIdsToGroups.clear();
@@ -253,8 +253,8 @@ public final class MemoryOnlyGroupsService implements GroupsService {
   
   @Override
   public void deleteById(String userId, String groupId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(groupId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(groupId, "The groupId cannot be null!");
 
     checkUtilization(userId, groupId);
 
@@ -276,7 +276,7 @@ public final class MemoryOnlyGroupsService implements GroupsService {
 
   @Override
   public void initializeDefaults(final User owner) throws IOException {
-    Preconditions.checkNotNull(owner);
+    Preconditions.checkNotNull(owner, "The owner cannot be null!");
     
     final Iterator<File> groupPropertiesFileIterator = FileUtils.iterateFiles(this.initialGroupsPath.toFile(), GROUP_FILES_EXTENSIONS.toArray(new String[GROUP_FILES_EXTENSIONS.size()]), false);
     while (groupPropertiesFileIterator.hasNext()) {

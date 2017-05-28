@@ -35,7 +35,7 @@ public final class MessageBuilder {
    * @return the message builder
    */
   public MessageBuilder additionalResources(final List<? extends URI> additionalResources) {
-    Preconditions.checkNotNull(additionalResources);
+    Preconditions.checkNotNull(additionalResources, "The additionalResources cannot be null!");
 
     this.additionalResources = ImmutableList.copyOf(additionalResources);
 

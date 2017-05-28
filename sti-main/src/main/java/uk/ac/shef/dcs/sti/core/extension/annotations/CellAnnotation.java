@@ -32,8 +32,8 @@ public final class CellAnnotation {
    */
   public CellAnnotation(final Set<? extends EntityCandidate> candidates,
       final Set<? extends EntityCandidate> chosen) {
-    Preconditions.checkNotNull(candidates);
-    Preconditions.checkNotNull(chosen);
+    Preconditions.checkNotNull(candidates, "The candidates cannot be null!");
+    Preconditions.checkNotNull(chosen, "The chosen cannot be null!");
     Preconditions.checkArgument(candidates.containsAll(chosen));
 
     this.candidates = ImmutableSortedSet.copyOf(candidates);

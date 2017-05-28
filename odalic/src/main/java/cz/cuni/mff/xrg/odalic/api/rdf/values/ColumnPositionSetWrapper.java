@@ -26,7 +26,7 @@ public class ColumnPositionSetWrapper {
   }
 
   public ColumnPositionSetWrapper(final Set<? extends ColumnPositionValue> value) {
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.value = ImmutableSortedSet.copyOf(value);
   }
@@ -43,7 +43,7 @@ public class ColumnPositionSetWrapper {
    * @param value the value to set
    */
   public void setValue(final Set<? extends ColumnPositionValue> value) {
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.value = ImmutableSortedSet.copyOf(value);
   }

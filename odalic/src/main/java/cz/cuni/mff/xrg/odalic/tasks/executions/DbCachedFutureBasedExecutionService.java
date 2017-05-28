@@ -95,16 +95,16 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
       final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter) {
-    Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(feedbackService);
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(basesService);
-    Preconditions.checkNotNull(dbService);
-    Preconditions.checkNotNull(annotationToResultAdapter);
-    Preconditions.checkNotNull(semanticTableInterpreterFactory);
-    Preconditions.checkNotNull(feedbackToConstraintsAdapter);
-    Preconditions.checkNotNull(csvInputParser);
-    Preconditions.checkNotNull(inputToTableAdapter);
+    Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
+    Preconditions.checkNotNull(feedbackService, "The feedbackService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(dbService, "The dbService cannot be null!");
+    Preconditions.checkNotNull(annotationToResultAdapter, "The annotationToResultAdapter cannot be null!");
+    Preconditions.checkNotNull(semanticTableInterpreterFactory, "The semanticTableInterpreterFactory cannot be null!");
+    Preconditions.checkNotNull(feedbackToConstraintsAdapter, "The feedbackToConstraintsAdapter cannot be null!");
+    Preconditions.checkNotNull(csvInputParser, "The csvInputParser cannot be null!");
+    Preconditions.checkNotNull(inputToTableAdapter, "The inputToTableAdapter cannot be null!");
 
     this.configurationService = configurationService;
     this.feedbackService = feedbackService;
@@ -323,7 +323,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
   @Override
   public void unscheduleAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     this.userTaskIdsToCachedResults.prefixSubMap(new Object[] {userId}).clear();
     this.db.commit();

@@ -43,7 +43,7 @@ public final class AnnotatedTableResource {
 
   @Autowired
   public AnnotatedTableResource(final AnnotatedTableService annotatedTableService) {
-    Preconditions.checkNotNull(annotatedTableService);
+    Preconditions.checkNotNull(annotatedTableService, "The annotatedTableService cannot be null!");
 
     this.annotatedTableService = annotatedTableService;
   }

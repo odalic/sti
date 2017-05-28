@@ -78,11 +78,11 @@ public final class BasesResource {
   public BasesResource(final BasesService basesService, final UserService userService,
       final AdvancedBaseTypesService advancedBaseTypesService, final GroupsService groupsService,
       final KnowledgeBaseSerializationService knowledgeBaseSerializationService) {
-    Preconditions.checkNotNull(basesService);
-    Preconditions.checkNotNull(userService);
-    Preconditions.checkNotNull(advancedBaseTypesService);
-    Preconditions.checkNotNull(groupsService);
-    Preconditions.checkNotNull(knowledgeBaseSerializationService);
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(userService, "The userService cannot be null!");
+    Preconditions.checkNotNull(advancedBaseTypesService, "The advancedBaseTypesService cannot be null!");
+    Preconditions.checkNotNull(groupsService, "The groupsService cannot be null!");
+    Preconditions.checkNotNull(knowledgeBaseSerializationService, "The knowledgeBaseSerializationService cannot be null!");
 
     this.basesService = basesService;
     this.userService = userService;

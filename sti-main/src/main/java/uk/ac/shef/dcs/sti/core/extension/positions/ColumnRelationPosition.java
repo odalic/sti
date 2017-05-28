@@ -24,8 +24,8 @@ public final class ColumnRelationPosition {
    * @param second second column position
    */
   public ColumnRelationPosition(final ColumnPosition first, final ColumnPosition second) {
-    Preconditions.checkNotNull(first);
-    Preconditions.checkNotNull(second);
+    Preconditions.checkNotNull(first, "The first cannot be null!");
+    Preconditions.checkNotNull(second, "The second cannot be null!");
     Preconditions.checkArgument(first.getIndex() != second.getIndex());
 
     this.first = first;

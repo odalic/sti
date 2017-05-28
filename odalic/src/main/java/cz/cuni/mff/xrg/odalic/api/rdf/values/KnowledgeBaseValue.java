@@ -112,7 +112,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
    * @param name the name to set
    */
   public void setName(final String name) {
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     this.name = name;
   }

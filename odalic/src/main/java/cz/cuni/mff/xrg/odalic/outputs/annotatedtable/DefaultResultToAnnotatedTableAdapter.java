@@ -104,7 +104,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
   @Autowired
   public DefaultResultToAnnotatedTableAdapter(
       final KnowledgeBaseProxiesService knowledgeBaseProxyFactory) {
-    Preconditions.checkNotNull(knowledgeBaseProxyFactory);
+    Preconditions.checkNotNull(knowledgeBaseProxyFactory, "The knowledgeBaseProxyFactory cannot be null!");
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
   }

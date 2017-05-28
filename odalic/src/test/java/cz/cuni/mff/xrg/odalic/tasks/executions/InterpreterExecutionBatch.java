@@ -113,9 +113,9 @@ public class InterpreterExecutionBatch {
     private final Configuration configuration;
 
     public CoreSnapshot(final Result result, final Input input, final Configuration configuration) {
-      Preconditions.checkNotNull(result);
-      Preconditions.checkNotNull(input);
-      Preconditions.checkNotNull(configuration);
+      Preconditions.checkNotNull(result, "The result cannot be null!");
+      Preconditions.checkNotNull(input, "The input cannot be null!");
+      Preconditions.checkNotNull(configuration, "The configuration cannot be null!");
 
       this.input = input;
       this.result = result;

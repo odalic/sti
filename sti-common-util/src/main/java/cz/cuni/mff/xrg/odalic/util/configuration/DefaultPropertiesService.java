@@ -47,7 +47,7 @@ public class DefaultPropertiesService implements PropertiesService {
   }
 
   public DefaultPropertiesService(final Properties properties) {
-    Preconditions.checkNotNull(properties);
+    Preconditions.checkNotNull(properties, "The properties cannot be null!");
 
     this.properties = properties;
   }

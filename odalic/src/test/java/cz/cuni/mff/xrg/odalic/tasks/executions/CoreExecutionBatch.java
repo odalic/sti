@@ -177,7 +177,7 @@ public class CoreExecutionBatch {
       log.error("Error - TMP interpreters failed to initialize:", e);
       return null;
     }
-    Preconditions.checkNotNull(semanticTableInterpreters);
+    Preconditions.checkNotNull(semanticTableInterpreters, "The semanticTableInterpreters cannot be null!");
 
     // TableMinerPlus algorithm run
     Map<KnowledgeBase, TAnnotation> results = new HashMap<>();

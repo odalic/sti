@@ -33,8 +33,8 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Autowired
   public DefaultEntitiesService(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory,
       final EntitiesFactory entitiesFactory) {
-    Preconditions.checkNotNull(knowledgeBaseProxyFactory);
-    Preconditions.checkNotNull(entitiesFactory);
+    Preconditions.checkNotNull(knowledgeBaseProxyFactory, "The knowledgeBaseProxyFactory cannot be null!");
+    Preconditions.checkNotNull(entitiesFactory, "The entitiesFactory cannot be null!");
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
     this.entitiesFactory = entitiesFactory;

@@ -39,8 +39,8 @@ public final class StatisticalAnnotation implements Serializable {
   public StatisticalAnnotation(
       final Map<? extends String, ? extends ComponentTypeValue> component,
       final Map<? extends String, ? extends Set<? extends EntityCandidate>> predicate) {
-    Preconditions.checkNotNull(component);
-    Preconditions.checkNotNull(predicate);
+    Preconditions.checkNotNull(component, "The component cannot be null!");
+    Preconditions.checkNotNull(predicate, "The predicate cannot be null!");
 
     final ImmutableMap.Builder<String, ComponentTypeValue> componentBuilder =
         ImmutableMap.builder();

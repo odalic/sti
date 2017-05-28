@@ -41,8 +41,8 @@ public final class CellAnnotation implements Serializable {
   public CellAnnotation(
       final Map<? extends String, ? extends Set<? extends EntityCandidate>> candidates,
       final Map<? extends String, ? extends Set<? extends EntityCandidate>> chosen) {
-    Preconditions.checkNotNull(candidates);
-    Preconditions.checkNotNull(chosen);
+    Preconditions.checkNotNull(candidates, "The candidates cannot be null!");
+    Preconditions.checkNotNull(chosen, "The chosen cannot be null!");
 
     final ImmutableMap.Builder<String, NavigableSet<EntityCandidate>> candidatesBuilder =
         ImmutableMap.builder();

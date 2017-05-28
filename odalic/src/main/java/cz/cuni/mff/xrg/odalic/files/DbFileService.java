@@ -60,7 +60,7 @@ public final class DbFileService implements FileService {
   @Autowired
   @SuppressWarnings("unchecked")
   public DbFileService(final DbService dbService) {
-    Preconditions.checkNotNull(dbService);
+    Preconditions.checkNotNull(dbService, "The dbService cannot be null!");
 
     this.db = dbService.getDb();
 
@@ -92,7 +92,7 @@ public final class DbFileService implements FileService {
 
   @Override
   public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     final Object[] userIdKey = new Object[] {userId};
 
@@ -112,8 +112,8 @@ public final class DbFileService implements FileService {
 
   @Override
   public void deleteById(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     checkUtilization(userId, fileId);
 
@@ -132,16 +132,16 @@ public final class DbFileService implements FileService {
 
   @Override
   public boolean existsFileWithId(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     return this.files.containsKey(new Object[] {userId, fileId});
   }
 
   @Override
   public File getById(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     final File file = this.files.get(new Object[] {userId, fileId});
     Preconditions.checkArgument(file != null, "File does not exists!");
@@ -219,9 +219,9 @@ public final class DbFileService implements FileService {
 
   @Override
   public void setFormatForFileId(final String userId, final String fileId, final Format format) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
-    Preconditions.checkNotNull(format);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
+    Preconditions.checkNotNull(format, "The format cannot be null!");
 
     final Object[] userFileId = new Object[] {userId, fileId};
 

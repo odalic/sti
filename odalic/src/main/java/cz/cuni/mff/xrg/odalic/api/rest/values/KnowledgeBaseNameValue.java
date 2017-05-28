@@ -31,7 +31,7 @@ public final class KnowledgeBaseNameValue
   public KnowledgeBaseNameValue() {}
 
   public KnowledgeBaseNameValue(final String name) {
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(name, "The name cannot be null!");
     
     this.name = name;
   }
@@ -53,7 +53,7 @@ public final class KnowledgeBaseNameValue
    * @param name the name to set
    */
   public void setName(final String name) {
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     this.name = name;
   }

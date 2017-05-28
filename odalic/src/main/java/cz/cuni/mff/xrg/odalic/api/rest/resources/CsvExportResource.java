@@ -44,7 +44,7 @@ public final class CsvExportResource {
 
   @Autowired
   public CsvExportResource(final CsvExportService csvExportService) {
-    Preconditions.checkNotNull(csvExportService);
+    Preconditions.checkNotNull(csvExportService, "The csvExportService cannot be null!");
 
     this.csvExportService = csvExportService;
   }

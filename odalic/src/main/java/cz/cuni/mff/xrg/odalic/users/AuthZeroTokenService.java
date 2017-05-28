@@ -46,7 +46,7 @@ public class AuthZeroTokenService implements TokenService {
 
   @Autowired
   public AuthZeroTokenService(final PropertiesService propertiesService) {
-    Preconditions.checkNotNull(propertiesService);
+    Preconditions.checkNotNull(propertiesService, "The propertiesService cannot be null!");
 
     final Properties properties = propertiesService.get();
 
@@ -60,8 +60,8 @@ public class AuthZeroTokenService implements TokenService {
   }
 
   public AuthZeroTokenService(final String secret, final String issuer) {
-    Preconditions.checkNotNull(secret);
-    Preconditions.checkNotNull(issuer);
+    Preconditions.checkNotNull(secret, "The secret cannot be null!");
+    Preconditions.checkNotNull(issuer, "The issuer cannot be null!");
 
     this.secret = secret;
     this.issuer = issuer;
@@ -71,9 +71,9 @@ public class AuthZeroTokenService implements TokenService {
 
   @Override
   public Token create(final UUID id, final String subject, final Instant expiration) {
-    Preconditions.checkNotNull(id);
-    Preconditions.checkNotNull(subject);
-    Preconditions.checkNotNull(expiration);
+    Preconditions.checkNotNull(id, "The id cannot be null!");
+    Preconditions.checkNotNull(subject, "The subject cannot be null!");
+    Preconditions.checkNotNull(expiration, "The expiration cannot be null!");
 
     final String token;
     try {

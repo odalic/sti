@@ -24,8 +24,8 @@ public final class FilteringProxyCore implements ProxyCore {
   private final ProxyResultFilter resultFilter;
   
   public FilteringProxyCore(final ProxyCore core, final ProxyResultFilter filter) {
-    Preconditions.checkNotNull(core);
-    Preconditions.checkNotNull(filter);
+    Preconditions.checkNotNull(core, "The core cannot be null!");
+    Preconditions.checkNotNull(filter, "The filter cannot be null!");
     
     this.core = core;
     this.resultFilter = filter;

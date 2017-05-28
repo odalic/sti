@@ -52,7 +52,7 @@ public final class PropertyProposal implements Serializable {
   public PropertyProposal(final String label, final Set<? extends String> alternativeLabels,
       final URI suffix, final Entity superProperty, final String domain, final String range,
       @Nullable final PropertyType type) {
-    Preconditions.checkNotNull(label);
+    Preconditions.checkNotNull(label, "The label cannot be null!");
     Preconditions.checkArgument((suffix == null) || !suffix.isAbsolute(),
         "The suffix must be a relative URI!");
 

@@ -53,61 +53,61 @@ public class TableColumnBuilder {
   }
 
   public void setAboutUrl(final String aboutUrl) {
-    Preconditions.checkNotNull(aboutUrl);
+    Preconditions.checkNotNull(aboutUrl, "The aboutUrl cannot be null!");
 
     this.aboutUrl = aboutUrl;
   }
 
   public void setDataType(final String dataType) {
-    Preconditions.checkNotNull(dataType);
+    Preconditions.checkNotNull(dataType, "The dataType cannot be null!");
 
     this.dataType = dataType;
   }
 
   public void setDescription(final String description) {
-    Preconditions.checkNotNull(description);
+    Preconditions.checkNotNull(description, "The description cannot be null!");
 
     this.description = description;
   }
 
   public void setName(final String name) {
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     this.name = name;
   }
 
   public void setPropertyUrl(final String propertyUrl) {
-    Preconditions.checkNotNull(propertyUrl);
+    Preconditions.checkNotNull(propertyUrl, "The propertyUrl cannot be null!");
 
     this.propertyUrl = propertyUrl;
   }
 
   public void setSeparator(final String separator) {
-    Preconditions.checkNotNull(separator);
+    Preconditions.checkNotNull(separator, "The separator cannot be null!");
 
     this.separator = separator;
   }
 
   public void setSuppressOutput(final Boolean suppressOutput) {
-    Preconditions.checkNotNull(suppressOutput);
+    Preconditions.checkNotNull(suppressOutput, "The suppressOutput cannot be null!");
 
     this.suppressOutput = suppressOutput;
   }
 
   public void setTitles(final List<String> titles) {
-    Preconditions.checkNotNull(titles);
+    Preconditions.checkNotNull(titles, "The titles cannot be null!");
 
     this.titles = titles;
   }
 
   public void setValueUrl(final String valueUrl) {
-    Preconditions.checkNotNull(valueUrl);
+    Preconditions.checkNotNull(valueUrl, "The valueUrl cannot be null!");
 
     this.valueUrl = valueUrl;
   }
 
   public void setVirtual(final Boolean virtual) {
-    Preconditions.checkNotNull(virtual);
+    Preconditions.checkNotNull(virtual, "The virtual cannot be null!");
 
     this.virtual = virtual;
   }

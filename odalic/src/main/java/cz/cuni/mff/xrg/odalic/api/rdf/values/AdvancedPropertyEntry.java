@@ -17,8 +17,8 @@ public class AdvancedPropertyEntry {
 
   public AdvancedPropertyEntry(final String key,
       final String value) {
-    Preconditions.checkNotNull(key);
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(key, "The key cannot be null!");
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.key = key;
     this.value = value;
@@ -46,7 +46,7 @@ public class AdvancedPropertyEntry {
    * @param key the key to set
    */
   public void setKey(final String key) {
-    Preconditions.checkNotNull(key);
+    Preconditions.checkNotNull(key, "The key cannot be null!");
 
     this.key = key;
   }
@@ -55,7 +55,7 @@ public class AdvancedPropertyEntry {
    * @param value the value to set
    */
   public void setValue(final String value) {
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.value = value;
   }

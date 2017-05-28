@@ -57,9 +57,9 @@ public final class MemoryOnlyFileService implements FileService {
   private MemoryOnlyFileService(final Table<String, String, File> files,
       final Table<String, URL, byte[]> data,
       final Table<String, String, Set<String>> utilizingTasks) {
-    Preconditions.checkNotNull(files);
-    Preconditions.checkNotNull(data);
-    Preconditions.checkNotNull(utilizingTasks);
+    Preconditions.checkNotNull(files, "The files cannot be null!");
+    Preconditions.checkNotNull(data, "The data cannot be null!");
+    Preconditions.checkNotNull(utilizingTasks, "The utilizingTasks cannot be null!");
 
     this.files = files;
     this.data = data;
@@ -82,7 +82,7 @@ public final class MemoryOnlyFileService implements FileService {
 
   @Override
   public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     final Map<String, File> fileIdsToFiles = this.files.row(userId);
     fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
@@ -93,8 +93,8 @@ public final class MemoryOnlyFileService implements FileService {
 
   @Override
   public void deleteById(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     checkUtilization(userId, fileId);
 
@@ -106,16 +106,16 @@ public final class MemoryOnlyFileService implements FileService {
 
   @Override
   public boolean existsFileWithId(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     return this.files.contains(userId, fileId);
   }
 
   @Override
   public File getById(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     final File file = this.files.get(userId, fileId);
     Preconditions.checkArgument(file != null, "File does not exists!");
@@ -185,9 +185,9 @@ public final class MemoryOnlyFileService implements FileService {
 
   @Override
   public void setFormatForFileId(final String userId, final String fileId, final Format format) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
-    Preconditions.checkNotNull(format);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
+    Preconditions.checkNotNull(format, "The format cannot be null!");
 
     final File previousfile = this.files.get(userId, fileId);
     final File newFile = new File(previousfile.getOwner(), previousfile.getId(),

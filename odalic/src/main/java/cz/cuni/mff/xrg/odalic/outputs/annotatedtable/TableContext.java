@@ -34,7 +34,7 @@ public class TableContext implements Serializable {
    * @param mapping mapping prefixes to URIs
    */
   public TableContext(final Map<String, String> mapping) {
-    Preconditions.checkNotNull(mapping);
+    Preconditions.checkNotNull(mapping, "The mapping cannot be null!");
 
     this.mapping = mapping;
   }

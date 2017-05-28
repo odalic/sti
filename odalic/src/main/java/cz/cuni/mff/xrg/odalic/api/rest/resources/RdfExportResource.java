@@ -47,7 +47,7 @@ public final class RdfExportResource {
 
   @Autowired
   public RdfExportResource(final RdfExportService RdfExportService) {
-    Preconditions.checkNotNull(RdfExportService);
+    Preconditions.checkNotNull(RdfExportService, "The RdfExportService cannot be null!");
 
     this.rdfExportService = RdfExportService;
   }

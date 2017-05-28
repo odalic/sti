@@ -106,9 +106,9 @@ public final class SparqlProxyCore implements ProxyCore {
   private SparqlProxyCore(final SparqlProxyDefinition definition,
           final Map<String, String> prefixToUriMap,
           final StringMetric stringMetric) {
-    Preconditions.checkNotNull(definition);
-    Preconditions.checkNotNull(prefixToUriMap);
-    Preconditions.checkNotNull(stringMetric);
+    Preconditions.checkNotNull(definition, "The definition cannot be null!");
+    Preconditions.checkNotNull(prefixToUriMap, "The prefixToUriMap cannot be null!");
+    Preconditions.checkNotNull(stringMetric, "The stringMetric cannot be null!");
     
     this.definition = definition;
     this.prefixToUriMap = ImmutableMap.copyOf(prefixToUriMap);

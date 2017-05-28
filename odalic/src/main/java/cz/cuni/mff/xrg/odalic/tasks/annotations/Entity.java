@@ -33,8 +33,8 @@ public final class Entity implements Comparable<Entity>, Serializable {
    */
   public static Entity of(final @Nullable Prefix prefix, final String resourceId,
       final String label) {
-    Preconditions.checkNotNull(resourceId);
-    Preconditions.checkNotNull(label);
+    Preconditions.checkNotNull(resourceId, "The resourceId cannot be null!");
+    Preconditions.checkNotNull(label, "The label cannot be null!");
 
     if (prefix == null) {
       return of(resourceId, label);
@@ -56,8 +56,8 @@ public final class Entity implements Comparable<Entity>, Serializable {
    * @return the newly created entity
    */
   public static Entity of(final String resourceId, final String label) {
-    Preconditions.checkNotNull(resourceId);
-    Preconditions.checkNotNull(label);
+    Preconditions.checkNotNull(resourceId, "The resourceId cannot be null!");
+    Preconditions.checkNotNull(label, "The label cannot be null!");
 
     return new Entity(null, resourceId, label);
   }
@@ -69,8 +69,8 @@ public final class Entity implements Comparable<Entity>, Serializable {
   private final String label;
 
   public Entity(final Prefix prefix, final String suffix, final String label) {
-    Preconditions.checkNotNull(suffix);
-    Preconditions.checkNotNull(label);
+    Preconditions.checkNotNull(suffix, "The suffix cannot be null!");
+    Preconditions.checkNotNull(label, "The label cannot be null!");
 
     this.prefix = prefix;
     this.tail = suffix;

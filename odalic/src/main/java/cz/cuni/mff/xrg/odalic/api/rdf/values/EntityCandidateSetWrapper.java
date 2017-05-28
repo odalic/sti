@@ -26,7 +26,7 @@ public class EntityCandidateSetWrapper {
   }
 
   public EntityCandidateSetWrapper(final Set<? extends EntityCandidateValue> value) {
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.value = ImmutableSortedSet.copyOf(value);
   }
@@ -43,7 +43,7 @@ public class EntityCandidateSetWrapper {
    * @param value the value to set
    */
   public void setValue(final Set<? extends EntityCandidateValue> value) {
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.value = ImmutableSortedSet.copyOf(value);
   }

@@ -146,7 +146,7 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
   @Override
   public TAnnotation start(final Table table, final boolean statistical, Constraints constraints)
       throws STIException {
-    Preconditions.checkNotNull(constraints);
+    Preconditions.checkNotNull(constraints, "The constraints cannot be null!");
 
     // set ignored columns
     final Set<Integer> ignoreCols = constraints.getColumnIgnores().stream()

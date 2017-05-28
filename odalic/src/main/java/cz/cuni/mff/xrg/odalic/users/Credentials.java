@@ -42,8 +42,8 @@ public final class Credentials implements Serializable {
    * @param password user's chosen password
    */
   public Credentials(final String email, final String password) {
-    Preconditions.checkNotNull(email);
-    Preconditions.checkNotNull(password);
+    Preconditions.checkNotNull(email, "The email cannot be null!");
+    Preconditions.checkNotNull(password, "The password cannot be null!");
 
     Preconditions.checkArgument(!email.isEmpty(), "The provided e-mail address is empty!");
     checkEmailAddressFormat(email);

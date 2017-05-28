@@ -27,7 +27,7 @@ public final class ColumnAmbiguity implements Serializable {
    * @param position column position
    */
   public ColumnAmbiguity(final ColumnPosition position) {
-    Preconditions.checkNotNull(position);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
 
     this.position = position;
   }

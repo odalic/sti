@@ -30,7 +30,7 @@ public final class ColumnIgnore implements Serializable {
    * @param position position of the ignored column
    */
   public ColumnIgnore(final ColumnPosition position) {
-    Preconditions.checkNotNull(position);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
 
     this.position = position;
   }

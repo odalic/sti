@@ -278,7 +278,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addSkippedAttribute(final String attribute) {
-    Preconditions.checkNotNull(attribute);
+    Preconditions.checkNotNull(attribute, "The attribute cannot be null!");
 
     this.skippedAttributes.add(attribute);
 
@@ -295,7 +295,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addSkippedClass(final String klass) {
-    Preconditions.checkNotNull(klass);
+    Preconditions.checkNotNull(klass, "The klass cannot be null!");
 
     this.skippedClasses.add(klass);
 
@@ -322,7 +322,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addSelectedGroup(final Group group) {
-    Preconditions.checkNotNull(group);
+    Preconditions.checkNotNull(group, "The group cannot be null!");
 
     this.selectedGroups.add(group);
 
@@ -429,8 +429,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addAdvancedProperty(final String key, final String value) {
-    Preconditions.checkNotNull(key);
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(key, "The key cannot be null!");
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.advancedProperties.put(key, value);
 

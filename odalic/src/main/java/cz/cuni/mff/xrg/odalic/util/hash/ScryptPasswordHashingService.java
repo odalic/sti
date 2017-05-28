@@ -19,7 +19,7 @@ public final class ScryptPasswordHashingService implements PasswordHashingServic
 
   @Override
   public String hash(final String password) {
-    Preconditions.checkNotNull(password);
+    Preconditions.checkNotNull(password, "The password cannot be null!");
     Preconditions.checkArgument(!password.isEmpty());
 
     return SCryptUtil.scrypt(password, ScryptPasswordHashingService.SCRYPT_N_PARAMETER,
@@ -29,8 +29,8 @@ public final class ScryptPasswordHashingService implements PasswordHashingServic
 
   @Override
   public boolean check(final String password, final String hash) {
-    Preconditions.checkNotNull(password);
-    Preconditions.checkNotNull(hash);
+    Preconditions.checkNotNull(password, "The password cannot be null!");
+    Preconditions.checkNotNull(hash, "The hash cannot be null!");
 
     return SCryptUtil.check(password, hash);
   }

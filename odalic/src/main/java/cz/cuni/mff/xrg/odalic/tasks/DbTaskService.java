@@ -48,9 +48,9 @@ public final class DbTaskService implements TaskService {
   @SuppressWarnings("unchecked")
   @Autowired
   public DbTaskService(final FileService fileService, final BasesService basesService, final DbService dbService) {
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(basesService);
-    Preconditions.checkNotNull(dbService);
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(dbService, "The dbService cannot be null!");
 
     this.fileService = fileService;
     this.basesService = basesService;
@@ -64,7 +64,7 @@ public final class DbTaskService implements TaskService {
 
   @Override
   public void create(final Task task) {
-    Preconditions.checkNotNull(task);
+    Preconditions.checkNotNull(task, "The task cannot be null!");
     Preconditions
         .checkArgument(verifyTaskExistenceById(task.getOwner().getEmail(), task.getId()) == null);
 
@@ -73,7 +73,7 @@ public final class DbTaskService implements TaskService {
 
   @Override
   public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     try {
       final Map<Object[], Task> taskIdsToTasks = this.tasks.prefixSubMap(new Object[] {userId});
@@ -92,8 +92,8 @@ public final class DbTaskService implements TaskService {
 
   @Override
   public void deleteById(final String userId, final String taskId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     try {
       final Task task = this.tasks.remove(new Object[] {userId, taskId});
@@ -111,8 +111,8 @@ public final class DbTaskService implements TaskService {
 
   @Override
   public Task getById(final String userId, final String taskId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     final Task task = this.tasks.get(new Object[] {userId, taskId});
     Preconditions.checkArgument(task != null);
@@ -142,7 +142,7 @@ public final class DbTaskService implements TaskService {
 
   @Override
   public void replace(final Task task) {
-    Preconditions.checkNotNull(task);
+    Preconditions.checkNotNull(task, "The task cannot be null!");
 
     final Task previous =
         this.tasks.put(new Object[] {task.getOwner().getEmail(), task.getId()}, task);
@@ -170,8 +170,8 @@ public final class DbTaskService implements TaskService {
   @Override
   @Nullable
   public Task verifyTaskExistenceById(final String userId, final String taskId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     return this.tasks.get(new Object[] {userId, taskId});
   }

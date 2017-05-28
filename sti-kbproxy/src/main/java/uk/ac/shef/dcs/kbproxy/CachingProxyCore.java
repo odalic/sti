@@ -32,10 +32,10 @@ public class CachingProxyCore implements ProxyCore {
 
   public CachingProxyCore(final ProxyCore proxy, final Cache cache,
       final String structureDomain, final String structureRange) {
-    Preconditions.checkNotNull(proxy);
-    Preconditions.checkNotNull(cache);
-    Preconditions.checkNotNull(structureDomain);
-    Preconditions.checkNotNull(structureRange);
+    Preconditions.checkNotNull(proxy, "The proxy cannot be null!");
+    Preconditions.checkNotNull(cache, "The cache cannot be null!");
+    Preconditions.checkNotNull(structureDomain, "The structureDomain cannot be null!");
+    Preconditions.checkNotNull(structureRange, "The structureRange cannot be null!");
 
     this.core = proxy;
     this.cache = cache;

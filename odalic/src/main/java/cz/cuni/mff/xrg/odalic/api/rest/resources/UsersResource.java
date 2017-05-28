@@ -61,12 +61,12 @@ public final class UsersResource {
   @Autowired
   public UsersResource(final UserService userService, final ExecutionService executionService,
       final TaskService taskService, final FileService fileService, final BasesService basesService, final GroupsService groupsService) {
-    Preconditions.checkNotNull(userService);
-    Preconditions.checkNotNull(executionService);
-    Preconditions.checkNotNull(taskService);
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(basesService);
-    Preconditions.checkNotNull(groupsService);
+    Preconditions.checkNotNull(userService, "The userService cannot be null!");
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
+    Preconditions.checkNotNull(taskService, "The taskService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(groupsService, "The groupsService cannot be null!");
 
     this.userService = userService;
     this.executionService = executionService;

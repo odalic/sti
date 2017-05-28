@@ -115,10 +115,10 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService
   public TurtleRdfMappingKnowledgeBaseSerializationService(final RDFMapper.Builder rdfMapperBuilder,
       final UserService userService, final AdvancedBaseTypesService advancedBaseTypesService,
       final GroupsService groupsService) {
-    Preconditions.checkNotNull(rdfMapperBuilder);
-    Preconditions.checkNotNull(userService);
-    Preconditions.checkNotNull(advancedBaseTypesService);
-    Preconditions.checkNotNull(groupsService);
+    Preconditions.checkNotNull(rdfMapperBuilder, "The rdfMapperBuilder cannot be null!");
+    Preconditions.checkNotNull(userService, "The userService cannot be null!");
+    Preconditions.checkNotNull(advancedBaseTypesService, "The advancedBaseTypesService cannot be null!");
+    Preconditions.checkNotNull(groupsService, "The groupsService cannot be null!");
 
     this.rdfMapperBuilder = rdfMapperBuilder;
     this.userService = userService;
@@ -219,8 +219,8 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService
 
   @Override
   public String serialize(final KnowledgeBase knowledgeBase, final URI baseUri) {
-    Preconditions.checkNotNull(knowledgeBase);
-    Preconditions.checkNotNull(baseUri);
+    Preconditions.checkNotNull(knowledgeBase, "The knowledgeBase cannot be null!");
+    Preconditions.checkNotNull(baseUri, "The baseUri cannot be null!");
 
     final KnowledgeBaseValue knowledgeBaseValue = toProxy(knowledgeBase);
 

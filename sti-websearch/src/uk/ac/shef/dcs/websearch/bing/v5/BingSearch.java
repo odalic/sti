@@ -62,8 +62,8 @@ public final class BingSearch extends WebSearch {
   }
 
   public BingSearch(final String subscriptionKey, final URL baseUrl) {
-    Preconditions.checkNotNull(subscriptionKey);
-    Preconditions.checkNotNull(baseUrl);
+    Preconditions.checkNotNull(subscriptionKey, "The subscriptionKey cannot be null!");
+    Preconditions.checkNotNull(baseUrl, "The baseUrl cannot be null!");
     Preconditions.checkArgument(!subscriptionKey.isEmpty());
 
     this.subscriptionKey = subscriptionKey;
@@ -76,7 +76,7 @@ public final class BingSearch extends WebSearch {
    * @see uk.ac.shef.dcs.websearch.WebSearch#search(java.lang.String)
    */
   public InputStream search(final String query) throws IOException {
-    Preconditions.checkNotNull(query);
+    Preconditions.checkNotNull(query, "The query cannot be null!");
 
     final String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.name());
     final String queryUrlString = baseURL + encodedQuery + "&$top=" + LIMIT;

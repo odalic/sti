@@ -209,7 +209,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addAllStructurePredicateLabel(Collection<String> structurePredicateLabel) {
-      Preconditions.checkNotNull(structurePredicateLabel);
+      Preconditions.checkNotNull(structurePredicateLabel, "The structurePredicateLabel cannot be null!");
       
       this.structurePredicateLabel.addAll(structurePredicateLabel);
 
@@ -217,7 +217,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addStructurePredicateLabel(String value) {
-      Preconditions.checkNotNull(value);
+      Preconditions.checkNotNull(value, "The value cannot be null!");
       
       this.structurePredicateLabel.add(value);
 
@@ -228,7 +228,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
      * @param structurePredicateDescription the structurePredicateDescription to set
      */
     public Builder setStructurePredicateDescription(Set<String> structurePredicateDescription) {
-      Preconditions.checkNotNull(structurePredicateDescription);
+      Preconditions.checkNotNull(structurePredicateDescription, "The structurePredicateDescription cannot be null!");
       
       this.structurePredicateDescription = new HashSet<>(structurePredicateDescription);
 
@@ -236,7 +236,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addAllStructurePredicateDescription(Collection<String> structurePredicateDescription) {
-      Preconditions.checkNotNull(structurePredicateDescription);
+      Preconditions.checkNotNull(structurePredicateDescription, "The structurePredicateDescription cannot be null!");
       
       this.structurePredicateDescription.addAll(structurePredicateDescription);
 
@@ -244,7 +244,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addStructurePredicateDescription(String value) {
-      Preconditions.checkNotNull(value);
+      Preconditions.checkNotNull(value, "The value cannot be null!");
       
       this.structurePredicateDescription.add(value);
 
@@ -255,7 +255,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
      * @param structurePredicateType the structurePredicateType to set
      */
     public Builder setStructurePredicateType(Set<String> structurePredicateType) {
-      Preconditions.checkNotNull(structurePredicateType);
+      Preconditions.checkNotNull(structurePredicateType, "The structurePredicateType cannot be null!");
       
       this.structurePredicateType = new HashSet<>(structurePredicateType);
 
@@ -263,7 +263,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addAllStructurePredicateType(Collection<String> structurePredicateType) {
-      Preconditions.checkNotNull(structurePredicateType);
+      Preconditions.checkNotNull(structurePredicateType, "The structurePredicateType cannot be null!");
       
       this.structurePredicateType.addAll(structurePredicateType);
 
@@ -280,7 +280,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
      * @param structureTypeClass the structureTypeClass to set
      */
     public Builder setStructureTypeClass(Set<String> structureTypeClass) {
-      Preconditions.checkNotNull(structureTypeClass);
+      Preconditions.checkNotNull(structureTypeClass, "The structureTypeClass cannot be null!");
       
       this.structureTypeClass = new HashSet<>(structureTypeClass);
       
@@ -288,7 +288,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addAllStructureTypeClass(Collection<String> structureTypeClass) {
-      Preconditions.checkNotNull(structureTypeClass);
+      Preconditions.checkNotNull(structureTypeClass, "The structureTypeClass cannot be null!");
       
       this.structureTypeClass.addAll(structureTypeClass);
 
@@ -305,7 +305,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
      * @param structureTypeProperty the structureTypeProperty to set
      */
     public Builder setStructureTypeProperty(Set<String> structureTypeProperty) {
-      Preconditions.checkNotNull(structureTypeProperty);
+      Preconditions.checkNotNull(structureTypeProperty, "The structureTypeProperty cannot be null!");
       
       this.structureTypeProperty = new HashSet<>(structureTypeProperty);
 
@@ -313,7 +313,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addAllStructureTypeProperty(Collection<String> structureTypeProperty) {
-      Preconditions.checkNotNull(structureTypeProperty);
+      Preconditions.checkNotNull(structureTypeProperty, "The structureTypeProperty cannot be null!");
       
       this.structureTypeProperty.addAll(structureTypeProperty);
 
@@ -357,7 +357,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
 
     public Builder setStoppedClasses(List<String> stoppedClasses) {
-      Preconditions.checkNotNull(stoppedClasses);
+      Preconditions.checkNotNull(stoppedClasses, "The stoppedClasses cannot be null!");
       
       this.stoppedClasses = new HashSet<>(stoppedClasses);
       
@@ -365,7 +365,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addStoppedClass(String stoppedClass) {
-      Preconditions.checkNotNull(stoppedClass);
+      Preconditions.checkNotNull(stoppedClass, "The stoppedClass cannot be null!");
       
       this.stoppedClasses.add(stoppedClass);
       
@@ -373,7 +373,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
 
     public Builder setStoppedAttributes(List<String> stoppedAttributes) {
-      Preconditions.checkNotNull(stoppedAttributes);
+      Preconditions.checkNotNull(stoppedAttributes, "The stoppedAttributes cannot be null!");
       
       this.stoppedAttributes = new HashSet<>(stoppedAttributes);
       
@@ -381,7 +381,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addStoppedAttributes(String stoppedAttribute) {
-      Preconditions.checkNotNull(stoppedAttribute);
+      Preconditions.checkNotNull(stoppedAttribute, "The stoppedAttribute cannot be null!");
       
       this.stoppedAttributes.add(stoppedAttribute);
       

@@ -47,9 +47,9 @@ public final class MemoryOnlyTaskService implements TaskService {
 
   private MemoryOnlyTaskService(final FileService fileService, final BasesService basesService,
       final Table<String, String, Task> tasks) {
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(basesService);
-    Preconditions.checkNotNull(tasks);
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(tasks, "The tasks cannot be null!");
 
     this.fileService = fileService;
     this.basesService = basesService;
@@ -58,7 +58,7 @@ public final class MemoryOnlyTaskService implements TaskService {
 
   @Override
   public void create(final Task task) {
-    Preconditions.checkNotNull(task);
+    Preconditions.checkNotNull(task, "The task cannot be null!");
     Preconditions
         .checkArgument(verifyTaskExistenceById(task.getOwner().getEmail(), task.getId()) == null);
 
@@ -67,7 +67,7 @@ public final class MemoryOnlyTaskService implements TaskService {
 
   @Override
   public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     final Map<String, Task> taskIdsToTasks = this.tasks.row(userId);
     taskIdsToTasks.entrySet().stream().forEach(e -> {
@@ -79,8 +79,8 @@ public final class MemoryOnlyTaskService implements TaskService {
 
   @Override
   public void deleteById(final String userId, final String taskId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     final Task task = this.tasks.remove(userId, taskId);
     Preconditions.checkArgument(task != null);
@@ -91,8 +91,8 @@ public final class MemoryOnlyTaskService implements TaskService {
 
   @Override
   public Task getById(final String userId, final String taskId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     final Task task = this.tasks.get(userId, taskId);
     Preconditions.checkArgument(task != null);
@@ -123,7 +123,7 @@ public final class MemoryOnlyTaskService implements TaskService {
 
   @Override
   public void replace(final Task task) {
-    Preconditions.checkNotNull(task);
+    Preconditions.checkNotNull(task, "The task cannot be null!");
 
     final Task previous = this.tasks.put(task.getOwner().getEmail(), task.getId(), task);
     if (previous != null) {
@@ -138,8 +138,8 @@ public final class MemoryOnlyTaskService implements TaskService {
   @Override
   @Nullable
   public Task verifyTaskExistenceById(final String userId, final String taskId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     return this.tasks.get(userId, taskId);
   }

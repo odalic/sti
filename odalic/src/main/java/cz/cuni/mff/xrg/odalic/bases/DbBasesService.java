@@ -111,11 +111,11 @@ public final class DbBasesService implements BasesService {
   public DbBasesService(final KnowledgeBaseProxiesService knowledgeBaseProxiesService,
       final GroupsService groupsService, final AdvancedBaseTypesService advancedBaseTypesService,
       final PropertiesService propertiesService, final DbService dbService) {
-    Preconditions.checkNotNull(knowledgeBaseProxiesService);
-    Preconditions.checkNotNull(groupsService);
-    Preconditions.checkNotNull(advancedBaseTypesService);
-    Preconditions.checkNotNull(propertiesService);
-    Preconditions.checkNotNull(dbService);
+    Preconditions.checkNotNull(knowledgeBaseProxiesService, "The knowledgeBaseProxiesService cannot be null!");
+    Preconditions.checkNotNull(groupsService, "The groupsService cannot be null!");
+    Preconditions.checkNotNull(advancedBaseTypesService, "The advancedBaseTypesService cannot be null!");
+    Preconditions.checkNotNull(propertiesService, "The propertiesService cannot be null!");
+    Preconditions.checkNotNull(dbService, "The dbService cannot be null!");
 
     this.db = dbService.getDb();
 
@@ -153,7 +153,7 @@ public final class DbBasesService implements BasesService {
 
   @Override
   public NavigableSet<KnowledgeBase> getBases(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     return ImmutableSortedSet
         .copyOf(this.userAndBaseIdsToBases.prefixSubMap(new Object[] {userId}).values());
@@ -161,7 +161,7 @@ public final class DbBasesService implements BasesService {
 
   @Override
   public NavigableSet<KnowledgeBase> getInsertSupportingBases(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     return this.userAndBaseIdsToBases.prefixSubMap(new Object[] {userId}).values().stream()
         .filter(e -> e.isInsertEnabled())
@@ -177,7 +177,7 @@ public final class DbBasesService implements BasesService {
 
   @Override
   public void replace(final KnowledgeBase base) {
-    Preconditions.checkNotNull(base);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
     final String userId = base.getOwner().getEmail();
     final String baseId = base.getName();
@@ -202,7 +202,7 @@ public final class DbBasesService implements BasesService {
 
   @Override
   public KnowledgeBase merge(final KnowledgeBase base) {
-    Preconditions.checkNotNull(base);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
     final String userId = base.getOwner().getEmail();
     final String baseId = base.getName();
@@ -218,16 +218,16 @@ public final class DbBasesService implements BasesService {
 
   @Override
   public boolean existsBaseWithId(final String userId, final String baseId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(baseId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(baseId, "The baseId cannot be null!");
 
     return this.userAndBaseIdsToBases.containsKey(new Object[] {userId, baseId});
   }
 
   @Override
   public KnowledgeBase getByName(String userId, String name) throws IllegalArgumentException {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     final KnowledgeBase base = this.userAndBaseIdsToBases.get(new Object[] {userId, name});
     Preconditions.checkArgument(base != null, "Unknown base!");
@@ -237,15 +237,15 @@ public final class DbBasesService implements BasesService {
 
   @Override
   public KnowledgeBase verifyBaseExistenceByName(String userId, String name) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     return this.userAndBaseIdsToBases.get(new Object[] {userId, name});
   }
 
   @Override
   public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     try {
       final Map<Object[], KnowledgeBase> baseIdsToBases =
@@ -262,8 +262,8 @@ public final class DbBasesService implements BasesService {
 
   @Override
   public void deleteById(String userId, String name) throws IOException {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     checkUtilization(userId, name);
 
@@ -361,7 +361,7 @@ public final class DbBasesService implements BasesService {
 
   @Override
   public void initializeDefaults(User owner) throws IOException {
-    Preconditions.checkNotNull(owner);
+    Preconditions.checkNotNull(owner, "The owner cannot be null!");
 
     final Iterator<File> basePropertiesFileIterator =
         FileUtils.iterateFiles(this.initialBasesPath.toFile(),

@@ -89,9 +89,9 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   }
 
   public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService, final Properties properties) {
-    Preconditions.checkNotNull(knowledgeBaseProxyFactory);
-    Preconditions.checkNotNull(cacheProviderService);
-    Preconditions.checkNotNull(properties);
+    Preconditions.checkNotNull(knowledgeBaseProxyFactory, "The knowledgeBaseProxyFactory cannot be null!");
+    Preconditions.checkNotNull(cacheProviderService, "The cacheProviderService cannot be null!");
+    Preconditions.checkNotNull(properties, "The properties cannot be null!");
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
     this.cacheProviderService = cacheProviderService;

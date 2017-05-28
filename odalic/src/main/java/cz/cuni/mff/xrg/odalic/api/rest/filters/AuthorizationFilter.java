@@ -43,7 +43,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 public class AuthorizationFilter implements ContainerRequestFilter {
 
   private static Set<Role> extractRoles(final AnnotatedElement annotatedElement) {
-    Preconditions.checkNotNull(annotatedElement);
+    Preconditions.checkNotNull(annotatedElement, "The annotatedElement cannot be null!");
 
     final Secured secured = annotatedElement.getAnnotation(Secured.class);
     if (secured == null) {

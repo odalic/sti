@@ -165,7 +165,7 @@ public final class ResultValue implements Serializable {
    * @param cellAnnotations the cell annotations to set
    */
   public void setCellAnnotations(final CellAnnotation[][] cellAnnotations) {
-    Preconditions.checkNotNull(cellAnnotations);
+    Preconditions.checkNotNull(cellAnnotations, "The cellAnnotations cannot be null!");
 
     this.cellAnnotations =
         cz.cuni.mff.xrg.odalic.util.Arrays.deepCopy(CellAnnotation.class, cellAnnotations);
@@ -176,7 +176,7 @@ public final class ResultValue implements Serializable {
    */
   public void setColumnProcessingAnnotations(
       final List<ColumnProcessingAnnotation> columnProcessingAnnotations) {
-    Preconditions.checkNotNull(columnProcessingAnnotations);
+    Preconditions.checkNotNull(columnProcessingAnnotations, "The columnProcessingAnnotations cannot be null!");
 
     this.columnProcessingAnnotations = ImmutableList.copyOf(columnProcessingAnnotations);
   }
@@ -199,7 +199,7 @@ public final class ResultValue implements Serializable {
    * @param headerAnnotations the header annotations to set
    */
   public void setHeaderAnnotations(final List<HeaderAnnotation> headerAnnotations) {
-    Preconditions.checkNotNull(headerAnnotations);
+    Preconditions.checkNotNull(headerAnnotations, "The headerAnnotations cannot be null!");
 
     this.headerAnnotations = ImmutableList.copyOf(headerAnnotations);
   }
@@ -208,7 +208,7 @@ public final class ResultValue implements Serializable {
    * @param statisticalAnnotations the statistical annotations to set
    */
   public void setStatisticalAnnotations(final List<StatisticalAnnotation> statisticalAnnotations) {
-    Preconditions.checkNotNull(statisticalAnnotations);
+    Preconditions.checkNotNull(statisticalAnnotations, "The statisticalAnnotations cannot be null!");
 
     this.statisticalAnnotations = ImmutableList.copyOf(statisticalAnnotations);
   }
@@ -218,7 +218,7 @@ public final class ResultValue implements Serializable {
    */
   public void setSubjectColumnsPositions(
       final Map<? extends String, Set<ColumnPositionValue>> subjectColumnsPositions) {
-    Preconditions.checkNotNull(subjectColumnsPositions);
+    Preconditions.checkNotNull(subjectColumnsPositions, "The subjectColumnsPositions cannot be null!");
     
     this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
   }
@@ -227,7 +227,7 @@ public final class ResultValue implements Serializable {
    * @param warnings the warnings to set
    */
   public void setWarnings(final List<String> warnings) {
-    Preconditions.checkNotNull(warnings);
+    Preconditions.checkNotNull(warnings, "The warnings cannot be null!");
 
     this.warnings = ImmutableList.copyOf(warnings);
   }

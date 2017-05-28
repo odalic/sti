@@ -40,8 +40,8 @@ public final class DbFeedbackService implements FeedbackService {
   @Autowired
   public DbFeedbackService(final ConfigurationService configurationService,
       final DbService dbService) {
-    Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(dbService);
+    Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
+    Preconditions.checkNotNull(dbService, "The dbService cannot be null!");
 
     this.configurationService = configurationService;
 
@@ -61,8 +61,8 @@ public final class DbFeedbackService implements FeedbackService {
 
   @Override
   public Input getInputSnapshotForTaskId(final String userId, final String taskId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     final Input inputSnapshot = this.inputSnapshots.get(new Object[] {userId, taskId});
     Preconditions.checkArgument(inputSnapshot != null, "No such task input snapshot present!");
@@ -82,9 +82,9 @@ public final class DbFeedbackService implements FeedbackService {
   @Override
   public void setInputSnapshotForTaskid(final String userId, final String taskId,
       final Input inputSnapshot) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
-    Preconditions.checkNotNull(inputSnapshot);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
+    Preconditions.checkNotNull(inputSnapshot, "The inputSnapshot cannot be null!");
 
     this.inputSnapshots.put(new Object[] {userId, taskId}, inputSnapshot);
 

@@ -25,7 +25,7 @@ public final class CoreExceptionsWrappingProxy implements Proxy {
   }
   
   public CoreExceptionsWrappingProxy(final ProxyCore core) {
-    Preconditions.checkNotNull(core);
+    Preconditions.checkNotNull(core, "The core cannot be null!");
     
     this.core = core;
   }

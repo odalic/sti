@@ -94,7 +94,7 @@ public final class EntityValue implements Serializable {
    * @param label the label to set
    */
   public void setLabel(final String label) {
-    Preconditions.checkNotNull(label);
+    Preconditions.checkNotNull(label, "The label cannot be null!");
 
     this.label = label;
   }
@@ -117,7 +117,7 @@ public final class EntityValue implements Serializable {
    * @param resource the resource ID to set
    */
   public void setResource(final String resource) {
-    Preconditions.checkNotNull(resource);
+    Preconditions.checkNotNull(resource, "The resource cannot be null!");
 
     this.resource = resource;
   }

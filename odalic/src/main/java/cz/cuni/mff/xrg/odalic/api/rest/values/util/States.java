@@ -27,9 +27,9 @@ public class States {
    */
   public static StateValue queryStateValue(final ExecutionService executionService,
       final String userId, final String taskId) {
-    Preconditions.checkNotNull(executionService);
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     final boolean scheduled = executionService.hasBeenScheduledForTaskId(userId, taskId);
     if (!scheduled) {
@@ -67,8 +67,8 @@ public class States {
    */
   public static StateValue queryStateValue(final ExecutionService executionService,
       final Task task) {
-    Preconditions.checkNotNull(executionService);
-    Preconditions.checkNotNull(task);
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
+    Preconditions.checkNotNull(task, "The task cannot be null!");
 
     final String userId = task.getOwner().getEmail();
     final String taskId = task.getId();

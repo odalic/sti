@@ -39,9 +39,9 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
   }
   
   private MemoryOnlyAdvancedBaseTypesService(final GroupsService groupsService, final Map<? extends String, ? extends AdvancedBaseType> types, final Map<? extends AdvancedBaseType, ? extends ProxyDefinitionFactory> typesToDefinitionFactories) {
-    Preconditions.checkNotNull(groupsService);
-    Preconditions.checkNotNull(types);
-    Preconditions.checkNotNull(typesToDefinitionFactories);
+    Preconditions.checkNotNull(groupsService, "The groupsService cannot be null!");
+    Preconditions.checkNotNull(types, "The types cannot be null!");
+    Preconditions.checkNotNull(typesToDefinitionFactories, "The typesToDefinitionFactories cannot be null!");
     
     this.groupsService = groupsService;
     this.types = types;
@@ -55,7 +55,7 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
 
   @Override
   public AdvancedBaseType getType(final String name) {
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(name, "The name cannot be null!");
     
     final AdvancedBaseType type = this.types.get(name);
     Preconditions.checkArgument(type != null, "Unknown advanced base type!");
@@ -65,7 +65,7 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
 
   @Override
   public AdvancedBaseType verifyTypeExistenceByName(String name) {
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     return this.types.get(name);
   }

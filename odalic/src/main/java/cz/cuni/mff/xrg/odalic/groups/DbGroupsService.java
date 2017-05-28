@@ -73,7 +73,7 @@ public final class DbGroupsService implements GroupsService {
   @Autowired
   @SuppressWarnings("unchecked")
   public DbGroupsService(final DbService dbService, final PropertiesService propertiesService) {
-    Preconditions.checkNotNull(dbService);
+    Preconditions.checkNotNull(dbService, "The dbService cannot be null!");
 
     this.initialGroupsPath = initializeInitialGroupsPath(propertiesService);
     
@@ -118,8 +118,8 @@ public final class DbGroupsService implements GroupsService {
 
   @Override
   public Group getGroup(final String userId, String groupId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(groupId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(groupId, "The groupId cannot be null!");
 
     final Group group = this.userAndGroupIdsToGroups.get(new Object[] {userId, groupId});
     Preconditions.checkArgument(group != null, "Unknown group!");
@@ -129,7 +129,7 @@ public final class DbGroupsService implements GroupsService {
 
   @Override
   public void replace(final Group group) {
-    Preconditions.checkNotNull(group);
+    Preconditions.checkNotNull(group, "The group cannot be null!");
 
     this.userAndGroupIdsToGroups.put(new Object[] {group.getOwner().getEmail(), group.getId()},
         group);
@@ -146,8 +146,8 @@ public final class DbGroupsService implements GroupsService {
 
   @Override
   public boolean existsGroupWithId(final String userId, final String groupId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(groupId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(groupId, "The groupId cannot be null!");
 
     return this.userAndGroupIdsToGroups.containsKey(new Object[] {userId, groupId});
   }
@@ -227,15 +227,15 @@ public final class DbGroupsService implements GroupsService {
 
   @Override
   public Group verifyGroupExistenceById(final String userId, final String groupId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(groupId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(groupId, "The groupId cannot be null!");
 
     return this.userAndGroupIdsToGroups.get(new Object[] {userId, groupId});
   }
 
   @Override
   public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     try {
       final Map<Object[], Group> groupIdsToGroups = this.userAndGroupIdsToGroups.prefixSubMap(new Object[] {userId});
@@ -250,8 +250,8 @@ public final class DbGroupsService implements GroupsService {
   
   @Override
   public void deleteById(String userId, String groupId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(groupId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(groupId, "The groupId cannot be null!");
 
     checkUtilization(userId, groupId);
 
@@ -276,7 +276,7 @@ public final class DbGroupsService implements GroupsService {
 
   @Override
   public Group merge(Group group) {
-    Preconditions.checkNotNull(group);
+    Preconditions.checkNotNull(group, "The group cannot be null!");
 
     final String userId = group.getOwner().getEmail();
     final String groupId = group.getId();
@@ -295,7 +295,7 @@ public final class DbGroupsService implements GroupsService {
   
   @Override
   public void initializeDefaults(final User owner) throws IOException {
-    Preconditions.checkNotNull(owner);
+    Preconditions.checkNotNull(owner, "The owner cannot be null!");
     
     final Iterator<File> groupPropertiesFileIterator = FileUtils.iterateFiles(this.initialGroupsPath.toFile(), GROUP_FILES_EXTENSIONS.toArray(new String[GROUP_FILES_EXTENSIONS.size()]), false);
     try {

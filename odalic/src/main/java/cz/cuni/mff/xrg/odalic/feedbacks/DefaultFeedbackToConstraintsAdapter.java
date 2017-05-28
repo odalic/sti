@@ -280,8 +280,8 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
 
   @Override
   public Constraints toConstraints(final Feedback feedback, final KnowledgeBase base) {
-    Preconditions.checkNotNull(feedback);
-    Preconditions.checkNotNull(base);
+    Preconditions.checkNotNull(feedback, "The feedback cannot be null!");
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
     return new Constraints(
         convertSubjectColumnsPositions(feedback, base),

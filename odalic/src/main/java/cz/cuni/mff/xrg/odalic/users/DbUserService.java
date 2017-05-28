@@ -117,7 +117,7 @@ public final class DbUserService implements UserService {
 
   private static int getMaxCodesKept(final Properties properties) {
     final String maximumCodesKeptString = properties.getProperty(MAXIMUM_CODES_KEPT_PROPERTY_KEY);
-    Preconditions.checkNotNull(maximumCodesKeptString);
+    Preconditions.checkNotNull(maximumCodesKeptString, "The maximumCodesKeptString cannot be null!");
 
     try {
       return Integer.parseInt(maximumCodesKeptString);
@@ -254,14 +254,14 @@ public final class DbUserService implements UserService {
       final TokenService tokenService, final DbService dbService, final TaskService taskService,
       final FileService fileService, final GroupsService groupsService,
       final BasesService basesService) throws IOException {
-    Preconditions.checkNotNull(propertiesService);
-    Preconditions.checkNotNull(passwordHashingService);
-    Preconditions.checkNotNull(mailService);
-    Preconditions.checkNotNull(tokenService);
-    Preconditions.checkNotNull(taskService);
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(groupsService);
-    Preconditions.checkNotNull(basesService);
+    Preconditions.checkNotNull(propertiesService, "The propertiesService cannot be null!");
+    Preconditions.checkNotNull(passwordHashingService, "The passwordHashingService cannot be null!");
+    Preconditions.checkNotNull(mailService, "The mailService cannot be null!");
+    Preconditions.checkNotNull(tokenService, "The tokenService cannot be null!");
+    Preconditions.checkNotNull(taskService, "The taskService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(groupsService, "The groupsService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
 
     final Properties properties = propertiesService.get();
 
@@ -341,7 +341,7 @@ public final class DbUserService implements UserService {
 
   @Override
   public User authenticate(final Credentials credentials) {
-    Preconditions.checkNotNull(credentials);
+    Preconditions.checkNotNull(credentials, "The credentials cannot be null!");
 
     final User user = this.userIdsToUsers.get(credentials.getEmail());
     if (user == null) {
@@ -380,8 +380,8 @@ public final class DbUserService implements UserService {
 
   @Override
   public void create(final Credentials credentials, final Role role) throws IOException {
-    Preconditions.checkNotNull(credentials);
-    Preconditions.checkNotNull(role);
+    Preconditions.checkNotNull(credentials, "The credentials cannot be null!");
+    Preconditions.checkNotNull(role, "The role cannot be null!");
 
     final User user = doCreate(credentials, role);
 
@@ -465,7 +465,7 @@ public final class DbUserService implements UserService {
 
   @Override
   public User getUser(final String id) {
-    Preconditions.checkNotNull(id);
+    Preconditions.checkNotNull(id, "The id cannot be null!");
 
     final User user = this.userIdsToUsers.get(id);
     Preconditions.checkArgument(user != null);
@@ -554,8 +554,8 @@ public final class DbUserService implements UserService {
 
   @Override
   public void requestPasswordChange(final User user, final String newPassword) {
-    Preconditions.checkNotNull(user);
-    Preconditions.checkNotNull(newPassword);
+    Preconditions.checkNotNull(user, "The user cannot be null!");
+    Preconditions.checkNotNull(newPassword, "The newPassword cannot be null!");
     Preconditions.checkNotNull(!newPassword.isEmpty());
 
     final Address address = extractAddress(user);
@@ -580,7 +580,7 @@ public final class DbUserService implements UserService {
 
   @Override
   public void signUp(final Credentials credentials) throws IOException {
-    Preconditions.checkNotNull(credentials);
+    Preconditions.checkNotNull(credentials, "The credentials cannot be null!");
 
     final Address address = extractAddress(credentials);
 

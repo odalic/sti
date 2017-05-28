@@ -97,17 +97,17 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
       final String datatypeProperty, final String objectTypeProperty, @Nullable final String login,
       @Nullable final String password, final AdvancedBaseType advancedType,
       final Map<? extends String, ? extends String> advancedProperties) {
-    Preconditions.checkNotNull(owner);
-    Preconditions.checkNotNull(name);
-    Preconditions.checkNotNull(endpoint);
-    Preconditions.checkNotNull(description);
-    Preconditions.checkNotNull(textSearchingMethod);
-    Preconditions.checkNotNull(languageTag);
-    Preconditions.checkNotNull(skippedAttributes);
-    Preconditions.checkNotNull(skippedClasses);
-    Preconditions.checkNotNull(selectedGroups);
-    Preconditions.checkNotNull(advancedType);
-    Preconditions.checkNotNull(advancedProperties);
+    Preconditions.checkNotNull(owner, "The owner cannot be null!");
+    Preconditions.checkNotNull(name, "The name cannot be null!");
+    Preconditions.checkNotNull(endpoint, "The endpoint cannot be null!");
+    Preconditions.checkNotNull(description, "The description cannot be null!");
+    Preconditions.checkNotNull(textSearchingMethod, "The textSearchingMethod cannot be null!");
+    Preconditions.checkNotNull(languageTag, "The languageTag cannot be null!");
+    Preconditions.checkNotNull(skippedAttributes, "The skippedAttributes cannot be null!");
+    Preconditions.checkNotNull(skippedClasses, "The skippedClasses cannot be null!");
+    Preconditions.checkNotNull(selectedGroups, "The selectedGroups cannot be null!");
+    Preconditions.checkNotNull(advancedType, "The advancedType cannot be null!");
+    Preconditions.checkNotNull(advancedProperties, "The advancedProperties cannot be null!");
 
     Preconditions.checkArgument(!name.isEmpty(), "The name is empty!");
     Preconditions.checkArgument(groupsAutoSelected || !selectedGroups.isEmpty(),

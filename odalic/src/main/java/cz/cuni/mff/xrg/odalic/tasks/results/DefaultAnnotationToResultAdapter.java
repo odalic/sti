@@ -135,7 +135,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
 
   @Autowired
   public DefaultAnnotationToResultAdapter(final EntitiesFactory entitesFactory) {
-    Preconditions.checkNotNull(entitesFactory);
+    Preconditions.checkNotNull(entitesFactory, "The entitesFactory cannot be null!");
 
     this.entitiesFactory = entitesFactory;
   }

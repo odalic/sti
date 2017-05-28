@@ -129,13 +129,13 @@ public final class MemoryOnlyBasesService implements BasesService {
       final GroupsService groupsService, final AdvancedBaseTypesService advancedBaseTypesService,
       final Table<String, String, KnowledgeBase> userAndBaseIdsToBases,
       final Table<String, String, Set<String>> utilizingTasks, final Path basePath, final Path initialBasesPath) {
-    Preconditions.checkNotNull(knowledgeBaseProxiesService);
-    Preconditions.checkNotNull(groupsService);
-    Preconditions.checkNotNull(advancedBaseTypesService);
-    Preconditions.checkNotNull(userAndBaseIdsToBases);
-    Preconditions.checkNotNull(utilizingTasks);
-    Preconditions.checkNotNull(basePath);
-    Preconditions.checkNotNull(initialBasesPath);
+    Preconditions.checkNotNull(knowledgeBaseProxiesService, "The knowledgeBaseProxiesService cannot be null!");
+    Preconditions.checkNotNull(groupsService, "The groupsService cannot be null!");
+    Preconditions.checkNotNull(advancedBaseTypesService, "The advancedBaseTypesService cannot be null!");
+    Preconditions.checkNotNull(userAndBaseIdsToBases, "The userAndBaseIdsToBases cannot be null!");
+    Preconditions.checkNotNull(utilizingTasks, "The utilizingTasks cannot be null!");
+    Preconditions.checkNotNull(basePath, "The basePath cannot be null!");
+    Preconditions.checkNotNull(initialBasesPath, "The initialBasesPath cannot be null!");
 
     this.knowledgeBaseProxiesService = knowledgeBaseProxiesService;
     this.groupsService = groupsService;
@@ -148,14 +148,14 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public NavigableSet<KnowledgeBase> getBases(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     return ImmutableSortedSet.copyOf(this.userAndBaseIdsToBases.row(userId).values());
   }
 
   @Override
   public NavigableSet<KnowledgeBase> getInsertSupportingBases(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     return this.userAndBaseIdsToBases.row(userId).values().stream().filter(e -> e.isInsertEnabled())
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
@@ -170,7 +170,7 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public void replace(final KnowledgeBase base) {
-    Preconditions.checkNotNull(base);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
     final String userId = base.getOwner().getEmail();
     final String baseId = base.getName();
@@ -186,7 +186,7 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public KnowledgeBase merge(final KnowledgeBase base) {
-    Preconditions.checkNotNull(base);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
     final String userId = base.getOwner().getEmail();
     final String baseId = base.getName();
@@ -202,16 +202,16 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public boolean existsBaseWithId(final String userId, final String baseId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(baseId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(baseId, "The baseId cannot be null!");
 
     return this.userAndBaseIdsToBases.contains(userId, baseId);
   }
 
   @Override
   public KnowledgeBase getByName(String userId, String name) throws IllegalArgumentException {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     final KnowledgeBase base = this.userAndBaseIdsToBases.get(userId, name);
     Preconditions.checkArgument(base != null, "Unknown base!");
@@ -221,15 +221,15 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public KnowledgeBase verifyBaseExistenceByName(String userId, String name) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     return this.userAndBaseIdsToBases.get(userId, name);
   }
 
   @Override
   public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     final Map<String, KnowledgeBase> baseNamesToBases = this.userAndBaseIdsToBases.row(userId);
     baseNamesToBases.entrySet().stream().forEach(e -> this.groupsService.unsubscribe(e.getValue()));
@@ -238,8 +238,8 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public void deleteById(String userId, String name) throws IOException {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     checkUtilization(userId, name);
 
@@ -329,7 +329,7 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public void initializeDefaults(User owner) throws IOException {
-    Preconditions.checkNotNull(owner);
+    Preconditions.checkNotNull(owner, "The owner cannot be null!");
 
     final Iterator<File> basePropertiesFileIterator =
         FileUtils.iterateFiles(this.initialBasesPath.toFile(),

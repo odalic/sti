@@ -69,13 +69,13 @@ public final class SmtpMailService implements MailService {
     final Properties properties = propertiesService.get();
 
     this.username = properties.getProperty(USERNAME_CONFIGURATION_KEY);
-    Preconditions.checkNotNull(this.username);
+    Preconditions.checkNotNull(this.username, "The this.username cannot be null!");
 
     this.password = properties.getProperty(PASSWORD_CONFIGURATION_KEY);
-    Preconditions.checkNotNull(this.password);
+    Preconditions.checkNotNull(this.password, "The this.password cannot be null!");
 
     this.from = parseFromAddress(properties);
-    Preconditions.checkNotNull(this.from);
+    Preconditions.checkNotNull(this.from, "The this.from cannot be null!");
 
     this.smtpConfiguration = new Properties();
     PropertiesUtil.copyProperty(MAIL_SMTP_HOST_PROPERTY_KEY, properties, this.smtpConfiguration);
@@ -91,11 +91,11 @@ public final class SmtpMailService implements MailService {
 
   public SmtpMailService(final String username, final String password, final Address from,
       final Properties smtpConfiguration, final Executor executor) {
-    Preconditions.checkNotNull(username);
-    Preconditions.checkNotNull(password);
-    Preconditions.checkNotNull(from);
-    Preconditions.checkNotNull(smtpConfiguration);
-    Preconditions.checkNotNull(executor);
+    Preconditions.checkNotNull(username, "The username cannot be null!");
+    Preconditions.checkNotNull(password, "The password cannot be null!");
+    Preconditions.checkNotNull(from, "The from cannot be null!");
+    Preconditions.checkNotNull(smtpConfiguration, "The smtpConfiguration cannot be null!");
+    Preconditions.checkNotNull(executor, "The executor cannot be null!");
 
     this.username = username;
     this.password = password;

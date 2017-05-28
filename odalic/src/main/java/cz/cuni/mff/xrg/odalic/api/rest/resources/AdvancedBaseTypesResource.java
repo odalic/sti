@@ -44,7 +44,7 @@ public final class AdvancedBaseTypesResource {
 
   @Autowired
   public AdvancedBaseTypesResource(final AdvancedBaseTypesService advancedBaseTypesService) {
-    Preconditions.checkNotNull(advancedBaseTypesService);
+    Preconditions.checkNotNull(advancedBaseTypesService, "The advancedBaseTypesService cannot be null!");
 
     this.advancedBaseTypesService = advancedBaseTypesService;
   }

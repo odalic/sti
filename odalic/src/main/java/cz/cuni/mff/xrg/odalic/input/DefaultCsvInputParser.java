@@ -31,8 +31,8 @@ public final class DefaultCsvInputParser implements CsvInputParser {
   @Autowired
   public DefaultCsvInputParser(final ListsBackedInputBuilder inputBuilder,
       final ApacheCsvFormatAdapter apacheCsvFormatAdapter) {
-    Preconditions.checkNotNull(inputBuilder);
-    Preconditions.checkNotNull(apacheCsvFormatAdapter);
+    Preconditions.checkNotNull(inputBuilder, "The inputBuilder cannot be null!");
+    Preconditions.checkNotNull(apacheCsvFormatAdapter, "The apacheCsvFormatAdapter cannot be null!");
 
     this.inputBuilder = inputBuilder;
     this.apacheCsvFormatAdapter = apacheCsvFormatAdapter;
