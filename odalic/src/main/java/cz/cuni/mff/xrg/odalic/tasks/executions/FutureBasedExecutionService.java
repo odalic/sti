@@ -111,7 +111,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
     Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
-    Preconditions.checkState(resultFuture.cancel(false));
+    Preconditions.checkState(resultFuture.cancel(false), String.format("The task %s could not be canceled!", taskId));
   }
 
   @Override
@@ -172,7 +172,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
   private void checkNotAlreadyScheduled(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
-    Preconditions.checkState((resultFuture == null) || resultFuture.isDone());
+    Preconditions.checkState((resultFuture == null) || resultFuture.isDone(), String.format("The task %s is already scheduled and in progress!", taskId));
   }
 
   @Override

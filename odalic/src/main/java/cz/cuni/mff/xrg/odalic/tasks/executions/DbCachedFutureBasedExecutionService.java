@@ -133,7 +133,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
     this.userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
     this.db.commit();
-    Preconditions.checkState(resultFuture.cancel(false));
+    Preconditions.checkState(resultFuture.cancel(false), String.format("The task %s could not be canceled!", taskId));
   }
 
   @Override
@@ -200,7 +200,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
   private void checkNotAlreadyScheduled(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
-    Preconditions.checkState((resultFuture == null) || resultFuture.isDone());
+    Preconditions.checkState((resultFuture == null) || resultFuture.isDone(), String.format("The task %s is already scheduled and in progress!", taskId));
   }
 
   @Override
