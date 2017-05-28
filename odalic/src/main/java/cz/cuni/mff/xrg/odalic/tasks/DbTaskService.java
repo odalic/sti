@@ -97,7 +97,7 @@ public final class DbTaskService implements TaskService {
 
     try {
       final Task task = this.tasks.remove(new Object[] {userId, taskId});
-      Preconditions.checkArgument(task != null);
+      Preconditions.checkArgument(task != null, String.format("There is not task %s registered to user %s!", taskId, userId));
   
       this.fileService.unsubscribe(task);
       this.basesService.unsubscribe(task);
@@ -115,7 +115,7 @@ public final class DbTaskService implements TaskService {
     Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     final Task task = this.tasks.get(new Object[] {userId, taskId});
-    Preconditions.checkArgument(task != null);
+    Preconditions.checkArgument(task != null, String.format("There is not task %s registered to user %s!", taskId, userId));
 
     return task;
   }

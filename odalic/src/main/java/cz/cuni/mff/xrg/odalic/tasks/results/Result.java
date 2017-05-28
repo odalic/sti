@@ -74,8 +74,8 @@ public class Result implements Serializable {
     Preconditions.checkNotNull(statisticalAnnotations, "The statisticalAnnotations cannot be null!");
     Preconditions.checkNotNull(columnProcessingAnnotations, "The columnProcessingAnnotations cannot be null!");
     Preconditions.checkNotNull(warnings, "The warnings cannot be null!");
-    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Arrays.containsNull(cellAnnotations));
-    Preconditions.checkArgument(cz.cuni.mff.xrg.odalic.util.Arrays.isMatrix(cellAnnotations));
+    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Arrays.containsNull(cellAnnotations), "None of the cell annotations can be null!");
+    Preconditions.checkArgument(cz.cuni.mff.xrg.odalic.util.Arrays.isMatrix(cellAnnotations), "The cell annotations do not form a matrix!");
 
     this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
     this.headerAnnotations = ImmutableList.copyOf(headerAnnotations);

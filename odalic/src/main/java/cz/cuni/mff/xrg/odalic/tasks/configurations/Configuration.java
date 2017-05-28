@@ -64,8 +64,8 @@ public final class Configuration implements Serializable {
     Preconditions.checkNotNull(usedBases, "The usedBases cannot be null!");
     Preconditions.checkNotNull(primaryBase, "The primaryBase cannot be null!");
 
-    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0));
-    Preconditions.checkArgument(usedBases.contains(primaryBase));
+    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0), "The rows limit must be positive, if present!");
+    Preconditions.checkArgument(usedBases.contains(primaryBase), "The primary base is not among the used ones!");
 
     this.input = input;
     this.usedBases = ImmutableSet.copyOf(usedBases);

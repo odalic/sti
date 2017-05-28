@@ -170,7 +170,9 @@ public final class DbBasesService implements BasesService {
 
   @Override
   public void create(final KnowledgeBase base) {
-    Preconditions.checkArgument(!existsBaseWithId(base.getOwner().getEmail(), base.getName()));
+    final String userId = base.getOwner().getEmail();
+    
+    Preconditions.checkArgument(!existsBaseWithId(userId, base.getName()), String.format("There is already a base %s and registered by user %s!", base.getName(), userId));
 
     replace(base);
   }
@@ -230,7 +232,7 @@ public final class DbBasesService implements BasesService {
     Preconditions.checkNotNull(name, "The name cannot be null!");
 
     final KnowledgeBase base = this.userAndBaseIdsToBases.get(new Object[] {userId, name});
-    Preconditions.checkArgument(base != null, "Unknown base!");
+    Preconditions.checkArgument(base != null, String.format("Unknown base %s!", name));
 
     return base;
   }
@@ -269,7 +271,7 @@ public final class DbBasesService implements BasesService {
 
     try {
       final KnowledgeBase base = this.userAndBaseIdsToBases.remove(new Object[] {userId, name});
-      Preconditions.checkArgument(base != null);
+      Preconditions.checkArgument(base != null, String.format("There is no base %s belonging to %s!", name, userId));
 
       this.knowledgeBaseProxiesService.delete(base);
       this.groupsService.unsubscribe(base);

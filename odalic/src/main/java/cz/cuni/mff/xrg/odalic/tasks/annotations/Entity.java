@@ -41,7 +41,7 @@ public final class Entity implements Comparable<Entity>, Serializable {
     }
 
     final String prefixedPart = prefix.getWhat();
-    Preconditions.checkArgument(resourceId.startsWith(prefixedPart));
+    Preconditions.checkArgument(resourceId.startsWith(prefixedPart), String.format("The prefix %s is not an actual prefix of the resource %s", prefixedPart, resourceId));
 
     final String suffix = resourceId.substring(prefixedPart.length());
 

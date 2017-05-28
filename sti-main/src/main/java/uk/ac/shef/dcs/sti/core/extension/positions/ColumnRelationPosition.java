@@ -26,7 +26,7 @@ public final class ColumnRelationPosition {
   public ColumnRelationPosition(final ColumnPosition first, final ColumnPosition second) {
     Preconditions.checkNotNull(first, "The first cannot be null!");
     Preconditions.checkNotNull(second, "The second cannot be null!");
-    Preconditions.checkArgument(first.getIndex() != second.getIndex());
+    Preconditions.checkArgument(first.getIndex() != second.getIndex(), "The column relations position indices cannot be equal, because a column cannot form a relation with itself!");
 
     this.first = first;
     this.second = second;

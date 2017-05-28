@@ -19,7 +19,7 @@ public final class PropertiesUtil {
     Preconditions.checkNotNull(key, "The key cannot be null!");
     Preconditions.checkNotNull(from, "The from cannot be null!");
     Preconditions.checkNotNull(to, "The to cannot be null!");
-    Preconditions.checkArgument(from.containsKey(key));
+    Preconditions.checkArgument(from.containsKey(key), String.format("The source properties do not caints the key %s!", key));
 
     to.setProperty(key, from.getProperty(key));
   }

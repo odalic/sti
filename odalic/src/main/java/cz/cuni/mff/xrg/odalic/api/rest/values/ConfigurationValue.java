@@ -135,7 +135,7 @@ public final class ConfigurationValue implements Serializable {
    * @param rowsLimit the maximum number of rows to process to set
    */
   public void setRowsLimit(final @Nullable Integer rowsLimit) {
-    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0));
+    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0), "The row position index must be positive, if present.");
 
     this.rowsLimit = rowsLimit;
   }

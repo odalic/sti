@@ -129,7 +129,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   public void cancelForTaskId(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
+    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     this.userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
     this.db.commit();
@@ -146,7 +146,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
+    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     return resultFuture.get();
   }
@@ -221,7 +221,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
+    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     return resultFuture.isDone();
   }

@@ -115,11 +115,11 @@ public final class Arrays {
    */
   public static <T, U> void zipMatrixWith(final T[][] modified, final U[][] added,
       final BiFunction<T, U, T> zipFunction) throws IllegalArgumentException {
-    Preconditions.checkArgument(modified.length != 0);
-    Preconditions.checkArgument(added.length == modified.length);
-    Preconditions.checkArgument(added[0].length == modified[0].length);
-    Preconditions.checkArgument(isMatrix(modified));
-    Preconditions.checkArgument(isMatrix(added));
+    Preconditions.checkArgument(modified.length != 0, "The modified array cannot be empty!");
+    Preconditions.checkArgument(added.length == modified.length, "Both matrices must have the same number of rows!");
+    Preconditions.checkArgument(added[0].length == modified[0].length, "Both matrices must have the same number of columns!");
+    Preconditions.checkArgument(isMatrix(modified), "The modified array is not a matrix!");
+    Preconditions.checkArgument(isMatrix(added), "The added array is not a matrix!");
 
     for (int i = 0; i < modified.length; i++) {
       for (int j = 0; j < modified[0].length; j++) {

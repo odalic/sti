@@ -87,7 +87,7 @@ public final class Reply {
 
     Preconditions.checkArgument(
         Boolean.logicalXor((type == ReplyType.MESSAGE) && (payload instanceof Message),
-            (type != ReplyType.MESSAGE) && !(payload instanceof Message)));
+            (type != ReplyType.MESSAGE) && !(payload instanceof Message)), "Invalid type of reply content!");
 
     this.status = status;
     this.type = type;

@@ -78,14 +78,20 @@ public final class DbFileService implements FileService {
 
   @Override
   public void create(final File file) {
-    Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
+    final String userId = file.getOwner().getEmail();
+
+    Preconditions.checkArgument(!existsFileWithId(userId, file.getId()), String.format(
+        "There is already a file with name %s registered to user %s!", file.getId(), userId));
 
     replace(file);
   }
 
   @Override
   public void create(final File file, final InputStream fileInputStream) throws IOException {
-    Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
+    final String userId = file.getOwner().getEmail();
+
+    Preconditions.checkArgument(!existsFileWithId(userId, file.getId()), String.format(
+        "There is already a file with name %s registered to user %s!", file.getId(), userId));
 
     replace(file, fileInputStream);
   }
@@ -98,7 +104,8 @@ public final class DbFileService implements FileService {
 
     try {
       final Map<Object[], File> fileIdsToFiles = this.files.prefixSubMap(userIdKey);
-      fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
+      fileIdsToFiles.entrySet().stream()
+          .forEach(e -> checkUtilization(userId, e.getValue().getId()));
       fileIdsToFiles.clear();
 
       this.data.prefixSubMap(userIdKey).clear();
@@ -106,7 +113,7 @@ public final class DbFileService implements FileService {
       this.db.rollback();
       throw e;
     }
-    
+
     this.db.commit();
   }
 
@@ -119,8 +126,9 @@ public final class DbFileService implements FileService {
 
     try {
       final File file = this.files.remove(new Object[] {userId, fileId});
-      Preconditions.checkArgument(file != null);
-  
+      Preconditions.checkArgument(file != null,
+          String.format("There is no file %s registered to user %s", userId, fileId));
+
       this.data.remove(new Object[] {userId, file.getLocation().toString()});
     } catch (final Exception e) {
       this.db.rollback();
@@ -205,7 +213,8 @@ public final class DbFileService implements FileService {
 
   @Override
   public void replace(final File file, final InputStream fileInputStream) throws IOException {
-    Preconditions.checkArgument(file.isCached());
+    Preconditions.checkArgument(file.isCached(),
+        "The provided file cannot be replaced by the content of the stream, because it is not cached by the server in the first place!");
 
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();

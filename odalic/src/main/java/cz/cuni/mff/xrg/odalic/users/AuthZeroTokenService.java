@@ -51,10 +51,10 @@ public class AuthZeroTokenService implements TokenService {
     final Properties properties = propertiesService.get();
 
     this.secret = properties.getProperty(SECRET_PROPERTY_KEY);
-    Preconditions.checkArgument(this.secret != null);
+    Preconditions.checkArgument(this.secret != null, String.format("The %s key is missing in the configuration!", SECRET_PROPERTY_KEY));
 
     this.issuer = properties.getProperty(ISSUER_PROPERTY_KEY);
-    Preconditions.checkArgument(this.issuer != null);
+    Preconditions.checkArgument(this.issuer != null, String.format("The %s key is missing in the configuration!", ISSUER_PROPERTY_KEY));
 
     this.verifier = initializeVerifier(this.secret, this.issuer);
   }

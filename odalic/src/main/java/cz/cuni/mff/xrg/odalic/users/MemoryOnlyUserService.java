@@ -366,7 +366,7 @@ public final class MemoryOnlyUserService implements UserService {
     Preconditions.checkNotNull(id, "The id cannot be null!");
 
     final User user = this.userIdsToUsers.get(id);
-    Preconditions.checkArgument(user != null);
+    Preconditions.checkArgument(user != null, String.format("No user %s registered", id));
 
     return user;
   }

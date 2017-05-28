@@ -109,7 +109,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
   public void cancelForTaskId(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
+    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     Preconditions.checkState(resultFuture.cancel(false));
   }
@@ -119,7 +119,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
       throws InterruptedException, ExecutionException, CancellationException {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
+    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     return resultFuture.get();
   }
@@ -179,7 +179,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
   public boolean isCanceledForTaskId(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
+    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     return resultFuture.isCancelled();
   }
@@ -188,7 +188,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
   public boolean isDoneForTaskId(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
+    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     return resultFuture.isDone();
   }

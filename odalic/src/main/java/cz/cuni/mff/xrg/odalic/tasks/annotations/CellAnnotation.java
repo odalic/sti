@@ -60,8 +60,8 @@ public final class CellAnnotation implements Serializable {
       final String chosenBaseName = chosenEntry.getKey();
 
       final Set<EntityCandidate> baseCandidates = this.candidates.get(chosenBaseName);
-      Preconditions.checkArgument(baseCandidates != null);
-      Preconditions.checkArgument(baseCandidates.containsAll(chosenEntry.getValue()));
+      Preconditions.checkArgument(baseCandidates != null, String.format("There are no candidates recorded for base %s of the chosen one!", chosenBaseName));
+      Preconditions.checkArgument(baseCandidates.containsAll(chosenEntry.getValue()), "The chosen candidate is not among the candidates!");
 
       chosenBuilder.put(chosenEntry.getKey(), ImmutableSet.copyOf(chosenEntry.getValue()));
     }

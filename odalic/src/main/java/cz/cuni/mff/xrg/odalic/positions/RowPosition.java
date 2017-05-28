@@ -29,7 +29,7 @@ public final class RowPosition implements Serializable, Comparable<RowPosition> 
    * @param index zero-base index
    */
   public RowPosition(final int index) {
-    Preconditions.checkArgument(index >= 0);
+    Preconditions.checkArgument(index >= 0, "Row position index must be nonnegative!");
 
     this.index = index;
   }

@@ -83,7 +83,7 @@ public final class MemoryOnlyTaskService implements TaskService {
     Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     final Task task = this.tasks.remove(userId, taskId);
-    Preconditions.checkArgument(task != null);
+    Preconditions.checkArgument(task != null, String.format("There is not task %s registered to user %s!", taskId, userId));
 
     this.fileService.unsubscribe(task);
     this.basesService.unsubscribe(task);
@@ -95,7 +95,7 @@ public final class MemoryOnlyTaskService implements TaskService {
     Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     final Task task = this.tasks.get(userId, taskId);
-    Preconditions.checkArgument(task != null);
+    Preconditions.checkArgument(task != null, String.format("There is not task %s registered to user %s!", taskId, userId));
 
     return task;
   }

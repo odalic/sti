@@ -147,7 +147,9 @@ public final class MemoryOnlyGroupsService implements GroupsService {
 
   @Override
   public void create(final Group group) {
-    Preconditions.checkArgument(!existsGroupWithId(group.getOwner().getEmail(), group.getId()));
+    final String userId = group.getOwner().getEmail();
+    
+    Preconditions.checkArgument(!existsGroupWithId(userId, group.getId()), String.format("There is already group %s registered to user %s!", group.getId(), userId));
 
     replace(group);
   }
@@ -259,7 +261,7 @@ public final class MemoryOnlyGroupsService implements GroupsService {
     checkUtilization(userId, groupId);
 
     final Group group = this.userAndGroupIdsToGroups.remove(userId, groupId);
-    Preconditions.checkArgument(group != null);
+    Preconditions.checkArgument(group != null, String.format("There is no group %s registered to user %s!", groupId, userId));
   }
   
   private void checkUtilization(final String userId, final String groupId)

@@ -461,7 +461,7 @@ public class DefaultAnnotationToResultAdapter implements AnnotationToResultAdapt
   @Override
   public Result toResult(
       final Map<? extends KnowledgeBase, ? extends TAnnotation> basesToTableAnnotations) {
-    Preconditions.checkArgument(!basesToTableAnnotations.isEmpty());
+    Preconditions.checkArgument(!basesToTableAnnotations.isEmpty(), "There are no annotations to convert to the result!");
 
     // Extract subject columns positions.
     final Map<String, Set<ColumnPosition>> subjectColumnsPositions =

@@ -68,14 +68,18 @@ public final class MemoryOnlyFileService implements FileService {
 
   @Override
   public void create(final File file) {
-    Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
+    final String userId = file.getOwner().getEmail();
+    
+    Preconditions.checkArgument(!existsFileWithId(userId, file.getId()), String.format("There is already a file %s registered to user %s", file.getId(), userId));
 
     replace(file);
   }
 
   @Override
   public void create(final File file, final InputStream fileInputStream) throws IOException {
-    Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
+    final String userId = file.getOwner().getEmail();
+    
+    Preconditions.checkArgument(!existsFileWithId(userId, file.getId()), String.format("There is already a file %s registered to user %s", file.getId(), userId));
 
     replace(file, fileInputStream);
   }
@@ -99,7 +103,7 @@ public final class MemoryOnlyFileService implements FileService {
     checkUtilization(userId, fileId);
 
     final File file = this.files.remove(userId, fileId);
-    Preconditions.checkArgument(file != null);
+    Preconditions.checkArgument(file != null, String.format("There is no file %s registered to user %s!", fileId, userId));
 
     this.data.remove(userId, file.getLocation());
   }
@@ -174,7 +178,7 @@ public final class MemoryOnlyFileService implements FileService {
 
   @Override
   public void replace(final File file, final InputStream fileInputStream) throws IOException {
-    Preconditions.checkArgument(file.isCached());
+    Preconditions.checkArgument(file.isCached(), "The file content cannot be replaced by the content of the strea, because it is not cached in the first place!");
 
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();

@@ -163,7 +163,9 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public void create(final KnowledgeBase base) {
-    Preconditions.checkArgument(!existsBaseWithId(base.getOwner().getEmail(), base.getName()));
+    final String userId = base.getOwner().getEmail();
+    
+    Preconditions.checkArgument(!existsBaseWithId(userId, base.getName()), String.format("There is already a base %s registers to user %s!", base.getName(), userId));
 
     replace(base);
   }
@@ -244,7 +246,7 @@ public final class MemoryOnlyBasesService implements BasesService {
     checkUtilization(userId, name);
 
     final KnowledgeBase base = this.userAndBaseIdsToBases.remove(userId, name);
-    Preconditions.checkArgument(base != null);
+    Preconditions.checkArgument(base != null, String.format("There is no base %s registered to user %s!", name , userId));
 
     this.knowledgeBaseProxiesService.delete(base);
     this.groupsService.unsubscribe(base);
