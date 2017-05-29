@@ -82,12 +82,12 @@ public final class TasksResource {
   public TasksResource(final UserService userService, final TaskService taskService,
       final FileService fileService, final ExecutionService executionService,
       final BasesService basesService, final TaskSerializationService taskSerializationService) {
-    Preconditions.checkNotNull(userService);
-    Preconditions.checkNotNull(taskService);
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(executionService);
-    Preconditions.checkNotNull(basesService);
-    Preconditions.checkNotNull(taskSerializationService);
+    Preconditions.checkNotNull(userService, "The userService cannot be null!");
+    Preconditions.checkNotNull(taskService, "The taskService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(taskSerializationService, "The taskSerializationService cannot be null!");
 
     this.userService = userService;
     this.taskService = taskService;

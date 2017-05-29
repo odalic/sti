@@ -46,7 +46,7 @@ public final class BingSearchResultParser extends SearchResultParser {
    * @see uk.ac.shef.dcs.websearch.SearchResultParser#parse(java.io.InputStream)
    */
   public List<WebSearchResultDoc> parse(final InputStream resultStream) throws IOException {
-    Preconditions.checkNotNull(resultStream);
+    Preconditions.checkNotNull(resultStream, "The resultStream cannot be null!");
 
     final Gson gson = new Gson();
     final SearchResponse searchResponse =

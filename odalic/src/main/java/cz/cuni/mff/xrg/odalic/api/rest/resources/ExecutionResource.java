@@ -44,7 +44,7 @@ public final class ExecutionResource {
 
   @Autowired
   public ExecutionResource(final ExecutionService executionService) {
-    Preconditions.checkNotNull(executionService);
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
 
     this.executionService = executionService;
   }

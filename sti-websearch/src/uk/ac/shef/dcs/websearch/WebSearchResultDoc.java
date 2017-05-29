@@ -28,10 +28,10 @@ public final class WebSearchResultDoc implements Serializable {
    * @param url document URL
    */
   public WebSearchResultDoc(String id, String title, String description, String url) {
-    Preconditions.checkNotNull(id);
-    Preconditions.checkNotNull(title);
-    Preconditions.checkNotNull(description);
-    Preconditions.checkNotNull(url);
+    Preconditions.checkNotNull(id, "The id cannot be null!");
+    Preconditions.checkNotNull(title, "The title cannot be null!");
+    Preconditions.checkNotNull(description, "The description cannot be null!");
+    Preconditions.checkNotNull(url, "The url cannot be null!");
 
     this.id = id;
     this.title = title;

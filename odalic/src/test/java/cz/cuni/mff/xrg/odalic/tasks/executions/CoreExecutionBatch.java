@@ -31,7 +31,6 @@ import cz.cuni.mff.xrg.odalic.bases.MemoryOnlyAdvancedBaseTypesService;
 import cz.cuni.mff.xrg.odalic.bases.MemoryOnlyBasesService;
 import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.bases.proxies.MemoryOnlyKnowledgeBaseProxiesService;
-import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.entities.PrefixMappingEntitiesFactory;
 import cz.cuni.mff.xrg.odalic.feedbacks.Ambiguity;
@@ -76,8 +75,6 @@ public class CoreExecutionBatch {
   private static final Logger log = LoggerFactory.getLogger(CoreExecutionBatch.class);
 
   private static KnowledgeBaseProxiesService kbf;
-
-  private static MemoryOnlyBasesService mbs;
 
   /**
    * Expects sti.properties file path as the first and test input CSV file path as the second
@@ -149,7 +146,7 @@ public class CoreExecutionBatch {
     MemoryOnlyGroupsService mgs = new MemoryOnlyGroupsService(dps);
     MemoryOnlyAdvancedBaseTypesService abs = new MemoryOnlyAdvancedBaseTypesService(mgs);
     kbf = new MemoryOnlyKnowledgeBaseProxiesService(dpf, abs, pms);
-    mbs = new MemoryOnlyBasesService(kbf, mgs, abs, dps);
+    MemoryOnlyBasesService mbs = new MemoryOnlyBasesService(kbf, mgs, abs, dps);
 
     // groups and bases initialization
     try {
@@ -161,23 +158,23 @@ public class CoreExecutionBatch {
     }
 
     // Configuration settings
-    Configuration configuration = new Configuration(file, ImmutableSet.of(
-        mbs.getByName(parsedFile.getOwner().getEmail(), "DBpedia").getName(),
-        mbs.getByName(parsedFile.getOwner().getEmail(), "DBpedia Clone").getName(),
-        mbs.getByName(parsedFile.getOwner().getEmail(), "German DBpedia").getName()),
-        mbs.getByName(parsedFile.getOwner().getEmail(), "DBpedia").getName(),
-        createFeedback(true), rowsLimit, false);
+    final KnowledgeBase primaryBase = mbs.getByName(parsedFile.getOwner().getEmail(), "DBpedia");
+    final Configuration configuration = new Configuration(parsedFile,
+        ImmutableSet.of(primaryBase.getName(),
+            "DBpedia Clone", "German DBpedia"),
+        primaryBase.getName(), createFeedback(true), rowsLimit, false);
 
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
       semanticTableInterpreters = new TableMinerPlusFactory(kbf, cps, dps).getInterpreters(
-          configuration.getInput().getOwner().getEmail(), configuration.getUsedBases().stream().map(e -> mbs.getByName(file.getOwner().getEmail(), e)).collect(ImmutableSet.toImmutableSet()));
+          configuration.getInput().getOwner().getEmail(), configuration.getUsedBases().stream().map(e ->
+          mbs.getByName(configuration.getInput().getOwner().getEmail(), e)).collect(ImmutableSet.toImmutableSet()));
     } catch (final Exception e) {
       log.error("Error - TMP interpreters failed to initialize:", e);
       return null;
     }
-    Preconditions.checkNotNull(semanticTableInterpreters);
+    Preconditions.checkNotNull(semanticTableInterpreters, "The semanticTableInterpreters cannot be null!");
 
     // TableMinerPlus algorithm run
     Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
@@ -205,15 +202,11 @@ public class CoreExecutionBatch {
         new PrefixMappingEntitiesFactory(pms)).toResult(results);
     log.info("Odalic Result is: " + odalicResult);
 
-    return new CoreSnapshot(odalicResult, parsingResult.getInput(), configuration);
+    return new CoreSnapshot(odalicResult, parsingResult.getInput(), configuration, primaryBase);
   }
 
   public static KnowledgeBaseProxiesService getKnowledgeBaseProxyFactory() {
     return kbf;
-  }
-  
-  public static BasesService getKnowledgeBaseService() {
-    return mbs;
   }
 
   public static Feedback createFeedback(boolean emptyFeedback) {

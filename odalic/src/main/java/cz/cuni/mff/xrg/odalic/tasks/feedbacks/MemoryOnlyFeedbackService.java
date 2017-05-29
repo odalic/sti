@@ -26,8 +26,8 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
 
   private MemoryOnlyFeedbackService(final ConfigurationService configurationService,
       final Table<String, String, Input> inputSnapshots) {
-    Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(inputSnapshots);
+    Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
+    Preconditions.checkNotNull(inputSnapshots, "The inputSnapshots cannot be null!");
 
     this.configurationService = configurationService;
     this.inputSnapshots = inputSnapshots;
@@ -48,8 +48,8 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
 
   @Override
   public Input getInputSnapshotForTaskId(final String userId, final String taskId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
 
     final Input inputSnapshot = this.inputSnapshots.get(userId, taskId);
     Preconditions.checkArgument(inputSnapshot != null, "No such task input snapshot present!");
@@ -69,9 +69,9 @@ public final class MemoryOnlyFeedbackService implements FeedbackService {
   @Override
   public void setInputSnapshotForTaskid(final String userId, final String taskId,
       final Input inputSnapshot) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(taskId);
-    Preconditions.checkNotNull(inputSnapshot);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(taskId, "The taskId cannot be null!");
+    Preconditions.checkNotNull(inputSnapshot, "The inputSnapshot cannot be null!");
 
     this.inputSnapshots.put(userId, taskId, inputSnapshot);
   }

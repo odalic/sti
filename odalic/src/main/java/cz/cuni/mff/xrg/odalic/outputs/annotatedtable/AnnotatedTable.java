@@ -38,9 +38,9 @@ public class AnnotatedTable implements Serializable {
    */
   public AnnotatedTable(final TableContext context, final String url,
       final TableSchema tableSchema) {
-    Preconditions.checkNotNull(context);
-    Preconditions.checkNotNull(url);
-    Preconditions.checkNotNull(tableSchema);
+    Preconditions.checkNotNull(context, "The context cannot be null!");
+    Preconditions.checkNotNull(url, "The url cannot be null!");
+    Preconditions.checkNotNull(tableSchema, "The tableSchema cannot be null!");
 
     this.context = context;
     this.url = url;

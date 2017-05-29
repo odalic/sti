@@ -19,7 +19,7 @@ public class ObjectPropertyTriplePattern extends TriplePattern {
   public ObjectPropertyTriplePattern(final String subjectPattern, final IRI predicate,
       final String objectPattern, final String dataType) {
     super(subjectPattern, predicate);
-    Preconditions.checkNotNull(objectPattern);
+    Preconditions.checkNotNull(objectPattern, "The objectPattern cannot be null!");
     this.objectPattern = objectPattern;
     this.dataType = dataType;
   }

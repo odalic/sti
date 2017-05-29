@@ -27,7 +27,7 @@ public final class FileDbService implements DbService {
   private static final String FILE_PATH_PROPERTY_KEY = "cz.cuni.mff.xrg.odalic.db.file";
 
   private static DB initializeDb(final PropertiesService propertiesService) {
-    Preconditions.checkNotNull(propertiesService);
+    Preconditions.checkNotNull(propertiesService, "The propertiesService cannot be null!");
 
     final Properties properties = propertiesService.get();
     
@@ -47,7 +47,7 @@ public final class FileDbService implements DbService {
   private final DB db;
 
   private FileDbService(final DB db) {
-    Preconditions.checkNotNull(db);
+    Preconditions.checkNotNull(db, "The db cannot be null!");
 
     this.db = db;
   }

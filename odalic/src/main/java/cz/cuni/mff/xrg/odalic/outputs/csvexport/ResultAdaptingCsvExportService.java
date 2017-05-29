@@ -54,13 +54,13 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
       final FeedbackService feedbackService, final ConfigurationService configurationService,
       final FileService fileService, final BasesService basesService,
       final ResultToCSVExportAdapter resultToCsvExportAdapter, final CSVExporter csvExporter) {
-    Preconditions.checkNotNull(feedbackService);
-    Preconditions.checkNotNull(executionService);
-    Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(basesService);
-    Preconditions.checkNotNull(resultToCsvExportAdapter);
-    Preconditions.checkNotNull(csvExporter);
+    Preconditions.checkNotNull(feedbackService, "The feedbackService cannot be null!");
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
+    Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(resultToCsvExportAdapter, "The resultToCsvExportAdapter cannot be null!");
+    Preconditions.checkNotNull(csvExporter, "The csvExporter cannot be null!");
 
     this.executionService = executionService;
     this.feedbackService = feedbackService;

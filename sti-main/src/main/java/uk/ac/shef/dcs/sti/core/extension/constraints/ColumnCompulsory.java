@@ -27,7 +27,7 @@ public final class ColumnCompulsory implements Serializable {
    * @param position position of the compulsory column
    */
   public ColumnCompulsory(final ColumnPosition position) {
-    Preconditions.checkNotNull(position);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
 
     this.position = position;
   }

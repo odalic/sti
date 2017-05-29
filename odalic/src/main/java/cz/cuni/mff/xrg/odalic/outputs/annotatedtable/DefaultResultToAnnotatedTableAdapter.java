@@ -104,7 +104,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
   @Autowired
   public DefaultResultToAnnotatedTableAdapter(
       final KnowledgeBaseProxiesService knowledgeBaseProxyFactory) {
-    Preconditions.checkNotNull(knowledgeBaseProxyFactory);
+    Preconditions.checkNotNull(knowledgeBaseProxyFactory, "The knowledgeBaseProxyFactory cannot be null!");
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
   }
@@ -280,7 +280,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
         for (final Entry<String, Set<EntityCandidate>> entry : result
             .getCellAnnotations()[j][i].getChosen().entrySet()) {
           if ((entry.getValue() != null) && !entry.getValue().isEmpty()) {
-            if (entry.getKey().equals(primaryBase)) {
+            if (entry.getKey().equals(primaryBase.getName())) {
               addPrimary = true;
             } else {
               addAlternatives = true;
@@ -318,7 +318,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
     for (final Entry<ColumnRelationPosition, ColumnRelationAnnotation> entry : result
         .getColumnRelationAnnotations().entrySet()) {
       final Set<EntityCandidate> chosenRelations =
-          entry.getValue().getChosen().get(primaryBase);
+          entry.getValue().getChosen().get(primaryBase.getName());
 
       if (chosenRelations != null) {
         for (final EntityCandidate chosen : chosenRelations) {
@@ -357,16 +357,16 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
       Entity compEntity;
       for (int i = 0; i < input.columnsCount(); i++) {
         final Set<EntityCandidate> predicateSet = result.getStatisticalAnnotations().get(i)
-            .getPredicate().get(primaryBase);
+            .getPredicate().get(primaryBase.getName());
 
         if ((predicateSet != null) && !predicateSet.isEmpty()) {
           final ComponentTypeValue componentType = result.getStatisticalAnnotations().get(i)
-              .getComponent().get(primaryBase);
+              .getComponent().get(primaryBase.getName());
 
           final Entity predicateEntity = predicateSet.iterator().next().getEntity();
 
           final Set<EntityCandidate> classificationSet =
-              result.getHeaderAnnotations().get(i).getChosen().get(primaryBase);
+              result.getHeaderAnnotations().get(i).getChosen().get(primaryBase.getName());
 
           switch (componentType) {
             case DIMENSION:

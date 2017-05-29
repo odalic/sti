@@ -112,15 +112,14 @@ public class CSVExportTest {
     }
 
     final KnowledgeBase primaryBase = basesService.getByName(user.getEmail(), "DBpedia");
-    
+
     Configuration config;
     try {
       config = new Configuration(new cz.cuni.mff.xrg.odalic.files.File(
           user, inputFile.getName(), inputFile.toURI().toURL(), new Format(
               StandardCharsets.UTF_8, ';', true, '"', null, null), true),
           ImmutableSet.of(primaryBase.getName(),
-              basesService.getByName(user.getEmail(), "DBpedia Clone").getName(),
-              basesService.getByName(user.getEmail(), "German DBpedia").getName()),
+              "DBpedia Clone", "German DBpedia"),
           primaryBase.getName(), new Feedback(), null, false);
     } catch (MalformedURLException e) {
       log.error("Error - configuration settings:", e);

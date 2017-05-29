@@ -46,7 +46,7 @@ public final class Message {
 
   public Message(@Nullable final String text, final List<URI> additionalResources,
       @Nullable final String debugContent) {
-    Preconditions.checkNotNull(additionalResources);
+    Preconditions.checkNotNull(additionalResources, "The additionalResources cannot be null!");
 
     this.text = text;
     this.additionalResources = ImmutableList.copyOf(additionalResources);
@@ -89,7 +89,7 @@ public final class Message {
    */
   @XmlTransient
   public Response toResponse(final StatusType statusType, final UriInfo uriInfo) {
-    Preconditions.checkNotNull(statusType);
+    Preconditions.checkNotNull(statusType, "The statusType cannot be null!");
 
     return Reply.message(statusType, this, uriInfo).toResponse();
   }
@@ -106,8 +106,8 @@ public final class Message {
   @XmlTransient
   public Response toResponse(final StatusType statusType, final URL location,
       final UriInfo uriInfo) {
-    Preconditions.checkNotNull(statusType);
-    Preconditions.checkNotNull(location);
+    Preconditions.checkNotNull(statusType, "The statusType cannot be null!");
+    Preconditions.checkNotNull(location, "The location cannot be null!");
 
     return toResponseBuilder(statusType, uriInfo).header(LOCATION_HEADER_NAME, location).build();
   }
@@ -122,7 +122,7 @@ public final class Message {
    */
   @XmlTransient
   public ResponseBuilder toResponseBuilder(final StatusType statusType, final UriInfo uriInfo) {
-    Preconditions.checkNotNull(statusType);
+    Preconditions.checkNotNull(statusType, "The statusType cannot be null!");
 
     return Reply.message(statusType, this, uriInfo).toResponseBuilder();
   }

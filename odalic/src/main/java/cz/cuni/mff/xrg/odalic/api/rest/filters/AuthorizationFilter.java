@@ -43,7 +43,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 public class AuthorizationFilter implements ContainerRequestFilter {
 
   private static Set<Role> extractRoles(final AnnotatedElement annotatedElement) {
-    Preconditions.checkNotNull(annotatedElement);
+    Preconditions.checkNotNull(annotatedElement, "The annotatedElement cannot be null!");
 
     final Secured secured = annotatedElement.getAnnotation(Secured.class);
     if (secured == null) {
@@ -67,17 +67,17 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     final String userId = requestContext.getSecurityContext().getUserPrincipal().getName();
 
     final Method resourceMethod = this.resourceInfo.getResourceMethod();
-    Preconditions.checkArgument(resourceMethod != null);
+    Preconditions.checkArgument(resourceMethod != null, "The resource method information is not available. Cannot authorize!");
 
     final Set<Role> methodRoles = extractRoles(resourceMethod);
 
     try {
       if (methodRoles.isEmpty()) {
         final Class<?> resourceClass = this.resourceInfo.getResourceClass();
-        Preconditions.checkArgument(resourceClass != null);
+        Preconditions.checkArgument(resourceClass != null, "The resource class information is not available. Cannot authorize!");
 
         final Set<Role> classRoles = extractRoles(resourceClass);
-        Preconditions.checkArgument(!classRoles.isEmpty());
+        Preconditions.checkArgument(!classRoles.isEmpty(), "There are no roles with access permission!");
 
         checkPermissions(userId, classRoles);
         return;
@@ -96,6 +96,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
       throws Exception {
     final User user = this.userService.getUser(userId);
 
-    Preconditions.checkArgument(allowedRoles.contains(user.getRole()));
+    Preconditions.checkArgument(allowedRoles.contains(user.getRole()), "User's role does not allow access!");
   }
 }

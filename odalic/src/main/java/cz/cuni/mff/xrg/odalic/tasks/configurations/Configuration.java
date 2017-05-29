@@ -60,12 +60,12 @@ public final class Configuration implements Serializable {
   public Configuration(final File input, final Set<? extends String> usedBases,
       final String primaryBase, final @Nullable Feedback feedback,
       @Nullable final Integer rowsLimit, @Nullable final Boolean statistical) {
-    Preconditions.checkNotNull(input);
-    Preconditions.checkNotNull(usedBases);
-    Preconditions.checkNotNull(primaryBase);
+    Preconditions.checkNotNull(input, "The input cannot be null!");
+    Preconditions.checkNotNull(usedBases, "The usedBases cannot be null!");
+    Preconditions.checkNotNull(primaryBase, "The primaryBase cannot be null!");
 
-    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0));
-    Preconditions.checkArgument(usedBases.contains(primaryBase));
+    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0), "The rows limit must be positive, if present!");
+    Preconditions.checkArgument(usedBases.contains(primaryBase), "The primary base is not among the used ones!");
 
     this.input = input;
     this.usedBases = ImmutableSet.copyOf(usedBases);

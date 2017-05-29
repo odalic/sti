@@ -44,11 +44,11 @@ public final class KnowledgeBaseValue {
 
   private boolean insertEnabled;
   private URL insertEndpoint;
-  private URI insertGraph;
+  private String insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
-  private URI datatypeProperty;
-  private URI objectProperty;
+  private String datatypeProperty;
+  private String objectProperty;
 
   private String login;
   private String password;
@@ -108,7 +108,7 @@ public final class KnowledgeBaseValue {
    * @param name the name to set
    */
   public void setName(final String name) {
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     this.name = name;
   }
@@ -190,7 +190,7 @@ public final class KnowledgeBaseValue {
    * @param skippedAttributes the skipped attributes to set
    */
   public void setSkippedAttributes(final List<String> skippedAttributes) {
-    Preconditions.checkNotNull(skippedAttributes);
+    Preconditions.checkNotNull(skippedAttributes, "The skippedAttributes cannot be null!");
 
     this.skippedAttributes = ImmutableList.copyOf(skippedAttributes);
   }
@@ -208,7 +208,7 @@ public final class KnowledgeBaseValue {
    * @param skippedClasses the skipped classes to set
    */
   public void setSkippedClasses(final List<String> skippedClasses) {
-    Preconditions.checkNotNull(skippedClasses);
+    Preconditions.checkNotNull(skippedClasses, "The skippedClasses cannot be null!");
 
     this.skippedClasses = ImmutableList.copyOf(skippedClasses);
   }
@@ -241,7 +241,7 @@ public final class KnowledgeBaseValue {
    * @param selectedGroups the selected {@link Group}s to set
    */
   public void setSelectedGroups(final Set<String> selectedGroups) {
-    Preconditions.checkNotNull(selectedGroups);
+    Preconditions.checkNotNull(selectedGroups, "The selectedGroups cannot be null!");
 
     this.selectedGroups = ImmutableSet.copyOf(selectedGroups);
   }
@@ -281,14 +281,14 @@ public final class KnowledgeBaseValue {
    */
   @XmlElement
   @Nullable
-  public URI getInsertGraph() {
+  public String getInsertGraph() {
     return insertGraph;
   }
 
   /**
    * @param insertGraph the insert graph to set
    */
-  public void setInsertGraph(@Nullable final URI insertGraph) {
+  public void setInsertGraph(@Nullable final String insertGraph) {
     this.insertGraph = insertGraph;
   }
 
@@ -329,14 +329,14 @@ public final class KnowledgeBaseValue {
    */
   @XmlElement
   @Nullable
-  public URI getDatatypeProperty() {
+  public String getDatatypeProperty() {
     return datatypeProperty;
   }
 
   /**
    * @param datatypeProperty the property type used when inserting datatype properties
    */
-  public void setDatatypeProperty(@Nullable final URI datatypeProperty) {
+  public void setDatatypeProperty(@Nullable final String datatypeProperty) {
     this.datatypeProperty = datatypeProperty;
   }
 
@@ -345,14 +345,14 @@ public final class KnowledgeBaseValue {
    */
   @XmlElement
   @Nullable
-  public URI getObjectProperty() {
+  public String getObjectProperty() {
     return objectProperty;
   }
 
   /**
    * @param objectProperty the property type used when inserting object properties
    */
-  public void setInsertObjectPropertyType(@Nullable final URI objectProperty) {
+  public void setInsertObjectPropertyType(@Nullable final String objectProperty) {
     this.objectProperty = objectProperty;
   }
 
@@ -402,7 +402,7 @@ public final class KnowledgeBaseValue {
    * @param advancedType the advanced type to set
    */
   public void setAdvancedType(final String advancedType) {
-    Preconditions.checkNotNull(advancedType);
+    Preconditions.checkNotNull(advancedType, "The advancedType cannot be null!");
 
     this.advancedType = advancedType;
   }
@@ -420,7 +420,7 @@ public final class KnowledgeBaseValue {
    * @param advancedProperties the advanced properties to set
    */
   public void setAdvancedProperties(final Map<String, String> advancedProperties) {
-    Preconditions.checkNotNull(advancedProperties);
+    Preconditions.checkNotNull(advancedProperties, "The advancedProperties cannot be null!");
 
     this.advancedProperties = ImmutableMap.copyOf(advancedProperties);
   }

@@ -128,7 +128,7 @@ public final class ConfigurationValue implements Serializable {
    * @param feedback the feedback to set
    */
   public void setFeedback(final FeedbackValue feedback) {
-    Preconditions.checkNotNull(feedback);
+    Preconditions.checkNotNull(feedback, "The feedback cannot be null!");
 
     this.feedback = feedback;
   }
@@ -137,7 +137,7 @@ public final class ConfigurationValue implements Serializable {
    * @param input the input to set
    */
   public void setInput(final String input) {
-    Preconditions.checkNotNull(input);
+    Preconditions.checkNotNull(input, "The input cannot be null!");
 
     this.input = input;
   }
@@ -146,7 +146,7 @@ public final class ConfigurationValue implements Serializable {
    * @param primaryBase the primary knowledge base to set
    */
   public void setPrimaryBase(final String primaryBase) {
-    Preconditions.checkNotNull(primaryBase);
+    Preconditions.checkNotNull(primaryBase, "The primaryBase cannot be null!");
 
     this.primaryBase = primaryBase;
   }
@@ -155,7 +155,7 @@ public final class ConfigurationValue implements Serializable {
    * @param rowsLimit the maximum number of rows to process to set
    */
   public void setRowsLimit(final @Nullable Integer rowsLimit) {
-    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0));
+    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0), "Rows limit must be positive when present!");
 
     this.rowsLimit = rowsLimit;
   }
@@ -171,7 +171,7 @@ public final class ConfigurationValue implements Serializable {
    * @param usedBases the bases selected for the task to set
    */
   public void setUsedBases(final List<? extends KnowledgeBaseValue> usedBases) {
-    Preconditions.checkNotNull(usedBases);
+    Preconditions.checkNotNull(usedBases, "The usedBases cannot be null!");
 
     this.usedBases = ImmutableList.copyOf(usedBases);
   }

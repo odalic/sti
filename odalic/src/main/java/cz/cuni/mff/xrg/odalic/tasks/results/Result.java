@@ -67,15 +67,15 @@ public class Result implements Serializable {
       final List<? extends StatisticalAnnotation> statisticalAnnotations,
       final List<? extends ColumnProcessingAnnotation> columnProcessingAnnotations,
       final List<? extends String> warnings) {
-    Preconditions.checkNotNull(subjectColumnsPositions);
-    Preconditions.checkNotNull(headerAnnotations);
-    Preconditions.checkNotNull(cellAnnotations);
-    Preconditions.checkNotNull(columnRelationAnnotations);
-    Preconditions.checkNotNull(statisticalAnnotations);
-    Preconditions.checkNotNull(columnProcessingAnnotations);
-    Preconditions.checkNotNull(warnings);
-    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Arrays.containsNull(cellAnnotations));
-    Preconditions.checkArgument(cz.cuni.mff.xrg.odalic.util.Arrays.isMatrix(cellAnnotations));
+    Preconditions.checkNotNull(subjectColumnsPositions, "The subjectColumnsPositions cannot be null!");
+    Preconditions.checkNotNull(headerAnnotations, "The headerAnnotations cannot be null!");
+    Preconditions.checkNotNull(cellAnnotations, "The cellAnnotations cannot be null!");
+    Preconditions.checkNotNull(columnRelationAnnotations, "The columnRelationAnnotations cannot be null!");
+    Preconditions.checkNotNull(statisticalAnnotations, "The statisticalAnnotations cannot be null!");
+    Preconditions.checkNotNull(columnProcessingAnnotations, "The columnProcessingAnnotations cannot be null!");
+    Preconditions.checkNotNull(warnings, "The warnings cannot be null!");
+    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Arrays.containsNull(cellAnnotations), "None of the cell annotations can be null!");
+    Preconditions.checkArgument(cz.cuni.mff.xrg.odalic.util.Arrays.isMatrix(cellAnnotations), "The cell annotations do not form a matrix!");
 
     this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
     this.headerAnnotations = ImmutableList.copyOf(headerAnnotations);

@@ -118,7 +118,7 @@ public final class FileValueOutput implements Serializable {
    * @param format the format to set
    */
   public void setFormat(final Format format) {
-    Preconditions.checkNotNull(format);
+    Preconditions.checkNotNull(format, "The format cannot be null!");
 
     this.format = format;
   }
@@ -127,7 +127,7 @@ public final class FileValueOutput implements Serializable {
    * @param id the id to set
    */
   public void setId(final String id) {
-    Preconditions.checkNotNull(id);
+    Preconditions.checkNotNull(id, "The id cannot be null!");
 
     this.id = id;
   }
@@ -136,7 +136,7 @@ public final class FileValueOutput implements Serializable {
    * @param location the location to set
    */
   public void setLocation(final URL location) {
-    Preconditions.checkNotNull(location);
+    Preconditions.checkNotNull(location, "The location cannot be null!");
 
     this.location = location;
   }
@@ -145,7 +145,7 @@ public final class FileValueOutput implements Serializable {
    * @param owner the owner to set
    */
   public void setOwner(final User owner) {
-    Preconditions.checkNotNull(owner);
+    Preconditions.checkNotNull(owner, "The owner cannot be null!");
 
     this.owner = owner;
   }
@@ -154,7 +154,7 @@ public final class FileValueOutput implements Serializable {
    * @param uploaded the uploaded to set
    */
   public void setUploaded(final Date uploaded) {
-    Preconditions.checkNotNull(uploaded);
+    Preconditions.checkNotNull(uploaded, "The uploaded cannot be null!");
 
     this.uploaded = uploaded;
   }

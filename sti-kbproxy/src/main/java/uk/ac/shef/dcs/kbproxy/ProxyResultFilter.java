@@ -24,8 +24,8 @@ public final class ProxyResultFilter {
   private final Set<String> stoppedAttributes;
 
   public ProxyResultFilter(final Set<? extends String> stoppedClasses, final Set<? extends String> stoppedAttributes) {
-    Preconditions.checkNotNull(stoppedClasses);
-    Preconditions.checkNotNull(stoppedAttributes);
+    Preconditions.checkNotNull(stoppedClasses, "The stoppedClasses cannot be null!");
+    Preconditions.checkNotNull(stoppedAttributes, "The stoppedAttributes cannot be null!");
     
     this.stoppedClasses = ImmutableSet.copyOf(stoppedClasses);
     this.stoppedAttributes = ImmutableSet.copyOf(stoppedAttributes);

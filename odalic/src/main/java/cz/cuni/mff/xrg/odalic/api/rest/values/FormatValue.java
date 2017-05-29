@@ -137,7 +137,7 @@ public final class FormatValue implements Serializable {
    * @param charset the character set to set
    */
   public void setCharset(final String charset) {
-    Preconditions.checkNotNull(charset);
+    Preconditions.checkNotNull(charset, "The charset cannot be null!");
 
     this.charset = charset;
   }

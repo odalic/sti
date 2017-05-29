@@ -106,9 +106,9 @@ public final class SparqlProxyCore implements ProxyCore {
   private SparqlProxyCore(final SparqlProxyDefinition definition,
           final Map<String, String> prefixToUriMap,
           final StringMetric stringMetric) {
-    Preconditions.checkNotNull(definition);
-    Preconditions.checkNotNull(prefixToUriMap);
-    Preconditions.checkNotNull(stringMetric);
+    Preconditions.checkNotNull(definition, "The definition cannot be null!");
+    Preconditions.checkNotNull(prefixToUriMap, "The prefixToUriMap cannot be null!");
+    Preconditions.checkNotNull(stringMetric, "The stringMetric cannot be null!");
     
     this.definition = definition;
     this.prefixToUriMap = ImmutableMap.copyOf(prefixToUriMap);
@@ -261,7 +261,12 @@ public final class SparqlProxyCore implements ProxyCore {
 
   protected boolean ask(Query sparqlQuery) {
     QueryExecution queryExecution = getQueryExecution(sparqlQuery);
-    return queryExecution.execAsk();
+    
+    try {
+      return queryExecution.execAsk();
+    } catch (final Exception e) {
+      throw new RuntimeException(String.format("Querying of the proxy %s failed with error: %s", this.definition.getName(), e.getMessage()), e);
+    }
   }
 
 

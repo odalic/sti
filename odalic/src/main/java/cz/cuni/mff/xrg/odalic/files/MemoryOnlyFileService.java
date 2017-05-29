@@ -57,9 +57,9 @@ public final class MemoryOnlyFileService implements FileService {
   private MemoryOnlyFileService(final Table<String, String, File> files,
       final Table<String, URL, byte[]> data,
       final Table<String, String, Set<String>> utilizingTasks) {
-    Preconditions.checkNotNull(files);
-    Preconditions.checkNotNull(data);
-    Preconditions.checkNotNull(utilizingTasks);
+    Preconditions.checkNotNull(files, "The files cannot be null!");
+    Preconditions.checkNotNull(data, "The data cannot be null!");
+    Preconditions.checkNotNull(utilizingTasks, "The utilizingTasks cannot be null!");
 
     this.files = files;
     this.data = data;
@@ -68,21 +68,25 @@ public final class MemoryOnlyFileService implements FileService {
 
   @Override
   public void create(final File file) {
-    Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
+    final String userId = file.getOwner().getEmail();
+    
+    Preconditions.checkArgument(!existsFileWithId(userId, file.getId()), String.format("There is already a file %s registered to user %s", file.getId(), userId));
 
     replace(file);
   }
 
   @Override
   public void create(final File file, final InputStream fileInputStream) throws IOException {
-    Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
+    final String userId = file.getOwner().getEmail();
+    
+    Preconditions.checkArgument(!existsFileWithId(userId, file.getId()), String.format("There is already a file %s registered to user %s", file.getId(), userId));
 
     replace(file, fileInputStream);
   }
 
   @Override
   public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     final Map<String, File> fileIdsToFiles = this.files.row(userId);
     fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
@@ -93,29 +97,29 @@ public final class MemoryOnlyFileService implements FileService {
 
   @Override
   public void deleteById(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     checkUtilization(userId, fileId);
 
     final File file = this.files.remove(userId, fileId);
-    Preconditions.checkArgument(file != null);
+    Preconditions.checkArgument(file != null, String.format("There is no file %s registered to user %s!", fileId, userId));
 
     this.data.remove(userId, file.getLocation());
   }
 
   @Override
   public boolean existsFileWithId(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     return this.files.contains(userId, fileId);
   }
 
   @Override
   public File getById(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     final File file = this.files.get(userId, fileId);
     Preconditions.checkArgument(file != null, "File does not exists!");
@@ -174,7 +178,7 @@ public final class MemoryOnlyFileService implements FileService {
 
   @Override
   public void replace(final File file, final InputStream fileInputStream) throws IOException {
-    Preconditions.checkArgument(file.isCached());
+    Preconditions.checkArgument(file.isCached(), "The file content cannot be replaced by the content of the strea, because it is not cached in the first place!");
 
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
@@ -185,9 +189,9 @@ public final class MemoryOnlyFileService implements FileService {
 
   @Override
   public void setFormatForFileId(final String userId, final String fileId, final Format format) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
-    Preconditions.checkNotNull(format);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
+    Preconditions.checkNotNull(format, "The format cannot be null!");
 
     final File previousfile = this.files.get(userId, fileId);
     final File newFile = new File(previousfile.getOwner(), previousfile.getId(),

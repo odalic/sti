@@ -60,8 +60,8 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
   @Autowired
   public DbSolrCacheProviderService(final PropertiesService propertiesService,
       final DbService dbService) {
-    Preconditions.checkNotNull(propertiesService);
-    Preconditions.checkNotNull(dbService);
+    Preconditions.checkNotNull(propertiesService, "The propertiesService cannot be null!");
+    Preconditions.checkNotNull(dbService, "The dbService cannot be null!");
 
     this.cacheBasePath = readCacheBasePath(propertiesService);
     this.templatePath = readTemplatePath(propertiesService);
@@ -111,8 +111,8 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
 
   @Override
   public Cache getCache(final String containerId, final String coreId) {
-    Preconditions.checkNotNull(containerId);
-    Preconditions.checkNotNull(coreId);
+    Preconditions.checkNotNull(containerId, "The containerId cannot be null!");
+    Preconditions.checkNotNull(coreId, "The coreId cannot be null!");
 
     final CoreContainer container = this.idsToCoreContainers.get(containerId);
 

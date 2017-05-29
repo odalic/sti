@@ -34,10 +34,10 @@ public final class DecodedToken {
    */
   public DecodedToken(final UUID id, final String issuer, final String subject,
       final Instant expiration) {
-    Preconditions.checkNotNull(id);
-    Preconditions.checkNotNull(issuer);
-    Preconditions.checkNotNull(subject);
-    Preconditions.checkNotNull(expiration);
+    Preconditions.checkNotNull(id, "The id cannot be null!");
+    Preconditions.checkNotNull(issuer, "The issuer cannot be null!");
+    Preconditions.checkNotNull(subject, "The subject cannot be null!");
+    Preconditions.checkNotNull(expiration, "The expiration cannot be null!");
 
     this.id = id;
     this.issuer = issuer;

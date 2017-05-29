@@ -45,9 +45,9 @@ public final class User implements Serializable, Comparable<User> {
    * @param role user's role
    */
   public User(final String email, final String passwordHash, final Role role) {
-    Preconditions.checkNotNull(email);
-    Preconditions.checkNotNull(passwordHash);
-    Preconditions.checkNotNull(role);
+    Preconditions.checkNotNull(email, "The email cannot be null!");
+    Preconditions.checkNotNull(passwordHash, "The passwordHash cannot be null!");
+    Preconditions.checkNotNull(role, "The role cannot be null!");
 
     Preconditions.checkArgument(!email.isEmpty(), "The provided e-mail address is empty!");
     checkEmailAddressFormat(email);

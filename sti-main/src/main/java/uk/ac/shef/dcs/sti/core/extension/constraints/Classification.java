@@ -28,8 +28,8 @@ public final class Classification implements Serializable {
    * @param annotation custom annotation
    */
   public Classification(final ColumnPosition position, final HeaderAnnotation annotation) {
-    Preconditions.checkNotNull(position);
-    Preconditions.checkNotNull(annotation);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
+    Preconditions.checkNotNull(annotation, "The annotation cannot be null!");
 
     this.position = position;
     this.annotation = annotation;

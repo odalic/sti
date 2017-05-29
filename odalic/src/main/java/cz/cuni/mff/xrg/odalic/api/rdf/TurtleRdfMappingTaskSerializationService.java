@@ -115,11 +115,11 @@ public class TurtleRdfMappingTaskSerializationService implements TaskSerializati
       final UserService userService, final FileService fileService,
       final KnowledgeBaseSerializationService knowledgeBaseSerializationService,
       final BasesService basesService) {
-    Preconditions.checkNotNull(rdfMapperBuilder);
-    Preconditions.checkNotNull(userService);
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(knowledgeBaseSerializationService);
-    Preconditions.checkNotNull(basesService);
+    Preconditions.checkNotNull(rdfMapperBuilder, "The rdfMapperBuilder cannot be null!");
+    Preconditions.checkNotNull(userService, "The userService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(knowledgeBaseSerializationService, "The knowledgeBaseSerializationService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
 
     this.rdfMapperBuilder = rdfMapperBuilder;
     this.userService = userService;
@@ -214,8 +214,8 @@ public class TurtleRdfMappingTaskSerializationService implements TaskSerializati
 
   @Override
   public String serialize(final Task task, final URI baseUri) {
-    Preconditions.checkNotNull(task);
-    Preconditions.checkNotNull(baseUri);
+    Preconditions.checkNotNull(task, "The task cannot be null!");
+    Preconditions.checkNotNull(baseUri, "The baseUri cannot be null!");
 
     final TaskValue taskValue = toProxy(task);
 

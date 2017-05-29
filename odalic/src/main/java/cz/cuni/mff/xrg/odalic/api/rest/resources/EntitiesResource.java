@@ -61,8 +61,8 @@ public final class EntitiesResource {
 
   @Autowired
   public EntitiesResource(final EntitiesService entitiesService, final BasesService basesService) {
-    Preconditions.checkNotNull(entitiesService);
-    Preconditions.checkNotNull(basesService);
+    Preconditions.checkNotNull(entitiesService, "The entitiesService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
 
     this.entitiesService = entitiesService;
     this.basesService = basesService;

@@ -56,10 +56,10 @@ public final class MemoryOnlySolrCacheProviderService implements CacheProviderSe
   }
   
   private MemoryOnlySolrCacheProviderService(final Path basePath, final Path templatePath, final Map<String, Path> idsToPaths, final Map<String, CoreContainer> idsToCoreContainers) {
-    Preconditions.checkNotNull(basePath);
-    Preconditions.checkNotNull(templatePath);
-    Preconditions.checkNotNull(idsToPaths);
-    Preconditions.checkNotNull(idsToCoreContainers);
+    Preconditions.checkNotNull(basePath, "The basePath cannot be null!");
+    Preconditions.checkNotNull(templatePath, "The templatePath cannot be null!");
+    Preconditions.checkNotNull(idsToPaths, "The idsToPaths cannot be null!");
+    Preconditions.checkNotNull(idsToCoreContainers, "The idsToCoreContainers cannot be null!");
     
     this.cacheBasePath = basePath;
     this.templatePath = templatePath;

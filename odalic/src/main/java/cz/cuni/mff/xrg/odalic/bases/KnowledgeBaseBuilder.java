@@ -47,11 +47,11 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   private boolean insertEnabled;
   private URL insertEndpoint;
-  private URI insertGraph;
+  private String insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
-  private URI datatypeProperty;
-  private URI objectProperty;
+  private String datatypeProperty;
+  private String objectProperty;
 
   private String login;
   private String password;
@@ -175,7 +175,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   @Nullable
-  public URI getInsertGraph() {
+  public String getInsertGraph() {
     return insertGraph;
   }
 
@@ -190,12 +190,12 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   @Nullable
-  public URI getDatatypeProperty() {
+  public String getDatatypeProperty() {
     return datatypeProperty;
   }
 
   @Nullable
-  public URI getObjectProperty() {
+  public String getObjectProperty() {
     return objectProperty;
   }
 
@@ -278,7 +278,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addSkippedAttribute(final String attribute) {
-    Preconditions.checkNotNull(attribute);
+    Preconditions.checkNotNull(attribute, "The attribute cannot be null!");
 
     this.skippedAttributes.add(attribute);
 
@@ -295,7 +295,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addSkippedClass(final String klass) {
-    Preconditions.checkNotNull(klass);
+    Preconditions.checkNotNull(klass, "The klass cannot be null!");
 
     this.skippedClasses.add(klass);
 
@@ -322,7 +322,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addSelectedGroup(final Group group) {
-    Preconditions.checkNotNull(group);
+    Preconditions.checkNotNull(group, "The group cannot be null!");
 
     this.selectedGroups.add(group);
 
@@ -350,7 +350,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   /**
    * @param insertGraph the insertGraph to set
    */
-  public KnowledgeBaseBuilder setInsertGraph(@Nullable URI insertGraph) {
+  public KnowledgeBaseBuilder setInsertGraph(@Nullable String insertGraph) {
     this.insertGraph = insertGraph;
 
     return this;
@@ -377,7 +377,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   /**
    * @param datatypeProperty the datatype property type to set
    */
-  public KnowledgeBaseBuilder setDatatypeProperty(@Nullable URI datatypeProperty) {
+  public KnowledgeBaseBuilder setDatatypeProperty(@Nullable String datatypeProperty) {
     this.datatypeProperty = datatypeProperty;
 
     return this;
@@ -386,7 +386,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   /**
    * @param objectProperty the object property type to set
    */
-  public KnowledgeBaseBuilder setInsertObjectPropertyType(@Nullable URI objectProperty) {
+  public KnowledgeBaseBuilder setInsertObjectPropertyType(@Nullable String objectProperty) {
     this.objectProperty = objectProperty;
 
     return this;
@@ -429,8 +429,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addAdvancedProperty(final String key, final String value) {
-    Preconditions.checkNotNull(key);
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(key, "The key cannot be null!");
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.advancedProperties.put(key, value);
 

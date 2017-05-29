@@ -48,11 +48,11 @@ public final class ResultAdaptingAnnotatedTableService implements AnnotatedTable
       final FeedbackService feedbackService, final ConfigurationService configurationService,
       final BasesService basesService,
       final ResultToAnnotatedTableAdapter resultToAnnotatedTableAdapter) {
-    Preconditions.checkNotNull(feedbackService);
-    Preconditions.checkNotNull(executionService);
-    Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(basesService);
-    Preconditions.checkNotNull(resultToAnnotatedTableAdapter);
+    Preconditions.checkNotNull(feedbackService, "The feedbackService cannot be null!");
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
+    Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(resultToAnnotatedTableAdapter, "The resultToAnnotatedTableAdapter cannot be null!");
 
     this.executionService = executionService;
     this.feedbackService = feedbackService;

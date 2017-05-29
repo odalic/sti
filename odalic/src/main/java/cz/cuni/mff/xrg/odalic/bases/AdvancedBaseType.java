@@ -36,10 +36,10 @@ public final class AdvancedBaseType implements Serializable {
 
   public AdvancedBaseType(String name, Set<String> keys, Map<String, String> keysToDefaultValues,
       Map<String, String> keysToComments) {
-    Preconditions.checkNotNull(name);
-    Preconditions.checkNotNull(keys);
-    Preconditions.checkNotNull(keysToDefaultValues);
-    Preconditions.checkNotNull(keysToComments);
+    Preconditions.checkNotNull(name, "The name cannot be null!");
+    Preconditions.checkNotNull(keys, "The keys cannot be null!");
+    Preconditions.checkNotNull(keysToDefaultValues, "The keysToDefaultValues cannot be null!");
+    Preconditions.checkNotNull(keysToComments, "The keysToComments cannot be null!");
 
     Preconditions.checkArgument(!name.isEmpty(), "The advanced base type name cannot be empty!");
     Preconditions.checkArgument(keys.containsAll(keysToDefaultValues.keySet()),

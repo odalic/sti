@@ -60,10 +60,10 @@ public final class ConfigurationResource {
   public ConfigurationResource(final ConfigurationService configurationService,
       final FileService fileService, final BasesService basesService,
       final ExecutionService executionService) {
-    Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(basesService);
-    Preconditions.checkNotNull(executionService);
+    Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
 
     this.configurationService = configurationService;
     this.fileService = fileService;

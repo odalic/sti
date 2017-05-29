@@ -82,12 +82,12 @@ public final class Reply {
    */
   public Reply(final StatusType status, final ReplyType type, final Object payload,
       @Nullable final String stamp) {
-    Preconditions.checkNotNull(type);
-    Preconditions.checkNotNull(payload);
+    Preconditions.checkNotNull(type, "The type cannot be null!");
+    Preconditions.checkNotNull(payload, "The payload cannot be null!");
 
     Preconditions.checkArgument(
         Boolean.logicalXor((type == ReplyType.MESSAGE) && (payload instanceof Message),
-            (type != ReplyType.MESSAGE) && !(payload instanceof Message)));
+            (type != ReplyType.MESSAGE) && !(payload instanceof Message)), "Invalid type of reply content!");
 
     this.status = status;
     this.type = type;

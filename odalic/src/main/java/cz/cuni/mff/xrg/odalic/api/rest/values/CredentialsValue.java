@@ -44,7 +44,7 @@ public final class CredentialsValue {
    * @param email the email to set
    */
   public void setEmail(final String email) {
-    Preconditions.checkNotNull(email);
+    Preconditions.checkNotNull(email, "The email cannot be null!");
 
     this.email = email;
   }
@@ -53,7 +53,7 @@ public final class CredentialsValue {
    * @param password the password to set
    */
   public void setPassword(final String password) {
-    Preconditions.checkNotNull(password);
+    Preconditions.checkNotNull(password, "The password cannot be null!");
 
     this.password = password;
   }

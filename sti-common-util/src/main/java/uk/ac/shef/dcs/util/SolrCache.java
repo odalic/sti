@@ -28,7 +28,7 @@ public final class SolrCache implements Cache {
   private final EmbeddedSolrServer server;
 
   public SolrCache(final EmbeddedSolrServer server) {
-    Preconditions.checkNotNull(server);
+    Preconditions.checkNotNull(server, "The server cannot be null!");
     
     this.server = server;
   }

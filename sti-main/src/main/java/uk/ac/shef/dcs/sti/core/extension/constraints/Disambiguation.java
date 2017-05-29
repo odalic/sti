@@ -25,8 +25,8 @@ public final class Disambiguation implements Serializable {
    * @param annotation hinted cell annotation
    */
   public Disambiguation(final CellPosition position, final CellAnnotation annotation) {
-    Preconditions.checkNotNull(position);
-    Preconditions.checkNotNull(annotation);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
+    Preconditions.checkNotNull(annotation, "The annotation cannot be null!");
 
     this.position = position;
     this.annotation = annotation;

@@ -17,8 +17,8 @@ public class KnowledgeBaseComponentTypeValueEntry {
 
   public KnowledgeBaseComponentTypeValueEntry(final String base,
       final ComponentTypeValue value) {
-    Preconditions.checkNotNull(base);
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.base = base;
     this.value = value;
@@ -44,7 +44,7 @@ public class KnowledgeBaseComponentTypeValueEntry {
    * @param base the base to set
    */
   public void setBase(final String base) {
-    Preconditions.checkNotNull(base);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
     this.base = base;
   }
@@ -53,7 +53,7 @@ public class KnowledgeBaseComponentTypeValueEntry {
    * @param value the value to set
    */
   public void setValue(final ComponentTypeValue value) {
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.value = value;
   }

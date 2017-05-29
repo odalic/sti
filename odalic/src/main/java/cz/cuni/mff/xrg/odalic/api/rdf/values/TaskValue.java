@@ -34,7 +34,7 @@ public final class TaskValue implements Serializable, Identifiable {
   public TaskValue() {}
 
   public TaskValue(final Task adaptee, final Set<? extends KnowledgeBase> usedBases) {
-    Preconditions.checkNotNull(usedBases);
+    Preconditions.checkNotNull(usedBases, "The usedBases cannot be null!");
     
     this.description = adaptee.getDescription();
     this.configuration = new ConfigurationValue(adaptee.getConfiguration(), usedBases);
@@ -73,7 +73,7 @@ public final class TaskValue implements Serializable, Identifiable {
    * @param configuration the configuration to set
    */
   public void setConfiguration(final ConfigurationValue configuration) {
-    Preconditions.checkNotNull(configuration);
+    Preconditions.checkNotNull(configuration, "The configuration cannot be null!");
 
     this.configuration = configuration;
   }
@@ -82,7 +82,7 @@ public final class TaskValue implements Serializable, Identifiable {
    * @param description the task description
    */
   public void setDescription(final String description) {
-    Preconditions.checkNotNull(description);
+    Preconditions.checkNotNull(description, "The description cannot be null!");
 
     this.description = description;
   }

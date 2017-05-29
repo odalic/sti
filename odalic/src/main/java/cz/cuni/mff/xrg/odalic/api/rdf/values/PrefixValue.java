@@ -55,7 +55,7 @@ public final class PrefixValue {
    * @param what the what to set
    */
   public void setWhat(final String what) {
-    Preconditions.checkNotNull(what);
+    Preconditions.checkNotNull(what, "The what cannot be null!");
 
     this.what = what;
   }
@@ -64,7 +64,7 @@ public final class PrefixValue {
    * @param with the with to set
    */
   public void setWith(final String with) {
-    Preconditions.checkNotNull(with);
+    Preconditions.checkNotNull(with, "The with cannot be null!");
 
     this.with = with;
   }

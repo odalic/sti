@@ -15,8 +15,8 @@ public class KnowledgeBaseColumnPositionEntry {
 
   public KnowledgeBaseColumnPositionEntry(final String base,
       final ColumnPositionValue value) {
-    Preconditions.checkNotNull(base);
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.base = base;
     this.value = value;
@@ -42,7 +42,7 @@ public class KnowledgeBaseColumnPositionEntry {
    * @param base the base to set
    */
   public void setBase(final String base) {
-    Preconditions.checkNotNull(base);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
     this.base = base;
   }
@@ -51,7 +51,7 @@ public class KnowledgeBaseColumnPositionEntry {
    * @param value the value to set
    */
   public void setValue(final ColumnPositionValue value) {
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.value = value;
   }
