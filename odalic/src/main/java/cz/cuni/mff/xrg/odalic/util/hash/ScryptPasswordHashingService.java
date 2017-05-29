@@ -11,26 +11,26 @@ import com.lambdaworks.crypto.SCryptUtil;
  */
 public final class ScryptPasswordHashingService implements PasswordHashingService {
 
-  public static final int SCRYPT_N_PARAMETER = 16384;
-  public static final int SCRYPT_R_PARAMTER = 8;
-  public static final int SCRYPT_P_PARAMETER = 1;
+  public static final int SCRYPT_CPU_COST_PARAMETER = 16384;
+  public static final int SCRYPT_MEMORY_COST_PARAMTER = 8;
+  public static final int SCRYPT_PARALLELIZATION_PARAMETER = 1;
 
   public ScryptPasswordHashingService() {}
 
   @Override
   public String hash(final String password) {
-    Preconditions.checkNotNull(password);
-    Preconditions.checkArgument(!password.isEmpty());
+    Preconditions.checkNotNull(password, "The password cannot be null!");
+    Preconditions.checkArgument(!password.isEmpty(), "The password cannot be empty!");
 
-    return SCryptUtil.scrypt(password, ScryptPasswordHashingService.SCRYPT_N_PARAMETER,
-        ScryptPasswordHashingService.SCRYPT_R_PARAMTER,
-        ScryptPasswordHashingService.SCRYPT_P_PARAMETER);
+    return SCryptUtil.scrypt(password, ScryptPasswordHashingService.SCRYPT_CPU_COST_PARAMETER,
+        ScryptPasswordHashingService.SCRYPT_MEMORY_COST_PARAMTER,
+        ScryptPasswordHashingService.SCRYPT_PARALLELIZATION_PARAMETER);
   }
 
   @Override
   public boolean check(final String password, final String hash) {
-    Preconditions.checkNotNull(password);
-    Preconditions.checkNotNull(hash);
+    Preconditions.checkNotNull(password, "The password cannot be null!");
+    Preconditions.checkNotNull(hash, "The hash cannot be null!");
 
     return SCryptUtil.check(password, hash);
   }

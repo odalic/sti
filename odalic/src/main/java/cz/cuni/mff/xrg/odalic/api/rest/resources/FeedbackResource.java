@@ -46,7 +46,7 @@ public final class FeedbackResource {
 
   @Autowired
   public FeedbackResource(final FeedbackService feedbackService) {
-    Preconditions.checkNotNull(feedbackService);
+    Preconditions.checkNotNull(feedbackService, "The feedbackService cannot be null!");
 
     this.feedbackService = feedbackService;
   }

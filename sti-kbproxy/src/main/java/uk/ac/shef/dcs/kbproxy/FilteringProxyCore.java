@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
+import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 
 public final class FilteringProxyCore implements ProxyCore {
 
@@ -23,8 +24,8 @@ public final class FilteringProxyCore implements ProxyCore {
   private final ProxyResultFilter resultFilter;
   
   public FilteringProxyCore(final ProxyCore core, final ProxyResultFilter filter) {
-    Preconditions.checkNotNull(core);
-    Preconditions.checkNotNull(filter);
+    Preconditions.checkNotNull(core, "The core cannot be null!");
+    Preconditions.checkNotNull(filter, "The filter cannot be null!");
     
     this.core = core;
     this.resultFilter = filter;
@@ -227,8 +228,8 @@ public final class FilteringProxyCore implements ProxyCore {
    */
   @Override
   public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels,
-      String superProperty, String domain, String range) throws ProxyException {
-    return this.core.insertProperty(uri, label, alternativeLabels, superProperty, domain, range);
+      String superProperty, String domain, String range, PropertyType type) throws ProxyException {
+    return this.core.insertProperty(uri, label, alternativeLabels, superProperty, domain, range, type);
   }
 
   /**

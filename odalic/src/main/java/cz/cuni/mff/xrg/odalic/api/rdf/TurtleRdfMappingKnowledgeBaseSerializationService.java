@@ -57,7 +57,7 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService
     implements KnowledgeBaseSerializationService {
 
   private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT =
-      "SerializedKnowledgeBase/V3/%s";
+      "SerializedKnowledgeBase/V4/%s";
 
   private static String format(final Model model) {
     final StringWriter stringWriter = new StringWriter();
@@ -115,10 +115,10 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService
   public TurtleRdfMappingKnowledgeBaseSerializationService(final RDFMapper.Builder rdfMapperBuilder,
       final UserService userService, final AdvancedBaseTypesService advancedBaseTypesService,
       final GroupsService groupsService) {
-    Preconditions.checkNotNull(rdfMapperBuilder);
-    Preconditions.checkNotNull(userService);
-    Preconditions.checkNotNull(advancedBaseTypesService);
-    Preconditions.checkNotNull(groupsService);
+    Preconditions.checkNotNull(rdfMapperBuilder, "The rdfMapperBuilder cannot be null!");
+    Preconditions.checkNotNull(userService, "The userService cannot be null!");
+    Preconditions.checkNotNull(advancedBaseTypesService, "The advancedBaseTypesService cannot be null!");
+    Preconditions.checkNotNull(groupsService, "The groupsService cannot be null!");
 
     this.rdfMapperBuilder = rdfMapperBuilder;
     this.userService = userService;
@@ -169,16 +169,19 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService
     final Map<String, String> advancedProperties = extractAdvancedProperties(knowledgeBaseValue);
 
     try {
-      return new KnowledgeBase(owner, knowledgeBaseId, new URL(knowledgeBaseValue.getEndpoint()),
+      return new KnowledgeBase(owner, knowledgeBaseId,
+          knowledgeBaseValue.getEndpoint() == null ? null : new URL(knowledgeBaseValue.getEndpoint()),
           knowledgeBaseValue.getDescription(),
           TextSearchingMethod.valueOf(knowledgeBaseValue.getTextSearchingMethod()),
           knowledgeBaseValue.getLanguageTag(), knowledgeBaseValue.getSkippedAttributes(),
           knowledgeBaseValue.getSkippedClasses(), knowledgeBaseValue.getGroupsAutoSelected(),
           selectedGroups, knowledgeBaseValue.isInsertEnabled(),
           knowledgeBaseValue.getInsertEndpoint() == null ? null : new URL(knowledgeBaseValue.getInsertEndpoint()),
-          knowledgeBaseValue.getInsertGraph() == null ? null : URI.create(knowledgeBaseValue.getInsertGraph()),
+          knowledgeBaseValue.getInsertGraph(),
           knowledgeBaseValue.getUserClassesPrefix() == null ? null : URI.create(knowledgeBaseValue.getUserClassesPrefix()),
           knowledgeBaseValue.getUserResourcesPrefix() == null ? null : URI.create(knowledgeBaseValue.getUserResourcesPrefix()),
+          knowledgeBaseValue.getDatatypeProperty(),
+          knowledgeBaseValue.getObjectProperty(),
           knowledgeBaseValue.getLogin(),
           knowledgeBaseValue.getPassword(),
           this.advancedBaseTypesService.getType(knowledgeBaseValue.getAdvancedType()),
@@ -216,8 +219,8 @@ public class TurtleRdfMappingKnowledgeBaseSerializationService
 
   @Override
   public String serialize(final KnowledgeBase knowledgeBase, final URI baseUri) {
-    Preconditions.checkNotNull(knowledgeBase);
-    Preconditions.checkNotNull(baseUri);
+    Preconditions.checkNotNull(knowledgeBase, "The knowledgeBase cannot be null!");
+    Preconditions.checkNotNull(baseUri, "The baseUri cannot be null!");
 
     final KnowledgeBaseValue knowledgeBaseValue = toProxy(knowledgeBase);
 

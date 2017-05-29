@@ -85,14 +85,14 @@ public final class Feedback implements Serializable {
       final Set<? extends Disambiguation> disambiguations,
       final Set<? extends Ambiguity> ambiguities,
       final Set<? extends DataCubeComponent> dataCubeComponents) {
-    Preconditions.checkNotNull(subjectColumnsPositions);
-    Preconditions.checkNotNull(columnIgnores);
-    Preconditions.checkNotNull(columnCompulsory);
-    Preconditions.checkNotNull(columnAmbiguities);
-    Preconditions.checkNotNull(classifications);
-    Preconditions.checkNotNull(columnRelations);
-    Preconditions.checkNotNull(disambiguations);
-    Preconditions.checkNotNull(ambiguities);
+    Preconditions.checkNotNull(subjectColumnsPositions, "The subjectColumnsPositions cannot be null!");
+    Preconditions.checkNotNull(columnIgnores, "The columnIgnores cannot be null!");
+    Preconditions.checkNotNull(columnCompulsory, "The columnCompulsory cannot be null!");
+    Preconditions.checkNotNull(columnAmbiguities, "The columnAmbiguities cannot be null!");
+    Preconditions.checkNotNull(classifications, "The classifications cannot be null!");
+    Preconditions.checkNotNull(columnRelations, "The columnRelations cannot be null!");
+    Preconditions.checkNotNull(disambiguations, "The disambiguations cannot be null!");
+    Preconditions.checkNotNull(ambiguities, "The ambiguities cannot be null!");
 
     this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
     this.columnIgnores = ImmutableSet.copyOf(columnIgnores);

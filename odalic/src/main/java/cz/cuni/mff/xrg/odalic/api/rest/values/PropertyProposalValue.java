@@ -14,6 +14,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSortedSet;
 
 import cz.cuni.mff.xrg.odalic.entities.PropertyProposal;
+import cz.cuni.mff.xrg.odalic.entities.PropertyType;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 
 /**
@@ -39,6 +40,8 @@ public final class PropertyProposalValue implements Serializable {
   private String domain;
 
   private String range;
+
+  private PropertyType type;
 
   public PropertyProposalValue() {
     this.alternativeLabels = ImmutableSortedSet.of();
@@ -98,6 +101,15 @@ public final class PropertyProposalValue implements Serializable {
   }
 
   /**
+   * @return the type
+   */
+  @Nullable
+  @XmlElement
+  public PropertyType getType() {
+    return this.type;
+  }
+
+  /**
    * @param alternativeLabels the alternativeLabels to set
    */
   public void setAlternativeLabels(final Set<? extends String> alternativeLabels) {
@@ -115,7 +127,7 @@ public final class PropertyProposalValue implements Serializable {
    * @param label the label to set
    */
   public void setLabel(final String label) {
-    Preconditions.checkNotNull(label);
+    Preconditions.checkNotNull(label, "The label cannot be null!");
 
     this.label = label;
   }
@@ -140,11 +152,19 @@ public final class PropertyProposalValue implements Serializable {
   public void setSuperProperty(final Entity superProperty) {
     this.superProperty = superProperty;
   }
+  
+  /**
+   * @param superProperty the type to set
+   */
+  public void setType(final PropertyType type) {
+    this.type = type;
+  }
 
   @Override
   public String toString() {
     return "PropertyProposalValue [label=" + this.label + ", alternativeLabels="
         + this.alternativeLabels + ", suffix=" + this.suffix + ", superProperty="
-        + this.superProperty + ", domain=" + this.domain + ", range=" + this.range + "]";
+        + this.superProperty + ", domain=" + this.domain + ", range=" + this.range + ", type="
+        + this.type + "]";
   }
 }

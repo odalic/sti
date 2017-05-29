@@ -58,7 +58,7 @@ public final class AdvancedBaseTypeValue implements Serializable {
    * @param name the name to set
    */
   public void setName(final String name) {
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(name, "The name cannot be null!");
     
     this.name = name;
   }
@@ -76,7 +76,7 @@ public final class AdvancedBaseTypeValue implements Serializable {
    * @param keys the keys to set
    */
   public void setKeys(final Set<String> keys) {
-    Preconditions.checkNotNull(keys);
+    Preconditions.checkNotNull(keys, "The keys cannot be null!");
     
     this.keys = ImmutableSet.copyOf(keys);
   }
@@ -94,7 +94,7 @@ public final class AdvancedBaseTypeValue implements Serializable {
    * @param keysToDefaultValues the keysToDefaultValues to set
    */
   public void setKeysToDefaultValues(final Map<String, String> keysToDefaultValues) {
-    Preconditions.checkNotNull(keysToDefaultValues);
+    Preconditions.checkNotNull(keysToDefaultValues, "The keysToDefaultValues cannot be null!");
     
     this.keysToDefaultValues = ImmutableMap.copyOf(keysToDefaultValues);
   }
@@ -112,7 +112,7 @@ public final class AdvancedBaseTypeValue implements Serializable {
    * @param keysToComments the keysToComments to set
    */
   public void setKeysToComments(final Map<String, String> keysToComments) {
-    Preconditions.checkNotNull(keysToComments);
+    Preconditions.checkNotNull(keysToComments, "The keysToComments cannot be null!");
     
     this.keysToComments = ImmutableMap.copyOf(keysToComments);
   }

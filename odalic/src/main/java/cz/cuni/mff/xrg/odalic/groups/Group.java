@@ -37,13 +37,13 @@ public final class Group implements Serializable, Comparable<Group> {
   public Group(final User owner, final String id, final List<? extends String> labelPredicates,
       final List<? extends String> descriptionPredicates, final List<? extends String> instanceOfPredicates,
           final List<? extends String> classTypes, final List<? extends String> propertyTypes) {
-    Preconditions.checkNotNull(owner);
-    Preconditions.checkNotNull(id);
-    Preconditions.checkNotNull(labelPredicates);
-    Preconditions.checkNotNull(descriptionPredicates);
-    Preconditions.checkNotNull(instanceOfPredicates);
-    Preconditions.checkNotNull(classTypes);
-    Preconditions.checkNotNull(propertyTypes);
+    Preconditions.checkNotNull(owner, "The owner cannot be null!");
+    Preconditions.checkNotNull(id, "The id cannot be null!");
+    Preconditions.checkNotNull(labelPredicates, "The labelPredicates cannot be null!");
+    Preconditions.checkNotNull(descriptionPredicates, "The descriptionPredicates cannot be null!");
+    Preconditions.checkNotNull(instanceOfPredicates, "The instanceOfPredicates cannot be null!");
+    Preconditions.checkNotNull(classTypes, "The classTypes cannot be null!");
+    Preconditions.checkNotNull(propertyTypes, "The propertyTypes cannot be null!");
     
     Preconditions.checkArgument(!id.isEmpty(), "The name is empty!");
 

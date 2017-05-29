@@ -31,9 +31,9 @@ public final class CellRelationAnnotation {
    */
   public CellRelationAnnotation(final Set<? extends EntityCandidate> candidates,
       final Set<? extends EntityCandidate> chosen) {
-    Preconditions.checkNotNull(candidates);
-    Preconditions.checkNotNull(chosen);
-    Preconditions.checkArgument(candidates.containsAll(chosen));
+    Preconditions.checkNotNull(candidates, "The candidates cannot be null!");
+    Preconditions.checkNotNull(chosen, "The chosen cannot be null!");
+    Preconditions.checkArgument(candidates.containsAll(chosen), "There are some chosen which are not present in the candidates!");
 
     this.candidates = ImmutableSortedSet.copyOf(candidates);
     this.chosen = ImmutableSet.copyOf(chosen);

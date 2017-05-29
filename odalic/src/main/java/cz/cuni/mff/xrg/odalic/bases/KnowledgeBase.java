@@ -50,9 +50,11 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
 
   private final boolean insertEnabled;
   private final URL insertEndpoint;
-  private final URI insertGraph;
+  private final String insertGraph;
   private final URI userClassesPrefix;
   private final URI userResourcesPrefix;
+  private final String datatypeProperty;
+  private final String objectProperty;
 
   private final String login;
   private final String password;
@@ -67,9 +69,19 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
    * @param name knowledge base name
    * @param endpoint end-point URL
    * @param description knowledge base description
-   * @param insertEnabled whether the base supports insertion of new concepts
+   * @param textSearchingMethod
+   * @param languageTag
+   * @param skippedAttributes
+   * @param skippedClasses
    * @param groupsAutoSelected whether the used groups are determined automatically
    * @param selectedGroups the groups selected for use
+   * @param insertEnabled whether the base supports insertion of new concepts
+   * @param insertEndpoint
+   * @param insertGraph
+   * @param userClassesPrefix
+   * @param userResourcesPrefix
+   * @param datatypeProperty type used when inserting data properties
+   * @param objectTypeProperty type used when inserting object properties
    * @param login login
    * @param password password
    * @param advancedType knowledge base type, affects the applicable properties
@@ -80,21 +92,22 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
       final String languageTag, final List<? extends String> skippedAttributes,
       final List<? extends String> skippedClasses, final boolean groupsAutoSelected,
       final Set<? extends Group> selectedGroups, final boolean insertEnabled,
-      final URL insertEndpoint, final URI insertGraph,
-      final URI userClassesPrefix, final URI userResourcesPrefix, @Nullable final String login,
+      final URL insertEndpoint, final String insertGraph,
+      final URI userClassesPrefix, final URI userResourcesPrefix,
+      final String datatypeProperty, final String objectTypeProperty, @Nullable final String login,
       @Nullable final String password, final AdvancedBaseType advancedType,
       final Map<? extends String, ? extends String> advancedProperties) {
-    Preconditions.checkNotNull(owner);
-    Preconditions.checkNotNull(name);
-    Preconditions.checkNotNull(endpoint);
-    Preconditions.checkNotNull(description);
-    Preconditions.checkNotNull(textSearchingMethod);
-    Preconditions.checkNotNull(languageTag);
-    Preconditions.checkNotNull(skippedAttributes);
-    Preconditions.checkNotNull(skippedClasses);
-    Preconditions.checkNotNull(selectedGroups);
-    Preconditions.checkNotNull(advancedType);
-    Preconditions.checkNotNull(advancedProperties);
+    Preconditions.checkNotNull(owner, "The owner cannot be null!");
+    Preconditions.checkNotNull(name, "The name cannot be null!");
+    Preconditions.checkNotNull(endpoint, "The endpoint cannot be null!");
+    Preconditions.checkNotNull(description, "The description cannot be null!");
+    Preconditions.checkNotNull(textSearchingMethod, "The textSearchingMethod cannot be null!");
+    Preconditions.checkNotNull(languageTag, "The languageTag cannot be null!");
+    Preconditions.checkNotNull(skippedAttributes, "The skippedAttributes cannot be null!");
+    Preconditions.checkNotNull(skippedClasses, "The skippedClasses cannot be null!");
+    Preconditions.checkNotNull(selectedGroups, "The selectedGroups cannot be null!");
+    Preconditions.checkNotNull(advancedType, "The advancedType cannot be null!");
+    Preconditions.checkNotNull(advancedProperties, "The advancedProperties cannot be null!");
 
     Preconditions.checkArgument(!name.isEmpty(), "The name is empty!");
     Preconditions.checkArgument(groupsAutoSelected || !selectedGroups.isEmpty(),
@@ -119,6 +132,8 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     this.insertGraph = insertGraph;
     this.userClassesPrefix = userClassesPrefix;
     this.userResourcesPrefix = userResourcesPrefix;
+    this.datatypeProperty = datatypeProperty;
+    this.objectProperty = objectTypeProperty;
 
     this.login = login;
     this.password = password;
@@ -141,7 +156,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   public boolean isInsertEnabled() {
     return this.insertEnabled;
   }
-  
+
   public URL getInsertEndpoint() {
     return this.insertEndpoint;
   }
@@ -201,7 +216,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   }
 
   @Nullable
-  public URI getInsertGraph() {
+  public String getInsertGraph() {
     return insertGraph;
   }
 
@@ -213,6 +228,16 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
   @Nullable
   public URI getUserResourcesPrefix() {
     return userResourcesPrefix;
+  }
+
+  @Nullable
+  public String getDatatypeProperty() {
+    return datatypeProperty;
+  }
+
+  @Nullable
+  public String getObjectProperty() {
+    return objectProperty;
   }
 
   public Map<String, String> getAdvancedProperties() {
@@ -283,9 +308,11 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
         + ", languageTag=" + languageTag + ", skippedAttributes=" + skippedAttributes
         + ", skippedClasses=" + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected
         + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
-        + ", insertEndpoint=" + insertEndpoint + ", insertGraph=" + insertGraph
-        + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
-        + userResourcesPrefix + ", login=" + login + ", password=" + password + ", advancedType="
-        + advancedType + ", advancedProperties=" + advancedProperties + "]";
+        + ", insertEndpoint=" + insertEndpoint + ",insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix+ ", userResourcesPrefix="
+        +  userResourcesPrefix + ", datatypeProperty="
+        + datatypeProperty + ", objectProperty=" + objectProperty
+        + ",login=" + login
+        + ", password= "+ password+ ", advancedType=" + advancedType
+        + ",advancedProperties=" + advancedProperties + "]";
   }
 }

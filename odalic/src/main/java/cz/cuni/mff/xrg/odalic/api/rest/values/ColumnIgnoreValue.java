@@ -43,7 +43,7 @@ public final class ColumnIgnoreValue implements Serializable {
    * @param position the position to set
    */
   public void setPosition(final ColumnPosition position) {
-    Preconditions.checkNotNull(position);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
 
     this.position = position;
   }

@@ -29,7 +29,7 @@ public final class ColumnPosition implements Serializable {
    * @param index zero-based index
    */
   public ColumnPosition(final int index) {
-    Preconditions.checkArgument(index >= 0);
+    Preconditions.checkArgument(index >= 0, "The column position index must be nonnegative!");
 
     this.index = index;
   }

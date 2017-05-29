@@ -54,7 +54,7 @@ public class DataCubeComponentValue implements Serializable {
    * @param annotation the annotation to set
    */
   public void setAnnotation(final StatisticalAnnotationValue annotation) {
-    Preconditions.checkNotNull(annotation);
+    Preconditions.checkNotNull(annotation, "The annotation cannot be null!");
 
     this.annotation = annotation;
   }
@@ -63,7 +63,7 @@ public class DataCubeComponentValue implements Serializable {
    * @param position the position to set
    */
   public void setPosition(final ColumnPositionValue position) {
-    Preconditions.checkNotNull(position);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
 
     this.position = position;
   }

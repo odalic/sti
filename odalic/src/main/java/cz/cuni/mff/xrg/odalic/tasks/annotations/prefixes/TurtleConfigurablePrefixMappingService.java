@@ -65,8 +65,8 @@ public final class TurtleConfigurablePrefixMappingService implements PrefixMappi
     final Trie<String> trie = new Trie<>();
 
     mapping.forEach((prefix, uri) -> {
-      Preconditions.checkNotNull(prefix);
-      Preconditions.checkNotNull(uri);
+      Preconditions.checkNotNull(prefix, "The prefix cannot be null!");
+      Preconditions.checkNotNull(uri, "The uri cannot be null!");
 
       trie.add(uri, prefix);
     });
@@ -84,7 +84,7 @@ public final class TurtleConfigurablePrefixMappingService implements PrefixMappi
    * @param mapping the mapping
    */
   public TurtleConfigurablePrefixMappingService(final Map<String, String> mapping) {
-    Preconditions.checkNotNull(mapping);
+    Preconditions.checkNotNull(mapping, "The mapping cannot be null!");
 
     this.urisToPrefixes = toTrie(mapping);
     this.prefixesToUris = ImmutableMap.copyOf(mapping);

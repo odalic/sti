@@ -66,7 +66,7 @@ public final class ListsBackedInputBuilder implements InputBuilder {
   }
 
   void setFileIdentifier(final String fileIdentifier) {
-    Preconditions.checkNotNull(fileIdentifier);
+    Preconditions.checkNotNull(fileIdentifier, "The fileIdentifier cannot be null!");
 
     this.fileIdentifier = fileIdentifier;
   }

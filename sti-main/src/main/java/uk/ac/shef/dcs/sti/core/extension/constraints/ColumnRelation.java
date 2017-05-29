@@ -26,8 +26,8 @@ public final class ColumnRelation implements Serializable {
    */
   public ColumnRelation(final ColumnRelationPosition position,
       final ColumnRelationAnnotation annotation) {
-    Preconditions.checkNotNull(position);
-    Preconditions.checkNotNull(annotation);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
+    Preconditions.checkNotNull(annotation, "The annotation cannot be null!");
 
     this.position = position;
     this.annotation = annotation;

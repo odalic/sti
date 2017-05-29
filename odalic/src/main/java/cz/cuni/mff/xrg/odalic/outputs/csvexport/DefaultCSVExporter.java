@@ -27,7 +27,7 @@ public class DefaultCSVExporter implements CSVExporter {
 
   @Autowired
   public DefaultCSVExporter(final ApacheCsvFormatAdapter apacheCsvFormatAdapter) {
-    Preconditions.checkNotNull(apacheCsvFormatAdapter);
+    Preconditions.checkNotNull(apacheCsvFormatAdapter, "The apacheCsvFormatAdapter cannot be null!");
 
     this.apacheCsvFormatAdapter = apacheCsvFormatAdapter;
   }

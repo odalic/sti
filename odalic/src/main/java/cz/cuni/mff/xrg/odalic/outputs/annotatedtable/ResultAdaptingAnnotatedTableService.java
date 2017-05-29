@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
@@ -36,20 +38,26 @@ public final class ResultAdaptingAnnotatedTableService implements AnnotatedTable
 
   private final ConfigurationService configurationService;
 
+  private final BasesService basesService;
+
   private final ResultToAnnotatedTableAdapter resultToAnnotatedTableAdapter;
+
 
   @Autowired
   public ResultAdaptingAnnotatedTableService(final ExecutionService executionService,
       final FeedbackService feedbackService, final ConfigurationService configurationService,
+      final BasesService basesService,
       final ResultToAnnotatedTableAdapter resultToAnnotatedTableAdapter) {
-    Preconditions.checkNotNull(feedbackService);
-    Preconditions.checkNotNull(executionService);
-    Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(resultToAnnotatedTableAdapter);
+    Preconditions.checkNotNull(feedbackService, "The feedbackService cannot be null!");
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
+    Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(resultToAnnotatedTableAdapter, "The resultToAnnotatedTableAdapter cannot be null!");
 
     this.executionService = executionService;
     this.feedbackService = feedbackService;
     this.configurationService = configurationService;
+    this.basesService = basesService;
     this.resultToAnnotatedTableAdapter = resultToAnnotatedTableAdapter;
   }
 
@@ -60,8 +68,11 @@ public final class ResultAdaptingAnnotatedTableService implements AnnotatedTable
     final Result result = this.executionService.getResultForTaskId(userId, taskId);
     final Input input = this.feedbackService.getInputSnapshotForTaskId(userId, taskId);
     final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
+    final KnowledgeBase primaryBase =
+        this.basesService.getByName(userId, configuration.getPrimaryBase());
 
-    return this.resultToAnnotatedTableAdapter.toAnnotatedTable(result, input, configuration);
+    return this.resultToAnnotatedTableAdapter.toAnnotatedTable(result, input,
+        configuration.isStatistical(), primaryBase);
   }
 
 }

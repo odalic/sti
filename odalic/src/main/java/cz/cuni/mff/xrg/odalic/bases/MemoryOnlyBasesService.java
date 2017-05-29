@@ -64,7 +64,13 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   private static final String INSERT_GRAPH_PROPERTY_KEY = "kb.insert.graph";
 
-  private static final String INSERT_SUPPORTED_PROEPRTY_KEY = "kb.insert.supported";
+  private static final String INSERT_DATA_PROPERTY_TYPE_PROPERTY_KEY = "kb.insert.type.dataProperty";
+
+  private static final String INSERT_OBJECT_PROPERTY_TYPE_PROPERTY_KEY = "kb.insert.type.objectProperty";
+
+  private static final String INSERT_SUPPORTED_PROPERTY_KEY = "kb.insert.supported";
+
+  private static final String INSERT_ENDPOINT_PROPERTY_KEY = "kb.insert.endpoint";
 
   private static final String ENDPOINT_PROPERTY_KEY = "kb.endpoint";
   
@@ -123,13 +129,13 @@ public final class MemoryOnlyBasesService implements BasesService {
       final GroupsService groupsService, final AdvancedBaseTypesService advancedBaseTypesService,
       final Table<String, String, KnowledgeBase> userAndBaseIdsToBases,
       final Table<String, String, Set<String>> utilizingTasks, final Path basePath, final Path initialBasesPath) {
-    Preconditions.checkNotNull(knowledgeBaseProxiesService);
-    Preconditions.checkNotNull(groupsService);
-    Preconditions.checkNotNull(advancedBaseTypesService);
-    Preconditions.checkNotNull(userAndBaseIdsToBases);
-    Preconditions.checkNotNull(utilizingTasks);
-    Preconditions.checkNotNull(basePath);
-    Preconditions.checkNotNull(initialBasesPath);
+    Preconditions.checkNotNull(knowledgeBaseProxiesService, "The knowledgeBaseProxiesService cannot be null!");
+    Preconditions.checkNotNull(groupsService, "The groupsService cannot be null!");
+    Preconditions.checkNotNull(advancedBaseTypesService, "The advancedBaseTypesService cannot be null!");
+    Preconditions.checkNotNull(userAndBaseIdsToBases, "The userAndBaseIdsToBases cannot be null!");
+    Preconditions.checkNotNull(utilizingTasks, "The utilizingTasks cannot be null!");
+    Preconditions.checkNotNull(basePath, "The basePath cannot be null!");
+    Preconditions.checkNotNull(initialBasesPath, "The initialBasesPath cannot be null!");
 
     this.knowledgeBaseProxiesService = knowledgeBaseProxiesService;
     this.groupsService = groupsService;
@@ -142,14 +148,14 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public NavigableSet<KnowledgeBase> getBases(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     return ImmutableSortedSet.copyOf(this.userAndBaseIdsToBases.row(userId).values());
   }
 
   @Override
   public NavigableSet<KnowledgeBase> getInsertSupportingBases(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     return this.userAndBaseIdsToBases.row(userId).values().stream().filter(e -> e.isInsertEnabled())
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
@@ -157,14 +163,16 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public void create(final KnowledgeBase base) {
-    Preconditions.checkArgument(!existsBaseWithId(base.getOwner().getEmail(), base.getName()));
+    final String userId = base.getOwner().getEmail();
+    
+    Preconditions.checkArgument(!existsBaseWithId(userId, base.getName()), String.format("There is already a base %s registers to user %s!", base.getName(), userId));
 
     replace(base);
   }
 
   @Override
   public void replace(final KnowledgeBase base) {
-    Preconditions.checkNotNull(base);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
     final String userId = base.getOwner().getEmail();
     final String baseId = base.getName();
@@ -180,7 +188,7 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public KnowledgeBase merge(final KnowledgeBase base) {
-    Preconditions.checkNotNull(base);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
     final String userId = base.getOwner().getEmail();
     final String baseId = base.getName();
@@ -196,16 +204,16 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public boolean existsBaseWithId(final String userId, final String baseId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(baseId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(baseId, "The baseId cannot be null!");
 
     return this.userAndBaseIdsToBases.contains(userId, baseId);
   }
 
   @Override
   public KnowledgeBase getByName(String userId, String name) throws IllegalArgumentException {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     final KnowledgeBase base = this.userAndBaseIdsToBases.get(userId, name);
     Preconditions.checkArgument(base != null, "Unknown base!");
@@ -215,15 +223,15 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public KnowledgeBase verifyBaseExistenceByName(String userId, String name) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     return this.userAndBaseIdsToBases.get(userId, name);
   }
 
   @Override
   public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     final Map<String, KnowledgeBase> baseNamesToBases = this.userAndBaseIdsToBases.row(userId);
     baseNamesToBases.entrySet().stream().forEach(e -> this.groupsService.unsubscribe(e.getValue()));
@@ -232,13 +240,13 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public void deleteById(String userId, String name) throws IOException {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     checkUtilization(userId, name);
 
     final KnowledgeBase base = this.userAndBaseIdsToBases.remove(userId, name);
-    Preconditions.checkArgument(base != null);
+    Preconditions.checkArgument(base != null, String.format("There is no base %s registered to user %s!", name , userId));
 
     this.knowledgeBaseProxiesService.delete(base);
     this.groupsService.unsubscribe(base);
@@ -258,26 +266,21 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public void subscribe(final Task task) {
-    final User taskOwner = task.getOwner();
-    final String taskId = task.getId();
+    final Set<String> bases = task.getConfiguration().getUsedBases();
 
-    final Set<KnowledgeBase> bases = task.getConfiguration().getUsedBases();
-
-    for (final KnowledgeBase base : bases) {
-      subscribe(taskOwner, taskId, base);
+    for (final String base : bases) {
+      subscribe(task, base);
     }
   }
 
-  private void subscribe(final User taskOwner, final String taskId, final KnowledgeBase base) {
-    final User owner = base.getOwner();
-    Preconditions.checkArgument(owner.equals(taskOwner),
-        "The owner of the base is not the same as the owner of the task!");
+  private void subscribe(final Task task, final String baseName) {
+    final String taskId = task.getId();
 
+    final User owner = task.getOwner();
     final String userId = owner.getEmail();
-    final String baseName = base.getName();
 
-    Preconditions.checkArgument(this.userAndBaseIdsToBases.get(userId, baseName).equals(base),
-        "The base is not registered!");
+    Preconditions.checkArgument(this.userAndBaseIdsToBases.contains(userId, baseName),
+        "The base is not registered to the task owner!");
 
     final Set<String> tasks = this.utilizingTasks.get(userId, baseName);
 
@@ -294,26 +297,21 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public void unsubscribe(final Task task) {
-    final User taskOwner = task.getOwner();
-    final String taskId = task.getId();
+    final Set<String> bases = task.getConfiguration().getUsedBases();
 
-    final Set<KnowledgeBase> bases = task.getConfiguration().getUsedBases();
-
-    for (final KnowledgeBase base : bases) {
-      unsubscribe(taskOwner, taskId, base);
+    for (final String base : bases) {
+      unsubscribe(task, base);
     }
   }
 
-  private void unsubscribe(final User taskOwner, final String taskId, final KnowledgeBase base) {
-    final User owner = base.getOwner();
-    Preconditions.checkArgument(owner.equals(taskOwner),
-        "The owner of the base is not the same as the owner of the task!");
+  private void unsubscribe(final Task task, final String baseName) {
+    final String taskId = task.getId();
 
+    final User owner = task.getOwner();
     final String userId = owner.getEmail();
-    final String baseName = base.getName();
 
-    Preconditions.checkArgument(this.userAndBaseIdsToBases.get(userId, baseName).equals(base),
-        "The base is not registered!");
+    Preconditions.checkArgument(this.userAndBaseIdsToBases.contains(userId, baseName),
+        "The base is not registered to the task owner!");
 
     final Set<String> tasks = this.utilizingTasks.get(userId, baseName);
 
@@ -333,7 +331,7 @@ public final class MemoryOnlyBasesService implements BasesService {
 
   @Override
   public void initializeDefaults(User owner) throws IOException {
-    Preconditions.checkNotNull(owner);
+    Preconditions.checkNotNull(owner, "The owner cannot be null!");
 
     final Iterator<File> basePropertiesFileIterator =
         FileUtils.iterateFiles(this.initialBasesPath.toFile(),
@@ -364,18 +362,25 @@ public final class MemoryOnlyBasesService implements BasesService {
     if (advancedTypeId == null) {
       baseBuilder.setAdvancedType(this.advancedBaseTypesService.getDefault());
     } else {
-      baseBuilder.setAdvancedProperties(extractAdvancedProperties(baseProperties));
+      baseBuilder.setAdvancedType(this.advancedBaseTypesService.getType(advancedTypeId));
     }
+    baseBuilder.setAdvancedProperties(extractAdvancedProperties(baseProperties));
 
     final URL endpointUrl = new URL(baseProperties.getProperty(ENDPOINT_PROPERTY_KEY));
     baseBuilder.setEndpoint(endpointUrl);
 
     baseBuilder
-        .setInsertEnabled(Boolean.parseBoolean(baseProperties.getProperty(INSERT_SUPPORTED_PROEPRTY_KEY)));
+        .setInsertEnabled(Boolean.parseBoolean(baseProperties.getProperty(INSERT_SUPPORTED_PROPERTY_KEY)));
+
+    final String insertEndpointUrlValue = baseProperties.getProperty(INSERT_ENDPOINT_PROPERTY_KEY);
+    if (insertEndpointUrlValue != null) {
+      final URL insertEndpointUrl = new URL(insertEndpointUrlValue);
+      baseBuilder.setInsertEndpoint(insertEndpointUrl);
+    }
 
     final String insertGraphValue = baseProperties.getProperty(INSERT_GRAPH_PROPERTY_KEY);
     if (insertGraphValue != null) {
-      baseBuilder.setInsertGraph(URI.create(insertGraphValue));
+      baseBuilder.setInsertGraph(insertGraphValue);
     }
 
     final String userClassesPrefixValue = baseProperties.getProperty(USER_CLASSES_PREFIX_PROPERTY_KEY);
@@ -386,6 +391,16 @@ public final class MemoryOnlyBasesService implements BasesService {
     final String userResourcesPrefixValue = baseProperties.getProperty(USER_RESOURCES_PREFIX_PROPERTY_KEY);
     if (userResourcesPrefixValue != null) {
       baseBuilder.setUserResourcesPrefix(URI.create(userResourcesPrefixValue));
+    }
+
+    final String insertDataPropertyType = baseProperties.getProperty(INSERT_DATA_PROPERTY_TYPE_PROPERTY_KEY);
+    if (insertDataPropertyType != null) {
+      baseBuilder.setDatatypeProperty(insertDataPropertyType);
+    }
+
+    final String insertObjectPropertyType = baseProperties.getProperty(INSERT_OBJECT_PROPERTY_TYPE_PROPERTY_KEY);
+    if (insertObjectPropertyType != null) {
+      baseBuilder.setInsertObjectPropertyType(insertObjectPropertyType);
     }
 
     final String languageTagValue = baseProperties.getProperty(LANGUAGE_TAG_PROPERTY_KEY);

@@ -40,10 +40,10 @@ public class RioBackedRdfExportService implements RdfExportService {
       final CsvExportService csvExportService,
       final AnnotatedTableToRDFExportAdapter annotatedTableToRdfExportAdapter,
       final RDFExporter rdfExporter) {
-    Preconditions.checkNotNull(annotatedTableService);
-    Preconditions.checkNotNull(csvExportService);
-    Preconditions.checkNotNull(annotatedTableToRdfExportAdapter);
-    Preconditions.checkNotNull(rdfExporter);
+    Preconditions.checkNotNull(annotatedTableService, "The annotatedTableService cannot be null!");
+    Preconditions.checkNotNull(csvExportService, "The csvExportService cannot be null!");
+    Preconditions.checkNotNull(annotatedTableToRdfExportAdapter, "The annotatedTableToRdfExportAdapter cannot be null!");
+    Preconditions.checkNotNull(rdfExporter, "The rdfExporter cannot be null!");
 
     this.annotatedTableService = annotatedTableService;
     this.csvExportService = csvExportService;

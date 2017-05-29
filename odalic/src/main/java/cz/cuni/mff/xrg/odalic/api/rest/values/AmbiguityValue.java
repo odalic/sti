@@ -43,7 +43,7 @@ public final class AmbiguityValue implements Serializable {
    * @param position the position to set
    */
   public void setPosition(final CellPosition position) {
-    Preconditions.checkNotNull(position);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
 
     this.position = position;
   }

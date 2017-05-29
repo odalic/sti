@@ -39,7 +39,7 @@ public final class Annotations {
    */
   public static Set<KnowledgeBaseEntityCandidateNavigableSetEntry> copyNavigableValues(
       final Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidates) {
-    Preconditions.checkNotNull(candidates);
+    Preconditions.checkNotNull(candidates, "The candidates cannot be null!");
 
     return ImmutableSet.copyOf(candidates);
   }
@@ -52,7 +52,7 @@ public final class Annotations {
    */
   public static Set<KnowledgeBaseEntityCandidateSetEntry> copyValues(
       final Set<? extends KnowledgeBaseEntityCandidateSetEntry> chosen) {
-    Preconditions.checkNotNull(chosen);
+    Preconditions.checkNotNull(chosen, "The chosen cannot be null!");
 
     return ImmutableSet.copyOf(chosen);
   }
@@ -65,7 +65,7 @@ public final class Annotations {
    */
   public static Set<KnowledgeBaseColumnPositionSetEntry> copyPositionValues(
       final Set<? extends KnowledgeBaseColumnPositionSetEntry> chosen) {
-    Preconditions.checkNotNull(chosen);
+    Preconditions.checkNotNull(chosen, "The chosen cannot be null!");
 
     return ImmutableSet.copyOf(chosen);
   }
@@ -78,7 +78,7 @@ public final class Annotations {
    */
   public static Map<String, Set<EntityCandidate>> toDomain(
       final Set<? extends KnowledgeBaseEntityCandidateSetEntry> candidateValues) {
-    Preconditions.checkNotNull(candidateValues);
+    Preconditions.checkNotNull(candidateValues, "The candidateValues cannot be null!");
 
     final ImmutableMap.Builder<String, Set<EntityCandidate>> candidatesBuilder =
         ImmutableMap.builder();
@@ -103,7 +103,7 @@ public final class Annotations {
    */
   public static Map<String, Set<ColumnPosition>> toPositionDomain(
       final Set<? extends KnowledgeBaseColumnPositionSetEntry> candidateValues) {
-    Preconditions.checkNotNull(candidateValues);
+    Preconditions.checkNotNull(candidateValues, "The candidateValues cannot be null!");
 
     final ImmutableMap.Builder<String, Set<ColumnPosition>> candidatesBuilder =
         ImmutableMap.builder();
@@ -128,7 +128,7 @@ public final class Annotations {
    */
   public static Map<String, NavigableSet<EntityCandidate>> toNavigableDomain(
       final Set<? extends KnowledgeBaseEntityCandidateNavigableSetEntry> candidateValues) {
-    Preconditions.checkNotNull(candidateValues);
+    Preconditions.checkNotNull(candidateValues, "The candidateValues cannot be null!");
 
     final ImmutableMap.Builder<String, NavigableSet<EntityCandidate>> chosenBuilder =
         ImmutableMap.builder();
@@ -153,7 +153,7 @@ public final class Annotations {
    */
   public static Set<KnowledgeBaseEntityCandidateNavigableSetEntry> toNavigableValues(
       final Map<? extends String, ? extends NavigableSet<? extends EntityCandidate>> candidates) {
-    Preconditions.checkNotNull(candidates);
+    Preconditions.checkNotNull(candidates, "The candidates cannot be null!");
 
     final ImmutableSet.Builder<KnowledgeBaseEntityCandidateNavigableSetEntry> candidatesBuilder =
         ImmutableSet.builder();
@@ -179,7 +179,7 @@ public final class Annotations {
    */
   public static Set<KnowledgeBaseEntityCandidateSetEntry> toValues(
       final Map<String, Set<EntityCandidate>> chosen) {
-    Preconditions.checkNotNull(chosen);
+    Preconditions.checkNotNull(chosen, "The chosen cannot be null!");
 
     final ImmutableSet.Builder<KnowledgeBaseEntityCandidateSetEntry> chosenBuilder =
         ImmutableSet.builder();
@@ -203,7 +203,7 @@ public final class Annotations {
    */
   public static Set<KnowledgeBaseColumnPositionSetEntry> toPositionValues(
       final Map<String, Set<ColumnPosition>> chosen) {
-    Preconditions.checkNotNull(chosen);
+    Preconditions.checkNotNull(chosen, "The chosen cannot be null!");
 
     final ImmutableSet.Builder<KnowledgeBaseColumnPositionSetEntry> chosenBuilder =
         ImmutableSet.builder();

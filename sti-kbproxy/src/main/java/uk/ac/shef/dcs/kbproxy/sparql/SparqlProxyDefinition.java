@@ -50,7 +50,8 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     private String insertPredicateSubclassOf;
     private String insertPredicateSubPropertyOf;
     private String insertTypeClass;
-    private String insertTypeProperty;
+    private String insertTypeObjectProperty;
+    private String insertTypeDataProperty;
 
     private Set<String> stoppedClasses;
     private Set<String> stoppedAttributes;
@@ -138,8 +139,14 @@ public class SparqlProxyDefinition implements ProxyDefinition {
       return this;
     }
 
-    public Builder setInsertTypeProperty(final String insertTypeProperty) {
-      this.insertTypeProperty = insertTypeProperty;
+    public Builder setInsertTypeObjectProperty(final String insertTypeObjectProperty) {
+      this.insertTypeObjectProperty = insertTypeObjectProperty;
+
+      return this;
+    }
+
+    public Builder setInsertTypeDataProperty(final String insertTypeDataProperty) {
+      this.insertTypeDataProperty = insertTypeDataProperty;
 
       return this;
     }
@@ -202,7 +209,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addAllStructurePredicateLabel(Collection<String> structurePredicateLabel) {
-      Preconditions.checkNotNull(structurePredicateLabel);
+      Preconditions.checkNotNull(structurePredicateLabel, "The structurePredicateLabel cannot be null!");
       
       this.structurePredicateLabel.addAll(structurePredicateLabel);
 
@@ -210,7 +217,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addStructurePredicateLabel(String value) {
-      Preconditions.checkNotNull(value);
+      Preconditions.checkNotNull(value, "The value cannot be null!");
       
       this.structurePredicateLabel.add(value);
 
@@ -221,7 +228,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
      * @param structurePredicateDescription the structurePredicateDescription to set
      */
     public Builder setStructurePredicateDescription(Set<String> structurePredicateDescription) {
-      Preconditions.checkNotNull(structurePredicateDescription);
+      Preconditions.checkNotNull(structurePredicateDescription, "The structurePredicateDescription cannot be null!");
       
       this.structurePredicateDescription = new HashSet<>(structurePredicateDescription);
 
@@ -229,7 +236,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addAllStructurePredicateDescription(Collection<String> structurePredicateDescription) {
-      Preconditions.checkNotNull(structurePredicateDescription);
+      Preconditions.checkNotNull(structurePredicateDescription, "The structurePredicateDescription cannot be null!");
       
       this.structurePredicateDescription.addAll(structurePredicateDescription);
 
@@ -237,7 +244,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addStructurePredicateDescription(String value) {
-      Preconditions.checkNotNull(value);
+      Preconditions.checkNotNull(value, "The value cannot be null!");
       
       this.structurePredicateDescription.add(value);
 
@@ -248,7 +255,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
      * @param structurePredicateType the structurePredicateType to set
      */
     public Builder setStructurePredicateType(Set<String> structurePredicateType) {
-      Preconditions.checkNotNull(structurePredicateType);
+      Preconditions.checkNotNull(structurePredicateType, "The structurePredicateType cannot be null!");
       
       this.structurePredicateType = new HashSet<>(structurePredicateType);
 
@@ -256,7 +263,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addAllStructurePredicateType(Collection<String> structurePredicateType) {
-      Preconditions.checkNotNull(structurePredicateType);
+      Preconditions.checkNotNull(structurePredicateType, "The structurePredicateType cannot be null!");
       
       this.structurePredicateType.addAll(structurePredicateType);
 
@@ -273,7 +280,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
      * @param structureTypeClass the structureTypeClass to set
      */
     public Builder setStructureTypeClass(Set<String> structureTypeClass) {
-      Preconditions.checkNotNull(structureTypeClass);
+      Preconditions.checkNotNull(structureTypeClass, "The structureTypeClass cannot be null!");
       
       this.structureTypeClass = new HashSet<>(structureTypeClass);
       
@@ -281,7 +288,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addAllStructureTypeClass(Collection<String> structureTypeClass) {
-      Preconditions.checkNotNull(structureTypeClass);
+      Preconditions.checkNotNull(structureTypeClass, "The structureTypeClass cannot be null!");
       
       this.structureTypeClass.addAll(structureTypeClass);
 
@@ -298,7 +305,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
      * @param structureTypeProperty the structureTypeProperty to set
      */
     public Builder setStructureTypeProperty(Set<String> structureTypeProperty) {
-      Preconditions.checkNotNull(structureTypeProperty);
+      Preconditions.checkNotNull(structureTypeProperty, "The structureTypeProperty cannot be null!");
       
       this.structureTypeProperty = new HashSet<>(structureTypeProperty);
 
@@ -306,7 +313,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addAllStructureTypeProperty(Collection<String> structureTypeProperty) {
-      Preconditions.checkNotNull(structureTypeProperty);
+      Preconditions.checkNotNull(structureTypeProperty, "The structureTypeProperty cannot be null!");
       
       this.structureTypeProperty.addAll(structureTypeProperty);
 
@@ -350,7 +357,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
 
     public Builder setStoppedClasses(List<String> stoppedClasses) {
-      Preconditions.checkNotNull(stoppedClasses);
+      Preconditions.checkNotNull(stoppedClasses, "The stoppedClasses cannot be null!");
       
       this.stoppedClasses = new HashSet<>(stoppedClasses);
       
@@ -358,7 +365,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addStoppedClass(String stoppedClass) {
-      Preconditions.checkNotNull(stoppedClass);
+      Preconditions.checkNotNull(stoppedClass, "The stoppedClass cannot be null!");
       
       this.stoppedClasses.add(stoppedClass);
       
@@ -366,7 +373,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
 
     public Builder setStoppedAttributes(List<String> stoppedAttributes) {
-      Preconditions.checkNotNull(stoppedAttributes);
+      Preconditions.checkNotNull(stoppedAttributes, "The stoppedAttributes cannot be null!");
       
       this.stoppedAttributes = new HashSet<>(stoppedAttributes);
       
@@ -374,7 +381,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
     
     public Builder addStoppedAttributes(String stoppedAttribute) {
-      Preconditions.checkNotNull(stoppedAttribute);
+      Preconditions.checkNotNull(stoppedAttribute, "The stoppedAttribute cannot be null!");
       
       this.stoppedAttributes.add(stoppedAttribute);
       
@@ -420,9 +427,13 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   public static final String INSERT_TYPE_CLASS = "kb.insert.type.class";
   public static final String DEFAULT_INSERT_TYPE_CLASS = "http://www.w3.org/2002/07/owl#Class";
   
-  public static final String INSERT_TYPE_PROPERTY = "kb.insert.type.property";
-  public static final String DEFAULT_INSERT_TYPE_PROPERTY = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property";  
-  
+  public static final String INSERT_TYPE_OBJECT_PROPERTY = "kb.insert.type.objectProperty";
+  public static final String DEFAULT_INSERT_TYPE_OBJECT_PROPERTY = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property";
+
+  public static final String INSERT_TYPE_DATA_PROPERTY = "kb.insert.type.dataProperty";
+  public static final String DEFAULT_INSERT_TYPE_DATA_PROPERTY = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property";
+
+
   public static Builder builder() {
     return new Builder();
   }
@@ -463,8 +474,9 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   private final String insertPredicateSubclassOf;
   private final String insertPredicateSubPropertyOf;
   private final String insertTypeClass;
-  private final String insertTypeProperty;
-  
+  private final String insertTypeObjectProperty;
+  private final String insertTypeDataProperty;
+
   private final Set<String> stoppedClasses;
   private final Set<String> stoppedAttributes;
   
@@ -504,7 +516,8 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     this.insertPredicateSubclassOf = builder.insertPredicateSubclassOf;
     this.insertPredicateSubPropertyOf = builder.insertPredicateSubPropertyOf;
     this.insertTypeClass = builder.insertTypeClass;
-    this.insertTypeProperty = builder.insertTypeProperty;
+    this.insertTypeObjectProperty = builder.insertTypeObjectProperty;
+    this.insertTypeDataProperty = builder.insertTypeDataProperty;
     this.stoppedClasses = ImmutableSet.copyOf(builder.stoppedClasses);
     this.stoppedAttributes = ImmutableSet.copyOf(builder.stoppedAttributes);
     this.uriLabelHeuristicApplied = builder.uriLabelHeuristicApplied;
@@ -720,10 +733,17 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   }
 
   /**
-   * @return the insertTypeProperty
+   * @return the insertTypeObjectProperty
    */
-  public String getInsertTypeProperty() {
-    return insertTypeProperty;
+  public String getInsertTypeObjectProperty() {
+    return insertTypeObjectProperty;
+  }
+
+  /**
+   * @return the insertTypeDataProperty
+   */
+  public String getInsertTypeDataProperty() {
+    return insertTypeDataProperty;
   }
 
   /**

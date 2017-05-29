@@ -38,7 +38,7 @@ public final class TokenValue {
    * @param token the token to set
    */
   public void setToken(final String token) {
-    Preconditions.checkNotNull(token);
+    Preconditions.checkNotNull(token, "The token cannot be null!");
 
     this.token = token;
   }

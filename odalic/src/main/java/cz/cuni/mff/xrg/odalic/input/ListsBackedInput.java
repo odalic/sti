@@ -49,9 +49,9 @@ public final class ListsBackedInput implements Input, Serializable {
    */
   public ListsBackedInput(final String fileIdentifier, final List<? extends String> headers,
       final List<? extends List<? extends String>> rows) {
-    Preconditions.checkNotNull(fileIdentifier);
-    Preconditions.checkNotNull(headers);
-    Preconditions.checkNotNull(rows);
+    Preconditions.checkNotNull(fileIdentifier, "The fileIdentifier cannot be null!");
+    Preconditions.checkNotNull(headers, "The headers cannot be null!");
+    Preconditions.checkNotNull(rows, "The rows cannot be null!");
 
     this.fileIdentifier = fileIdentifier;
 

@@ -47,9 +47,11 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   private boolean insertEnabled;
   private URL insertEndpoint;
-  private URI insertGraph;
+  private String insertGraph;
   private URI userClassesPrefix;
   private URI userResourcesPrefix;
+  private String datatypeProperty;
+  private String objectProperty;
 
   private String login;
   private String password;
@@ -79,6 +81,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
     this.insertGraph = null;
     this.userClassesPrefix = null;
     this.userResourcesPrefix = null;
+    this.datatypeProperty = null;
+    this.objectProperty = null;
 
     this.login = null;
     this.password = null;
@@ -97,8 +101,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
   public KnowledgeBase build() {
     return new KnowledgeBase(owner, name, endpoint, description, textSearchingMethod, languageTag,
         skippedAttributes, skippedClasses, groupsAutoSelected, selectedGroups, insertEnabled,
-        insertEndpoint, insertGraph, userClassesPrefix, userResourcesPrefix, login, password, advancedType,
-        advancedProperties);
+        insertEndpoint, insertGraph, userClassesPrefix, userResourcesPrefix, datatypeProperty,
+        objectProperty, login, password, advancedType, advancedProperties);
   }
 
   /**
@@ -117,7 +121,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   public boolean isInsertEnabled() {
     return this.insertEnabled;
   }
-  
+
   public URL getInsertEndpoint() {
     return this.insertEndpoint;
   }
@@ -171,7 +175,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   @Nullable
-  public URI getInsertGraph() {
+  public String getInsertGraph() {
     return insertGraph;
   }
 
@@ -183,6 +187,16 @@ public final class KnowledgeBaseBuilder implements Serializable {
   @Nullable
   public URI getUserResourcesPrefix() {
     return userResourcesPrefix;
+  }
+
+  @Nullable
+  public String getDatatypeProperty() {
+    return datatypeProperty;
+  }
+
+  @Nullable
+  public String getObjectProperty() {
+    return objectProperty;
   }
 
   @Nullable
@@ -264,7 +278,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addSkippedAttribute(final String attribute) {
-    Preconditions.checkNotNull(attribute);
+    Preconditions.checkNotNull(attribute, "The attribute cannot be null!");
 
     this.skippedAttributes.add(attribute);
 
@@ -281,7 +295,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addSkippedClass(final String klass) {
-    Preconditions.checkNotNull(klass);
+    Preconditions.checkNotNull(klass, "The klass cannot be null!");
 
     this.skippedClasses.add(klass);
 
@@ -308,7 +322,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addSelectedGroup(final Group group) {
-    Preconditions.checkNotNull(group);
+    Preconditions.checkNotNull(group, "The group cannot be null!");
 
     this.selectedGroups.add(group);
 
@@ -323,20 +337,20 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
     return this;
   }
-  
+
   /**
    * @param insertEndpoint insert end-point URL
    */
   public KnowledgeBaseBuilder setInsertEndpoint(final URL insertEndpoint) {
     this.insertEndpoint = insertEndpoint;
-    
+
     return this;
   }
 
   /**
    * @param insertGraph the insertGraph to set
    */
-  public KnowledgeBaseBuilder setInsertGraph(@Nullable URI insertGraph) {
+  public KnowledgeBaseBuilder setInsertGraph(@Nullable String insertGraph) {
     this.insertGraph = insertGraph;
 
     return this;
@@ -361,6 +375,24 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   /**
+   * @param datatypeProperty the datatype property type to set
+   */
+  public KnowledgeBaseBuilder setDatatypeProperty(@Nullable String datatypeProperty) {
+    this.datatypeProperty = datatypeProperty;
+
+    return this;
+  }
+
+  /**
+   * @param objectProperty the object property type to set
+   */
+  public KnowledgeBaseBuilder setInsertObjectPropertyType(@Nullable String objectProperty) {
+    this.objectProperty = objectProperty;
+
+    return this;
+  }
+
+  /**
    * @param login the login to set
    */
   public KnowledgeBaseBuilder setLogin(@Nullable String login) {
@@ -370,7 +402,7 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   /**
-   * @param login the password to set
+   * @param password the password to set
    */
   public KnowledgeBaseBuilder setPassword(@Nullable String password) {
     this.password = password;
@@ -397,8 +429,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
   }
 
   public KnowledgeBaseBuilder addAdvancedProperty(final String key, final String value) {
-    Preconditions.checkNotNull(key);
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(key, "The key cannot be null!");
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.advancedProperties.put(key, value);
 
@@ -414,7 +446,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
         + ", selectedGroups=" + selectedGroups + ", insertEnabled=" + insertEnabled
         + ", insertEndpoint=" + insertEndpoint + ", insertGraph=" + insertGraph
         + ", userClassesPrefix=" + userClassesPrefix + ", userResourcesPrefix="
-        + userResourcesPrefix + ", login=" + login + ", password=" + password + ", advancedType="
+        + userResourcesPrefix + ", datatypeProperty=" + datatypeProperty + ", objectProperty="
+        + objectProperty + ", login=" + login + ", password=" + password + ", advancedType="
         + advancedType + ", advancedProperties=" + advancedProperties + "]";
   }
 }

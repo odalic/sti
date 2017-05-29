@@ -45,7 +45,7 @@ public final class UserValue {
    * @param email the email to set
    */
   public void setEmail(final String email) {
-    Preconditions.checkNotNull(email);
+    Preconditions.checkNotNull(email, "The email cannot be null!");
 
     this.email = email;
   }
@@ -54,7 +54,7 @@ public final class UserValue {
    * @param role the role to set
    */
   public void setRole(final Role role) {
-    Preconditions.checkNotNull(role);
+    Preconditions.checkNotNull(role, "The role cannot be null!");
 
     this.role = role;
   }

@@ -34,8 +34,8 @@ public class ParsingResult implements Serializable {
    * @param format format with detected line separator
    */
   public ParsingResult(final Input input, final Format format) {
-    Preconditions.checkNotNull(input);
-    Preconditions.checkNotNull(format);
+    Preconditions.checkNotNull(input, "The input cannot be null!");
+    Preconditions.checkNotNull(format, "The format cannot be null!");
 
     this.input = input;
     this.format = format;

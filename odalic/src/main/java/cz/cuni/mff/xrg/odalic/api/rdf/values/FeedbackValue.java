@@ -148,7 +148,7 @@ public final class FeedbackValue implements Serializable {
    * @param ambiguities the ambiguities to set
    */
   public void setAmbiguities(final Set<? extends AmbiguityValue> ambiguities) {
-    Preconditions.checkNotNull(ambiguities);
+    Preconditions.checkNotNull(ambiguities, "The ambiguities cannot be null!");
 
     this.ambiguities = ImmutableSet.copyOf(ambiguities);
   }
@@ -157,7 +157,7 @@ public final class FeedbackValue implements Serializable {
    * @param classifications the classifications to set
    */
   public void setClassifications(final Set<? extends ClassificationValue> classifications) {
-    Preconditions.checkNotNull(classifications);
+    Preconditions.checkNotNull(classifications, "The classifications cannot be null!");
 
     this.classifications = ImmutableSet.copyOf(classifications);
   }
@@ -166,7 +166,7 @@ public final class FeedbackValue implements Serializable {
    * @param columnAmbiguities the column ambiguities to set
    */
   public void setColumnAmbiguities(final Set<? extends ColumnAmbiguityValue> columnAmbiguities) {
-    Preconditions.checkNotNull(columnAmbiguities);
+    Preconditions.checkNotNull(columnAmbiguities, "The columnAmbiguities cannot be null!");
 
     this.columnAmbiguities = ImmutableSet.copyOf(columnAmbiguities);
   }
@@ -175,7 +175,7 @@ public final class FeedbackValue implements Serializable {
    * @param columnIgnores the column ignores to set
    */
   public void setColumnIgnores(final Set<? extends ColumnIgnoreValue> columnIgnores) {
-    Preconditions.checkNotNull(columnIgnores);
+    Preconditions.checkNotNull(columnIgnores, "The columnIgnores cannot be null!");
 
     this.columnIgnores = ImmutableSet.copyOf(columnIgnores);
   }
@@ -184,7 +184,7 @@ public final class FeedbackValue implements Serializable {
    * @param columnCompulsory the column compulsory to set
    */
   public void setColumnCompulsory(final Set<? extends ColumnCompulsoryValue> columnCompulsory) {
-    Preconditions.checkNotNull(columnCompulsory);
+    Preconditions.checkNotNull(columnCompulsory, "The columnCompulsory cannot be null!");
 
     this.columnCompulsory = ImmutableSet.copyOf(columnCompulsory);
   }
@@ -193,7 +193,7 @@ public final class FeedbackValue implements Serializable {
    * @param columnRelations the column relations to set
    */
   public void setColumnRelations(final Set<? extends ColumnRelationValue> columnRelations) {
-    Preconditions.checkNotNull(columnRelations);
+    Preconditions.checkNotNull(columnRelations, "The columnRelations cannot be null!");
 
     this.columnRelations = ImmutableSet.copyOf(columnRelations);
   }
@@ -203,7 +203,7 @@ public final class FeedbackValue implements Serializable {
    */
   public void setDataCubeComponents(
       final Set<? extends DataCubeComponentValue> dataCubeComponents) {
-    Preconditions.checkNotNull(dataCubeComponents);
+    Preconditions.checkNotNull(dataCubeComponents, "The dataCubeComponents cannot be null!");
 
     this.dataCubeComponents = ImmutableSet.copyOf(dataCubeComponents);
   }
@@ -212,7 +212,7 @@ public final class FeedbackValue implements Serializable {
    * @param disambiguations the disambiguations to set
    */
   public void setDisambiguations(final Set<? extends DisambiguationValue> disambiguations) {
-    Preconditions.checkNotNull(disambiguations);
+    Preconditions.checkNotNull(disambiguations, "The disambiguations cannot be null!");
 
     this.disambiguations = ImmutableSet.copyOf(disambiguations);
   }
@@ -222,7 +222,7 @@ public final class FeedbackValue implements Serializable {
    */
   public void setSubjectColumnsPositions(
       final Set<? extends KnowledgeBaseColumnPositionSetEntry> subjectColumnsPositions) {
-    Preconditions.checkNotNull(subjectColumnsPositions);
+    Preconditions.checkNotNull(subjectColumnsPositions, "The subjectColumnsPositions cannot be null!");
 
     this.subjectColumnsPositions = ImmutableSet.copyOf(subjectColumnsPositions);
   }

@@ -33,7 +33,7 @@ public final class ColumnProcessingAnnotation implements Serializable {
    */
   public ColumnProcessingAnnotation(
       final Map<? extends String, ? extends ColumnProcessingTypeValue> processingType) {
-    Preconditions.checkNotNull(processingType);
+    Preconditions.checkNotNull(processingType, "The processingType cannot be null!");
 
     final ImmutableMap.Builder<String, ColumnProcessingTypeValue> processingTypeBuilder =
         ImmutableMap.builder();

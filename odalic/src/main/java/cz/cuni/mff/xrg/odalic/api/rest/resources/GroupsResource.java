@@ -57,8 +57,8 @@ public final class GroupsResource {
 
   @Autowired
   public GroupsResource(final GroupsService groupsService, final UserService userService) {
-    Preconditions.checkNotNull(groupsService);
-    Preconditions.checkNotNull(userService);
+    Preconditions.checkNotNull(groupsService, "The groupsService cannot be null!");
+    Preconditions.checkNotNull(userService, "The userService cannot be null!");
 
     this.groupsService = groupsService;
     this.userService = userService;

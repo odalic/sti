@@ -62,7 +62,7 @@ public final class GroupValue implements Serializable {
    * @param id the ID to set
    */
   public void setId(String id) {
-    Preconditions.checkNotNull(id);
+    Preconditions.checkNotNull(id, "The id cannot be null!");
     
     this.id = id;
   }
@@ -80,7 +80,7 @@ public final class GroupValue implements Serializable {
    * @param labelPredicates the labelPredicates to set
    */
   public void setLabelPredicates(final List<String> labelPredicates) {
-    Preconditions.checkNotNull(labelPredicates);
+    Preconditions.checkNotNull(labelPredicates, "The labelPredicates cannot be null!");
     
     this.labelPredicates = ImmutableList.copyOf(labelPredicates);
   }
@@ -98,7 +98,7 @@ public final class GroupValue implements Serializable {
    * @param descriptionPredicates the descriptionPredicates to set
    */
   public void setDescriptionPredicates(final List<String> descriptionPredicates) {
-    Preconditions.checkNotNull(descriptionPredicates);
+    Preconditions.checkNotNull(descriptionPredicates, "The descriptionPredicates cannot be null!");
     
     this.descriptionPredicates = ImmutableList.copyOf(descriptionPredicates);
   }
@@ -116,7 +116,7 @@ public final class GroupValue implements Serializable {
    * @param instanceOfPredicates the instanceOfPredicates to set
    */
   public void setInstanceOfPredicates(final List<String> instanceOfPredicates) {
-    Preconditions.checkNotNull(instanceOfPredicates);
+    Preconditions.checkNotNull(instanceOfPredicates, "The instanceOfPredicates cannot be null!");
     
     this.instanceOfPredicates = ImmutableList.copyOf(instanceOfPredicates);
   }
@@ -134,7 +134,7 @@ public final class GroupValue implements Serializable {
    * @param classTypes the classTypes to set
    */
   public void setClassTypes(final List<String> classTypes) {
-    Preconditions.checkNotNull(classTypes);
+    Preconditions.checkNotNull(classTypes, "The classTypes cannot be null!");
     
     this.classTypes = ImmutableList.copyOf(classTypes);
   }
@@ -152,7 +152,7 @@ public final class GroupValue implements Serializable {
    * @param propertyTypes the propertyTypes to set
    */
   public void setPropertyTypes(final List<String> propertyTypes) {
-    Preconditions.checkNotNull(propertyTypes);
+    Preconditions.checkNotNull(propertyTypes, "The propertyTypes cannot be null!");
     
     this.propertyTypes = ImmutableList.copyOf(propertyTypes);
   }

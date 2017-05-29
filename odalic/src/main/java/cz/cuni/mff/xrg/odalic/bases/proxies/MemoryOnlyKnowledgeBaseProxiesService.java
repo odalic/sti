@@ -32,9 +32,9 @@ public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBas
 
   @Autowired
   public MemoryOnlyKnowledgeBaseProxiesService(final ProxiesFactory proxiesFactory, final AdvancedBaseTypesService advancedBaseTypesService, final PrefixMappingService prefixService) {
-    Preconditions.checkNotNull(proxiesFactory);
-    Preconditions.checkNotNull(advancedBaseTypesService);
-    Preconditions.checkNotNull(prefixService);
+    Preconditions.checkNotNull(proxiesFactory, "The proxiesFactory cannot be null!");
+    Preconditions.checkNotNull(advancedBaseTypesService, "The advancedBaseTypesService cannot be null!");
+    Preconditions.checkNotNull(prefixService, "The prefixService cannot be null!");
 
     this.advancedBaseTypesService = advancedBaseTypesService;
     this.proxiesFactory = proxiesFactory;
@@ -43,7 +43,7 @@ public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBas
 
   @Override
   public Table<String, String, Proxy> toProxies(final Set<? extends KnowledgeBase> bases) {
-    Preconditions.checkNotNull(bases);
+    Preconditions.checkNotNull(bases, "The bases cannot be null!");
     if (bases.isEmpty()) {
       return ImmutableTable.of();
     }
@@ -72,7 +72,7 @@ public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBas
 
   @Override
   public void delete(final KnowledgeBase base) throws IOException {
-    Preconditions.checkNotNull(base);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
     
     this.proxiesFactory.dispose(base.getQualifiedName());
   }

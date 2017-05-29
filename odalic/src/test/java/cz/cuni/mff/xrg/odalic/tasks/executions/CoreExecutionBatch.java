@@ -100,7 +100,7 @@ public class CoreExecutionBatch {
 
     // File settings
     final Path path = Paths.get(testInputFilePath);
-    File file;
+    final File file;
     try {
       file = new File(new User("test@odalic.eu", "passwordHash", Role.USER),
           path.getFileName().toString(), path.toUri().toURL(), new Format(
@@ -125,7 +125,7 @@ public class CoreExecutionBatch {
     }
 
     // Parsed format settings
-    file = new File(file.getOwner(), file.getId(), file.getUploaded(), file.getLocation(),
+    final File parsedFile = new File(file.getOwner(), file.getId(), file.getUploaded(), file.getLocation(),
         parsingResult.getFormat(), file.isCached());
 
     // input Table creation
@@ -150,31 +150,31 @@ public class CoreExecutionBatch {
 
     // groups and bases initialization
     try {
-      mgs.initializeDefaults(file.getOwner());
-      mbs.initializeDefaults(file.getOwner());
+      mgs.initializeDefaults(parsedFile.getOwner());
+      mbs.initializeDefaults(parsedFile.getOwner());
     } catch (IOException e) {
       log.error("Error - groups and bases initialization:", e);
       return null;
     }
 
     // Configuration settings
-    Configuration configuration = new Configuration(file, ImmutableSet.of(
-        mbs.getByName(file.getOwner().getEmail(), "DBpedia"),
-        mbs.getByName(file.getOwner().getEmail(), "DBpedia Clone"),
-        mbs.getByName(file.getOwner().getEmail(), "German DBpedia")),
-        mbs.getByName(file.getOwner().getEmail(), "DBpedia"),
-        createFeedback(true), rowsLimit, false);
+    final KnowledgeBase primaryBase = mbs.getByName(parsedFile.getOwner().getEmail(), "DBpedia");
+    final Configuration configuration = new Configuration(parsedFile,
+        ImmutableSet.of(primaryBase.getName(),
+            "DBpedia Clone", "German DBpedia"),
+        primaryBase.getName(), createFeedback(true), rowsLimit, false);
 
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
       semanticTableInterpreters = new TableMinerPlusFactory(kbf, cps, dps).getInterpreters(
-          configuration.getInput().getOwner().getEmail(), configuration.getUsedBases());
+          configuration.getInput().getOwner().getEmail(), configuration.getUsedBases().stream().map(e ->
+          mbs.getByName(configuration.getInput().getOwner().getEmail(), e)).collect(ImmutableSet.toImmutableSet()));
     } catch (final Exception e) {
       log.error("Error - TMP interpreters failed to initialize:", e);
       return null;
     }
-    Preconditions.checkNotNull(semanticTableInterpreters);
+    Preconditions.checkNotNull(semanticTableInterpreters, "The semanticTableInterpreters cannot be null!");
 
     // TableMinerPlus algorithm run
     Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
@@ -202,7 +202,7 @@ public class CoreExecutionBatch {
         new PrefixMappingEntitiesFactory(pms)).toResult(results);
     log.info("Odalic Result is: " + odalicResult);
 
-    return new CoreSnapshot(odalicResult, parsingResult.getInput(), configuration);
+    return new CoreSnapshot(odalicResult, parsingResult.getInput(), configuration, primaryBase);
   }
 
   public static KnowledgeBaseProxiesService getKnowledgeBaseProxyFactory() {

@@ -40,8 +40,8 @@ public final class ColumnRelationAnnotation implements Serializable {
   public ColumnRelationAnnotation(
       final Map<? extends String, ? extends Set<? extends EntityCandidate>> candidates,
       final Map<? extends String, ? extends Set<? extends EntityCandidate>> chosen) {
-    Preconditions.checkNotNull(candidates);
-    Preconditions.checkNotNull(chosen);
+    Preconditions.checkNotNull(candidates, "The candidates cannot be null!");
+    Preconditions.checkNotNull(chosen, "The chosen cannot be null!");
 
     final ImmutableMap.Builder<String, NavigableSet<EntityCandidate>> candidatesBuilder =
         ImmutableMap.builder();
@@ -56,11 +56,11 @@ public final class ColumnRelationAnnotation implements Serializable {
         ImmutableMap.builder();
     for (final Map.Entry<? extends String, ? extends Set<? extends EntityCandidate>> chosenEntry : chosen
         .entrySet()) {
-      final String chosenBase = chosenEntry.getKey();
+      final String chosenBaseName = chosenEntry.getKey();
 
-      final Set<EntityCandidate> baseCandidates = this.candidates.get(chosenBase);
-      Preconditions.checkArgument(baseCandidates != null);
-      Preconditions.checkArgument(baseCandidates.containsAll(chosenEntry.getValue()));
+      final Set<EntityCandidate> baseCandidates = this.candidates.get(chosenBaseName);
+      Preconditions.checkArgument(baseCandidates != null, String.format("There are no candidates recorded for base %s of the chosen one!", chosenBaseName));
+      Preconditions.checkArgument(baseCandidates.containsAll(chosenEntry.getValue()), "The chosen candidate is not among the candidates!");
 
       chosenBuilder.put(chosenEntry.getKey(), ImmutableSet.copyOf(chosenEntry.getValue()));
     }

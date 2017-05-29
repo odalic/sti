@@ -32,7 +32,7 @@ public class TableSchema implements Serializable {
    * @param columns annotated table columns
    */
   public TableSchema(final List<TableColumn> columns) {
-    Preconditions.checkNotNull(columns);
+    Preconditions.checkNotNull(columns, "The columns cannot be null!");
 
     this.columns = columns;
   }

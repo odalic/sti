@@ -23,7 +23,7 @@ public final class WebSearchFactory {
    */
   public WebSearch createInstance(final String propertyFileName) throws WebSearchException {
     try {
-      Preconditions.checkNotNull(propertyFileName);
+      Preconditions.checkNotNull(propertyFileName, "The propertyFileName cannot be null!");
 
       final Properties properties = new Properties();
       properties.load(new FileInputStream(propertyFileName));

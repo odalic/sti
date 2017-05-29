@@ -52,11 +52,11 @@ public final class File implements Serializable {
    */
   public File(final User owner, final String id, final Date uploaded, final URL location,
       final Format format, final boolean cached) {
-    Preconditions.checkNotNull(id);
-    Preconditions.checkNotNull(uploaded);
-    Preconditions.checkNotNull(owner);
-    Preconditions.checkNotNull(location);
-    Preconditions.checkNotNull(format);
+    Preconditions.checkNotNull(id, "The id cannot be null!");
+    Preconditions.checkNotNull(uploaded, "The uploaded cannot be null!");
+    Preconditions.checkNotNull(owner, "The owner cannot be null!");
+    Preconditions.checkNotNull(location, "The location cannot be null!");
+    Preconditions.checkNotNull(format, "The format cannot be null!");
 
     Preconditions.checkArgument(!id.isEmpty(), "The file identifier is empty!");
     Preconditions.checkArgument(VALID_ID_PATTERN.matcher(id).matches(),

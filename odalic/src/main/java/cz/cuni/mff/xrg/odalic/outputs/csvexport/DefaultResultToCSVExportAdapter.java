@@ -8,11 +8,11 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
-import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
@@ -33,7 +33,7 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
 
   @Override
   public Input toCSVExport(final Result result, final Input input,
-      final Configuration configuration) {
+      final boolean statistical, final KnowledgeBase primaryBase) {
 
     final ListsBackedInputBuilder builder = new ListsBackedInputBuilder(input);
     final List<String> headers = input.headers();
@@ -53,7 +53,7 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
         for (final Entry<String, Set<EntityCandidate>> entry : result
             .getCellAnnotations()[j][i].getChosen().entrySet()) {
           if ((entry.getValue() != null) && !entry.getValue().isEmpty()) {
-            if (entry.getKey().equals(configuration.getPrimaryBase().getName())) {
+            if (entry.getKey().equals(primaryBase.getName())) {
               addPrimary = true;
 
               for (final EntityCandidate chosen : entry.getValue()) {
@@ -103,9 +103,7 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
       }
     }
 
-    if (configuration.isStatistical()) {
-      final KnowledgeBase primaryBase = configuration.getPrimaryBase();
-      
+    if (statistical) {
       final URI kbUri = primaryBase.getUserResourcesPrefix();
 
       builder.insertHeader(urlFormat(OBSERVATION), newPosition);

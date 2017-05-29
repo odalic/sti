@@ -24,7 +24,7 @@ public final class Token {
   public Token() {}
 
   public Token(final String token) {
-    Preconditions.checkNotNull(token);
+    Preconditions.checkNotNull(token, "The token cannot be null!");
 
     this.token = token;
   }
@@ -66,7 +66,7 @@ public final class Token {
    * @param token the token to set
    */
   public void setToken(final String token) {
-    Preconditions.checkNotNull(token);
+    Preconditions.checkNotNull(token, "The token cannot be null!");
 
     this.token = token;
   }

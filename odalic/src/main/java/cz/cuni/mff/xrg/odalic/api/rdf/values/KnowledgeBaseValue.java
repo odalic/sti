@@ -47,7 +47,9 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   private String insertGraph;
   private String userClassesPrefix;
   private String userResourcesPrefix;
-  
+  private String datatypeProperty;
+  private String objectProperty;
+
   private String login;
   private String password;
   
@@ -78,6 +80,8 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
     this.insertGraph = adaptee.getInsertGraph() == null ? null : adaptee.getInsertGraph().toString();
     this.userClassesPrefix = adaptee.getUserClassesPrefix() == null ? null : adaptee.getUserClassesPrefix().toString();
     this.userResourcesPrefix = adaptee.getUserResourcesPrefix() == null ? null : adaptee.getUserResourcesPrefix().toString();
+    this.datatypeProperty = adaptee.getDatatypeProperty() == null ? null : adaptee.getDatatypeProperty().toString();
+    this.objectProperty = adaptee.getObjectProperty() == null ? null : adaptee.getObjectProperty().toString();
     this.login = adaptee.getLogin();
     this.password = adaptee.getPassword();
     this.advancedType = adaptee.getAdvancedType().getName();
@@ -108,7 +112,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
    * @param name the name to set
    */
   public void setName(final String name) {
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     this.name = name;
   }
@@ -330,6 +334,40 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   }
 
   /**
+   * @return the datatype property type
+   */
+  @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/datatypeProperty",
+          datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @Nullable
+  public String getDatatypeProperty() {
+    return datatypeProperty;
+  }
+
+  /**
+   * @param datatypeProperty the datatype property type to set
+   */
+  public void setDatatypeProperty(String datatypeProperty) {
+    this.datatypeProperty = datatypeProperty;
+  }
+
+  /**
+   * @return the object property type
+   */
+  @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/objectProperty",
+          datatype = "http://www.w3.org/2001/XMLSchema#string")
+  @Nullable
+  public String getObjectProperty() {
+    return objectProperty;
+  }
+
+  /**
+   * @param objectProperty the object property type to set
+   */
+  public void setObjectProperty(String objectProperty) {
+    this.objectProperty = objectProperty;
+  }
+
+  /**
    * @return the login
    */
   @RdfProperty(value = "http://odalic.eu/internal/KnowledgeBase/login",
@@ -357,7 +395,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   }
 
   /**
-   * @param login the password to set
+   * @param password the password to set
    */
   public void setPassword(String password) {
     this.password = password;
@@ -403,8 +441,9 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
         + skippedClasses + ", groupsAutoSelected=" + groupsAutoSelected + ", selectedGroups="
         + selectedGroups + ", insertEnabled=" + insertEnabled + ", insertEndpoint=" + insertEndpoint
         + ", insertGraph=" + insertGraph + ", userClassesPrefix=" + userClassesPrefix
-        + ", userResourcesPrefix=" + userResourcesPrefix + ", login=" + login + ", password="
-        + password + ", advancedType=" + advancedType + ", advancedProperties=" + advancedProperties
+        + ", userResourcesPrefix=" + userResourcesPrefix + ", datatypeProperty=" + datatypeProperty
+        + ", objectProperty=" + objectProperty + ", login=" + login + ", password=" + password
+        + ", advancedType=" + advancedType + ", advancedProperties=" + advancedProperties
         + ", identifiableResource=" + identifiableResource + "]";
   }
 }

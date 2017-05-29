@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.outputs.annotatedtable.AnnotatedTable;
@@ -62,12 +63,12 @@ public class InterpreterExecutionBatch {
 
     // JSON export
     AnnotatedTable annotatedTable = CSVExportTest.testExportToAnnotatedTable(coreSnapshot.getResult(),
-        coreSnapshot.getInput(), coreSnapshot.getConfiguration(), baseExportPath + ".json",
+        coreSnapshot.getInput(), coreSnapshot.getConfiguration(), coreSnapshot.getPrimaryBase(), baseExportPath + ".json",
         new DefaultResultToAnnotatedTableAdapter(CoreExecutionBatch.getKnowledgeBaseProxyFactory()));
 
     // CSV export
     Input extendedInput = CSVExportTest.testExportToCSVFile(coreSnapshot.getResult(),
-        coreSnapshot.getInput(), coreSnapshot.getConfiguration(), baseExportPath + ".csv",
+        coreSnapshot.getInput(), coreSnapshot.getConfiguration(), coreSnapshot.getPrimaryBase(), baseExportPath + ".csv",
         new DefaultResultToCSVExportAdapter(), new DefaultCSVExporter(new DefaultApacheCsvFormatAdapter()));
 
     // RDF export
@@ -109,14 +110,19 @@ public class InterpreterExecutionBatch {
 
     private final Configuration configuration;
 
-    public CoreSnapshot(final Result result, final Input input, final Configuration configuration) {
-      Preconditions.checkNotNull(result);
-      Preconditions.checkNotNull(input);
-      Preconditions.checkNotNull(configuration);
+    private final KnowledgeBase primaryBase;
+
+    public CoreSnapshot(final Result result, final Input input, final Configuration configuration,
+        final KnowledgeBase primaryBase) {
+      Preconditions.checkNotNull(result, "The result cannot be null!");
+      Preconditions.checkNotNull(input, "The input cannot be null!");
+      Preconditions.checkNotNull(configuration, "The configuration cannot be null!");
+      Preconditions.checkNotNull(primaryBase, "The primary base cannot be null!");
 
       this.input = input;
       this.result = result;
       this.configuration = configuration;
+      this.primaryBase = primaryBase;
     }
 
     /**
@@ -140,9 +146,17 @@ public class InterpreterExecutionBatch {
       return configuration;
     }
 
+    /**
+     * @return the primary base
+     */
+    public KnowledgeBase getPrimaryBase() {
+      return primaryBase;
+    }
+
     @Override
     public String toString() {
-      return "CoreSnapshot [result=" + result + ", input=" + input + ", configuration=" + configuration + "]";
+      return "CoreSnapshot [result=" + result + ", input=" + input + ", configuration=" + configuration
+          + ", primaryBase=" + primaryBase + "]";
     }
   }
 }

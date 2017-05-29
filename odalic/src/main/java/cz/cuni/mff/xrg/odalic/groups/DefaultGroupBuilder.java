@@ -124,7 +124,7 @@ public final class DefaultGroupBuilder implements Serializable, GroupBuilder {
   
   @Override
   public GroupBuilder addLabelPredicate(final String labelPredicate) {
-    Preconditions.checkNotNull(labelPredicate);
+    Preconditions.checkNotNull(labelPredicate, "The labelPredicate cannot be null!");
     
     this.labelPredicates.add(labelPredicate);
     
@@ -143,7 +143,7 @@ public final class DefaultGroupBuilder implements Serializable, GroupBuilder {
   
   @Override
   public GroupBuilder addDescriptionPredicate(final String descriptionPredicate) {
-    Preconditions.checkNotNull(descriptionPredicate);
+    Preconditions.checkNotNull(descriptionPredicate, "The descriptionPredicate cannot be null!");
     
     this.descriptionPredicates.add(descriptionPredicate);
     
@@ -162,7 +162,7 @@ public final class DefaultGroupBuilder implements Serializable, GroupBuilder {
   
   @Override
   public GroupBuilder addInstancePredicate(final String instancePredicate) {
-    Preconditions.checkNotNull(instancePredicate);
+    Preconditions.checkNotNull(instancePredicate, "The instancePredicate cannot be null!");
     
     this.instanceOfPredicates.add(instancePredicate);
     
@@ -181,7 +181,7 @@ public final class DefaultGroupBuilder implements Serializable, GroupBuilder {
   
   @Override
   public GroupBuilder addClassType(final String classType) {
-    Preconditions.checkNotNull(classType);
+    Preconditions.checkNotNull(classType, "The classType cannot be null!");
     
     this.classTypes.add(classType);
     
@@ -200,7 +200,7 @@ public final class DefaultGroupBuilder implements Serializable, GroupBuilder {
   
   @Override
   public GroupBuilder addPropertyType(final String propertyType) {
-    Preconditions.checkNotNull(propertyType);
+    Preconditions.checkNotNull(propertyType, "The propertyType cannot be null!");
     
     this.classTypes.add(propertyType);
     

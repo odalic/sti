@@ -85,8 +85,8 @@ public final class Format implements Serializable {
   public Format(final Charset charset, final char delimiter, final boolean emptyLinesIgnored,
       final @Nullable Character quoteCharacter, final @Nullable Character escapeCharacter,
       final @Nullable Character commentMarker, final String lineSeparator) {
-    Preconditions.checkNotNull(charset);
-    Preconditions.checkNotNull(lineSeparator);
+    Preconditions.checkNotNull(charset, "The charset cannot be null!");
+    Preconditions.checkNotNull(lineSeparator, "The lineSeparator cannot be null!");
 
     Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Characters.isLineBreak(delimiter),
         "The delimiter is a line break character.");

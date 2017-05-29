@@ -31,7 +31,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
-import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import uk.ac.shef.dcs.kbproxy.ProxyException;
 import uk.ac.shef.dcs.kbproxy.Proxy;
@@ -105,7 +104,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
   @Autowired
   public DefaultResultToAnnotatedTableAdapter(
       final KnowledgeBaseProxiesService knowledgeBaseProxyFactory) {
-    Preconditions.checkNotNull(knowledgeBaseProxyFactory);
+    Preconditions.checkNotNull(knowledgeBaseProxyFactory, "The knowledgeBaseProxyFactory cannot be null!");
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
   }
@@ -255,15 +254,14 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
 
   @Override
   public AnnotatedTable toAnnotatedTable(final Result result, final Input input,
-      final Configuration configuration) {
+      final boolean statistical, final KnowledgeBase primaryBase) {
 
     this.headers = new ArrayList<>(input.headers());
-    if (configuration.isStatistical()) {
+    if (statistical) {
       this.headers.add(OBSERVATION);
     }
 
     this.isDisambiguated = new boolean[this.headers.size()];
-    final KnowledgeBase primaryBase = configuration.getPrimaryBase();
     this.kbProxy =
         this.knowledgeBaseProxyFactory.toProxies(ImmutableSet.of(primaryBase)).values().iterator().next();
 
@@ -282,7 +280,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
         for (final Entry<String, Set<EntityCandidate>> entry : result
             .getCellAnnotations()[j][i].getChosen().entrySet()) {
           if ((entry.getValue() != null) && !entry.getValue().isEmpty()) {
-            if (entry.getKey().equals(configuration.getPrimaryBase().getName())) {
+            if (entry.getKey().equals(primaryBase.getName())) {
               addPrimary = true;
             } else {
               addAlternatives = true;
@@ -320,7 +318,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
     for (final Entry<ColumnRelationPosition, ColumnRelationAnnotation> entry : result
         .getColumnRelationAnnotations().entrySet()) {
       final Set<EntityCandidate> chosenRelations =
-          entry.getValue().getChosen().get(configuration.getPrimaryBase());
+          entry.getValue().getChosen().get(primaryBase.getName());
 
       if (chosenRelations != null) {
         for (final EntityCandidate chosen : chosenRelations) {
@@ -330,7 +328,7 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
       }
     }
 
-    if (configuration.isStatistical()) {
+    if (statistical) {
       final int obsIndex = this.headers.size() - 1;
       this.isDisambiguated[obsIndex] = true;
 
@@ -359,16 +357,16 @@ public class DefaultResultToAnnotatedTableAdapter implements ResultToAnnotatedTa
       Entity compEntity;
       for (int i = 0; i < input.columnsCount(); i++) {
         final Set<EntityCandidate> predicateSet = result.getStatisticalAnnotations().get(i)
-            .getPredicate().get(configuration.getPrimaryBase());
+            .getPredicate().get(primaryBase.getName());
 
         if ((predicateSet != null) && !predicateSet.isEmpty()) {
           final ComponentTypeValue componentType = result.getStatisticalAnnotations().get(i)
-              .getComponent().get(configuration.getPrimaryBase());
+              .getComponent().get(primaryBase.getName());
 
           final Entity predicateEntity = predicateSet.iterator().next().getEntity();
 
           final Set<EntityCandidate> classificationSet =
-              result.getHeaderAnnotations().get(i).getChosen().get(configuration.getPrimaryBase());
+              result.getHeaderAnnotations().get(i).getChosen().get(primaryBase.getName());
 
           switch (componentType) {
             case DIMENSION:

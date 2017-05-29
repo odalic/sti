@@ -45,7 +45,7 @@ public final class ColumnRelationPositionValue {
    * @param first the first to set
    */
   public void setFirst(final ColumnPositionValue first) {
-    Preconditions.checkNotNull(first);
+    Preconditions.checkNotNull(first, "The first cannot be null!");
 
     this.first = first;
   }
@@ -54,7 +54,7 @@ public final class ColumnRelationPositionValue {
    * @param second the second to set
    */
   public void setSecond(final ColumnPositionValue second) {
-    Preconditions.checkNotNull(second);
+    Preconditions.checkNotNull(second, "The second cannot be null!");
 
     this.second = second;
   }

@@ -32,8 +32,8 @@ public final class DataCubeComponent implements Serializable {
    * @param annotation custom annotation
    */
   public DataCubeComponent(final ColumnPosition position, final StatisticalAnnotation annotation) {
-    Preconditions.checkNotNull(position);
-    Preconditions.checkNotNull(annotation);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
+    Preconditions.checkNotNull(annotation, "The annotation cannot be null!");
 
     this.position = position;
     this.annotation = annotation;

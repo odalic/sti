@@ -37,8 +37,8 @@ public final class DefaultProxiesFactory implements ProxiesFactory {
   }
   
   private DefaultProxiesFactory(final CacheProviderService cacheProviderService, final Map<Class<? extends ProxyDefinition>, ProxyCoreFactory> definitionClassesToCores) {
-    Preconditions.checkNotNull(cacheProviderService);
-    Preconditions.checkNotNull(definitionClassesToCores);
+    Preconditions.checkNotNull(cacheProviderService, "The cacheProviderService cannot be null!");
+    Preconditions.checkNotNull(definitionClassesToCores, "The definitionClassesToCores cannot be null!");
     
     this.cacheProviderService = cacheProviderService;
     this.definitionClassesToCoreFactories = definitionClassesToCores;
