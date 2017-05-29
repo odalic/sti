@@ -335,7 +335,7 @@ public final class DbUserService implements UserService {
     this.db.commit();
 
     this.groupsService.initializeDefaults(user);
-    this.basesService.initializeDefaults(user);
+    this.basesService.initializeDefaults(user, this.groupsService);
   }
 
 
@@ -388,7 +388,7 @@ public final class DbUserService implements UserService {
     this.db.commit();
 
     this.groupsService.initializeDefaults(user);
-    this.basesService.initializeDefaults(user);
+    this.basesService.initializeDefaults(user, this.groupsService);
   }
 
   private void createAdminIfNotPresent(final Properties properties) throws IOException {
@@ -412,7 +412,7 @@ public final class DbUserService implements UserService {
     this.db.commit();
 
     this.groupsService.initializeDefaults(admin);
-    this.basesService.initializeDefaults(admin);
+    this.basesService.initializeDefaults(admin, this.groupsService);
   }
 
   @Override
