@@ -261,7 +261,12 @@ public final class SparqlProxyCore implements ProxyCore {
 
   protected boolean ask(Query sparqlQuery) {
     QueryExecution queryExecution = getQueryExecution(sparqlQuery);
-    return queryExecution.execAsk();
+    
+    try {
+      return queryExecution.execAsk();
+    } catch (final Exception e) {
+      throw new RuntimeException(String.format("Querying of the proxy %s failed with error: %s", this.definition.getName(), e.getMessage()), e);
+    }
   }
 
 

@@ -4,6 +4,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -76,6 +77,10 @@ public final class ResultResource {
           e);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("The task has not been scheduled or does not exist!", e);
+    } catch (final ExecutionException e) {
+      final Throwable cause = e.getCause();
+      
+      throw new InternalServerErrorException(cause.getMessage(), cause);
     }
 
     return Reply.data(Response.Status.OK, resultForTaskId, this.uriInfo).toResponse();
