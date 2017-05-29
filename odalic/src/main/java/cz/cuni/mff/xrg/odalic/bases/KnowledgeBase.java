@@ -32,7 +32,7 @@ import cz.cuni.mff.xrg.odalic.users.User;
 public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBase> {
 
   private static final long serialVersionUID = 2241360833757117714L;
-
+  
   private final User owner;
 
   private final String name;
@@ -112,6 +112,7 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     Preconditions.checkArgument(!name.isEmpty(), "The name is empty!");
     Preconditions.checkArgument(groupsAutoSelected || !selectedGroups.isEmpty(),
         "Groups to be selected manually but none selected!");
+    Preconditions.checkArgument(groupsAutoSelected || checkMandatoryPredicatesPresent(selectedGroups), "At least one label and type predicate must be present in the selected groups!");
 
     this.owner = owner;
 
@@ -140,6 +141,26 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
 
     this.advancedType = advancedType;
     this.advancedProperties = ImmutableMap.copyOf(advancedProperties);
+  }
+
+  private static boolean checkMandatoryPredicatesPresent(Set<? extends Group> groups) {
+    boolean labelPredicatePresent = false;
+    boolean typePredicatePresent = false;
+    
+    for (final Group group : groups) {
+      if (!group.getLabelPredicates().isEmpty()) {
+        labelPredicatePresent = true;
+      }
+      if (!group.getInstanceOfPredicates().isEmpty()) {
+        typePredicatePresent = true;
+      }
+      
+      if (labelPredicatePresent && typePredicatePresent) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   /**
