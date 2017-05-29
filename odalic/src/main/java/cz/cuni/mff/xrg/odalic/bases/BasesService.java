@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.NavigableSet;
 import javax.annotation.Nullable;
 
+import cz.cuni.mff.xrg.odalic.groups.GroupsService;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.users.User;
 
@@ -48,5 +49,5 @@ public interface BasesService {
 
   void deleteAll(String userId);
   
-  void initializeDefaults(User owner) throws IOException;
+  void initializeDefaults(User owner, GroupsService groupsService) throws IOException;
 }

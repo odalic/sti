@@ -270,7 +270,7 @@ public final class KnowledgeBaseValue {
   }
 
   /**
-   * @param insertGraph the insert endpoint to set
+   * @param insertEndpoint the insert endpoint to set
    */
   public void setInsertEndpoint(@Nullable final URL insertEndpoint) {
     this.insertEndpoint = insertEndpoint;

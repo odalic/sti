@@ -305,7 +305,7 @@ public final class MemoryOnlyUserService implements UserService {
 
     this.userIdsToUsers.put(email, user);
     this.groupsService.initializeDefaults(user);
-    this.basesService.initializeDefaults(user);
+    this.basesService.initializeDefaults(user, this.groupsService);
   }
 
   private void createAdminIfNotPresent(final Properties properties) throws IOException {

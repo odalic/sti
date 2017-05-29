@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
+import cz.cuni.mff.xrg.odalic.groups.Group;
 import cz.cuni.mff.xrg.odalic.groups.GroupsService;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.users.User;
@@ -71,6 +72,12 @@ public final class DbBasesService implements BasesService {
   private static final String INSERT_SUPPORTED_PROPERTY_KEY = "kb.insert.supported";
 
   private static final String ENDPOINT_PROPERTY_KEY = "kb.endpoint";
+
+  private static final String ENDPOINT_LOGIN_PROPERTY_KEY = "kb.endpoint.login";
+
+  private static final String ENDPOINT_PASSWORD_PROPERTY_KEY = "kb.endpoint.password";
+
+  private static final String STRUCTURE_PROPERTY_KEY = "kb.structure.groups";
 
   private static final String INSERT_ENDPOINT_PROPERTY_KEY = "kb.insert.endpoint";
 
@@ -164,7 +171,7 @@ public final class DbBasesService implements BasesService {
     Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     return this.userAndBaseIdsToBases.prefixSubMap(new Object[] {userId}).values().stream()
-        .filter(e -> e.isInsertEnabled())
+        .filter(KnowledgeBase::isInsertEnabled)
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
@@ -252,7 +259,7 @@ public final class DbBasesService implements BasesService {
     try {
       final Map<Object[], KnowledgeBase> baseIdsToBases =
           this.userAndBaseIdsToBases.prefixSubMap(new Object[] {userId});
-      baseIdsToBases.entrySet().stream().forEach(e -> this.groupsService.unsubscribe(e.getValue()));
+      baseIdsToBases.entrySet().forEach(e -> this.groupsService.unsubscribe(e.getValue()));
       baseIdsToBases.clear();
     } catch (final Exception e) {
       this.db.rollback();
@@ -362,18 +369,18 @@ public final class DbBasesService implements BasesService {
   }
 
   @Override
-  public void initializeDefaults(User owner) throws IOException {
+  public void initializeDefaults(User owner, GroupsService groupsService) throws IOException {
     Preconditions.checkNotNull(owner, "The owner cannot be null!");
 
     final Iterator<File> basePropertiesFileIterator =
         FileUtils.iterateFiles(this.initialBasesPath.toFile(),
             BASE_FILES_EXTENSIONS.toArray(new String[BASE_FILES_EXTENSIONS.size()]), false);
     while (basePropertiesFileIterator.hasNext()) {
-      initializeFromPropertiesFile(owner, basePropertiesFileIterator.next());
+      initializeFromPropertiesFile(owner, basePropertiesFileIterator.next(), groupsService);
     }
   }
 
-  private void initializeFromPropertiesFile(final User owner, final File propertiesFile)
+  private void initializeFromPropertiesFile(final User owner, final File propertiesFile, GroupsService groupsService)
       throws IOException {
     final Properties baseProperties = new Properties();
     baseProperties.load(new FileInputStream(propertiesFile));
@@ -437,13 +444,35 @@ public final class DbBasesService implements BasesService {
       baseBuilder.setInsertObjectPropertyType(insertObjectPropertyType);
     }
 
+    final String login = baseProperties.getProperty(ENDPOINT_LOGIN_PROPERTY_KEY);
+    if (login != null) {
+      baseBuilder.setLogin(login);
+    }
+
+    final String password = baseProperties.getProperty(ENDPOINT_PASSWORD_PROPERTY_KEY);
+    if (password != null) {
+      baseBuilder.setPassword(password);
+    }
+
+    final String structure = baseProperties.getProperty(STRUCTURE_PROPERTY_KEY);
+    if (structure != null) {
+      baseBuilder.setGroupsAutoSelected(false);
+      String[] structureSets = structure.split("\\|");
+
+      for (String set : structureSets) {
+        Group group = groupsService.getGroup(owner.getEmail(), set);
+        baseBuilder.addSelectedGroup(group);
+      }
+    }
+    else {
+      baseBuilder.setGroupsAutoSelected(true);
+      baseBuilder.setSelectedGroups(ImmutableSet.of());
+    }
+
     final String languageTagValue = baseProperties.getProperty(LANGUAGE_TAG_PROPERTY_KEY);
     final String languageTag = languageTagValue.startsWith(LANGUAGE_TAG_SEPARATOR)
         ? languageTagValue.substring(1, languageTagValue.length()) : languageTagValue;
     baseBuilder.setLanguageTag(languageTag);
-
-    baseBuilder.setGroupsAutoSelected(true);
-    baseBuilder.setSelectedGroups(ImmutableSet.of());
 
     baseBuilder.setTextSearchingMethod(extractTextSearchingMethod(baseProperties));
 

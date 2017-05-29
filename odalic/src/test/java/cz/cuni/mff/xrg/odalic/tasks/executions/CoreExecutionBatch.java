@@ -151,7 +151,7 @@ public class CoreExecutionBatch {
     // groups and bases initialization
     try {
       mgs.initializeDefaults(parsedFile.getOwner());
-      mbs.initializeDefaults(parsedFile.getOwner());
+      mbs.initializeDefaults(parsedFile.getOwner(), mgs);
     } catch (IOException e) {
       log.error("Error - groups and bases initialization:", e);
       return null;
