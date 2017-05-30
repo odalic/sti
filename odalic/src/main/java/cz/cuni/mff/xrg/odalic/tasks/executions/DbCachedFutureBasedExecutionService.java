@@ -5,6 +5,7 @@ package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -13,6 +14,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
@@ -24,10 +28,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 
 import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
+import cz.cuni.mff.xrg.odalic.feedbacks.ColumnCompulsory;
+import cz.cuni.mff.xrg.odalic.feedbacks.ColumnIgnore;
+import cz.cuni.mff.xrg.odalic.feedbacks.ColumnRelation;
+import cz.cuni.mff.xrg.odalic.feedbacks.DataCubeComponent;
+import cz.cuni.mff.xrg.odalic.feedbacks.Disambiguation;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.feedbacks.FeedbackToConstraintsAdapter;
 import cz.cuni.mff.xrg.odalic.files.FileService;
@@ -36,9 +49,17 @@ import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.InputToTableAdapter;
 import cz.cuni.mff.xrg.odalic.input.ParsingResult;
+import cz.cuni.mff.xrg.odalic.positions.CellPosition;
+import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
+import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
-import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
+import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
 import cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
@@ -60,7 +81,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
       LoggerFactory.getLogger(DbCachedFutureBasedExecutionService.class);
 
   private final ConfigurationService configurationService;
-  private final FeedbackService feedbackService;
+  private final InputSnapshotsService inputSnapshotsService;
   private final FileService fileService;
   private final BasesService basesService;
   private final AnnotationToResultAdapter annotationResultAdapter;
@@ -89,25 +110,28 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   @SuppressWarnings("unchecked")
   @Autowired
   public DbCachedFutureBasedExecutionService(final ConfigurationService configurationService,
-      final FeedbackService feedbackService, final FileService fileService,
+      final InputSnapshotsService inputSnapshotsService, final FileService fileService,
       final DbService dbService, final BasesService basesService,
       final AnnotationToResultAdapter annotationToResultAdapter,
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
       final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter) {
     Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
-    Preconditions.checkNotNull(feedbackService, "The feedbackService cannot be null!");
+    Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
     Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
     Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
     Preconditions.checkNotNull(dbService, "The dbService cannot be null!");
-    Preconditions.checkNotNull(annotationToResultAdapter, "The annotationToResultAdapter cannot be null!");
-    Preconditions.checkNotNull(semanticTableInterpreterFactory, "The semanticTableInterpreterFactory cannot be null!");
-    Preconditions.checkNotNull(feedbackToConstraintsAdapter, "The feedbackToConstraintsAdapter cannot be null!");
+    Preconditions.checkNotNull(annotationToResultAdapter,
+        "The annotationToResultAdapter cannot be null!");
+    Preconditions.checkNotNull(semanticTableInterpreterFactory,
+        "The semanticTableInterpreterFactory cannot be null!");
+    Preconditions.checkNotNull(feedbackToConstraintsAdapter,
+        "The feedbackToConstraintsAdapter cannot be null!");
     Preconditions.checkNotNull(csvInputParser, "The csvInputParser cannot be null!");
     Preconditions.checkNotNull(inputToTableAdapter, "The inputToTableAdapter cannot be null!");
 
     this.configurationService = configurationService;
-    this.feedbackService = feedbackService;
+    this.inputSnapshotsService = inputSnapshotsService;
     this.fileService = fileService;
     this.basesService = basesService;
     this.annotationResultAdapter = annotationToResultAdapter;
@@ -129,11 +153,13 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   public void cancelForTaskId(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
+    Preconditions.checkArgument(resultFuture != null, String.format(
+        "There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     this.userTaskIdsToCachedResults.remove(new Object[] {userId, taskId});
     this.db.commit();
-    Preconditions.checkState(resultFuture.cancel(false), String.format("The task %s could not be canceled!", taskId));
+    Preconditions.checkState(resultFuture.cancel(false),
+        String.format("The task %s could not be canceled!", taskId));
   }
 
   @Override
@@ -146,7 +172,8 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
+    Preconditions.checkArgument(resultFuture != null, String.format(
+        "There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     return resultFuture.get();
   }
@@ -200,7 +227,8 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
   private void checkNotAlreadyScheduled(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
-    Preconditions.checkState((resultFuture == null) || resultFuture.isDone(), String.format("The task %s is already scheduled and in progress!", taskId));
+    Preconditions.checkState((resultFuture == null) || resultFuture.isDone(),
+        String.format("The task %s is already scheduled and in progress!", taskId));
   }
 
   @Override
@@ -221,7 +249,8 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
+    Preconditions.checkArgument(resultFuture != null, String.format(
+        "There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     return resultFuture.isDone();
   }
@@ -271,7 +300,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
     final Input input = parsingResult.getInput();
 
-    this.feedbackService.setInputSnapshotForTaskid(userId, taskId, input);
+    this.inputSnapshotsService.setInputSnapshotForTaskid(userId, taskId, input);
     this.db.commit();
 
     final Callable<Result> execution = () -> {
@@ -343,5 +372,117 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     }
 
     resultFuture.cancel(false);
+  }
+
+  @Override
+  public void mergeWithResultForTaskId(String userId, String taskId, Feedback feedback) {
+    final Object[] userTaskId = new Object[] {userId, taskId};
+
+    final Result previousResult = this.userTaskIdsToCachedResults.get(userTaskId);
+    Preconditions.checkState(previousResult != null, "There is no cached result!");
+
+    final List<HeaderAnnotation> headerAnnotations =
+        mergeHeaderAnnotations(previousResult, feedback);
+    final CellAnnotation[][] cellAnnotations = mergeCellAnnotations(previousResult, feedback);
+    final Map<ColumnRelationPosition, ColumnRelationAnnotation> columnRelationAnnotations =
+        mergeColumnRelationAnnotations(previousResult, feedback);
+    final List<StatisticalAnnotation> statisticalAnnotations =
+        mergeStatisticalAnnotations(previousResult, feedback);
+    final List<ColumnProcessingAnnotation> columnProcessingAnnotations =
+        mergeColumnProcessingAnnotations(previousResult, feedback);
+
+    final Result mergedResult = new Result(previousResult.getSubjectColumnsPositions(),
+        headerAnnotations, cellAnnotations, columnRelationAnnotations, statisticalAnnotations,
+        columnProcessingAnnotations, previousResult.getWarnings());
+
+    this.userTaskIdsToCachedResults.put(userTaskId, mergedResult);
+    this.db.commit();
+  }
+
+  private List<ColumnProcessingAnnotation> mergeColumnProcessingAnnotations(Result previousResult,
+      Feedback feedback) {
+    final List<ColumnProcessingAnnotation> original = previousResult.getColumnProcessingAnnotations();
+    final Set<ColumnCompulsory> feedbackSet = feedback.getgetColumnCompulsory();
+    final Map<ColumnPosition, ColumnCompulsory> indicesToFeedbackAnnotations = feedbackSet.stream()
+        .collect(Collectors.toMap(e -> e.getPosition(), e -> e));
+
+    return IntStream.range(0, original.size()).mapToObj(index -> {
+      final StatisticalAnnotation feedbackAnnotation = indicesToFeedbackAnnotations.get(new ColumnPosition(index));
+      if (feedbackAnnotation == null) {
+        return original.get(index);
+      } else {
+        return feedbackAnnotation;
+      }
+    }).collect(ImmutableList.toImmutableList());
+  }
+
+  private List<StatisticalAnnotation> mergeStatisticalAnnotations(Result previousResult,
+      Feedback feedback) {
+    final List<StatisticalAnnotation> original = previousResult.getStatisticalAnnotations();
+    final Set<DataCubeComponent> feedbackSet = feedback.getDataCubeComponents();
+    final Map<ColumnPosition, StatisticalAnnotation> indicesToFeedbackAnnotations = feedbackSet.stream()
+        .collect(Collectors.toMap(e -> e.getPosition(), e -> e.getAnnotation()));
+
+    return IntStream.range(0, original.size()).mapToObj(index -> {
+      final StatisticalAnnotation feedbackAnnotation = indicesToFeedbackAnnotations.get(new ColumnPosition(index));
+      if (feedbackAnnotation == null) {
+        return original.get(index);
+      } else {
+        return feedbackAnnotation;
+      }
+    }).collect(ImmutableList.toImmutableList());
+  }
+
+  private Map<ColumnRelationPosition, ColumnRelationAnnotation> mergeColumnRelationAnnotations(
+      Result previousResult, Feedback feedback) {
+    final Map<ColumnRelationPosition, ColumnRelationAnnotation> original = previousResult.getColumnRelationAnnotations();
+    
+    final Map<ColumnRelationPosition, ColumnRelationAnnotation> result = new HashMap<>(original);
+    
+    for (final ColumnRelation relation : feedback.getColumnRelations()) {
+      final ColumnRelationPosition position = relation.getPosition();
+      
+      result.put(position, relation.getAnnotation());
+    }
+    
+    return ImmutableMap.copyOf(result);
+  }
+
+  private CellAnnotation[][] mergeCellAnnotations(Result previousResult, Feedback feedback) {
+    final CellAnnotation[][] original = previousResult.getCellAnnotations();
+    final CellAnnotation[][] result = cz.cuni.mff.xrg.odalic.util.Arrays.deepCopy(CellAnnotation.class, original);
+    
+    for (final Disambiguation disambiguation : feedback.getDisambiguations()) {
+      final CellPosition position = disambiguation.getPosition();
+      
+      result[position.getRowIndex()][position.getColumnIndex()] = disambiguation.getAnnotation();
+    }
+    
+    return result;
+  }
+
+  private static List<HeaderAnnotation> mergeHeaderAnnotations(Result previousResult, Feedback feedback) {
+    final List<HeaderAnnotation> original = previousResult.getHeaderAnnotations();
+    final Set<Classification> feedbackSet = feedback.getClassifications();
+    final Set<ColumnIgnore> feedbackIgnores = feedback.getColumnIgnores();
+    final Map<ColumnPosition, HeaderAnnotation> indicesToFeedbackAnnotations = feedbackSet.stream()
+        .collect(Collectors.toMap(e -> e.getPosition(), e -> e.getAnnotation()));
+    final Map<ColumnPosition, ColumnIgnore> indicesToIgnores = feedbackIgnores.stream()
+        .collect(Collectors.toMap(e -> e.getPosition(), Function.identity()));
+
+    return IntStream.range(0, original.size()).mapToObj(index -> {
+      final HeaderAnnotation feedbackAnnotation = indicesToFeedbackAnnotations.get(new ColumnPosition(index));
+      final ColumnIgnore feedbackIgnore = indicesToIgnores.get(new ColumnPosition(index));
+      
+      if (feedbackAnnotation == null) {
+        if (feedbackIgnore == null) {
+          return original.get(index);
+        } else {
+          new HeaderAnnotation(ImmutableMap.of(), ImmutableMap.of());
+        }
+      } else {
+        return feedbackAnnotation;
+      }
+    }).collect(ImmutableList.toImmutableList());
   }
 }

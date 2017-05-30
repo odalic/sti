@@ -22,7 +22,7 @@ import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
-import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
+import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
@@ -37,7 +37,7 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
 
   private final ExecutionService executionService;
 
-  private final FeedbackService feedbackService;
+  private final InputSnapshotsService inputSnapshotsService;
 
   private final ConfigurationService configurationService;
 
@@ -51,10 +51,10 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
 
   @Autowired
   public ResultAdaptingCsvExportService(final ExecutionService executionService,
-      final FeedbackService feedbackService, final ConfigurationService configurationService,
+      final InputSnapshotsService inputSnapshotsService, final ConfigurationService configurationService,
       final FileService fileService, final BasesService basesService,
       final ResultToCSVExportAdapter resultToCsvExportAdapter, final CSVExporter csvExporter) {
-    Preconditions.checkNotNull(feedbackService, "The feedbackService cannot be null!");
+    Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
     Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
     Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
     Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
@@ -63,7 +63,7 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
     Preconditions.checkNotNull(csvExporter, "The csvExporter cannot be null!");
 
     this.executionService = executionService;
-    this.feedbackService = feedbackService;
+    this.inputSnapshotsService = inputSnapshotsService;
     this.configurationService = configurationService;
     this.fileService = fileService;
     this.basesService = basesService;
@@ -86,7 +86,7 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
   public Input getExtendedInputForTaskId(final String userId, final String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
     final Result result = this.executionService.getResultForTaskId(userId, taskId);
-    final Input input = this.feedbackService.getInputSnapshotForTaskId(userId, taskId);
+    final Input input = this.inputSnapshotsService.getInputSnapshotForTaskId(userId, taskId);
     final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
     final KnowledgeBase primaryBase =
         this.basesService.getByName(userId, configuration.getPrimaryBase());
