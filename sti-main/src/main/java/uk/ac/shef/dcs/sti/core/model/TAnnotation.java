@@ -166,6 +166,15 @@ public class TAnnotation {
     this.columncolumnRelations.put(ra.getRelationColumns(), annotations_for_columns);
   }
 
+  public void addEmptyColumnColumnRelation(final RelationColumns columns) {
+    java.util.List<TColumnColumnRelationAnnotation> annotations_for_columns =
+        this.columncolumnRelations.get(columns);
+    if (annotations_for_columns == null) {
+      annotations_for_columns = new ArrayList<>();
+    }
+    this.columncolumnRelations.put(columns, annotations_for_columns);
+  }
+
   public void addColumnRelationWarnings(final RelationColumns columns,
       final Collection<String> newWarnings) {
     final List<String> warnings =
