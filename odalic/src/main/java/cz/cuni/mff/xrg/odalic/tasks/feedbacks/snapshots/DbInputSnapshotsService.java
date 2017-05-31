@@ -1,4 +1,4 @@
-package cz.cuni.mff.xrg.odalic.tasks.feedbacks;
+package cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots;
 
 import java.util.Map;
 
@@ -9,21 +9,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
-import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.input.Input;
-import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
-import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
- * This {@link FeedbackService} implementation persists the snapshots in {@link DB}-backed maps.
+ * This {@link InputSnapshotsService} implementation persists the snapshots in {@link DB}-backed
+ * maps.
  *
  * @author Václav Brodec
  *
  */
-public final class DbFeedbackService implements FeedbackService {
-
-  private final ConfigurationService configurationService;
+public final class DbInputSnapshotsService implements InputSnapshotsService {
 
   /**
    * Table of snapshots where rows are indexed by user IDs and the columns by task IDs (represented
@@ -38,25 +34,14 @@ public final class DbFeedbackService implements FeedbackService {
 
   @SuppressWarnings("unchecked")
   @Autowired
-  public DbFeedbackService(final ConfigurationService configurationService,
-      final DbService dbService) {
-    Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
+  public DbInputSnapshotsService(final DbService dbService) {
     Preconditions.checkNotNull(dbService, "The dbService cannot be null!");
-
-    this.configurationService = configurationService;
 
     this.db = dbService.getDb();
 
     this.inputSnapshots = this.db.treeMap("inputSnapshots")
         .keySerializer(new SerializerArrayTuple(Serializer.STRING, Serializer.STRING))
         .valueSerializer(Serializer.JAVA).createOrOpen();
-  }
-
-  @Override
-  public Feedback getForTaskId(final String userId, final String taskId) {
-    final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
-
-    return configuration.getFeedback();
   }
 
   @Override
@@ -68,15 +53,6 @@ public final class DbFeedbackService implements FeedbackService {
     Preconditions.checkArgument(inputSnapshot != null, "No such task input snapshot present!");
 
     return inputSnapshot;
-  }
-
-  @Override
-  public void setForTaskId(final String userId, final String taskId, final Feedback feedback) {
-    final Configuration oldConfiguration = this.configurationService.getForTaskId(userId, taskId);
-    this.configurationService.setForTaskId(userId, taskId,
-        new Configuration(oldConfiguration.getInput(), oldConfiguration.getUsedBases(),
-            oldConfiguration.getPrimaryBase(), feedback, oldConfiguration.getRowsLimit(),
-            oldConfiguration.isStatistical()));
   }
 
   @Override

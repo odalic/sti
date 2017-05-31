@@ -28,6 +28,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.util.Security;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
+import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
 import cz.cuni.mff.xrg.odalic.users.Role;
 
 @Component
@@ -36,6 +37,7 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 public final class FeedbackResource {
 
   private final FeedbackService feedbackService;
+  private final InputSnapshotsService inputSnapshotsService;
 
   @Context
   private SecurityContext securityContext;
@@ -45,10 +47,13 @@ public final class FeedbackResource {
 
 
   @Autowired
-  public FeedbackResource(final FeedbackService feedbackService) {
+  public FeedbackResource(final FeedbackService feedbackService,
+      final InputSnapshotsService inputSnapshotsService) {
     Preconditions.checkNotNull(feedbackService, "The feedbackService cannot be null!");
+    Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
 
     this.feedbackService = feedbackService;
+    this.inputSnapshotsService = inputSnapshotsService;
   }
 
   @GET
@@ -89,7 +94,7 @@ public final class FeedbackResource {
       final @PathParam("taskId") String taskId) throws IOException {
     final Input inputForTaskId;
     try {
-      inputForTaskId = this.feedbackService.getInputSnapshotForTaskId(userId, taskId);
+      inputForTaskId = this.inputSnapshotsService.getInputSnapshotForTaskId(userId, taskId);
     } catch (final IllegalArgumentException e) {
       throw new NotFoundException("The task does not exist!", e);
     }

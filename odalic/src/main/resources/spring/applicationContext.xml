@@ -59,7 +59,9 @@
 	<bean id="executionService"
 		class="cz.cuni.mff.xrg.odalic.tasks.executions.DbCachedFutureBasedExecutionService" />
 	<bean id="feedbackService"
-		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.DbFeedbackService" />
+		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.DefaultFeedbackService" />
+	<bean id="inputSnapshotsService"
+		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.DbInputSnapshotsService" />
 	<bean id="taskService" class="cz.cuni.mff.xrg.odalic.tasks.DbTaskService" />
 	<bean id="annotatedTableService"
 		class="cz.cuni.mff.xrg.odalic.outputs.annotatedtable.ResultAdaptingAnnotatedTableService" />
