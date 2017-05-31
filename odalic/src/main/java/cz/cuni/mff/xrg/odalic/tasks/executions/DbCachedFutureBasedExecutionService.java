@@ -402,48 +402,54 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     this.db.commit();
   }
 
-  private List<ColumnProcessingAnnotation> mergeColumnProcessingAnnotations(Result previousResult,
-      Feedback feedback) {
-    final List<ColumnProcessingAnnotation> original = previousResult.getColumnProcessingAnnotations();
+  private static List<ColumnProcessingAnnotation> mergeColumnProcessingAnnotations(
+      Result previousResult, Feedback feedback) {
+    final List<ColumnProcessingAnnotation> original =
+        previousResult.getColumnProcessingAnnotations();
     final Set<ColumnCompulsory> feedbackSet = feedback.getColumnCompulsory();
     final Set<ColumnIgnore> feedbackIgnores = feedback.getColumnIgnores();
-    final Map<ColumnPosition, ColumnCompulsory> indicesToCompulsoryFeedback = feedbackSet.stream()
-        .collect(Collectors.toMap(e -> e.getPosition(), Function.identity()));
+    final Map<ColumnPosition, ColumnCompulsory> indicesToCompulsoryFeedback =
+        feedbackSet.stream().collect(Collectors.toMap(e -> e.getPosition(), Function.identity()));
     final Map<ColumnPosition, ColumnIgnore> indicesToIgnores = feedbackIgnores.stream()
         .collect(Collectors.toMap(e -> e.getPosition(), Function.identity()));
 
     return IntStream.range(0, original.size()).mapToObj(index -> {
       final ColumnProcessingAnnotation originalAnnotation = original.get(index);
-      final ColumnCompulsory compulsory = indicesToCompulsoryFeedback.get(new ColumnPosition(index));
+      final ColumnCompulsory compulsory =
+          indicesToCompulsoryFeedback.get(new ColumnPosition(index));
       final ColumnIgnore feedbackIgnore = indicesToIgnores.get(new ColumnPosition(index));
-      
+
       if (compulsory == null) {
         if (feedbackIgnore == null) {
           return originalAnnotation;
         } else {
           return new ColumnProcessingAnnotation(
-              originalAnnotation.getProcessingType().entrySet().stream().collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ColumnProcessingTypeValue.IGNORED))
-          );
+              originalAnnotation.getProcessingType().entrySet().stream().collect(ImmutableMap
+                  .toImmutableMap(e -> e.getKey(), e -> ColumnProcessingTypeValue.IGNORED)));
         }
       } else {
-        Preconditions.checkArgument(feedbackIgnore == null, String.format("Invalid feedback for column %d: the compulsory and ignore feedback is mutually exclusive!", index));
-        
+        Preconditions.checkArgument(feedbackIgnore == null,
+            String.format(
+                "Invalid feedback for column %d: the compulsory and ignore feedback is mutually exclusive!",
+                index));
+
         return new ColumnProcessingAnnotation(
-            originalAnnotation.getProcessingType().entrySet().stream().collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ColumnProcessingTypeValue.COMPULSORY))
-        );
+            originalAnnotation.getProcessingType().entrySet().stream().collect(ImmutableMap
+                .toImmutableMap(e -> e.getKey(), e -> ColumnProcessingTypeValue.COMPULSORY)));
       }
     }).collect(ImmutableList.toImmutableList());
   }
 
-  private List<StatisticalAnnotation> mergeStatisticalAnnotations(Result previousResult,
+  private static List<StatisticalAnnotation> mergeStatisticalAnnotations(Result previousResult,
       Feedback feedback) {
     final List<StatisticalAnnotation> original = previousResult.getStatisticalAnnotations();
     final Set<DataCubeComponent> feedbackSet = feedback.getDataCubeComponents();
-    final Map<ColumnPosition, StatisticalAnnotation> indicesToFeedbackAnnotations = feedbackSet.stream()
-        .collect(Collectors.toMap(e -> e.getPosition(), e -> e.getAnnotation()));
+    final Map<ColumnPosition, StatisticalAnnotation> indicesToFeedbackAnnotations = feedbackSet
+        .stream().collect(Collectors.toMap(e -> e.getPosition(), e -> e.getAnnotation()));
 
     return IntStream.range(0, original.size()).mapToObj(index -> {
-      final StatisticalAnnotation feedbackAnnotation = indicesToFeedbackAnnotations.get(new ColumnPosition(index));
+      final StatisticalAnnotation feedbackAnnotation =
+          indicesToFeedbackAnnotations.get(new ColumnPosition(index));
       if (feedbackAnnotation == null) {
         return original.get(index);
       } else {
@@ -452,58 +458,69 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     }).collect(ImmutableList.toImmutableList());
   }
 
-  private Map<ColumnRelationPosition, ColumnRelationAnnotation> mergeColumnRelationAnnotations(
+  private static Map<ColumnRelationPosition, ColumnRelationAnnotation> mergeColumnRelationAnnotations(
       Result previousResult, Feedback feedback) {
-    final Map<ColumnRelationPosition, ColumnRelationAnnotation> original = previousResult.getColumnRelationAnnotations();
-    
+    final Map<ColumnRelationPosition, ColumnRelationAnnotation> original =
+        previousResult.getColumnRelationAnnotations();
+
     final Map<ColumnRelationPosition, ColumnRelationAnnotation> result = new HashMap<>(original);
-    
+
     for (final ColumnRelation relation : feedback.getColumnRelations()) {
       final ColumnRelationPosition position = relation.getPosition();
-      
+
       result.put(position, relation.getAnnotation());
     }
-    
+
     return ImmutableMap.copyOf(result);
   }
 
-  private CellAnnotation[][] mergeCellAnnotations(Result previousResult, Feedback feedback) {
+  private static CellAnnotation[][] mergeCellAnnotations(Result previousResult, Feedback feedback) {
     final CellAnnotation[][] original = previousResult.getCellAnnotations();
-    final CellAnnotation[][] result = cz.cuni.mff.xrg.odalic.util.Arrays.deepCopy(CellAnnotation.class, original);
-    
+    final CellAnnotation[][] result =
+        cz.cuni.mff.xrg.odalic.util.Arrays.deepCopy(CellAnnotation.class, original);
+
     for (final Disambiguation disambiguation : feedback.getDisambiguations()) {
       final CellPosition position = disambiguation.getPosition();
-      
+
       result[position.getRowIndex()][position.getColumnIndex()] = disambiguation.getAnnotation();
     }
-    
+
     for (final Ambiguity ambiguity : feedback.getAmbiguities()) {
       final CellPosition position = ambiguity.getPosition();
-      
-      final CellAnnotation originalAnnotation = result[position.getRowIndex()][position.getColumnIndex()];
-      
-      result[position.getRowIndex()][position.getColumnIndex()] = new CellAnnotation(
-          originalAnnotation.getCandidates().entrySet().stream().collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSortedSet.of())),
-          originalAnnotation.getChosen().entrySet().stream().collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSet.of())));
+
+      final CellAnnotation originalAnnotation =
+          result[position.getRowIndex()][position.getColumnIndex()];
+
+      result[position.getRowIndex()][position
+          .getColumnIndex()] =
+              new CellAnnotation(
+                  originalAnnotation.getCandidates().entrySet().stream()
+                      .collect(ImmutableMap.toImmutableMap(e -> e.getKey(),
+                          e -> ImmutableSortedSet.of())),
+                  originalAnnotation.getChosen().entrySet().stream().collect(
+                      ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSet.of())));
     }
-    
+
     for (final ColumnAmbiguity ambiguity : feedback.getColumnAmbiguities()) {
       final ColumnPosition position = ambiguity.getPosition();
       final int columnIndex = position.getIndex();
-      
+
       for (int rowIndex = 0; rowIndex < result.length; rowIndex++) {
-      final CellAnnotation originalAnnotation = result[rowIndex][columnIndex];
-      
-      result[rowIndex][columnIndex] = new CellAnnotation(
-          originalAnnotation.getCandidates().entrySet().stream().collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSortedSet.of())),
-          originalAnnotation.getChosen().entrySet().stream().collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSet.of())));
+        final CellAnnotation originalAnnotation = result[rowIndex][columnIndex];
+
+        result[rowIndex][columnIndex] = new CellAnnotation(
+            originalAnnotation.getCandidates().entrySet().stream().collect(
+                ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSortedSet.of())),
+            originalAnnotation.getChosen().entrySet().stream()
+                .collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSet.of())));
       }
     }
-    
+
     return result;
   }
 
-  private static List<HeaderAnnotation> mergeHeaderAnnotations(Result previousResult, Feedback feedback) {
+  private static List<HeaderAnnotation> mergeHeaderAnnotations(Result previousResult,
+      Feedback feedback) {
     final List<HeaderAnnotation> original = previousResult.getHeaderAnnotations();
     final Set<Classification> feedbackSet = feedback.getClassifications();
     final Set<ColumnIgnore> feedbackIgnores = feedback.getColumnIgnores();
@@ -513,26 +530,31 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
         .collect(Collectors.toMap(e -> e.getPosition(), Function.identity()));
 
     return IntStream.range(0, original.size()).mapToObj(index -> {
-      final HeaderAnnotation feedbackAnnotation = indicesToFeedbackAnnotations.get(new ColumnPosition(index));
+      final HeaderAnnotation feedbackAnnotation =
+          indicesToFeedbackAnnotations.get(new ColumnPosition(index));
       final ColumnIgnore feedbackIgnore = indicesToIgnores.get(new ColumnPosition(index));
-      
+
       final HeaderAnnotation originalAnnotation = original.get(index);
-      
+
       if (feedbackAnnotation == null) {
         if (feedbackIgnore == null) {
           return originalAnnotation;
         } else {
           return new HeaderAnnotation(
-              originalAnnotation.getCandidates().entrySet().stream().collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSortedSet.of())),
-              originalAnnotation.getChosen().entrySet().stream().collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSet.of())));
+              originalAnnotation.getCandidates().entrySet().stream().collect(
+                  ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSortedSet.of())),
+              originalAnnotation.getChosen().entrySet().stream()
+                  .collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSet.of())));
         }
       } else {
         if (feedbackIgnore == null) {
-          return feedbackAnnotation;          
+          return feedbackAnnotation;
         } else {
           return new HeaderAnnotation(
-              feedbackAnnotation.getCandidates().entrySet().stream().collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSortedSet.of())),
-              feedbackAnnotation.getChosen().entrySet().stream().collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSet.of())));
+              feedbackAnnotation.getCandidates().entrySet().stream().collect(
+                  ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSortedSet.of())),
+              feedbackAnnotation.getChosen().entrySet().stream()
+                  .collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e -> ImmutableSet.of())));
         }
       }
     }).collect(ImmutableList.toImmutableList());

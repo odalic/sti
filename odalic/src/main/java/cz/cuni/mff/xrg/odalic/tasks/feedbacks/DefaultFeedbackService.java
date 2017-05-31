@@ -40,6 +40,6 @@ public final class DefaultFeedbackService implements FeedbackService {
         new Configuration(oldConfiguration.getInput(), oldConfiguration.getUsedBases(),
             oldConfiguration.getPrimaryBase(), feedback, oldConfiguration.getRowsLimit(),
             oldConfiguration.isStatistical()));
-    this.executionService.mergeWithResultForTaskId(userId, taskId, null); //TODO: Merge result;
+    this.executionService.mergeWithResultForTaskId(userId, taskId, feedback);
   }
 }
