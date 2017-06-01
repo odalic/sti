@@ -69,17 +69,17 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
    * @param name knowledge base name
    * @param endpoint end-point URL
    * @param description knowledge base description
-   * @param textSearchingMethod
-   * @param languageTag
-   * @param skippedAttributes
-   * @param skippedClasses
+   * @param textSearchingMethod text searching method
+   * @param languageTag language tag
+   * @param skippedAttributes skipped attributes
+   * @param skippedClasses skipped classes
    * @param groupsAutoSelected whether the used groups are determined automatically
    * @param selectedGroups the groups selected for use
    * @param insertEnabled whether the base supports insertion of new concepts
-   * @param insertEndpoint
-   * @param insertGraph
-   * @param userClassesPrefix
-   * @param userResourcesPrefix
+   * @param insertEndpoint insert endpoint
+   * @param insertGraph insert graph
+   * @param userClassesPrefix custom classes and properties prefixes
+   * @param userResourcesPrefix custom resource prefixes
    * @param datatypeProperty type used when inserting data properties
    * @param objectTypeProperty type used when inserting object properties
    * @param login login

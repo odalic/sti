@@ -54,6 +54,8 @@ public final class Lists {
    * @param first first list
    * @param second second list
    * @return merged list
+   * 
+   * @param <T> type of elements
    */
   public static <T> List<T> merge(final List<T> first, final List<T> second) {
     final Set<T> firstSet = ImmutableSet.copyOf(first);

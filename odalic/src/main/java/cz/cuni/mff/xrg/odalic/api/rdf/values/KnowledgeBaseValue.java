@@ -276,7 +276,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
   }
 
   /**
-   * @param insertGraph the insert graph to set
+   * @param insertEndpoint the insert endpoint to set
    */
   public void setInsertEndpoint(String insertEndpoint) {
     this.insertEndpoint = insertEndpoint;

@@ -30,16 +30,22 @@ public interface GroupBuilder {
 
   /**
    * @param owner the owner to set
+   * 
+   * @return the builder
    */
   GroupBuilder setOwner(User owner);
 
   /**
    * @param id the id to set
+   * 
+   * @return the builder
    */
   GroupBuilder setId(String id);
 
   /**
    * @param labelPredicates the labelPredicates to set
+   * 
+   * @return the builder
    */
   GroupBuilder setLabelPredicates(List<? extends String> labelPredicates);
 
@@ -47,6 +53,8 @@ public interface GroupBuilder {
 
   /**
    * @param descriptionPredicates the descriptionPredicates to set
+   * 
+   * @return the builder
    */
   GroupBuilder setDescriptionPredicates(List<? extends String> descriptionPredicates);
 
@@ -54,6 +62,8 @@ public interface GroupBuilder {
 
   /**
    * @param instanceOfPredicates the instanceOfPredicates to set
+   * 
+   * @return the builder
    */
   GroupBuilder setInstanceOfPredicates(List<? extends String> instanceOfPredicates);
 
@@ -61,6 +71,8 @@ public interface GroupBuilder {
 
   /**
    * @param classTypes the classTypes to set
+   * 
+   * @return the builder
    */
   GroupBuilder setClassTypes(List<? extends String> classTypes);
 
@@ -68,6 +80,8 @@ public interface GroupBuilder {
 
   /**
    * @param propertyTypes the propertyTypes to set
+   * 
+   * @return the builder
    */
   GroupBuilder setPropertyTypes(List<String> propertyTypes);
 

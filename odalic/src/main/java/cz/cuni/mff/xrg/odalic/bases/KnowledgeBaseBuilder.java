@@ -215,6 +215,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param owner the owner to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setOwner(@Nullable User owner) {
     this.owner = owner;
@@ -224,6 +226,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param name the name to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setName(@Nullable String name) {
     this.name = name;
@@ -233,6 +237,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param endpoint the endpoint to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setEndpoint(@Nullable URL endpoint) {
     this.endpoint = endpoint;
@@ -242,6 +248,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param description the description to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setDescription(@Nullable String description) {
     this.description = description;
@@ -251,6 +259,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param textSearchingMethod the textSearchingMethod to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setTextSearchingMethod(
       @Nullable TextSearchingMethod textSearchingMethod) {
@@ -261,6 +271,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param languageTag the languageTag to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setLanguageTag(@Nullable String languageTag) {
     this.languageTag = languageTag;
@@ -270,6 +282,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param skippedAttributes the skippedAttributes to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setSkippedAttributes(List<String> skippedAttributes) {
     this.skippedAttributes = new ArrayList<>(skippedAttributes);
@@ -287,6 +301,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param skippedClasses the skippedClasses to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setSkippedClasses(List<String> skippedClasses) {
     this.skippedClasses = new ArrayList<>(skippedClasses);
@@ -305,6 +321,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
   /**
    * @param groupsAutoSelected whether the selected groups are ignored and the actually used ones
    *        are auto-detected
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setGroupsAutoSelected(final boolean groupsAutoSelected) {
     this.groupsAutoSelected = groupsAutoSelected;
@@ -314,6 +332,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param selectedGroups the selectedGroups to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setSelectedGroups(Set<Group> selectedGroups) {
     this.selectedGroups = new HashSet<>(selectedGroups);
@@ -331,6 +351,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param insertEnabled the insertEnabled to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setInsertEnabled(boolean insertEnabled) {
     this.insertEnabled = insertEnabled;
@@ -340,6 +362,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param insertEndpoint insert end-point URL
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setInsertEndpoint(final URL insertEndpoint) {
     this.insertEndpoint = insertEndpoint;
@@ -349,6 +373,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param insertGraph the insertGraph to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setInsertGraph(@Nullable String insertGraph) {
     this.insertGraph = insertGraph;
@@ -358,6 +384,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param userClassesPrefix the userClassesPrefix to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setUserClassesPrefix(@Nullable URI userClassesPrefix) {
     this.userClassesPrefix = userClassesPrefix;
@@ -367,6 +395,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param userResourcesPrefix the userResourcesPrefix to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setUserResourcesPrefix(@Nullable URI userResourcesPrefix) {
     this.userResourcesPrefix = userResourcesPrefix;
@@ -376,6 +406,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param datatypeProperty the datatype property type to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setDatatypeProperty(@Nullable String datatypeProperty) {
     this.datatypeProperty = datatypeProperty;
@@ -385,6 +417,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param objectProperty the object property type to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setInsertObjectPropertyType(@Nullable String objectProperty) {
     this.objectProperty = objectProperty;
@@ -394,6 +428,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param login the login to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setLogin(@Nullable String login) {
     this.login = login;
@@ -403,6 +439,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param password the password to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setPassword(@Nullable String password) {
     this.password = password;
@@ -412,6 +450,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param advancedType the advancedType to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setAdvancedType(@Nullable AdvancedBaseType advancedType) {
     this.advancedType = advancedType;
@@ -421,6 +461,8 @@ public final class KnowledgeBaseBuilder implements Serializable {
 
   /**
    * @param advancedProperties the advancedProperties to set
+   * 
+   * @return the builder
    */
   public KnowledgeBaseBuilder setAdvancedProperties(Map<String, String> advancedProperties) {
     this.advancedProperties = new HashMap<>(advancedProperties);

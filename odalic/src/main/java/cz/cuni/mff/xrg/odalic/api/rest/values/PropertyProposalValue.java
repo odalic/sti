@@ -154,7 +154,7 @@ public final class PropertyProposalValue implements Serializable {
   }
   
   /**
-   * @param superProperty the type to set
+   * @param type the type to set
    */
   public void setType(final PropertyType type) {
     this.type = type;
