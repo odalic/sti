@@ -6,7 +6,7 @@
 
     <groupId>eu.odalic.sti</groupId>
     <artifactId>sti-main</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,17 +38,17 @@
         <dependency>
             <groupId>eu.odalic.sti</groupId>
             <artifactId>sti-websearch</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0</version>
         </dependency>
         <dependency>
             <groupId>eu.odalic.sti</groupId>
             <artifactId>sti-common-util</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0</version>
         </dependency>
         <dependency>
             <groupId>eu.odalic.sti</groupId>
             <artifactId>sti-kbproxy</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0</version>
             <exclusions>
 				<exclusion>
 					<artifactId>guava-jdk5</artifactId>

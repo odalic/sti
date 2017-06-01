@@ -1,6 +1,7 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler;
 
 import java.util.List;
+import java.util.Set;
 
 import uk.ac.shef.dcs.sti.core.model.Table;
 
@@ -9,5 +10,5 @@ import uk.ac.shef.dcs.sti.core.model.Table;
  * | Settings | File Templates.
  */
 public abstract class TContentCellRanker {
-  public abstract List<List<Integer>> select(Table table, int fromCol, int subCol);
+  public abstract List<List<Integer>> select(Table table, int fromCol, Set<Integer> subCols);
 }

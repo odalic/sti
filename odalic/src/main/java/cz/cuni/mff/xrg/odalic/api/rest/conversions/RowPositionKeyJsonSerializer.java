@@ -7,8 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.positions.RowPosition;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Map key JSON serializer for {@link KnowledgeBase} instances.

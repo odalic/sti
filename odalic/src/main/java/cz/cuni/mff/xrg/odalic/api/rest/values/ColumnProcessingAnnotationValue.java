@@ -5,14 +5,9 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableMap;
 
-import cz.cuni.mff.xrg.odalic.api.rest.conversions.KnowledgeBaseKeyJsonDeserializer;
-import cz.cuni.mff.xrg.odalic.api.rest.conversions.KnowledgeBaseKeyJsonSerializer;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * <p>
@@ -25,7 +20,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 @XmlRootElement(name = "columnProcessingAnnotation")
 public final class ColumnProcessingAnnotationValue {
 
-  private Map<KnowledgeBase, ColumnProcessingTypeValue> processingType;
+  private Map<String, ColumnProcessingTypeValue> processingType;
 
   public ColumnProcessingAnnotationValue() {
     this.processingType = ImmutableMap.of();
@@ -39,9 +34,7 @@ public final class ColumnProcessingAnnotationValue {
    * @return the processing type
    */
   @XmlAnyElement
-  @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
-  @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
-  public Map<KnowledgeBase, ColumnProcessingTypeValue> getProcessingType() {
+  public Map<String, ColumnProcessingTypeValue> getProcessingType() {
     return this.processingType;
   }
 
@@ -49,10 +42,10 @@ public final class ColumnProcessingAnnotationValue {
    * @param processingType the processing type to set
    */
   public void setProcessingType(
-      final Map<? extends KnowledgeBase, ? extends ColumnProcessingTypeValue> processingType) {
-    final ImmutableMap.Builder<KnowledgeBase, ColumnProcessingTypeValue> processingTypeBuilder =
+      final Map<? extends String, ? extends ColumnProcessingTypeValue> processingType) {
+    final ImmutableMap.Builder<String, ColumnProcessingTypeValue> processingTypeBuilder =
         ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBase, ? extends ColumnProcessingTypeValue> processingTypeEntry : processingType
+    for (final Map.Entry<? extends String, ? extends ColumnProcessingTypeValue> processingTypeEntry : processingType
         .entrySet()) {
       processingTypeBuilder.put(processingTypeEntry.getKey(), processingTypeEntry.getValue());
     }

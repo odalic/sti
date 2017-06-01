@@ -2,6 +2,7 @@ package cz.cuni.mff.xrg.odalic.api.rdf.values;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
@@ -11,7 +12,9 @@ import com.complexible.pinto.annotations.RdfProperty;
 import com.complexible.pinto.annotations.RdfsClass;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 
 /**
@@ -32,7 +35,7 @@ public final class ConfigurationValue implements Serializable {
 
   private List<KnowledgeBaseValue> usedBases;
 
-  private KnowledgeBaseValue primaryBase;
+  private String primaryBase;
 
   private Integer rowsLimit;
 
@@ -40,15 +43,23 @@ public final class ConfigurationValue implements Serializable {
 
   public ConfigurationValue() {}
 
-  public ConfigurationValue(final Configuration adaptee) {
+  public ConfigurationValue(final Configuration adaptee,
+      final Set<? extends KnowledgeBase> usedBases) {
     this.input = adaptee.getInput().getId();
     this.feedback = adaptee.getFeedback() == null ? null : new FeedbackValue(adaptee.getFeedback());
-    this.usedBases = adaptee.getUsedBases().stream().map(KnowledgeBaseValue::new)
-        .collect(ImmutableList.toImmutableList());
-    this.primaryBase = new KnowledgeBaseValue(adaptee.getPrimaryBase());
+    this.usedBases =
+        usedBases.stream().map(KnowledgeBaseValue::new).collect(ImmutableList.toImmutableList());
+    this.primaryBase = adaptee.getPrimaryBase();
     this.rowsLimit =
         adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
     this.statistical = adaptee.isStatistical();
+
+    Preconditions
+        .checkArgument(
+            adaptee.getUsedBases()
+                .equals(usedBases.stream().map(e -> e.getName())
+                    .collect(ImmutableSet.toImmutableSet())),
+            "The configuration is not compatible with the provided used bases!");
   }
 
   /**
@@ -77,7 +88,7 @@ public final class ConfigurationValue implements Serializable {
   @XmlElement
   @Nullable
   @RdfProperty("http://odalic.eu/internal/Configuration/primaryBase")
-  public KnowledgeBaseValue getPrimaryBase() {
+  public String getPrimaryBase() {
     return this.primaryBase;
   }
 
@@ -117,7 +128,7 @@ public final class ConfigurationValue implements Serializable {
    * @param feedback the feedback to set
    */
   public void setFeedback(final FeedbackValue feedback) {
-    Preconditions.checkNotNull(feedback);
+    Preconditions.checkNotNull(feedback, "The feedback cannot be null!");
 
     this.feedback = feedback;
   }
@@ -126,7 +137,7 @@ public final class ConfigurationValue implements Serializable {
    * @param input the input to set
    */
   public void setInput(final String input) {
-    Preconditions.checkNotNull(input);
+    Preconditions.checkNotNull(input, "The input cannot be null!");
 
     this.input = input;
   }
@@ -134,8 +145,8 @@ public final class ConfigurationValue implements Serializable {
   /**
    * @param primaryBase the primary knowledge base to set
    */
-  public void setPrimaryBase(final KnowledgeBaseValue primaryBase) {
-    Preconditions.checkNotNull(primaryBase);
+  public void setPrimaryBase(final String primaryBase) {
+    Preconditions.checkNotNull(primaryBase, "The primaryBase cannot be null!");
 
     this.primaryBase = primaryBase;
   }
@@ -144,7 +155,7 @@ public final class ConfigurationValue implements Serializable {
    * @param rowsLimit the maximum number of rows to process to set
    */
   public void setRowsLimit(final @Nullable Integer rowsLimit) {
-    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0));
+    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0), "Rows limit must be positive when present!");
 
     this.rowsLimit = rowsLimit;
   }
@@ -160,7 +171,7 @@ public final class ConfigurationValue implements Serializable {
    * @param usedBases the bases selected for the task to set
    */
   public void setUsedBases(final List<? extends KnowledgeBaseValue> usedBases) {
-    Preconditions.checkNotNull(usedBases);
+    Preconditions.checkNotNull(usedBases, "The usedBases cannot be null!");
 
     this.usedBases = ImmutableList.copyOf(usedBases);
   }

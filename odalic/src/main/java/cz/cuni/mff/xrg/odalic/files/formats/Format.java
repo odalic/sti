@@ -23,6 +23,10 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.FormatAdapter;
 @XmlJavaTypeAdapter(value = FormatAdapter.class)
 public final class Format implements Serializable {
 
+  private static final char DEFAULT_QUOTE_CHARACTER = '"';
+
+  private static final char DEFAULT_DELIMITER = ',';
+
   private static final long serialVersionUID = -1910540987387436314L;
 
   private final String charset;
@@ -40,9 +44,9 @@ public final class Format implements Serializable {
    */
   public Format() {
     this.charset = StandardCharsets.UTF_8.name();
-    this.delimiter = ';';
+    this.delimiter = DEFAULT_DELIMITER;
     this.emptyLinesIgnored = true;
-    this.quoteCharacter = '"';
+    this.quoteCharacter = DEFAULT_QUOTE_CHARACTER;
     this.escapeCharacter = null;
     this.commentMarker = null;
     this.lineSeparator = System.lineSeparator();
@@ -81,8 +85,8 @@ public final class Format implements Serializable {
   public Format(final Charset charset, final char delimiter, final boolean emptyLinesIgnored,
       final @Nullable Character quoteCharacter, final @Nullable Character escapeCharacter,
       final @Nullable Character commentMarker, final String lineSeparator) {
-    Preconditions.checkNotNull(charset);
-    Preconditions.checkNotNull(lineSeparator);
+    Preconditions.checkNotNull(charset, "The charset cannot be null!");
+    Preconditions.checkNotNull(lineSeparator, "The lineSeparator cannot be null!");
 
     Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Characters.isLineBreak(delimiter),
         "The delimiter is a line break character.");

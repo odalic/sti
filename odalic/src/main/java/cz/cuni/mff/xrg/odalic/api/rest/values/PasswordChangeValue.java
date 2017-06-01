@@ -42,7 +42,7 @@ public final class PasswordChangeValue {
    * @param newPassword the new password to set
    */
   public void setNewPassword(final String newPassword) {
-    Preconditions.checkNotNull(newPassword);
+    Preconditions.checkNotNull(newPassword, "The newPassword cannot be null!");
 
     this.newPassword = newPassword;
   }
@@ -51,7 +51,7 @@ public final class PasswordChangeValue {
    * @param oldPassword the old password to set
    */
   public void setOldPassword(final String oldPassword) {
-    Preconditions.checkNotNull(oldPassword);
+    Preconditions.checkNotNull(oldPassword, "The oldPassword cannot be null!");
 
     this.oldPassword = oldPassword;
   }

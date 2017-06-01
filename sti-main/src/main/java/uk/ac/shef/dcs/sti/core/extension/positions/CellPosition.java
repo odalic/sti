@@ -39,8 +39,8 @@ public final class CellPosition implements Serializable {
    * @param columnPosition column position
    */
   public CellPosition(final RowPosition rowPosition, final ColumnPosition columnPosition) {
-    Preconditions.checkNotNull(rowPosition);
-    Preconditions.checkNotNull(columnPosition);
+    Preconditions.checkNotNull(rowPosition, "The rowPosition cannot be null!");
+    Preconditions.checkNotNull(columnPosition, "The columnPosition cannot be null!");
 
     this.rowPosition = rowPosition;
     this.columnPosition = columnPosition;

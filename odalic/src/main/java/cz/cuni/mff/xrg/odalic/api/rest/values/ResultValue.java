@@ -5,7 +5,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -17,17 +19,17 @@ import com.google.common.collect.ImmutableMap;
 
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionKeyJsonDeserializer;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionKeyJsonSerializer;
+import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionValueSetDeserializer;
+import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionValueSetSerializer;
+import cz.cuni.mff.xrg.odalic.api.rest.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionToColumnRelationAnnotationMapDeserializer;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionToColumnRelationAnnotationMapSerializer;
-import cz.cuni.mff.xrg.odalic.api.rest.conversions.KnowledgeBaseKeyJsonDeserializer;
-import cz.cuni.mff.xrg.odalic.api.rest.conversions.KnowledgeBaseKeyJsonSerializer;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
@@ -42,7 +44,7 @@ public final class ResultValue implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
-  private Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
+  private Map<String, Set<ColumnPositionValue>> subjectColumnsPositions;
 
   private List<HeaderAnnotation> headerAnnotations;
 
@@ -57,7 +59,7 @@ public final class ResultValue implements Serializable {
   private List<String> warnings;
 
   public ResultValue() {
-    this.subjectColumnPositions = ImmutableMap.of();
+    this.subjectColumnsPositions = ImmutableMap.of();
     this.headerAnnotations = ImmutableList.of();
     this.cellAnnotations = new CellAnnotation[0][0];;
     this.columnRelationAnnotations = ImmutableMap.of();
@@ -67,7 +69,7 @@ public final class ResultValue implements Serializable {
   }
 
   public ResultValue(final Result adaptee) {
-    this.subjectColumnPositions = adaptee.getSubjectColumnPositions();
+    this.subjectColumnsPositions = Annotations.toColumnPositionValues(adaptee.getSubjectColumnsPositions());
     this.headerAnnotations = adaptee.getHeaderAnnotations();
     this.cellAnnotations = adaptee.getCellAnnotations();
     this.statisticalAnnotations = adaptee.getStatisticalAnnotations();
@@ -122,13 +124,13 @@ public final class ResultValue implements Serializable {
   }
 
   /**
-   * @return the subject column position
+   * @return the subject columns positions
    */
-  @XmlElement
-  @JsonDeserialize(keyUsing = KnowledgeBaseKeyJsonDeserializer.class)
-  @JsonSerialize(keyUsing = KnowledgeBaseKeyJsonSerializer.class)
-  public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
-    return this.subjectColumnPositions;
+  @XmlAnyElement
+  @JsonDeserialize(contentUsing = ColumnPositionValueSetDeserializer.class)
+  @JsonSerialize(contentUsing = ColumnPositionValueSetSerializer.class)
+  public Map<String, Set<ColumnPositionValue>> getSubjectColumnsPositions() {
+    return this.subjectColumnsPositions;
   }
 
   /**
@@ -163,7 +165,7 @@ public final class ResultValue implements Serializable {
    * @param cellAnnotations the cell annotations to set
    */
   public void setCellAnnotations(final CellAnnotation[][] cellAnnotations) {
-    Preconditions.checkNotNull(cellAnnotations);
+    Preconditions.checkNotNull(cellAnnotations, "The cellAnnotations cannot be null!");
 
     this.cellAnnotations =
         cz.cuni.mff.xrg.odalic.util.Arrays.deepCopy(CellAnnotation.class, cellAnnotations);
@@ -174,7 +176,7 @@ public final class ResultValue implements Serializable {
    */
   public void setColumnProcessingAnnotations(
       final List<ColumnProcessingAnnotation> columnProcessingAnnotations) {
-    Preconditions.checkNotNull(columnProcessingAnnotations);
+    Preconditions.checkNotNull(columnProcessingAnnotations, "The columnProcessingAnnotations cannot be null!");
 
     this.columnProcessingAnnotations = ImmutableList.copyOf(columnProcessingAnnotations);
   }
@@ -197,7 +199,7 @@ public final class ResultValue implements Serializable {
    * @param headerAnnotations the header annotations to set
    */
   public void setHeaderAnnotations(final List<HeaderAnnotation> headerAnnotations) {
-    Preconditions.checkNotNull(headerAnnotations);
+    Preconditions.checkNotNull(headerAnnotations, "The headerAnnotations cannot be null!");
 
     this.headerAnnotations = ImmutableList.copyOf(headerAnnotations);
   }
@@ -206,33 +208,33 @@ public final class ResultValue implements Serializable {
    * @param statisticalAnnotations the statistical annotations to set
    */
   public void setStatisticalAnnotations(final List<StatisticalAnnotation> statisticalAnnotations) {
-    Preconditions.checkNotNull(statisticalAnnotations);
+    Preconditions.checkNotNull(statisticalAnnotations, "The statisticalAnnotations cannot be null!");
 
     this.statisticalAnnotations = ImmutableList.copyOf(statisticalAnnotations);
   }
-
+  
   /**
-   * @param subjectColumnPositions the subject column position to set
+   * @param subjectColumnsPositions the subject columns positions to set
    */
-  public void setSubjectColumnPosition(
-      final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions) {
-    Preconditions.checkNotNull(subjectColumnPositions);
-
-    this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
+  public void setSubjectColumnsPositions(
+      final Map<? extends String, Set<ColumnPositionValue>> subjectColumnsPositions) {
+    Preconditions.checkNotNull(subjectColumnsPositions, "The subjectColumnsPositions cannot be null!");
+    
+    this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
   }
 
   /**
    * @param warnings the warnings to set
    */
   public void setWarnings(final List<String> warnings) {
-    Preconditions.checkNotNull(warnings);
+    Preconditions.checkNotNull(warnings, "The warnings cannot be null!");
 
     this.warnings = ImmutableList.copyOf(warnings);
   }
 
   @Override
   public String toString() {
-    return "ResultValue [subjectColumnPositions=" + this.subjectColumnPositions
+    return "ResultValue [subjectColumnsPositions=" + this.subjectColumnsPositions
         + ", headerAnnotations=" + this.headerAnnotations + ", cellAnnotations="
         + Arrays.toString(this.cellAnnotations) + ", columnRelationAnnotations="
         + this.columnRelationAnnotations + ", statisticalAnnotations=" + this.statisticalAnnotations

@@ -12,6 +12,7 @@ Odalic focuses on CSV as the source of data and introduces several major extensi
 - Support for multiple users and the administrator, employing token-based authorization and authentication.
 - Local and remote CSV files management.
 - Task configuration exportable in RDF for easier data provenance.
+- Knowledge base proxies management
 
 Together with https://github.com/odalic/odalic-ui , which serves as its graphic user interface, and https://github.com/odalic/odalic-uv-plugin , which allows to exploit the power of Odalic in a mature ETL framework, the Odalic STI provides a comprehensive platform to convert Open Data published in the form of CSV files to Linked Open Data, making them inherently more valuable, easier to query, integrate and share.
 
@@ -21,8 +22,7 @@ Odalic STI came to life as a student project at http://www.mff.cuni.cz .
 ### LICENCE
 Apache 2.0
 
-### Documentation
-Soon at https://grips.semantic-web.at/ .
+### Installation guide and documentation
+[PDF version](https://odalic.github.io/download/ODALIC.Project.Documentation.pdf)
 
-### Installation guide
-Soon at https://grips.semantic-web.at/ .
+[Web](https://odalic.github.io/)

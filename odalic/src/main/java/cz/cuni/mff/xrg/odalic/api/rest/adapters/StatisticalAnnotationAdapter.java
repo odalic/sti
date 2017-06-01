@@ -9,7 +9,6 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.StatisticalAnnotationValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 
 
@@ -23,8 +22,8 @@ public final class StatisticalAnnotationAdapter
 
   @Override
   public StatisticalAnnotation unmarshal(final StatisticalAnnotationValue value) throws Exception {
-    final Map<KnowledgeBase, ComponentTypeValue> component = value.getComponent();
-    final Map<KnowledgeBase, Set<EntityCandidate>> predicate =
+    final Map<String, ComponentTypeValue> component = value.getComponent();
+    final Map<String, Set<EntityCandidate>> predicate =
         Annotations.toDomain(value.getPredicate());
 
     return new StatisticalAnnotation(component, predicate);

@@ -37,8 +37,8 @@ public final class CellRelationPosition {
    */
   public CellRelationPosition(final ColumnRelationPosition columnsPosition,
       final RowPosition rowPosition) {
-    Preconditions.checkNotNull(columnsPosition);
-    Preconditions.checkNotNull(rowPosition);
+    Preconditions.checkNotNull(columnsPosition, "The columnsPosition cannot be null!");
+    Preconditions.checkNotNull(rowPosition, "The rowPosition cannot be null!");
 
     this.columnsPosition = columnsPosition;
     this.rowPosition = rowPosition;

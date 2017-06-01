@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import com.google.common.collect.ImmutableMap;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ResultValue;
+import cz.cuni.mff.xrg.odalic.api.rest.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
@@ -37,7 +38,7 @@ public final class ResultAdapter extends XmlAdapter<ResultValue, Result> {
       }
     }
 
-    return new Result(value.getSubjectColumnPositions(), value.getHeaderAnnotations(),
+    return new Result(Annotations.toColumnPositionsDomain(value.getSubjectColumnsPositions()), value.getHeaderAnnotations(),
         value.getCellAnnotations(), columnRelationAnnotationsBuilder.build(),
         value.getStatisticalAnnotations(), value.getColumnProcessingAnnotations(),
         value.getWarnings());

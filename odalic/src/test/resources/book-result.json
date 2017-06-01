@@ -1,11 +1,14 @@
 {
-  "subjectColumnPositions" : {
-    "DBpedia Clone" : {
+  "subjectColumnsPositions" : {
+    "DBpedia Clone" : [ {
       "index" : 0
-    },
-    "DBpedia" : {
+    } ],
+    "DBpedia" : [ {
       "index" : 0
-    }
+    } ],
+    "German DBpedia" : [ {
+      "index" : 0
+    } ]
   },
   "headerAnnotations" : [ {
     "candidates" : {
@@ -21,7 +24,7 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 4.001703799510735
+          "value" : 3.8686985516208043
         }
       }, {
         "entity" : {
@@ -32,7 +35,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 3.8615444837198862
+          "value" : 3.7285392358299556
         }
       }, {
         "entity" : {
@@ -46,7 +49,7 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 3.8615444837198862
+          "value" : 3.7285392358299556
         }
       }, {
         "entity" : {
@@ -57,7 +60,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 3.8615444837198862
+          "value" : 3.7285392358299556
         }
       }, {
         "entity" : {
@@ -71,7 +74,7 @@
           "tail" : "WikicatNovelsByStevenErikson"
         },
         "score" : {
-          "value" : 3.8300399946348174
+          "value" : 3.6970347467448867
         }
       }, {
         "entity" : {
@@ -85,7 +88,7 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 3.7596782683985133
+          "value" : 3.6266730205085826
         }
       }, {
         "entity" : {
@@ -99,7 +102,7 @@
           "tail" : "WikicatCanadianFantasyNovels"
         },
         "score" : {
-          "value" : 3.5179334347022104
+          "value" : 3.38492818681228
         }
       }, {
         "entity" : {
@@ -113,7 +116,7 @@
           "tail" : "WikicatFantasyNovels"
         },
         "score" : {
-          "value" : 3.3695464423070547
+          "value" : 3.236541194417124
         }
       }, {
         "entity" : {
@@ -127,7 +130,7 @@
           "tail" : "WikicatCanadianNovels"
         },
         "score" : {
-          "value" : 3.2786838354026857
+          "value" : 3.145678587512755
         }
       }, {
         "entity" : {
@@ -141,7 +144,7 @@
           "tail" : "Novel106367879"
         },
         "score" : {
-          "value" : 3.063583672708414
+          "value" : 2.930578424818483
         }
       }, {
         "entity" : {
@@ -155,7 +158,7 @@
           "tail" : "Abstraction100002137"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -169,7 +172,7 @@
           "tail" : "Communication100033020"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -183,7 +186,7 @@
           "tail" : "Fiction106367107"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -197,7 +200,7 @@
           "tail" : "LiteraryComposition106364329"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -211,7 +214,7 @@
           "tail" : "Writing106362953"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -225,7 +228,7 @@
           "tail" : "WrittenCommunication106349220"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -239,7 +242,7 @@
           "tail" : "Work"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -253,7 +256,7 @@
           "tail" : "WrittenWork"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -267,7 +270,7 @@
           "tail" : "CreativeWork"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -278,7 +281,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -289,7 +292,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.236111111111111
+          "value" : 2.1932178922976586
         }
       }, {
         "entity" : {
@@ -303,7 +306,7 @@
           "tail" : "Wikicat2000Novels"
         },
         "score" : {
-          "value" : 1.3838834764831844
+          "value" : 1.2937714474067066
         }
       }, {
         "entity" : {
@@ -317,7 +320,21 @@
           "tail" : "Wikicat1999Novels"
         },
         "score" : {
-          "value" : 1.125
+          "value" : 1.0821067811865475
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.w3.org/2002/07/owl#Thing",
+          "label" : "Thing",
+          "prefixed" : "owl:Thing",
+          "prefix" : {
+            "with" : "owl",
+            "what" : "http://www.w3.org/2002/07/owl#"
+          },
+          "tail" : "Thing"
+        },
+        "score" : {
+          "value" : 0.0
         }
       }, {
         "entity" : {
@@ -343,7 +360,7 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 3.3088834764831843
+          "value" : 3.1758782285932536
         }
       }, {
         "entity" : {
@@ -354,7 +371,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 3.175550143149851
+          "value" : 3.0425448952599203
         }
       }, {
         "entity" : {
@@ -368,7 +385,7 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 3.175550143149851
+          "value" : 3.0425448952599203
         }
       }, {
         "entity" : {
@@ -382,7 +399,7 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 3.0803120479117556
+          "value" : 2.947306800021825
         }
       }, {
         "entity" : {
@@ -393,7 +410,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -407,7 +424,7 @@
           "tail" : "Article"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -421,7 +438,7 @@
           "tail" : "Work"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -435,7 +452,7 @@
           "tail" : "WrittenWork"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -449,7 +466,7 @@
           "tail" : "CreativeWork"
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -460,7 +477,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
       }, {
         "entity" : {
@@ -471,9 +488,24 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.5088834764831844
+          "value" : 2.375878228593254
         }
-      } ]
+      }, {
+        "entity" : {
+          "resource" : "http://www.w3.org/2002/07/owl#Thing",
+          "label" : "Thing",
+          "prefixed" : "owl:Thing",
+          "prefix" : {
+            "with" : "owl",
+            "what" : "http://www.w3.org/2002/07/owl#"
+          },
+          "tail" : "Thing"
+        },
+        "score" : {
+          "value" : 0.0
+        }
+      } ],
+      "German DBpedia" : [ ]
     },
     "chosen" : {
       "DBpedia Clone" : [ {
@@ -488,7 +520,7 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 4.001703799510735
+          "value" : 3.8686985516208043
         }
       } ],
       "DBpedia" : [ {
@@ -503,9 +535,10 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 3.3088834764831843
+          "value" : 3.1758782285932536
         }
-      } ]
+      } ],
+      "German DBpedia" : [ ]
     }
   }, {
     "candidates" : {
@@ -521,7 +554,7 @@
           "tail" : "WikicatCanadianFantasyWriters"
         },
         "score" : {
-          "value" : 3.009886689182247
+          "value" : 2.829662631029291
         }
       }, {
         "entity" : {
@@ -535,7 +568,7 @@
           "tail" : "WikicatFantasyWriters"
         },
         "score" : {
-          "value" : 2.823750490426472
+          "value" : 2.6435264322735157
         }
       }, {
         "entity" : {
@@ -549,7 +582,7 @@
           "tail" : "WikicatPeopleFromToronto"
         },
         "score" : {
-          "value" : 2.823750490426472
+          "value" : 2.6435264322735157
         }
       }, {
         "entity" : {
@@ -563,7 +596,7 @@
           "tail" : "WikicatCanadianAnthropologists"
         },
         "score" : {
-          "value" : 2.7014148777116227
+          "value" : 2.5211908195586665
         }
       }, {
         "entity" : {
@@ -577,7 +610,7 @@
           "tail" : "WikicatCanadianNovelists"
         },
         "score" : {
-          "value" : 2.7014148777116227
+          "value" : 2.5211908195586665
         }
       }, {
         "entity" : {
@@ -591,7 +624,7 @@
           "tail" : "WikicatCanadianPeople"
         },
         "score" : {
-          "value" : 2.7014148777116227
+          "value" : 2.5211908195586665
         }
       }, {
         "entity" : {
@@ -605,7 +638,7 @@
           "tail" : "WikicatCanadianScienceFictionWriters"
         },
         "score" : {
-          "value" : 2.691606307584654
+          "value" : 2.5113822494316977
         }
       }, {
         "entity" : {
@@ -619,7 +652,7 @@
           "tail" : "Alumnus109786338"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -633,7 +666,7 @@
           "tail" : "Anthropologist109796323"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -647,7 +680,7 @@
           "tail" : "CausalAgent100007347"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -661,7 +694,7 @@
           "tail" : "Communicator109610660"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -675,7 +708,7 @@
           "tail" : "Intellectual109621545"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -689,7 +722,7 @@
           "tail" : "LivingThing100004258"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -703,7 +736,7 @@
           "tail" : "Novelist110363573"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -717,7 +750,7 @@
           "tail" : "Object100002684"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -731,7 +764,7 @@
           "tail" : "Organism100004475"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -745,7 +778,7 @@
           "tail" : "Person100007846"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -759,7 +792,7 @@
           "tail" : "PhysicalEntity100001930"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -773,7 +806,7 @@
           "tail" : "Scholar110557854"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -787,7 +820,7 @@
           "tail" : "Scientist110560637"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -801,7 +834,7 @@
           "tail" : "SocialScientist110619642"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -815,7 +848,7 @@
           "tail" : "Whole100003553"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -829,7 +862,7 @@
           "tail" : "WikicatIowaWriters'WorkshopAlumni"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -843,7 +876,7 @@
           "tail" : "WikicatLivingPeople"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -857,7 +890,7 @@
           "tail" : "WikicatPseudonymousWriters"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -871,7 +904,7 @@
           "tail" : "WikicatWriters"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -885,7 +918,7 @@
           "tail" : "Writer110794014"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -899,7 +932,7 @@
           "tail" : "YagoLegalActor"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -913,7 +946,7 @@
           "tail" : "YagoLegalActorGeo"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -927,7 +960,7 @@
           "tail" : "Agent"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -941,7 +974,7 @@
           "tail" : "Person"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -955,7 +988,7 @@
           "tail" : "Writer"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -969,7 +1002,7 @@
           "tail" : "Person"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -980,7 +1013,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -991,7 +1024,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1002,7 +1035,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1013,7 +1046,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1024,7 +1057,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1038,7 +1071,32 @@
           "tail" : "Person"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Agent",
+          "label" : "Agent",
+          "prefixed" : "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Agent",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 0.0
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.w3.org/2002/07/owl#Thing",
+          "label" : "Thing",
+          "prefixed" : "owl:Thing",
+          "prefix" : {
+            "with" : "owl",
+            "what" : "http://www.w3.org/2002/07/owl#"
+          },
+          "tail" : "Thing"
+        },
+        "score" : {
+          "value" : 0.0
         }
       }, {
         "entity" : {
@@ -1061,7 +1119,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1072,7 +1130,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1083,7 +1141,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1097,7 +1155,7 @@
           "tail" : "Agent"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1111,7 +1169,7 @@
           "tail" : "Article"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1125,7 +1183,7 @@
           "tail" : "List"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1139,7 +1197,7 @@
           "tail" : "Person"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1153,7 +1211,7 @@
           "tail" : "Writer"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1167,7 +1225,7 @@
           "tail" : "Person"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1178,7 +1236,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1189,7 +1247,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1200,7 +1258,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1211,7 +1269,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       }, {
         "entity" : {
@@ -1225,9 +1283,35 @@
           "tail" : "Person"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
-      } ]
+      }, {
+        "entity" : {
+          "resource" : "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Agent",
+          "label" : "Agent",
+          "prefixed" : "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Agent",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 0.0
+        }
+      }, {
+        "entity" : {
+          "resource" : "http://www.w3.org/2002/07/owl#Thing",
+          "label" : "Thing",
+          "prefixed" : "owl:Thing",
+          "prefix" : {
+            "with" : "owl",
+            "what" : "http://www.w3.org/2002/07/owl#"
+          },
+          "tail" : "Thing"
+        },
+        "score" : {
+          "value" : 0.0
+        }
+      } ],
+      "German DBpedia" : [ ]
     },
     "chosen" : {
       "DBpedia Clone" : [ {
@@ -1242,7 +1326,7 @@
           "tail" : "WikicatCanadianFantasyWriters"
         },
         "score" : {
-          "value" : 3.009886689182247
+          "value" : 2.829662631029291
         }
       } ],
       "DBpedia" : [ {
@@ -1254,9 +1338,10 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
-      } ]
+      } ],
+      "German DBpedia" : [ ]
     }
   }, {
     "candidates" : {
@@ -1269,7 +1354,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 3.92662468525901
+          "value" : 3.8592751117158652
         }
       }, {
         "entity" : {
@@ -1280,7 +1365,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 1.8944271909999157
+          "value" : 1.827077617456771
         }
       } ],
       "DBpedia" : [ {
@@ -1295,7 +1380,7 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 2.395046391999925
+          "value" : 2.3276968184567806
         }
       }, {
         "entity" : {
@@ -1306,7 +1391,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 2.3405009374544705
+          "value" : 2.273151363911326
         }
       }, {
         "entity" : {
@@ -1320,7 +1405,7 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 2.3405009374544705
+          "value" : 2.273151363911326
         }
       }, {
         "entity" : {
@@ -1334,7 +1419,7 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 2.295046391999925
+          "value" : 2.2276968184567805
         }
       }, {
         "entity" : {
@@ -1345,7 +1430,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
       }, {
         "entity" : {
@@ -1359,7 +1444,7 @@
           "tail" : "Article"
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
       }, {
         "entity" : {
@@ -1373,7 +1458,7 @@
           "tail" : "TelevisionShow"
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
       }, {
         "entity" : {
@@ -1387,7 +1472,7 @@
           "tail" : "Work"
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
       }, {
         "entity" : {
@@ -1401,7 +1486,7 @@
           "tail" : "WrittenWork"
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
       }, {
         "entity" : {
@@ -1415,7 +1500,7 @@
           "tail" : "CreativeWork"
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
       }, {
         "entity" : {
@@ -1426,7 +1511,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
       }, {
         "entity" : {
@@ -1437,9 +1522,24 @@
           "tail" : null
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
-      } ]
+      }, {
+        "entity" : {
+          "resource" : "http://www.w3.org/2002/07/owl#Thing",
+          "label" : "Thing",
+          "prefixed" : "owl:Thing",
+          "prefix" : {
+            "with" : "owl",
+            "what" : "http://www.w3.org/2002/07/owl#"
+          },
+          "tail" : "Thing"
+        },
+        "score" : {
+          "value" : 0.0
+        }
+      } ],
+      "German DBpedia" : [ ]
     },
     "chosen" : {
       "DBpedia Clone" : [ {
@@ -1451,7 +1551,7 @@
           "tail" : null
         },
         "score" : {
-          "value" : 3.92662468525901
+          "value" : 3.8592751117158652
         }
       } ],
       "DBpedia" : [ {
@@ -1466,9 +1566,10 @@
           "tail" : "Book"
         },
         "score" : {
-          "value" : 2.395046391999925
+          "value" : 2.3276968184567806
         }
-      } ]
+      } ],
+      "German DBpedia" : [ ]
     }
   } ],
   "cellAnnotations" : [ [ {
@@ -1476,7 +1577,7 @@
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Gardens_of_the_Moon",
-          "label" : "Gardens of the Moon",
+          "label" : "Gardens of the Moon@en",
           "prefixed" : "dbpedia:Gardens_of_the_Moon",
           "prefix" : {
             "with" : "dbpedia",
@@ -1485,13 +1586,13 @@
           "tail" : "Gardens_of_the_Moon"
         },
         "score" : {
-          "value" : 2.25
+          "value" : 2.164213562373095
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Gardens_of_the_Moon",
-          "label" : "Gardens of the Moon",
+          "label" : "Gardens of the Moon@en",
           "prefixed" : "dbpedia:Gardens_of_the_Moon",
           "prefix" : {
             "with" : "dbpedia",
@@ -1500,15 +1601,16 @@
           "tail" : "Gardens_of_the_Moon"
         },
         "score" : {
-          "value" : 2.25
+          "value" : 2.164213562373095
         }
-      } ]
+      } ],
+      "German DBpedia" : [ ]
     },
     "chosen" : {
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Gardens_of_the_Moon",
-          "label" : "Gardens of the Moon",
+          "label" : "Gardens of the Moon@en",
           "prefixed" : "dbpedia:Gardens_of_the_Moon",
           "prefix" : {
             "with" : "dbpedia",
@@ -1517,13 +1619,13 @@
           "tail" : "Gardens_of_the_Moon"
         },
         "score" : {
-          "value" : 2.25
+          "value" : 2.164213562373095
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Gardens_of_the_Moon",
-          "label" : "Gardens of the Moon",
+          "label" : "Gardens of the Moon@en",
           "prefixed" : "dbpedia:Gardens_of_the_Moon",
           "prefix" : {
             "with" : "dbpedia",
@@ -1532,16 +1634,17 @@
           "tail" : "Gardens_of_the_Moon"
         },
         "score" : {
-          "value" : 2.25
+          "value" : 2.164213562373095
         }
-      } ]
+      } ],
+      "German DBpedia" : [ ]
     }
   }, {
     "candidates" : {
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Steven_Erikson",
-          "label" : "Steven Erikson",
+          "label" : "Steven Erikson@en",
           "prefixed" : "dbpedia:Steven_Erikson",
           "prefix" : {
             "with" : "dbpedia",
@@ -1550,13 +1653,13 @@
           "tail" : "Steven_Erikson"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Steven_Erikson",
-          "label" : "Steven Erikson",
+          "label" : "Steven Erikson@en",
           "prefixed" : "dbpedia:Steven_Erikson",
           "prefix" : {
             "with" : "dbpedia",
@@ -1565,7 +1668,19 @@
           "tail" : "Steven_Erikson"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
+        }
+      } ],
+      "German DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://de.dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson@de",
+          "prefixed" : "http://de.dbpedia.org/resource/Steven_Erikson",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.9125773309535266
         }
       } ]
     },
@@ -1573,7 +1688,7 @@
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Steven_Erikson",
-          "label" : "Steven Erikson",
+          "label" : "Steven Erikson@en",
           "prefixed" : "dbpedia:Steven_Erikson",
           "prefix" : {
             "with" : "dbpedia",
@@ -1582,13 +1697,13 @@
           "tail" : "Steven_Erikson"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Steven_Erikson",
-          "label" : "Steven Erikson",
+          "label" : "Steven Erikson@en",
           "prefixed" : "dbpedia:Steven_Erikson",
           "prefix" : {
             "with" : "dbpedia",
@@ -1597,7 +1712,19 @@
           "tail" : "Steven_Erikson"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
+        }
+      } ],
+      "German DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://de.dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson@de",
+          "prefixed" : "http://de.dbpedia.org/resource/Steven_Erikson",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.9125773309535266
         }
       } ]
     }
@@ -1606,19 +1733,19 @@
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://www.wikidata.org/entity/Q458982",
-          "label" : "Malazan Book of the Fallen",
+          "label" : "Malazan Book of the Fallen@en",
           "prefixed" : "http://www.wikidata.org/entity/Q458982",
           "prefix" : null,
           "tail" : null
         },
         "score" : {
-          "value" : 1.8944271909999157
+          "value" : 1.827077617456771
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Malazan_Book_of_the_Fallen",
-          "label" : "Malazan Book of the Fallen",
+          "label" : "Malazan Book of the Fallen@en",
           "prefixed" : "dbpedia:Malazan_Book_of_the_Fallen",
           "prefix" : {
             "with" : "dbpedia",
@@ -1627,27 +1754,28 @@
           "tail" : "Malazan_Book_of_the_Fallen"
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
-      } ]
+      } ],
+      "German DBpedia" : [ ]
     },
     "chosen" : {
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://www.wikidata.org/entity/Q458982",
-          "label" : "Malazan Book of the Fallen",
+          "label" : "Malazan Book of the Fallen@en",
           "prefixed" : "http://www.wikidata.org/entity/Q458982",
           "prefix" : null,
           "tail" : null
         },
         "score" : {
-          "value" : 1.8944271909999157
+          "value" : 1.827077617456771
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Malazan_Book_of_the_Fallen",
-          "label" : "Malazan Book of the Fallen",
+          "label" : "Malazan Book of the Fallen@en",
           "prefixed" : "dbpedia:Malazan_Book_of_the_Fallen",
           "prefix" : {
             "with" : "dbpedia",
@@ -1656,16 +1784,17 @@
           "tail" : "Malazan_Book_of_the_Fallen"
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
-      } ]
+      } ],
+      "German DBpedia" : [ ]
     }
   } ], [ {
     "candidates" : {
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Deadhouse_Gates",
-          "label" : "Deadhouse Gates",
+          "label" : "Deadhouse Gates@en",
           "prefixed" : "dbpedia:Deadhouse_Gates",
           "prefix" : {
             "with" : "dbpedia",
@@ -1674,13 +1803,13 @@
           "tail" : "Deadhouse_Gates"
         },
         "score" : {
-          "value" : 2.767766952966369
+          "value" : 2.587542894813413
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Deadhouse_Gates",
-          "label" : "Deadhouse Gates",
+          "label" : "Deadhouse Gates@en",
           "prefixed" : "dbpedia:Deadhouse_Gates",
           "prefix" : {
             "with" : "dbpedia",
@@ -1689,15 +1818,16 @@
           "tail" : "Deadhouse_Gates"
         },
         "score" : {
-          "value" : 2.767766952966369
+          "value" : 2.587542894813413
         }
-      } ]
+      } ],
+      "German DBpedia" : [ ]
     },
     "chosen" : {
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Deadhouse_Gates",
-          "label" : "Deadhouse Gates",
+          "label" : "Deadhouse Gates@en",
           "prefixed" : "dbpedia:Deadhouse_Gates",
           "prefix" : {
             "with" : "dbpedia",
@@ -1706,13 +1836,13 @@
           "tail" : "Deadhouse_Gates"
         },
         "score" : {
-          "value" : 2.767766952966369
+          "value" : 2.587542894813413
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Deadhouse_Gates",
-          "label" : "Deadhouse Gates",
+          "label" : "Deadhouse Gates@en",
           "prefixed" : "dbpedia:Deadhouse_Gates",
           "prefix" : {
             "with" : "dbpedia",
@@ -1721,16 +1851,17 @@
           "tail" : "Deadhouse_Gates"
         },
         "score" : {
-          "value" : 2.767766952966369
+          "value" : 2.587542894813413
         }
-      } ]
+      } ],
+      "German DBpedia" : [ ]
     }
   }, {
     "candidates" : {
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Steven_Erikson",
-          "label" : "Steven Erikson",
+          "label" : "Steven Erikson@en",
           "prefixed" : "dbpedia:Steven_Erikson",
           "prefix" : {
             "with" : "dbpedia",
@@ -1739,13 +1870,13 @@
           "tail" : "Steven_Erikson"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Steven_Erikson",
-          "label" : "Steven Erikson",
+          "label" : "Steven Erikson@en",
           "prefixed" : "dbpedia:Steven_Erikson",
           "prefix" : {
             "with" : "dbpedia",
@@ -1754,7 +1885,19 @@
           "tail" : "Steven_Erikson"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
+        }
+      } ],
+      "German DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://de.dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson@de",
+          "prefixed" : "http://de.dbpedia.org/resource/Steven_Erikson",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.9125773309535266
         }
       } ]
     },
@@ -1762,7 +1905,7 @@
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Steven_Erikson",
-          "label" : "Steven Erikson",
+          "label" : "Steven Erikson@en",
           "prefixed" : "dbpedia:Steven_Erikson",
           "prefix" : {
             "with" : "dbpedia",
@@ -1771,13 +1914,13 @@
           "tail" : "Steven_Erikson"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Steven_Erikson",
-          "label" : "Steven Erikson",
+          "label" : "Steven Erikson@en",
           "prefixed" : "dbpedia:Steven_Erikson",
           "prefix" : {
             "with" : "dbpedia",
@@ -1786,7 +1929,19 @@
           "tail" : "Steven_Erikson"
         },
         "score" : {
-          "value" : 2.1570838237598053
+          "value" : 1.9768597656068492
+        }
+      } ],
+      "German DBpedia" : [ {
+        "entity" : {
+          "resource" : "http://de.dbpedia.org/resource/Steven_Erikson",
+          "label" : "Steven Erikson@de",
+          "prefixed" : "http://de.dbpedia.org/resource/Steven_Erikson",
+          "prefix" : null,
+          "tail" : null
+        },
+        "score" : {
+          "value" : 1.9125773309535266
         }
       } ]
     }
@@ -1795,19 +1950,19 @@
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://www.wikidata.org/entity/Q458982",
-          "label" : "Malazan Book of the Fallen",
+          "label" : "Malazan Book of the Fallen@en",
           "prefixed" : "http://www.wikidata.org/entity/Q458982",
           "prefix" : null,
           "tail" : null
         },
         "score" : {
-          "value" : 1.8944271909999157
+          "value" : 1.827077617456771
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Malazan_Book_of_the_Fallen",
-          "label" : "Malazan Book of the Fallen",
+          "label" : "Malazan Book of the Fallen@en",
           "prefixed" : "dbpedia:Malazan_Book_of_the_Fallen",
           "prefix" : {
             "with" : "dbpedia",
@@ -1816,27 +1971,28 @@
           "tail" : "Malazan_Book_of_the_Fallen"
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
-      } ]
+      } ],
+      "German DBpedia" : [ ]
     },
     "chosen" : {
       "DBpedia Clone" : [ {
         "entity" : {
           "resource" : "http://www.wikidata.org/entity/Q458982",
-          "label" : "Malazan Book of the Fallen",
+          "label" : "Malazan Book of the Fallen@en",
           "prefixed" : "http://www.wikidata.org/entity/Q458982",
           "prefix" : null,
           "tail" : null
         },
         "score" : {
-          "value" : 1.8944271909999157
+          "value" : 1.827077617456771
         }
       } ],
       "DBpedia" : [ {
         "entity" : {
           "resource" : "http://dbpedia.org/resource/Malazan_Book_of_the_Fallen",
-          "label" : "Malazan Book of the Fallen",
+          "label" : "Malazan Book of the Fallen@en",
           "prefixed" : "dbpedia:Malazan_Book_of_the_Fallen",
           "prefix" : {
             "with" : "dbpedia",
@@ -1845,9 +2001,10 @@
           "tail" : "Malazan_Book_of_the_Fallen"
         },
         "score" : {
-          "value" : 1.795046391999925
+          "value" : 1.7276968184567805
         }
-      } ]
+      } ],
+      "German DBpedia" : [ ]
     }
   } ] ],
   "columnRelationAnnotations" : { },
@@ -1864,17 +2021,20 @@
   "columnProcessingAnnotations" : [ {
     "processingType" : {
       "DBpedia Clone" : "NAMED_ENTITY",
-      "DBpedia" : "NAMED_ENTITY"
+      "DBpedia" : "NAMED_ENTITY",
+      "German DBpedia" : "NAMED_ENTITY"
     }
   }, {
     "processingType" : {
       "DBpedia Clone" : "NAMED_ENTITY",
-      "DBpedia" : "NAMED_ENTITY"
+      "DBpedia" : "NAMED_ENTITY",
+      "German DBpedia" : "NAMED_ENTITY"
     }
   }, {
     "processingType" : {
       "DBpedia Clone" : "NAMED_ENTITY",
-      "DBpedia" : "NAMED_ENTITY"
+      "DBpedia" : "NAMED_ENTITY",
+      "German DBpedia" : "NAMED_ENTITY"
     }
   } ],
   "warnings" : [ ]

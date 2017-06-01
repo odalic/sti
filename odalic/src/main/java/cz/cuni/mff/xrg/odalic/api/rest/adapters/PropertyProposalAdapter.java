@@ -19,7 +19,7 @@ public final class PropertyProposalAdapter
   public PropertyProposal unmarshal(final PropertyProposalValue value) throws Exception {
     try {
       return new PropertyProposal(value.getLabel(), value.getAlternativeLabels(), value.getSuffix(),
-          value.getSuperProperty(), value.getDomain(), value.getRange());
+          value.getSuperProperty(), value.getDomain(), value.getRange(), value.getType());
     } catch (final IllegalArgumentException | NullPointerException e) {
       throw new BadRequestException(e);
     }

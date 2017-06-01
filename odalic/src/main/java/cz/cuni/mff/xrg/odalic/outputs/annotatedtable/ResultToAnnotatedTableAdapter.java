@@ -1,7 +1,7 @@
 package cz.cuni.mff.xrg.odalic.outputs.annotatedtable;
 
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.input.Input;
-import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
@@ -17,8 +17,10 @@ public interface ResultToAnnotatedTableAdapter {
    *
    * @param result Odalic result
    * @param input original input
-   * @param configuration task configuration
+   * @param statistical the result comes from statistical processing
+   * @param primaryBase primary base
    * @return annotated table
    */
-  AnnotatedTable toAnnotatedTable(Result result, Input input, Configuration configuration);
+  AnnotatedTable toAnnotatedTable(Result result, Input input, boolean statistical,
+      KnowledgeBase primaryBase);
 }

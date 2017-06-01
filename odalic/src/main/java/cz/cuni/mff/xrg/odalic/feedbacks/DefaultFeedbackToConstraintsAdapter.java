@@ -3,6 +3,7 @@
  */
 package cz.cuni.mff.xrg.odalic.feedbacks;
 
+import java.util.HashSet;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.positions.CellPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
@@ -18,7 +20,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
@@ -38,12 +39,12 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
 
   private static uk.ac.shef.dcs.sti.core.extension.annotations.CellAnnotation convert(
       final CellAnnotation e, final KnowledgeBase base) {
-    final NavigableSet<EntityCandidate> candidates = e.getCandidates().get(base);
+    final NavigableSet<EntityCandidate> candidates = e.getCandidates().get(base.getName());
     if (candidates == null) {
       return null;
     }
 
-    final Set<EntityCandidate> chosen = e.getChosen().get(base);
+    final Set<EntityCandidate> chosen = e.getChosen().get(base.getName());
     if (chosen == null) {
       return null;
     }
@@ -81,6 +82,11 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
     return new uk.ac.shef.dcs.sti.core.extension.constraints.ColumnIgnore(convert(e.getPosition()));
   }
 
+  private static uk.ac.shef.dcs.sti.core.extension.constraints.ColumnCompulsory convert(
+      final ColumnCompulsory e) {
+    return new uk.ac.shef.dcs.sti.core.extension.constraints.ColumnCompulsory(convert(e.getPosition()));
+  }
+
   private static uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition convert(
       final ColumnPosition columnPosition) {
     return new uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition(
@@ -101,12 +107,12 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
 
   private static uk.ac.shef.dcs.sti.core.extension.annotations.ColumnRelationAnnotation convert(
       final ColumnRelationAnnotation e, final KnowledgeBase base) {
-    final NavigableSet<EntityCandidate> candidates = e.getCandidates().get(base);
+    final NavigableSet<EntityCandidate> candidates = e.getCandidates().get(base.getName());
     if (candidates == null) {
       return null;
     }
 
-    final Set<EntityCandidate> chosen = e.getChosen().get(base);
+    final Set<EntityCandidate> chosen = e.getChosen().get(base.getName());
     if (chosen == null) {
       return null;
     }
@@ -172,12 +178,12 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
 
   private static uk.ac.shef.dcs.sti.core.extension.annotations.HeaderAnnotation convert(
       final HeaderAnnotation e, final KnowledgeBase base) {
-    final NavigableSet<EntityCandidate> candidates = e.getCandidates().get(base);
+    final NavigableSet<EntityCandidate> candidates = e.getCandidates().get(base.getName());
     if (candidates == null) {
       return null;
     }
 
-    final Set<EntityCandidate> chosen = e.getChosen().get(base);
+    final Set<EntityCandidate> chosen = e.getChosen().get(base.getName());
     if (chosen == null) {
       return null;
     }
@@ -192,12 +198,12 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
 
   private static uk.ac.shef.dcs.sti.core.extension.annotations.StatisticalAnnotation convert(
       final StatisticalAnnotation e, final KnowledgeBase base) {
-    final ComponentTypeValue component = e.getComponent().get(base);
+    final ComponentTypeValue component = e.getComponent().get(base.getName());
     if (component == null) {
       return null;
     }
 
-    final Set<EntityCandidate> predicate = e.getPredicate().get(base);
+    final Set<EntityCandidate> predicate = e.getPredicate().get(base.getName());
     if (predicate == null) {
       return null;
     }
@@ -248,30 +254,39 @@ public class DefaultFeedbackToConstraintsAdapter implements FeedbackToConstraint
         .collect(Collectors.toSet());
   }
 
+  private static Set<uk.ac.shef.dcs.sti.core.extension.constraints.ColumnCompulsory> convertCompulsory(
+      final Set<? extends ColumnCompulsory> set) {
+    return set.stream().map(DefaultFeedbackToConstraintsAdapter::convert)
+        .collect(Collectors.toSet());
+  }
+
   private static Set<uk.ac.shef.dcs.sti.core.extension.constraints.ColumnRelation> convertRelations(
       final Set<? extends ColumnRelation> set, final KnowledgeBase base) {
     return set.stream().map(e -> convert(e, base)).filter(e -> e != null)
         .collect(Collectors.toSet());
   }
 
-  private uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition convertSubjectColumn(
+  private Set<uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition> convertSubjectColumnsPositions(
       final Feedback feedback, final KnowledgeBase base) {
-    final ColumnPosition subjectColumnPosition = feedback.getSubjectColumnPositions().get(base);
+    final Set<ColumnPosition> subjectColumnsPositions = feedback.getSubjectColumnsPositions().get(base.getName());
 
-    if (subjectColumnPosition != null) {
-      return convert(subjectColumnPosition);
+    if (subjectColumnsPositions != null) {
+      return subjectColumnsPositions.stream()
+          .map(DefaultFeedbackToConstraintsAdapter::convert).collect(Collectors.toSet());
     } else {
-      return null;
+      return new HashSet<>();
     }
   }
 
   @Override
   public Constraints toConstraints(final Feedback feedback, final KnowledgeBase base) {
-    Preconditions.checkNotNull(feedback);
-    Preconditions.checkNotNull(base);
+    Preconditions.checkNotNull(feedback, "The feedback cannot be null!");
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
-    return new Constraints(convertSubjectColumn(feedback, base),
+    return new Constraints(
+        convertSubjectColumnsPositions(feedback, base),
         convertIgnores(feedback.getColumnIgnores()),
+        convertCompulsory(feedback.getColumnCompulsory()),
         convertColumnAmbiguities(feedback.getColumnAmbiguities()),
         convertClassifications(feedback.getClassifications(), base),
         convertRelations(feedback.getColumnRelations(), base),

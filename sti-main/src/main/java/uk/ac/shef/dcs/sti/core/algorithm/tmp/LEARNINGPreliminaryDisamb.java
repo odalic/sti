@@ -9,8 +9,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.kbproxy.KBProxyResult;
+import uk.ac.shef.dcs.kbproxy.ProxyResult;
+import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
@@ -29,10 +29,10 @@ public class LEARNINGPreliminaryDisamb {
   private static final Logger LOG =
       LoggerFactory.getLogger(LEARNINGPreliminaryDisamb.class.getName());
   private final TCellDisambiguator disambiguator;
-  private final KBProxy kbSearch;
+  private final Proxy kbSearch;
   private final TColumnClassifier classifier;
 
-  public LEARNINGPreliminaryDisamb(final KBProxy kbSearch, final TCellDisambiguator disambiguator,
+  public LEARNINGPreliminaryDisamb(final Proxy kbSearch, final TCellDisambiguator disambiguator,
       final TColumnClassifier classifier) {
     this.kbSearch = kbSearch;
     this.disambiguator = disambiguator;
@@ -54,19 +54,19 @@ public class LEARNINGPreliminaryDisamb {
     final List<String> warnings = entityResult.getWarnings();
 
     if (candidates.isEmpty()) {
-      final KBProxyResult<List<Entity>> candidatesResult = this.kbSearch
+      final ProxyResult<List<Entity>> candidatesResult = this.kbSearch
           .findEntityCandidatesOfTypes(tcc.getText(), winningColumnClazz.toArray(new String[0]));
 
       candidates = candidatesResult.getResult();
-      candidatesResult.appendWarning(warnings);
+      candidatesResult.appendExistingWarning(warnings);
     }
 
     if (candidates.isEmpty()) {
-      final KBProxyResult<List<Entity>> candidatesResult =
+      final ProxyResult<List<Entity>> candidatesResult =
           this.kbSearch.findEntityCandidatesOfTypes(tcc.getText());
 
       candidates = candidatesResult.getResult();
-      candidatesResult.appendWarning(warnings);
+      candidatesResult.appendExistingWarning(warnings);
     }
 
     // now each candidate is given scores

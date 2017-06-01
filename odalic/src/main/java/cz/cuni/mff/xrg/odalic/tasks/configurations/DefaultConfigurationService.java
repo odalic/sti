@@ -21,7 +21,7 @@ public final class DefaultConfigurationService implements ConfigurationService {
 
   @Autowired
   public DefaultConfigurationService(final TaskService taskService) {
-    Preconditions.checkNotNull(taskService);
+    Preconditions.checkNotNull(taskService, "The taskService cannot be null!");
 
     this.taskService = taskService;
   }

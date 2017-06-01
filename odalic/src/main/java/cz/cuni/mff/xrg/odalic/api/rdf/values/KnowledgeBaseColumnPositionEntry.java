@@ -7,16 +7,16 @@ import com.google.common.base.Preconditions;
 @RdfsClass("http://odalic.eu/internal/KnowledgeBaseColumnPositionEntry")
 public class KnowledgeBaseColumnPositionEntry {
 
-  private KnowledgeBaseValue base;
+  private String base;
 
   private ColumnPositionValue value;
 
   public KnowledgeBaseColumnPositionEntry() {}
 
-  public KnowledgeBaseColumnPositionEntry(final KnowledgeBaseValue base,
+  public KnowledgeBaseColumnPositionEntry(final String base,
       final ColumnPositionValue value) {
-    Preconditions.checkNotNull(base);
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.base = base;
     this.value = value;
@@ -26,7 +26,7 @@ public class KnowledgeBaseColumnPositionEntry {
    * @return the base
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseColumnPositionEntry/base")
-  public KnowledgeBaseValue getBase() {
+  public String getBase() {
     return this.base;
   }
 
@@ -41,8 +41,8 @@ public class KnowledgeBaseColumnPositionEntry {
   /**
    * @param base the base to set
    */
-  public void setBase(final KnowledgeBaseValue base) {
-    Preconditions.checkNotNull(base);
+  public void setBase(final String base) {
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
     this.base = base;
   }
@@ -51,7 +51,7 @@ public class KnowledgeBaseColumnPositionEntry {
    * @param value the value to set
    */
   public void setValue(final ColumnPositionValue value) {
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     this.value = value;
   }

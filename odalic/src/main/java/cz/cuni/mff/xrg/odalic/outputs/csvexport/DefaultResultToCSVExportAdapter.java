@@ -8,16 +8,11 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.base.Preconditions;
-
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
-import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
-import cz.cuni.mff.xrg.odalic.tasks.executions.KnowledgeBaseProxyFactory;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
@@ -32,23 +27,13 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
 
   private static final String OBSERVATION = "OBSERVATION";
 
-  private final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory;
-
-  @Autowired
-  public DefaultResultToCSVExportAdapter(
-      final KnowledgeBaseProxyFactory knowledgeBaseProxyFactory) {
-    Preconditions.checkNotNull(knowledgeBaseProxyFactory);
-
-    this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
-  }
-
   private String alternativeUrlsFormat(final String text) {
     return String.format("%s_alternative_urls", text);
   }
 
   @Override
   public Input toCSVExport(final Result result, final Input input,
-      final Configuration configuration) {
+      final boolean statistical, final KnowledgeBase primaryBase) {
 
     final ListsBackedInputBuilder builder = new ListsBackedInputBuilder(input);
     final List<String> headers = input.headers();
@@ -65,10 +50,10 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
       boolean addAlternatives = false;
 
       for (int j = 0; j < input.rowsCount(); j++) {
-        for (final Entry<KnowledgeBase, Set<EntityCandidate>> entry : result
+        for (final Entry<String, Set<EntityCandidate>> entry : result
             .getCellAnnotations()[j][i].getChosen().entrySet()) {
           if ((entry.getValue() != null) && !entry.getValue().isEmpty()) {
-            if (entry.getKey().getName().equals(configuration.getPrimaryBase().getName())) {
+            if (entry.getKey().equals(primaryBase.getName())) {
               addPrimary = true;
 
               for (final EntityCandidate chosen : entry.getValue()) {
@@ -118,10 +103,8 @@ public class DefaultResultToCSVExportAdapter implements ResultToCSVExportAdapter
       }
     }
 
-    if (configuration.isStatistical()) {
-      final URI kbUri = this.knowledgeBaseProxyFactory.getKBProxies()
-          .get(configuration.getPrimaryBase().getName()).getKbDefinition()
-          .getInsertPrefixData();
+    if (statistical) {
+      final URI kbUri = primaryBase.getUserResourcesPrefix();
 
       builder.insertHeader(urlFormat(OBSERVATION), newPosition);
 

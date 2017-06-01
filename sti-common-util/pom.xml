@@ -5,7 +5,15 @@
 
     <groupId>eu.odalic.sti</groupId>
     <artifactId>sti-common-util</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		
+		<spring.version>4.3.0.RELEASE</spring.version>
+		<guava.version>21.0</guava.version>
+	</properties>
 
     <dependencies>
         <dependency>
@@ -59,12 +67,34 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        
+        <!-- Spring -->
+        <dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+        
+        <!-- Guava -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+        
+        <!-- MapDB -->
+		<dependency>
+			<groupId>org.mapdb</groupId>
+			<artifactId>mapdb</artifactId>
+			<version>3.0.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
     </dependencies>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    </properties>
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>

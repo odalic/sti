@@ -10,8 +10,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.kbproxy.KBProxyResult;
+import uk.ac.shef.dcs.kbproxy.ProxyResult;
+import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.model.DisambiguationResult;
@@ -27,10 +27,10 @@ import uk.ac.shef.dcs.util.Pair;
 public class TCellDisambiguator {
 
   private static final Logger LOG = LoggerFactory.getLogger(TCellDisambiguator.class.getName());
-  private final KBProxy kbSearch;
+  private final Proxy kbSearch;
   private final EntityScorer disambScorer;
 
-  public TCellDisambiguator(final KBProxy kbSearch, final EntityScorer disambScorer) {
+  public TCellDisambiguator(final Proxy kbSearch, final EntityScorer disambScorer) {
     this.kbSearch = kbSearch;
     this.disambScorer = disambScorer;
   }
@@ -96,11 +96,11 @@ public class TCellDisambiguator {
     for (final Entity c : candidates) {
       // find facts of each entity
       if ((c.getAttributes() == null) || (c.getAttributes().size() == 0)) {
-        final KBProxyResult<List<Attribute>> attributesResult =
+        final ProxyResult<List<Attribute>> attributesResult =
             this.kbSearch.findAttributesOfEntities(c);
 
         c.setAttributes(attributesResult.getResult());
-        attributesResult.appendWarning(warnings);
+        attributesResult.appendExistingWarning(warnings);
       }
       final Map<String, Double> scoreMap = this.disambScorer.computeElementScores(c, candidates,
           entity_column, entity_rows.get(0), entity_rows, table);

@@ -40,7 +40,7 @@ public final class ColumnAmbiguityValue implements Serializable {
    * @param position the position to set
    */
   public void setPosition(final ColumnPositionValue position) {
-    Preconditions.checkNotNull(position);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
 
     this.position = position;
   }

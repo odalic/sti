@@ -70,8 +70,8 @@ public final class FilesResource {
 
   @Autowired
   public FilesResource(final UserService userService, final FileService fileService) {
-    Preconditions.checkNotNull(userService);
-    Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(userService, "The userService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
 
     this.userService = userService;
     this.fileService = fileService;

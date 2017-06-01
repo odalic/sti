@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.ws.rs.BadRequestException;
@@ -19,7 +20,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.Rio;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import com.complexible.pinto.MappingOptions;
 import com.complexible.pinto.RDFMapper;
 import com.google.common.base.Preconditions;
@@ -27,6 +27,8 @@ import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rdf.values.ConfigurationValue;
 import cz.cuni.mff.xrg.odalic.api.rdf.values.TaskValue;
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
@@ -35,7 +37,7 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
 
 /**
  * <p>
- * A {@link TaskRdfSerializationService} implementation employing {@link RDFMapper}.
+ * A {@link TaskSerializationService} implementation employing {@link RDFMapper}.
  * </p>
  * 
  * <p>
@@ -46,9 +48,9 @@ import cz.cuni.mff.xrg.odalic.users.UserService;
  * @author Václav Brodec
  *
  */
-public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializationService {
+public class TurtleRdfMappingTaskSerializationService implements TaskSerializationService {
 
-  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V2/%s";
+  private static final String VERSIONED_SERIALIZED_TASK_URI_SUFFIX_FORMAT = "SerializedTask/V5/%s";
 
   private static String format(final Model model) {
     final StringWriter stringWriter = new StringWriter();
@@ -76,16 +78,6 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
             .toString());
   }
 
-  private static Configuration initializeConfiguration(final ConfigurationValue configurationValue,
-      final File input) {
-    return new Configuration(input,
-        configurationValue.getUsedBases().stream().map(e -> e.toKnowledgeBase()).collect(
-            ImmutableSet.toImmutableSet()),
-        configurationValue.getPrimaryBase().toKnowledgeBase(),
-        configurationValue.getFeedback().toFeedback(), configurationValue.getRowsLimit(),
-        configurationValue.isStatistical());
-  }
-
   private static Model parse(final InputStream taskStream) throws IOException {
     final Model model;
     try {
@@ -100,11 +92,13 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
     taskValue.id(getRootSubjectIri(baseUri));
   }
 
-  private static TaskValue toProxy(final Task task) {
-    final TaskValue taskValue = new TaskValue();
-    taskValue.setDescription(task.getDescription());
-    taskValue.setConfiguration(new ConfigurationValue(task.getConfiguration()));
-    return taskValue;
+  private TaskValue toProxy(final Task task) {
+    final String userId = task.getOwner().getEmail();
+
+    final Set<KnowledgeBase> usedBases = task.getConfiguration().getUsedBases().stream()
+        .map(e -> this.basesService.getByName(userId, e)).collect(ImmutableSet.toImmutableSet());
+
+    return new TaskValue(task, usedBases);
   }
 
   private final RDFMapper.Builder rdfMapperBuilder;
@@ -113,22 +107,36 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
 
   private final FileService fileService;
 
+  private final KnowledgeBaseSerializationService knowledgeBaseSerializationService;
+
+  private final BasesService basesService;
+
   public TurtleRdfMappingTaskSerializationService(final RDFMapper.Builder rdfMapperBuilder,
-      final UserService userService, final FileService fileService) {
-    Preconditions.checkNotNull(rdfMapperBuilder);
-    Preconditions.checkNotNull(userService);
-    Preconditions.checkNotNull(fileService);
+      final UserService userService, final FileService fileService,
+      final KnowledgeBaseSerializationService knowledgeBaseSerializationService,
+      final BasesService basesService) {
+    Preconditions.checkNotNull(rdfMapperBuilder, "The rdfMapperBuilder cannot be null!");
+    Preconditions.checkNotNull(userService, "The userService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(knowledgeBaseSerializationService, "The knowledgeBaseSerializationService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
 
     this.rdfMapperBuilder = rdfMapperBuilder;
     this.userService = userService;
     this.fileService = fileService;
+    this.knowledgeBaseSerializationService = knowledgeBaseSerializationService;
+    this.basesService = basesService;
   }
 
   @Autowired
   public TurtleRdfMappingTaskSerializationService(final UserService userService,
-      final FileService fileService) {
-    this(RDFMapper.builder().set(MappingOptions.IGNORE_CARDINALITY_VIOLATIONS, false)
-        .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false), userService, fileService);
+      final FileService fileService,
+      final KnowledgeBaseSerializationService knowledgeBaseSerializationService,
+      final BasesService basesService) {
+    this(
+        RDFMapper.builder().set(MappingOptions.IGNORE_CARDINALITY_VIOLATIONS, false)
+            .set(MappingOptions.IGNORE_INVALID_ANNOTATIONS, false),
+        userService, fileService, knowledgeBaseSerializationService, basesService);
   }
 
   private RDFMapper buildMapper(final URI baseUri) {
@@ -154,7 +162,7 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
     }
 
     final File input = getInput(userId, configurationValue);
-    final Configuration configuration = initializeConfiguration(configurationValue, input);
+    final Configuration configuration = initializeConfiguration(userId, configurationValue, input);
 
     final Task task = fromProxies(userId, taskId, taskValue, configuration);
 
@@ -175,10 +183,39 @@ public class TurtleRdfMappingTaskSerializationService implements TaskRdfSerializ
     return this.fileService.getById(userId, configurationValue.getInput());
   }
 
+  private Configuration initializeConfiguration(final String userId,
+      final ConfigurationValue configurationValue, final File input) {
+    final Set<KnowledgeBase> usedBases = extractUsedBases(userId, configurationValue);
+
+    final String primaryBaseName = configurationValue.getPrimaryBase();
+    final KnowledgeBase primaryBase = this.basesService.getByName(userId, primaryBaseName);
+
+    Preconditions.checkArgument(usedBases.contains(primaryBase),
+        "The primary base not among the used ones!");
+
+    return new Configuration(input,
+        usedBases.stream().map(e -> e.getName()).collect(ImmutableSet.toImmutableSet()),
+        primaryBase.getName(), configurationValue.getFeedback().toFeedback(),
+        configurationValue.getRowsLimit(), configurationValue.isStatistical());
+  }
+
+  private Set<KnowledgeBase> extractUsedBases(final String userId,
+      final ConfigurationValue configurationValue) {
+    final Set<KnowledgeBase> usedBases = configurationValue.getUsedBases().stream()
+        .map(e -> this.knowledgeBaseSerializationService.deserialize(userId, e))
+        .collect(ImmutableSet.toImmutableSet());
+
+    for (final KnowledgeBase usedBase : usedBases) {
+      this.basesService.merge(usedBase);
+    }
+
+    return usedBases;
+  }
+
   @Override
   public String serialize(final Task task, final URI baseUri) {
-    Preconditions.checkNotNull(task);
-    Preconditions.checkNotNull(baseUri);
+    Preconditions.checkNotNull(task, "The task cannot be null!");
+    Preconditions.checkNotNull(baseUri, "The baseUri cannot be null!");
 
     final TaskValue taskValue = toProxy(task);
 

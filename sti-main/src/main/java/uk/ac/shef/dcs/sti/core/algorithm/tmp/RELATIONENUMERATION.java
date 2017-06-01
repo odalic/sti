@@ -1,6 +1,7 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
+import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 import uk.ac.shef.dcs.sti.core.model.RelationColumns;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TCellAnnotation;
@@ -78,6 +80,25 @@ public class RELATIONENUMERATION {
       tableAnnotations = winningSolution;
     }
 
+    if (STIConstantProperty.REVISE_RELATION_ANNOTATION_BY_DC && (update != null)) {
+      final List<String> domain_rep =
+          update.createDomainRep(table, tableAnnotations, annotatedColumns);
+      reviseColumnColumnRelationAnnotations(tableAnnotations, domain_rep,
+          relationEnumerator.getRelationScorer());
+    }
+  }
+
+  public void enumerate(final TColumnColumnRelationEnumerator relationEnumerator,
+      TAnnotation tableAnnotations, final Table table, final List<Integer> annotatedColumns,
+      final UPDATE update, final Constraints constraints) throws STIException {
+    Set<Integer> subjectColumns = new HashSet<>();
+    for (ColumnPosition subjectPosition : constraints.getSubjectColumnsPositions()) {
+      LOG.info(">>\t\t Let subject column=" + subjectPosition.getIndex());
+      relationEnumerator.runRelationEnumeration(tableAnnotations, table,
+          subjectPosition.getIndex(), constraints);
+      subjectColumns.add(subjectPosition.getIndex());
+    }
+    tableAnnotations.setSubjectColumns(subjectColumns);
 
     if (STIConstantProperty.REVISE_RELATION_ANNOTATION_BY_DC && (update != null)) {
       final List<String> domain_rep =

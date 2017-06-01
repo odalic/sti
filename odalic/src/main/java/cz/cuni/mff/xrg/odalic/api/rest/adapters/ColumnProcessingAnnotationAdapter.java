@@ -7,7 +7,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import cz.cuni.mff.xrg.odalic.api.rest.values.ColumnProcessingAnnotationValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.ColumnProcessingTypeValue;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 
 public final class ColumnProcessingAnnotationAdapter
@@ -22,7 +21,7 @@ public final class ColumnProcessingAnnotationAdapter
   @Override
   public ColumnProcessingAnnotation unmarshal(final ColumnProcessingAnnotationValue value)
       throws Exception {
-    final Map<KnowledgeBase, ColumnProcessingTypeValue> processingType = value.getProcessingType();
+    final Map<String, ColumnProcessingTypeValue> processingType = value.getProcessingType();
 
     return new ColumnProcessingAnnotation(processingType);
   }

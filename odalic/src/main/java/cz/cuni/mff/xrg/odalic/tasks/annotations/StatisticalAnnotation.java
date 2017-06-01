@@ -26,9 +26,9 @@ public final class StatisticalAnnotation implements Serializable {
 
   private static final long serialVersionUID = -1695807148169080424L;
 
-  private final Map<KnowledgeBase, ComponentTypeValue> component;
+  private final Map<String, ComponentTypeValue> component;
 
-  private final Map<KnowledgeBase, Set<EntityCandidate>> predicate;
+  private final Map<String, Set<EntityCandidate>> predicate;
 
   /**
    * Creates new annotation.
@@ -37,22 +37,22 @@ public final class StatisticalAnnotation implements Serializable {
    * @param predicate predicate for statistical component
    */
   public StatisticalAnnotation(
-      final Map<? extends KnowledgeBase, ? extends ComponentTypeValue> component,
-      final Map<? extends KnowledgeBase, ? extends Set<? extends EntityCandidate>> predicate) {
-    Preconditions.checkNotNull(component);
-    Preconditions.checkNotNull(predicate);
+      final Map<? extends String, ? extends ComponentTypeValue> component,
+      final Map<? extends String, ? extends Set<? extends EntityCandidate>> predicate) {
+    Preconditions.checkNotNull(component, "The component cannot be null!");
+    Preconditions.checkNotNull(predicate, "The predicate cannot be null!");
 
-    final ImmutableMap.Builder<KnowledgeBase, ComponentTypeValue> componentBuilder =
+    final ImmutableMap.Builder<String, ComponentTypeValue> componentBuilder =
         ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBase, ? extends ComponentTypeValue> componentEntry : component
+    for (final Map.Entry<? extends String, ? extends ComponentTypeValue> componentEntry : component
         .entrySet()) {
       componentBuilder.put(componentEntry.getKey(), componentEntry.getValue());
     }
     this.component = componentBuilder.build();
 
-    final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> predicateBuilder =
+    final ImmutableMap.Builder<String, Set<EntityCandidate>> predicateBuilder =
         ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBase, ? extends Set<? extends EntityCandidate>> predicateEntry : predicate
+    for (final Map.Entry<? extends String, ? extends Set<? extends EntityCandidate>> predicateEntry : predicate
         .entrySet()) {
       predicateBuilder.put(predicateEntry.getKey(), ImmutableSet.copyOf(predicateEntry.getValue()));
     }
@@ -97,14 +97,14 @@ public final class StatisticalAnnotation implements Serializable {
   /**
    * @return the component
    */
-  public Map<KnowledgeBase, ComponentTypeValue> getComponent() {
+  public Map<String, ComponentTypeValue> getComponent() {
     return this.component;
   }
 
   /**
    * @return the predicate
    */
-  public Map<KnowledgeBase, Set<EntityCandidate>> getPredicate() {
+  public Map<String, Set<EntityCandidate>> getPredicate() {
     return this.predicate;
   }
 
@@ -132,12 +132,12 @@ public final class StatisticalAnnotation implements Serializable {
    */
   public StatisticalAnnotation merge(final StatisticalAnnotation other)
       throws IllegalArgumentException {
-    final ImmutableMap.Builder<KnowledgeBase, ComponentTypeValue> componentBuilder =
+    final ImmutableMap.Builder<String, ComponentTypeValue> componentBuilder =
         ImmutableMap.builder();
     componentBuilder.putAll(this.component);
     componentBuilder.putAll(other.component);
 
-    final ImmutableMap.Builder<KnowledgeBase, Set<EntityCandidate>> predicateBuilder =
+    final ImmutableMap.Builder<String, Set<EntityCandidate>> predicateBuilder =
         ImmutableMap.builder();
     predicateBuilder.putAll(this.predicate);
     predicateBuilder.putAll(other.predicate);

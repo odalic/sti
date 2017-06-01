@@ -51,6 +51,10 @@ public abstract class SemanticTableInterpreter {
     this.ignoreCols = ignoreCols;
   }
 
+  public void setMustdoColumns(final Set<Integer> mustdoCols) {
+    this.mustdoColumns = mustdoCols;
+  }
+
   public abstract TAnnotation start(Table table, boolean relationLearning) throws STIException;
 
   public abstract TAnnotation start(Table table, boolean statistical, Constraints constraints)

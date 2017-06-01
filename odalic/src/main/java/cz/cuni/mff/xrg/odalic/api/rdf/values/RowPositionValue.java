@@ -32,7 +32,7 @@ public final class RowPositionValue {
    * @param index the index to set
    */
   public void setIndex(final int index) {
-    Preconditions.checkArgument(index >= 0);
+    Preconditions.checkArgument(index >= 0, "Row position index must be nonnegative!");
 
     this.index = index;
   }

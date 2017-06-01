@@ -42,7 +42,7 @@ public final class ScoreValue implements Serializable {
    * @param value the value to set
    */
   public void setValue(final double value) {
-    Preconditions.checkArgument(value >= 0);
+    Preconditions.checkArgument(value >= 0, "The score value must be nonnegative!");
 
     this.value = value;
   }

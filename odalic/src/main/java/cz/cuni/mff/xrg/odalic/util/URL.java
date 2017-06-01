@@ -66,9 +66,9 @@ public final class URL {
    */
   public static java.net.URL setQueryParameter(final java.net.URL url, final String key,
       final String value) throws MalformedURLException {
-    Preconditions.checkNotNull(url);
-    Preconditions.checkNotNull(key);
-    Preconditions.checkNotNull(value);
+    Preconditions.checkNotNull(url, "The url cannot be null!");
+    Preconditions.checkNotNull(key, "The key cannot be null!");
+    Preconditions.checkNotNull(value, "The value cannot be null!");
 
     try {
       return UriBuilder.fromUri(url.toURI()).queryParam(key, value).build().toURL();

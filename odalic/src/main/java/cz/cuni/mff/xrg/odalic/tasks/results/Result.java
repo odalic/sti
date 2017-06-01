@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -20,7 +20,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 
 /**
@@ -46,7 +45,7 @@ public class Result implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
-  private final Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
+  private final Map<String, Set<ColumnPosition>> subjectColumnsPositions;
 
   private final List<HeaderAnnotation> headerAnnotations;
 
@@ -60,24 +59,25 @@ public class Result implements Serializable {
 
   private final List<String> warnings;
 
-  public Result(final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions,
+  public Result(
+      final Map<? extends String, Set<ColumnPosition>> subjectColumnsPositions,
       final List<? extends HeaderAnnotation> headerAnnotations,
       final CellAnnotation[][] cellAnnotations,
       final Map<? extends ColumnRelationPosition, ? extends ColumnRelationAnnotation> columnRelationAnnotations,
       final List<? extends StatisticalAnnotation> statisticalAnnotations,
       final List<? extends ColumnProcessingAnnotation> columnProcessingAnnotations,
       final List<? extends String> warnings) {
-    Preconditions.checkNotNull(subjectColumnPositions);
-    Preconditions.checkNotNull(headerAnnotations);
-    Preconditions.checkNotNull(cellAnnotations);
-    Preconditions.checkNotNull(columnRelationAnnotations);
-    Preconditions.checkNotNull(statisticalAnnotations);
-    Preconditions.checkNotNull(columnProcessingAnnotations);
-    Preconditions.checkNotNull(warnings);
-    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Arrays.containsNull(cellAnnotations));
-    Preconditions.checkArgument(cz.cuni.mff.xrg.odalic.util.Arrays.isMatrix(cellAnnotations));
+    Preconditions.checkNotNull(subjectColumnsPositions, "The subjectColumnsPositions cannot be null!");
+    Preconditions.checkNotNull(headerAnnotations, "The headerAnnotations cannot be null!");
+    Preconditions.checkNotNull(cellAnnotations, "The cellAnnotations cannot be null!");
+    Preconditions.checkNotNull(columnRelationAnnotations, "The columnRelationAnnotations cannot be null!");
+    Preconditions.checkNotNull(statisticalAnnotations, "The statisticalAnnotations cannot be null!");
+    Preconditions.checkNotNull(columnProcessingAnnotations, "The columnProcessingAnnotations cannot be null!");
+    Preconditions.checkNotNull(warnings, "The warnings cannot be null!");
+    Preconditions.checkArgument(!cz.cuni.mff.xrg.odalic.util.Arrays.containsNull(cellAnnotations), "None of the cell annotations can be null!");
+    Preconditions.checkArgument(cz.cuni.mff.xrg.odalic.util.Arrays.isMatrix(cellAnnotations), "The cell annotations do not form a matrix!");
 
-    this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
+    this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
     this.headerAnnotations = ImmutableList.copyOf(headerAnnotations);
     this.cellAnnotations =
         cz.cuni.mff.xrg.odalic.util.Arrays.deepCopy(CellAnnotation.class, cellAnnotations);
@@ -121,11 +121,11 @@ public class Result implements Serializable {
     } else if (!this.headerAnnotations.equals(other.headerAnnotations)) {
       return false;
     }
-    if (this.subjectColumnPositions == null) {
-      if (other.subjectColumnPositions != null) {
+    if (this.subjectColumnsPositions == null) {
+      if (other.subjectColumnsPositions != null) {
         return false;
       }
-    } else if (!this.subjectColumnPositions.equals(other.subjectColumnPositions)) {
+    } else if (!this.subjectColumnsPositions.equals(other.subjectColumnsPositions)) {
       return false;
     }
     if (this.statisticalAnnotations == null) {
@@ -188,11 +188,10 @@ public class Result implements Serializable {
   }
 
   /**
-   * @return the subject column positions
+   * @return the subject columns positions
    */
-  @Nullable
-  public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
-    return this.subjectColumnPositions;
+  public Map<String, Set<ColumnPosition>> getSubjectColumnsPositions() {
+    return this.subjectColumnsPositions;
   }
 
   /**
@@ -217,7 +216,7 @@ public class Result implements Serializable {
     result = (prime * result)
         + ((this.headerAnnotations == null) ? 0 : this.headerAnnotations.hashCode());
     result = (prime * result)
-        + ((this.subjectColumnPositions == null) ? 0 : this.subjectColumnPositions.hashCode());
+        + ((this.subjectColumnsPositions == null) ? 0 : this.subjectColumnsPositions.hashCode());
     result = (prime * result)
         + ((this.statisticalAnnotations == null) ? 0 : this.statisticalAnnotations.hashCode());
     result = (prime * result) + ((this.columnProcessingAnnotations == null) ? 0
@@ -227,7 +226,7 @@ public class Result implements Serializable {
 
   @Override
   public String toString() {
-    return "Result [subjectColumnPositions=" + this.subjectColumnPositions + ", headerAnnotations="
+    return "Result [subjectColumnsPositions=" + this.subjectColumnsPositions + ", headerAnnotations="
         + this.headerAnnotations + ", cellAnnotations=" + Arrays.deepToString(this.cellAnnotations)
         + ", columnRelationAnnotations=" + this.columnRelationAnnotations
         + ", statisticalAnnotations=" + this.statisticalAnnotations

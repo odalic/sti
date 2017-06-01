@@ -24,8 +24,8 @@ public final class Entity implements Comparable<Entity>, Serializable {
    * @param label label
    */
   public Entity(final String resource, final String label) {
-    Preconditions.checkNotNull(resource);
-    Preconditions.checkNotNull(label);
+    Preconditions.checkNotNull(resource, "The resource cannot be null!");
+    Preconditions.checkNotNull(label, "The label cannot be null!");
 
     this.resource = resource;
     this.label = label;
