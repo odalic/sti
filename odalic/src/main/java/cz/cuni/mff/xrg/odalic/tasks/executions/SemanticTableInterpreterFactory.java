@@ -21,7 +21,7 @@ public interface SemanticTableInterpreterFactory {
    * Lazily initializes the interpreter.
    *
    * @param userId the valid owner of the bases
-   * @param the bases from which the interpreters are derived
+   * @param bases the bases from which the interpreters are derived
    * @return the interpreter implementations
    * @throws IOException when the initialization process fails to load its configuration
    * @throws STIException when the interpreters fail to initialize

@@ -76,6 +76,11 @@ public class TColumnColumnRelationEnumerator {
 
     // (added): set relations suggested by the user
     for (final ColumnRelation relation : constraints.getColumnRelations()) {
+      if (relation.getAnnotation().getChosen().isEmpty()) {
+        annotations.addEmptyColumnColumnRelation(
+            new RelationColumns(relation.getPosition().getFirstIndex(),
+                relation.getPosition().getSecondIndex()));
+      }
       for (final EntityCandidate suggestion : relation.getAnnotation().getChosen()) {
         annotations.addColumnColumnRelation(new TColumnColumnRelationAnnotation(
             new RelationColumns(relation.getPosition().getFirstIndex(),

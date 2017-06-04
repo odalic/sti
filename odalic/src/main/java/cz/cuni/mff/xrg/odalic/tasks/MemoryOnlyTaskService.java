@@ -39,6 +39,7 @@ public final class MemoryOnlyTaskService implements TaskService {
    * Creates the task service with no registered tasks.
    * 
    * @param fileService file service
+   * @param basesService bases service
    */
   @Autowired
   public MemoryOnlyTaskService(final FileService fileService, final BasesService basesService) {

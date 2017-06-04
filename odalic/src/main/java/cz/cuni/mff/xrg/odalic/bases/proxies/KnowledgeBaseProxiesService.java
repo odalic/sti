@@ -15,7 +15,8 @@ import uk.ac.shef.dcs.kbproxy.Proxy;
 public interface KnowledgeBaseProxiesService {
   /**
    * Provides the proxies.
-   * @param bases 
+   * 
+   * @param bases the base configurations
    *
    * @return the proxies
    */

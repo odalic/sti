@@ -700,7 +700,14 @@ public final class SparqlProxyCore implements ProxyCore {
     log.info("SPARQL query: \n" + sparqlQuery);
 
     UpdateRequest query = UpdateFactory.create(sparqlQuery);
-    UpdateProcessor queryExecution = UpdateExecutionFactory.createRemote(query, definition.getInsertEndpoint());
+
+    UpdateProcessor queryExecution;
+    if (httpClient != null) {
+      queryExecution = UpdateExecutionFactory.createRemote(query, definition.getInsertEndpoint(), httpClient);
+    }
+    else{
+      queryExecution = UpdateExecutionFactory.createRemote(query, definition.getInsertEndpoint());
+    }
 
     queryExecution.execute();
   }

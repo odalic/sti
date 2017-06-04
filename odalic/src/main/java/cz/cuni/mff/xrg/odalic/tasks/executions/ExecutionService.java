@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
+import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
@@ -123,4 +124,13 @@ public interface ExecutionService {
    * @param taskId task ID
    */
   void unscheduleForTaskId(String userId, String taskId);
+
+  /**
+   * Replaces the computed result.
+   * 
+   * @param userId user ID
+   * @param taskId task ID
+   * @param feedback new result
+   */
+  void mergeWithResultForTaskId(String userId, String taskId, Feedback feedback);
 }

@@ -105,7 +105,7 @@ public class CSVExportTest {
     User user = new User("test@odalic.eu", "passwordHash", Role.USER);
     try {
       groupsService.initializeDefaults(user);
-      basesService.initializeDefaults(user);
+      basesService.initializeDefaults(user, groupsService);
     } catch (final Exception e) {
       log.info("KnowledgeBaseProxyFactory is not available, so test was stopped: " + e.getMessage());
       return;

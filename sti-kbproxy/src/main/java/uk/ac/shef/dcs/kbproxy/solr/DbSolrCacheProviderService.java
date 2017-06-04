@@ -1,5 +1,6 @@
 package uk.ac.shef.dcs.kbproxy.solr;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -142,8 +143,28 @@ public final class DbSolrCacheProviderService implements CacheProviderService {
     if (cachePathValue == null) {
       return generateNewPath(id);
     } else {
-      return Paths.get(cachePathValue);
+      final Path cachePath = Paths.get(cachePathValue);
+      
+      if (isValidCachePath(cachePath)) {
+        return cachePath;
+      } else {
+        log.warn("Invalid cache path {} for {}. Generating new one...", cachePath, id);
+        return generateNewPath(id);
+      }
     }
+  }
+  
+  private static boolean isValidCachePath(final Path cachePath) {
+    final File cacheFile = cachePath.toFile();
+    if (!cacheFile.exists()) {
+      return false;
+    }
+    
+    if (!cacheFile.isDirectory()) {
+      return false;
+    }
+    
+    return true;
   }
 
   private Path generateNewPath(final String id) {

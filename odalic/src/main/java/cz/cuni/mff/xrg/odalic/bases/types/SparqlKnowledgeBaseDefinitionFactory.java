@@ -69,7 +69,8 @@ public final class SparqlKnowledgeBaseDefinitionFactory
 
     // SPARQL insert
     if (base.isInsertEnabled()) {
-      builder.setInsertGraph(base.getInsertGraph().toString());
+      builder.setInsertGraph(base.getInsertGraph() == null
+          ? SparqlProxyDefinition.DEFAULT_INSERT_GRAPH : base.getInsertGraph().toString());
 
       builder.setInsertDefaultClass(SparqlProxyDefinition.DEFAULT_INSERT_DEFAULT_CLASS);
       builder.setInsertPredicateLabel(SparqlProxyDefinition.DEFAULT_INSERT_PREDICATE_LABEL);
@@ -77,8 +78,8 @@ public final class SparqlKnowledgeBaseDefinitionFactory
       builder.setInsertPredicateSubclassOf(SparqlProxyDefinition.DEFAULT_INSERT_PREDICATE_SUBCLASS_OF);
       builder.setInsertPredicateSubPropertyOf(SparqlProxyDefinition.DEFAULT_INSERT_PREDICATE_SUB_PROPERTY_OF);
       builder.setInsertTypeClass(SparqlProxyDefinition.DEFAULT_INSERT_TYPE_CLASS);
-      builder.setInsertTypeDataProperty(base.getDatatypeProperty() == null ? null : base.getDatatypeProperty().toString());
-      builder.setInsertTypeObjectProperty(base.getObjectProperty() == null ? null : base.getObjectProperty().toString());
+      builder.setInsertTypeDataProperty(base.getDatatypeProperty() == null ? SparqlProxyDefinition.DEFAULT_INSERT_DATATYPE_PROPERTY_TYPE : base.getDatatypeProperty().toString());
+      builder.setInsertTypeObjectProperty(base.getObjectProperty() == null ? SparqlProxyDefinition.DEFAULT_INSERT_OBJECT_PROPERTY_TYPE : base.getObjectProperty().toString());
     }
     
     builder.setStoppedClasses(base.getSkippedClasses());

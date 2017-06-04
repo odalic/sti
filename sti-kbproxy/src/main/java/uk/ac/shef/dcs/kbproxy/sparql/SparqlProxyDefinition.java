@@ -432,6 +432,9 @@ public class SparqlProxyDefinition implements ProxyDefinition {
 
   public static final String INSERT_TYPE_DATA_PROPERTY = "kb.insert.type.dataProperty";
   public static final String DEFAULT_INSERT_TYPE_DATA_PROPERTY = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property";
+  public static final String DEFAULT_INSERT_DATATYPE_PROPERTY_TYPE = "http://www.w3.org/2002/07/owl#DatatypeProperty";
+  public static final String DEFAULT_INSERT_OBJECT_PROPERTY_TYPE = "http://www.w3.org/2002/07/owl#ObjectProperty";
+  public static final String DEFAULT_INSERT_GRAPH = "http://odalic.eu";
 
 
   public static Builder builder() {

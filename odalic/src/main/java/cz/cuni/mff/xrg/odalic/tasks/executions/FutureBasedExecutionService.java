@@ -34,7 +34,7 @@ import cz.cuni.mff.xrg.odalic.input.InputToTableAdapter;
 import cz.cuni.mff.xrg.odalic.input.ParsingResult;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
-import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
+import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
 import cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
@@ -60,7 +60,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
   private static final Logger logger = LoggerFactory.getLogger(FutureBasedExecutionService.class);
 
   private final ConfigurationService configurationService;
-  private final FeedbackService feedbackService;
+  private final InputSnapshotsService inputSnapshotsService;
   private final FileService fileService;
   private final BasesService basesService;
   private final AnnotationToResultAdapter annotationResultAdapter;
@@ -77,13 +77,13 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
   @Autowired
   public FutureBasedExecutionService(final ConfigurationService configurationService,
-      final FeedbackService feedbackService, final FileService fileService,
+      final InputSnapshotsService inputSnapshotsService, final FileService fileService,
       final BasesService basesService, final AnnotationToResultAdapter annotationToResultAdapter,
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
       final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter) {
     Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
-    Preconditions.checkNotNull(feedbackService, "The feedbackService cannot be null!");
+    Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
     Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
     Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
     Preconditions.checkNotNull(annotationToResultAdapter, "The annotationToResultAdapter cannot be null!");
@@ -93,7 +93,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
     Preconditions.checkNotNull(inputToTableAdapter, "The inputToTableAdapter cannot be null!");
 
     this.configurationService = configurationService;
-    this.feedbackService = feedbackService;
+    this.inputSnapshotsService = inputSnapshotsService;
     this.fileService = fileService;
     this.basesService = basesService;
     this.annotationResultAdapter = annotationToResultAdapter;
@@ -238,7 +238,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
     final Input input = parsingResult.getInput();
 
-    this.feedbackService.setInputSnapshotForTaskid(userId, taskId, input);
+    this.inputSnapshotsService.setInputSnapshotForTaskid(userId, taskId, input);
 
     final Callable<Result> execution = () -> {
       try {
@@ -295,5 +295,10 @@ public final class FutureBasedExecutionService implements ExecutionService {
     }
 
     resultFuture.cancel(false);
+  }
+
+  @Override
+  public void mergeWithResultForTaskId(String userId, String taskId, Feedback feedback) {
+    throw new UnsupportedOperationException(); //TODO: Implement.
   }
 }
