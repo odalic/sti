@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>eu.odalic.sti</groupId>
 	<artifactId>odalic-sti</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>1.1.1</version>
     <packaging>pom</packaging>
 	<name>Odalic STI</name>
 	<description>Odalic Semantic Table Interpreter</description>
