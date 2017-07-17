@@ -62,11 +62,11 @@ public final class Task implements Serializable {
    */
   public Task(final User owner, final String id, final String description, final Date created,
       final Configuration configuration) {
-    Preconditions.checkNotNull(owner);
-    Preconditions.checkNotNull(id);
-    Preconditions.checkNotNull(description);
-    Preconditions.checkNotNull(created);
-    Preconditions.checkNotNull(configuration);
+    Preconditions.checkNotNull(owner, "The owner cannot be null!");
+    Preconditions.checkNotNull(id, "The id cannot be null!");
+    Preconditions.checkNotNull(description, "The description cannot be null!");
+    Preconditions.checkNotNull(created, "The created cannot be null!");
+    Preconditions.checkNotNull(configuration, "The configuration cannot be null!");
 
     Preconditions.checkArgument(!id.isEmpty(), "The task identifier is empty!");
     Preconditions.checkArgument(VALID_ID_PATTERN.matcher(id).matches(),

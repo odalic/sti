@@ -3,6 +3,7 @@
  */
 package cz.cuni.mff.xrg.odalic.users;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.Duration;
 import java.time.Instant;
@@ -26,7 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSortedSet;
 
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.files.FileService;
+import cz.cuni.mff.xrg.odalic.groups.GroupsService;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
 import cz.cuni.mff.xrg.odalic.util.hash.PasswordHashingService;
@@ -67,9 +70,11 @@ public final class DbUserService implements UserService {
   private static final String ADMIN_EMAIL_PROPERTY_KEY = "cz.cuni.mff.xrg.odalic.users.admin.email";
   private static final String ADMIN_INITIAL_PASSWORD_PROPERTY_KEY =
       "cz.cuni.mff.xrg.odalic.users.admin.password";
+  private static final String EMAIL_CONFIRMATIONS_REQUIRED_PROPERTY_KEY = "mail.confirmations";
 
 
   private static final Logger logger = LoggerFactory.getLogger(DbUserService.class);
+
 
 
   private static Address extractAddress(final Credentials credentials) {
@@ -112,7 +117,7 @@ public final class DbUserService implements UserService {
 
   private static int getMaxCodesKept(final Properties properties) {
     final String maximumCodesKeptString = properties.getProperty(MAXIMUM_CODES_KEPT_PROPERTY_KEY);
-    Preconditions.checkNotNull(maximumCodesKeptString);
+    Preconditions.checkNotNull(maximumCodesKeptString, "The maximumCodesKeptString cannot be null!");
 
     try {
       return Integer.parseInt(maximumCodesKeptString);
@@ -205,6 +210,12 @@ public final class DbUserService implements UserService {
 
   private final FileService fileService;
 
+  private final GroupsService groupsService;
+
+  private final BasesService basesService;
+
+  private final boolean confirmationsRequired;
+
   private final long signUpConfirmationWindowMinutes;
 
   private final long passwordSettingConfirmationWindowMinutes;
@@ -234,18 +245,23 @@ public final class DbUserService implements UserService {
    */
   private final BTreeMap<Object[], Boolean> userIdsToTokenIds;
 
+
+
   @SuppressWarnings("unchecked")
   @Autowired
   public DbUserService(final PropertiesService propertiesService,
       final PasswordHashingService passwordHashingService, final MailService mailService,
       final TokenService tokenService, final DbService dbService, final TaskService taskService,
-      final FileService fileService) {
-    Preconditions.checkNotNull(propertiesService);
-    Preconditions.checkNotNull(passwordHashingService);
-    Preconditions.checkNotNull(mailService);
-    Preconditions.checkNotNull(tokenService);
-    Preconditions.checkNotNull(taskService);
-    Preconditions.checkNotNull(fileService);
+      final FileService fileService, final GroupsService groupsService,
+      final BasesService basesService) throws IOException {
+    Preconditions.checkNotNull(propertiesService, "The propertiesService cannot be null!");
+    Preconditions.checkNotNull(passwordHashingService, "The passwordHashingService cannot be null!");
+    Preconditions.checkNotNull(mailService, "The mailService cannot be null!");
+    Preconditions.checkNotNull(tokenService, "The tokenService cannot be null!");
+    Preconditions.checkNotNull(taskService, "The taskService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(groupsService, "The groupsService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
 
     final Properties properties = propertiesService.get();
 
@@ -254,11 +270,15 @@ public final class DbUserService implements UserService {
     this.tokenService = tokenService;
     this.taskService = taskService;
     this.fileService = fileService;
+    this.groupsService = groupsService;
+    this.basesService = basesService;
 
     this.db = dbService.getDb();
 
     this.userIdsToUsers =
         this.db.hashMap("userIdsToUsers", Serializer.STRING, Serializer.JAVA).createOrOpen();
+
+    this.confirmationsRequired = getConfirmationsRequired(properties);
 
     final int maximumCodesKept = getMaxCodesKept(properties);
 
@@ -288,26 +308,40 @@ public final class DbUserService implements UserService {
     createAdminIfNotPresent(properties);
   }
 
+  private static boolean getConfirmationsRequired(Properties properties) {
+    final String confirmationsRequiredValue =
+        properties.getProperty(EMAIL_CONFIRMATIONS_REQUIRED_PROPERTY_KEY);
+    if (confirmationsRequiredValue == null) {
+      return false;
+    }
+
+    return Boolean.parseBoolean(confirmationsRequiredValue);
+  }
+
   @Override
-  public void activateUser(final Token token) {
+  public void activateUser(final Token token) throws IOException {
     final DecodedToken decodedToken = validateAndDecode(token);
 
     final Credentials credentials = matchCredentials(decodedToken);
 
+    final User user;
     try {
-      doCreate(credentials, Role.USER);
+      user = doCreate(credentials, Role.USER);
     } catch (final Exception e) {
       this.db.rollback();
       throw e;
     }
 
     this.db.commit();
+
+    this.groupsService.initializeDefaults(user);
+    this.basesService.initializeDefaults(user, this.groupsService);
   }
 
 
   @Override
   public User authenticate(final Credentials credentials) {
-    Preconditions.checkNotNull(credentials);
+    Preconditions.checkNotNull(credentials, "The credentials cannot be null!");
 
     final User user = this.userIdsToUsers.get(credentials.getEmail());
     if (user == null) {
@@ -345,16 +379,19 @@ public final class DbUserService implements UserService {
   }
 
   @Override
-  public void create(final Credentials credentials, final Role role) {
-    Preconditions.checkNotNull(credentials);
-    Preconditions.checkNotNull(role);
+  public void create(final Credentials credentials, final Role role) throws IOException {
+    Preconditions.checkNotNull(credentials, "The credentials cannot be null!");
+    Preconditions.checkNotNull(role, "The role cannot be null!");
 
-    doCreate(credentials, role);
+    final User user = doCreate(credentials, role);
 
     this.db.commit();
+
+    this.groupsService.initializeDefaults(user);
+    this.basesService.initializeDefaults(user, this.groupsService);
   }
 
-  private void createAdminIfNotPresent(final Properties properties) {
+  private void createAdminIfNotPresent(final Properties properties) throws IOException {
     final String adminEmail = properties.getProperty(ADMIN_EMAIL_PROPERTY_KEY);
     Preconditions.checkArgument(adminEmail != null,
         String.format("Missing key %s in the configuration!", ADMIN_EMAIL_PROPERTY_KEY));
@@ -370,9 +407,12 @@ public final class DbUserService implements UserService {
       return;
     }
 
-    doCreate(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
-
+    final User admin =
+        doCreate(new Credentials(adminEmail, adminInitialPassword), Role.ADMINISTRATOR);
     this.db.commit();
+
+    this.groupsService.initializeDefaults(admin);
+    this.basesService.initializeDefaults(admin, this.groupsService);
   }
 
   @Override
@@ -385,13 +425,18 @@ public final class DbUserService implements UserService {
     Preconditions.checkArgument(removed != null, "No such user exists!");
   }
 
-  private void doCreate(final Credentials credentials, final Role role) {
-    Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()));
+  private User doCreate(final Credentials credentials, final Role role) throws IOException {
+    Preconditions.checkArgument(!this.userIdsToUsers.containsKey(credentials.getEmail()),
+        String.format("The user %s", credentials.getEmail()));
 
     final String email = credentials.getEmail();
     final String passwordHashed = hash(credentials.getPassword());
 
-    this.userIdsToUsers.put(email, new User(email, passwordHashed, role));
+    final User user = new User(email, passwordHashed, role);
+
+    this.userIdsToUsers.put(email, user);
+
+    return user;
   }
 
   private String generatePasswordChangingMessage(final Token token) {
@@ -420,10 +465,10 @@ public final class DbUserService implements UserService {
 
   @Override
   public User getUser(final String id) {
-    Preconditions.checkNotNull(id);
+    Preconditions.checkNotNull(id, "The id cannot be null!");
 
     final User user = this.userIdsToUsers.get(id);
-    Preconditions.checkArgument(user != null);
+    Preconditions.checkArgument(user != null, String.format("No user %s registered!", id));
 
     return user;
   }
@@ -509,8 +554,8 @@ public final class DbUserService implements UserService {
 
   @Override
   public void requestPasswordChange(final User user, final String newPassword) {
-    Preconditions.checkNotNull(user);
-    Preconditions.checkNotNull(newPassword);
+    Preconditions.checkNotNull(user, "The user cannot be null!");
+    Preconditions.checkNotNull(newPassword, "The newPassword cannot be null!");
     Preconditions.checkNotNull(!newPassword.isEmpty());
 
     final Address address = extractAddress(user);
@@ -523,15 +568,19 @@ public final class DbUserService implements UserService {
     this.tokenIdsToPasswordChanging.put(tokenId,
         new User(user.getEmail(), hash(newPassword), user.getRole()));
 
-    this.mailService.send(ODALIC_PASSWORD_CHANGING_CONFIRMATION_SUBJECT,
-        generatePasswordChangingMessage(token), new Address[] {address});
-
-    this.db.commit();
+    if (this.confirmationsRequired) {
+      this.mailService.send(ODALIC_PASSWORD_CHANGING_CONFIRMATION_SUBJECT,
+          generatePasswordChangingMessage(token), new Address[] {address});
+      this.db.commit();
+    } else {
+      this.db.commit();
+      confirmPasswordChange(token);
+    }
   }
 
   @Override
-  public void signUp(final Credentials credentials) {
-    Preconditions.checkNotNull(credentials);
+  public void signUp(final Credentials credentials) throws IOException {
+    Preconditions.checkNotNull(credentials, "The credentials cannot be null!");
 
     final Address address = extractAddress(credentials);
 
@@ -539,9 +588,13 @@ public final class DbUserService implements UserService {
 
     final String message = generateSignUpMessage(token);
 
-    this.mailService.send(ODALIC_SIGN_UP_CONFIRMATION_SUBJECT, message, new Address[] {address});
-
-    this.db.commit();
+    if (this.confirmationsRequired) {
+      this.mailService.send(ODALIC_SIGN_UP_CONFIRMATION_SUBJECT, message, new Address[] {address});
+      this.db.commit();
+    } else {
+      this.db.commit();
+      activateUser(token);
+    }
   }
 
   private DecodedToken validateAndDecode(final Token token) {

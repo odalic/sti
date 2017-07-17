@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.NavigableSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,8 +30,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 
-import cz.cuni.mff.xrg.odalic.api.rdf.TaskRdfSerializationService;
+import cz.cuni.mff.xrg.odalic.api.rdf.TaskSerializationService;
 import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
@@ -40,11 +43,11 @@ import cz.cuni.mff.xrg.odalic.api.rest.values.StatefulTaskValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.TaskValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.util.States;
 import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
 import cz.cuni.mff.xrg.odalic.users.Role;
@@ -67,7 +70,7 @@ public final class TasksResource {
   private final FileService fileService;
   private final ExecutionService executionService;
   private final BasesService basesService;
-  private final TaskRdfSerializationService taskSerializationService;
+  private final TaskSerializationService taskSerializationService;
 
   @Context
   private SecurityContext securityContext;
@@ -78,13 +81,13 @@ public final class TasksResource {
   @Autowired
   public TasksResource(final UserService userService, final TaskService taskService,
       final FileService fileService, final ExecutionService executionService,
-      final BasesService basesService, final TaskRdfSerializationService taskSerializationService) {
-    Preconditions.checkNotNull(userService);
-    Preconditions.checkNotNull(taskService);
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(executionService);
-    Preconditions.checkNotNull(basesService);
-    Preconditions.checkNotNull(taskSerializationService);
+      final BasesService basesService, final TaskSerializationService taskSerializationService) {
+    Preconditions.checkNotNull(userService, "The userService cannot be null!");
+    Preconditions.checkNotNull(taskService, "The taskService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(taskSerializationService, "The taskSerializationService cannot be null!");
 
     this.userService = userService;
     this.taskService = taskService;
@@ -291,16 +294,29 @@ public final class TasksResource {
 
     final NavigableSet<KnowledgeBase> usedBases;
     if (configurationValue.getUsedBases() == null) {
-      usedBases = this.basesService.getBases();
+      usedBases = this.basesService.getBases(userId);
     } else {
-      usedBases = configurationValue.getUsedBases();
+      try {
+        usedBases = configurationValue.getUsedBases().stream()
+            .map(e -> this.basesService.getByName(userId, e.getName()))
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+      } catch (final IllegalArgumentException e) {
+        throw new BadRequestException("Unknown used base!", e);
+      }
+    }
+
+    final KnowledgeBase primaryBase =
+        this.basesService.getByName(userId, configurationValue.getPrimaryBase().getName());
+    if (!usedBases.contains(primaryBase)) {
+      throw new BadRequestException("The primary base is not among the used!");
     }
 
     final Configuration configuration;
     try {
-      configuration = new Configuration(input, usedBases, configurationValue.getPrimaryBase(),
-          configurationValue.getFeedback(), configurationValue.getRowsLimit(),
-          configurationValue.isStatistical());
+      configuration = new Configuration(input,
+          usedBases.stream().map(e -> e.getName()).collect(ImmutableSet.toImmutableSet()),
+          primaryBase.getName(), configurationValue.getFeedback(),
+          configurationValue.getRowsLimit(), configurationValue.isStatistical());
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }

@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class TColumnProcessingAnnotation implements Serializable {
 
   public enum TColumnProcessingType implements Serializable {
-    NAMED_ENTITY, NON_NAMED_ENTITY, IGNORED
+    NAMED_ENTITY, NON_NAMED_ENTITY, IGNORED, COMPULSORY
   }
 
   private static final long serialVersionUID = -1208912663212074692L;

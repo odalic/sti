@@ -9,9 +9,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
-import uk.ac.shef.dcs.kbproxy.KBProxyResult;
+import uk.ac.shef.dcs.kbproxy.ProxyException;
+import uk.ac.shef.dcs.kbproxy.ProxyResult;
+import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIException;
@@ -39,7 +39,7 @@ public class LEARNINGPreliminaryColumnClassifier {
   private static final Logger LOG =
       LoggerFactory.getLogger(LEARNINGPreliminaryColumnClassifier.class.getName());
   private final TContentCellRanker selector;
-  private final KBProxy kbSearch;
+  private final Proxy kbSearch;
   private final TCellDisambiguator cellDisambiguator;
 
   private final TColumnClassifier columnClassifier;
@@ -48,7 +48,7 @@ public class LEARNINGPreliminaryColumnClassifier {
 
   public LEARNINGPreliminaryColumnClassifier(final TContentCellRanker selector,
       final String stoppingCriteriaClassname, final String[] stoppingCriteriaParams,
-      final KBProxy candidateFinder, final TCellDisambiguator cellDisambiguator,
+      final Proxy candidateFinder, final TCellDisambiguator cellDisambiguator,
       final TColumnClassifier columnClassifier) {
     this.selector = selector;
     this.kbSearch = candidateFinder;
@@ -83,7 +83,7 @@ public class LEARNINGPreliminaryColumnClassifier {
    * @param skipRows
    * @return pair: key is the index of the cell by which the classification stopped. value is the
    *         re-ordered indexes of cells based on the sampler
-   * @throws KBProxyException
+   * @throws ProxyException
    */
   public Pair<Integer, List<List<Integer>>> runPreliminaryColumnClassifier(final Table table,
       final TAnnotation tableAnnotation, final int column, final Constraints constraints,
@@ -93,7 +93,7 @@ public class LEARNINGPreliminaryColumnClassifier {
 
     // 1. gather list of strings from this column to be interpreted, rank them (for sampling)
     final List<List<Integer>> ranking =
-        this.selector.select(table, column, tableAnnotation.getSubjectColumn());
+        this.selector.select(table, column, tableAnnotation.getSubjectColumns());
 
     // 2. computeElementScores column and also disambiguate initial rows in the selected sample
     final List<TColumnHeaderAnnotation> headerClazzScores = new ArrayList<>();
@@ -102,8 +102,7 @@ public class LEARNINGPreliminaryColumnClassifier {
 
     // 3. (added): if the classification is suggested by the user, then set it and return
     for (final Classification classification : constraints.getClassifications()) {
-      if ((classification.getPosition().getIndex() == column)
-          && !classification.getAnnotation().getChosen().isEmpty()) {
+      if (classification.getPosition().getIndex() == column) {
         for (final EntityCandidate suggestion : classification.getAnnotation().getChosen()) {
           headerClazzScores.add(new TColumnHeaderAnnotation(
               table.getColumnHeader(column).getHeaderText(),
@@ -154,11 +153,11 @@ public class LEARNINGPreliminaryColumnClassifier {
         final List<String> warnings = entityResult.getWarnings();
 
         if (candidates.isEmpty()) {
-          final KBProxyResult<List<Entity>> candidatesResult =
+          final ProxyResult<List<Entity>> candidatesResult =
               this.kbSearch.findEntityCandidates(sample.getText());
 
           candidates = candidatesResult.getResult();
-          candidatesResult.appendWarning(warnings);
+          candidatesResult.appendExistingWarning(warnings);
         }
 
         // do cold start disambiguation

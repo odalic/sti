@@ -10,7 +10,7 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
  * @author Václav Brodec
  *
  */
-public final class ColumnPositionValue {
+public final class ColumnPositionValue implements Comparable<ColumnPositionValue> {
 
   private int index;
 
@@ -31,13 +31,45 @@ public final class ColumnPositionValue {
    * @param index the index to set
    */
   public void setIndex(final int index) {
-    Preconditions.checkArgument(index >= 0);
+    Preconditions.checkArgument(index >= 0, "Column position index must be nonnegative!");
 
     this.index = index;
   }
 
   public ColumnPosition toColumnPosition() {
     return new ColumnPosition(this.index);
+  }
+
+
+  @Override
+  public int compareTo(final ColumnPositionValue o) {
+    return Integer.compare(this.index, o.index);
+  }
+  
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + index;
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    ColumnPositionValue other = (ColumnPositionValue) obj;
+    if (index != other.index) {
+      return false;
+    }
+    return true;
   }
 
   @Override

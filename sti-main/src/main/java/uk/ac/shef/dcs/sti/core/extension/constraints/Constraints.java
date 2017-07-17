@@ -6,14 +6,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
-import uk.ac.shef.dcs.kbproxy.KBProxy;
-import uk.ac.shef.dcs.kbproxy.KBProxyResult;
+import uk.ac.shef.dcs.kbproxy.ProxyResult;
+import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 import uk.ac.shef.dcs.sti.core.model.EntityResult;
@@ -30,9 +29,11 @@ public final class Constraints implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
-  private final ColumnPosition subjectColumnPosition;
+  private final Set<ColumnPosition> subjectColumnsPositions;
 
   private final Set<ColumnIgnore> columnIgnores;
+
+  private final Set<ColumnCompulsory> columnCompulsory;
 
   private final Set<Classification> classifications;
 
@@ -50,8 +51,9 @@ public final class Constraints implements Serializable {
    * Creates empty feedback.
    */
   public Constraints() {
-    this.subjectColumnPosition = null;
+    this.subjectColumnsPositions = ImmutableSet.of();
     this.columnIgnores = ImmutableSet.of();
+    this.columnCompulsory = ImmutableSet.of();
     this.columnAmbiguities = ImmutableSet.of();
     this.classifications = ImmutableSet.of();
     this.columnRelations = ImmutableSet.of();
@@ -63,8 +65,9 @@ public final class Constraints implements Serializable {
   /**
    * Creates feedback.
    *
-   * @param subjectColumnPosition position of the subject column (optional)
+   * @param subjectColumnsPositions positions of the subject columns
    * @param columnIgnores ignored columns
+   * @param columnCompulsory compulsory columns
    * @param columnAmbiguities columns whose cells will not be disambiguated
    * @param classifications classification hints for columns
    * @param columnRelations hints with relation between columns
@@ -72,23 +75,28 @@ public final class Constraints implements Serializable {
    * @param ambiguities hints for cells to be left ambiguous
    * @param dataCubeComponents dataCubeComponents hints for columns
    */
-  public Constraints(@Nullable final ColumnPosition subjectColumnPosition,
+  public Constraints(
+      final Set<? extends ColumnPosition> subjectColumnsPositions,
       final Set<? extends ColumnIgnore> columnIgnores,
+      final Set<? extends ColumnCompulsory> columnCompulsory,
       final Set<? extends ColumnAmbiguity> columnAmbiguities,
       final Set<? extends Classification> classifications,
       final Set<? extends ColumnRelation> columnRelations,
       final Set<? extends Disambiguation> disambiguations,
       final Set<? extends Ambiguity> ambiguities,
       final Set<? extends DataCubeComponent> dataCubeComponents) {
-    Preconditions.checkNotNull(columnIgnores);
-    Preconditions.checkNotNull(columnAmbiguities);
-    Preconditions.checkNotNull(classifications);
-    Preconditions.checkNotNull(columnRelations);
-    Preconditions.checkNotNull(disambiguations);
-    Preconditions.checkNotNull(ambiguities);
+    Preconditions.checkNotNull(subjectColumnsPositions, "The subjectColumnsPositions cannot be null!");
+    Preconditions.checkNotNull(columnIgnores, "The columnIgnores cannot be null!");
+    Preconditions.checkNotNull(columnCompulsory, "The columnCompulsory cannot be null!");
+    Preconditions.checkNotNull(columnAmbiguities, "The columnAmbiguities cannot be null!");
+    Preconditions.checkNotNull(classifications, "The classifications cannot be null!");
+    Preconditions.checkNotNull(columnRelations, "The columnRelations cannot be null!");
+    Preconditions.checkNotNull(disambiguations, "The disambiguations cannot be null!");
+    Preconditions.checkNotNull(ambiguities, "The ambiguities cannot be null!");
 
-    this.subjectColumnPosition = subjectColumnPosition;
+    this.subjectColumnsPositions = ImmutableSet.copyOf(subjectColumnsPositions);
     this.columnIgnores = ImmutableSet.copyOf(columnIgnores);
+    this.columnCompulsory = ImmutableSet.copyOf(columnCompulsory);
     this.columnAmbiguities = ImmutableSet.copyOf(columnAmbiguities);
     this.classifications = ImmutableSet.copyOf(classifications);
     this.columnRelations = ImmutableSet.copyOf(columnRelations);
@@ -142,6 +150,13 @@ public final class Constraints implements Serializable {
     } else if (!this.columnIgnores.equals(other.columnIgnores)) {
       return false;
     }
+    if (this.columnCompulsory == null) {
+      if (other.columnCompulsory != null) {
+        return false;
+      }
+    } else if (!this.columnCompulsory.equals(other.columnCompulsory)) {
+      return false;
+    }
     if (this.columnRelations == null) {
       if (other.columnRelations != null) {
         return false;
@@ -163,11 +178,11 @@ public final class Constraints implements Serializable {
     } else if (!this.dataCubeComponents.equals(other.dataCubeComponents)) {
       return false;
     }
-    if (this.subjectColumnPosition == null) {
-      if (other.subjectColumnPosition != null) {
+    if (this.subjectColumnsPositions == null) {
+      if (other.subjectColumnsPositions != null) {
         return false;
       }
-    } else if (!this.subjectColumnPosition.equals(other.subjectColumnPosition)) {
+    } else if (!this.subjectColumnsPositions.equals(other.subjectColumnsPositions)) {
       return false;
     }
     return true;
@@ -187,12 +202,12 @@ public final class Constraints implements Serializable {
             && !e.getAnnotation().getChosen().isEmpty());
   }
 
-  private KBProxyResult<Entity> findOrCreateEntity(final String resource, final String label,
-      final KBProxy kbProxy) {
-    KBProxyResult<Entity> entity = kbProxy.loadEntity(resource);
+  private ProxyResult<Entity> findOrCreateEntity(final String resource, final String label,
+      final Proxy kbProxy) {
+    ProxyResult<Entity> entity = kbProxy.loadEntity(resource);
 
     if (entity == null) {
-      entity = new KBProxyResult<Entity>(new Entity(resource, label));
+      entity = new ProxyResult<Entity>(new Entity(resource, label));
     }
     return entity;
   }
@@ -226,6 +241,13 @@ public final class Constraints implements Serializable {
   }
 
   /**
+   * @return compulsory columns
+   */
+  public Set<ColumnCompulsory> getColumnCompulsory() {
+    return this.columnCompulsory;
+  }
+
+  /**
    * @return the column relations
    */
   public Set<ColumnRelation> getColumnRelations() {
@@ -247,7 +269,7 @@ public final class Constraints implements Serializable {
    * @return entities chosen for disambiguation of given cell
    */
   public EntityResult getDisambChosenForCell(final int columnIndex, final int rowIndex,
-      final KBProxy kbProxy) {
+      final Proxy kbProxy) {
     final List<Entity> entities = new ArrayList<>();
     final List<String> warnings = new ArrayList<>();
 
@@ -256,10 +278,10 @@ public final class Constraints implements Serializable {
             && (e.getPosition().getRowIndex() == rowIndex)
             && !e.getAnnotation().getChosen().isEmpty())
         .forEach(e -> e.getAnnotation().getChosen().forEach(ec -> {
-          final KBProxyResult<Entity> entityResult =
+          final ProxyResult<Entity> entityResult =
               findOrCreateEntity(ec.getEntity().getResource(), ec.getEntity().getLabel(), kbProxy);
 
-          entityResult.appendWarning(warnings);
+          entityResult.appendExistingWarning(warnings);
           entities.add(entityResult.getResult());
         }));
     return new EntityResult(entities, warnings);
@@ -301,11 +323,10 @@ public final class Constraints implements Serializable {
   }
 
   /**
-   * @return the subject column position
+   * @return the subject columns positions
    */
-  @Nullable
-  public ColumnPosition getSubjectColumnPosition() {
-    return this.subjectColumnPosition;
+  public Set<ColumnPosition> getSubjectColumnsPositions() {
+    return this.subjectColumnsPositions;
   }
 
   /*
@@ -323,6 +344,7 @@ public final class Constraints implements Serializable {
     result = (prime * result)
         + ((this.columnAmbiguities == null) ? 0 : this.columnAmbiguities.hashCode());
     result = (prime * result) + ((this.columnIgnores == null) ? 0 : this.columnIgnores.hashCode());
+    result = (prime * result) + ((this.columnCompulsory == null) ? 0 : this.columnCompulsory.hashCode());
     result =
         (prime * result) + ((this.columnRelations == null) ? 0 : this.columnRelations.hashCode());
     result =
@@ -330,21 +352,19 @@ public final class Constraints implements Serializable {
     result = (prime * result)
         + ((this.dataCubeComponents == null) ? 0 : this.dataCubeComponents.hashCode());
     result = (prime * result)
-        + ((this.subjectColumnPosition == null) ? 0 : this.subjectColumnPosition.hashCode());
+        + ((this.subjectColumnsPositions == null) ? 0 : this.subjectColumnsPositions.hashCode());
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   *
+  /* (non-Javadoc)
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "Constraints [subjectColumnPosition=" + this.subjectColumnPosition + ", columnIgnores="
-        + this.columnIgnores + ", columnAmbiguities=" + this.columnAmbiguities
-        + ", classifications=" + this.classifications + ", columnRelations=" + this.columnRelations
-        + ", disambiguations=" + this.disambiguations + ", ambiguities=" + this.ambiguities
-        + ", dataCubeComponents=" + this.dataCubeComponents + "]";
+    return "Constraints [subjectColumnsPositions=" + subjectColumnsPositions + ", columnIgnores="
+        + columnIgnores + ", columnCompulsory=" + columnCompulsory + ", classifications="
+        + classifications + ", columnAmbiguities=" + columnAmbiguities + ", ambiguities="
+        + ambiguities + ", disambiguations=" + disambiguations + ", columnRelations="
+        + columnRelations + ", dataCubeComponents=" + dataCubeComponents + "]";
   }
 }

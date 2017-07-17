@@ -26,7 +26,7 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
    * @param score
    */
   public EntityCandidate(final Entity entity, final Score score) {
-    Preconditions.checkNotNull(entity);
+    Preconditions.checkNotNull(entity, "The entity cannot be null!");
 
     this.entity = entity;
     this.score = score;

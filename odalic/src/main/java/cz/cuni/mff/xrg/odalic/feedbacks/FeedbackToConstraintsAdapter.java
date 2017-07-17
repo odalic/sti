@@ -1,6 +1,6 @@
 package cz.cuni.mff.xrg.odalic.feedbacks;
 
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 
 /**

@@ -47,7 +47,7 @@ public final class FormatResource {
 
   @Autowired
   public FormatResource(final FileService fileService) {
-    Preconditions.checkNotNull(fileService);
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
 
     this.fileService = fileService;
   }

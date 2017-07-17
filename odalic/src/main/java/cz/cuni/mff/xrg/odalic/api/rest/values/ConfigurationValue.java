@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.api.rest.values;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.NavigableSet;
 import java.util.Set;
 
@@ -12,7 +13,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSortedSet;
 
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 
 /**
@@ -30,9 +30,9 @@ public final class ConfigurationValue implements Serializable {
 
   private Feedback feedback;
 
-  private NavigableSet<KnowledgeBase> usedBases;
+  private NavigableSet<KnowledgeBaseNameValue> usedBases;
 
-  private KnowledgeBase primaryBase;
+  private KnowledgeBaseNameValue primaryBase;
 
   private Integer rowsLimit;
 
@@ -43,8 +43,8 @@ public final class ConfigurationValue implements Serializable {
   public ConfigurationValue(final Configuration adaptee) {
     this.input = adaptee.getInput().getId();
     this.feedback = adaptee.getFeedback();
-    this.usedBases = ImmutableSortedSet.copyOf(adaptee.getUsedBases());
-    this.primaryBase = adaptee.getPrimaryBase();
+    this.usedBases = adaptee.getUsedBases().stream().map(e -> new KnowledgeBaseNameValue(e)).collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+    this.primaryBase = new KnowledgeBaseNameValue(adaptee.getPrimaryBase());
     this.rowsLimit =
         adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
     this.statistical = adaptee.isStatistical();
@@ -73,7 +73,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  public KnowledgeBase getPrimaryBase() {
+  public KnowledgeBaseNameValue getPrimaryBase() {
     return this.primaryBase;
   }
 
@@ -91,7 +91,7 @@ public final class ConfigurationValue implements Serializable {
    */
   @XmlElement
   @Nullable
-  public NavigableSet<KnowledgeBase> getUsedBases() {
+  public NavigableSet<KnowledgeBaseNameValue> getUsedBases() {
     return this.usedBases;
   }
 
@@ -108,7 +108,7 @@ public final class ConfigurationValue implements Serializable {
    * @param feedback the feedback to set
    */
   public void setFeedback(final Feedback feedback) {
-    Preconditions.checkNotNull(feedback);
+    Preconditions.checkNotNull(feedback, "The feedback cannot be null!");
 
     this.feedback = feedback;
   }
@@ -117,7 +117,7 @@ public final class ConfigurationValue implements Serializable {
    * @param input the input to set
    */
   public void setInput(final String input) {
-    Preconditions.checkNotNull(input);
+    Preconditions.checkNotNull(input, "The input cannot be null!");
 
     this.input = input;
   }
@@ -125,8 +125,8 @@ public final class ConfigurationValue implements Serializable {
   /**
    * @param primaryBase the primary knowledge base to set
    */
-  public void setPrimaryBase(final KnowledgeBase primaryBase) {
-    Preconditions.checkNotNull(primaryBase);
+  public void setPrimaryBase(final KnowledgeBaseNameValue primaryBase) {
+    Preconditions.checkNotNull(primaryBase, "The primaryBase cannot be null!");
 
     this.primaryBase = primaryBase;
   }
@@ -135,7 +135,7 @@ public final class ConfigurationValue implements Serializable {
    * @param rowsLimit the maximum number of rows to process to set
    */
   public void setRowsLimit(final @Nullable Integer rowsLimit) {
-    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0));
+    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0), "The row position index must be positive, if present.");
 
     this.rowsLimit = rowsLimit;
   }
@@ -150,8 +150,8 @@ public final class ConfigurationValue implements Serializable {
   /**
    * @param usedBases the bases selected for the task to set
    */
-  public void setUsedBases(final Set<? extends KnowledgeBase> usedBases) {
-    Preconditions.checkNotNull(usedBases);
+  public void setUsedBases(final Set<? extends KnowledgeBaseNameValue> usedBases) {
+    Preconditions.checkNotNull(usedBases, "The usedBases cannot be null!");
 
     this.usedBases = ImmutableSortedSet.copyOf(usedBases);
   }

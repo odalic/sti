@@ -24,7 +24,7 @@ public final class Score implements Comparable<Score>, Serializable {
   private final double value;
 
   public Score(final double value) {
-    Preconditions.checkArgument(value >= 0);
+    Preconditions.checkArgument(value >= 0, "The score value must be nonnegative!");
 
     this.value = value;
   }

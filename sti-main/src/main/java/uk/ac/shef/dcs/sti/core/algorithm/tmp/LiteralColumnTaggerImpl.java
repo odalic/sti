@@ -8,8 +8,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.ProxyException;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.RelationColumns;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TCellCellRelationAnotation;
@@ -36,7 +37,13 @@ public class LiteralColumnTaggerImpl implements LiteralColumnTagger {
 
   @Override
   public void annotate(final Table table, final TAnnotation annotations, final Integer... neColumns)
-      throws KBProxyException {
+      throws ProxyException {
+    annotate(table, annotations, new Constraints(), neColumns);
+  }
+
+  @Override
+  public void annotate(final Table table, final TAnnotation annotations,
+      final Constraints constraints, final Integer... neColumns) throws ProxyException {
     // for each column that has a relation with the subject column, infer its type
     final Map<RelationColumns, Map<Integer, List<TCellCellRelationAnotation>>> relationAnnotations =
         annotations.getCellcellRelations();
@@ -55,11 +62,10 @@ public class LiteralColumnTaggerImpl implements LiteralColumnTagger {
       // check if the object column is an ne column, and whether that ne column is already annotated
       // if so we do not need to annotate this column, we just need to skip it
       for (final int i : neColumns) {
-        final boolean isColumn_acronym_or_code =
-            table.getColumnHeader(i).getFeature().isAcronymColumn();
-        if ((i == subcol_objcol.getObjectCol()) && !isColumn_acronym_or_code) {
-          if ((annotations.getHeaderAnnotation(i) != null)
-              && (annotations.getHeaderAnnotation(i).length > 0)) {
+        // final boolean isColumn_acronym_or_code = table.getColumnHeader(i).getFeature().isAcronymColumn();
+        if (i == subcol_objcol.getObjectCol()) {
+          if ((annotations.getHeaderAnnotation(i) != null && annotations.getHeaderAnnotation(i).length > 0) ||
+              (constraints.getClassifications().stream().anyMatch(ec -> (ec.getPosition().getIndex() == i)))) {
             skip = true;
             break;
           }

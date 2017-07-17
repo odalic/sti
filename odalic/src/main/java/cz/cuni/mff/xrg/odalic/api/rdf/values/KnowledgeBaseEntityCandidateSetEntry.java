@@ -7,16 +7,16 @@ import com.google.common.base.Preconditions;
 @RdfsClass("http://odalic.eu/internal/KnowledgeBaseEntityCandidateSetEntry")
 public class KnowledgeBaseEntityCandidateSetEntry {
 
-  private KnowledgeBaseValue base;
+  private String base;
 
   private EntityCandidateSetWrapper set;
 
   public KnowledgeBaseEntityCandidateSetEntry() {}
 
-  public KnowledgeBaseEntityCandidateSetEntry(final KnowledgeBaseValue base,
+  public KnowledgeBaseEntityCandidateSetEntry(final String base,
       final EntityCandidateSetWrapper set) {
-    Preconditions.checkNotNull(base);
-    Preconditions.checkNotNull(set);
+    Preconditions.checkNotNull(base, "The base cannot be null!");
+    Preconditions.checkNotNull(set, "The set cannot be null!");
 
     this.base = base;
     this.set = set;
@@ -26,7 +26,7 @@ public class KnowledgeBaseEntityCandidateSetEntry {
    * @return the base
    */
   @RdfProperty("http://odalic.eu/internal/KnowledgeBaseEntityCandidateSetEntry/base")
-  public KnowledgeBaseValue getBase() {
+  public String getBase() {
     return this.base;
   }
 
@@ -41,8 +41,8 @@ public class KnowledgeBaseEntityCandidateSetEntry {
   /**
    * @param base the base to set
    */
-  public void setBase(final KnowledgeBaseValue base) {
-    Preconditions.checkNotNull(base);
+  public void setBase(final String base) {
+    Preconditions.checkNotNull(base, "The base cannot be null!");
 
     this.base = base;
   }
@@ -51,7 +51,7 @@ public class KnowledgeBaseEntityCandidateSetEntry {
    * @param set the set to set
    */
   public void setSet(final EntityCandidateSetWrapper set) {
-    Preconditions.checkNotNull(set);
+    Preconditions.checkNotNull(set, "The set cannot be null!");
 
     this.set = set;
   }

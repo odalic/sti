@@ -6,12 +6,10 @@ import java.util.Set;
 import com.complexible.pinto.annotations.RdfProperty;
 import com.complexible.pinto.annotations.RdfsClass;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import cz.cuni.mff.xrg.odalic.api.rdf.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
-import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Domain class {@link Feedback} adapted for RDF serialization.
@@ -24,9 +22,11 @@ public final class FeedbackValue implements Serializable {
 
   private static final long serialVersionUID = -7968455903789693405L;
 
-  private Set<KnowledgeBaseColumnPositionEntry> subjectColumnPositions;
+  private Set<KnowledgeBaseColumnPositionSetEntry> subjectColumnsPositions;
 
   private Set<ColumnIgnoreValue> columnIgnores;
+
+  private Set<ColumnCompulsoryValue> columnCompulsory;
 
   private Set<ColumnAmbiguityValue> columnAmbiguities;
 
@@ -41,8 +41,9 @@ public final class FeedbackValue implements Serializable {
   private Set<DataCubeComponentValue> dataCubeComponents;
 
   public FeedbackValue() {
-    this.subjectColumnPositions = ImmutableSet.of();
+    this.subjectColumnsPositions = ImmutableSet.of();
     this.columnIgnores = ImmutableSet.of();
+    this.columnCompulsory = ImmutableSet.of();
     this.columnAmbiguities = ImmutableSet.of();
     this.classifications = ImmutableSet.of();
     this.columnRelations = ImmutableSet.of();
@@ -52,11 +53,10 @@ public final class FeedbackValue implements Serializable {
   }
 
   public FeedbackValue(final Feedback adaptee) {
-    this.subjectColumnPositions = adaptee.getSubjectColumnPositions().entrySet().stream()
-        .map(e -> new KnowledgeBaseColumnPositionEntry(new KnowledgeBaseValue(e.getKey()),
-            new ColumnPositionValue(e.getValue())))
-        .collect(ImmutableSet.toImmutableSet());
+    this.subjectColumnsPositions = Annotations.toPositionValues(adaptee.getSubjectColumnsPositions());
     this.columnIgnores = adaptee.getColumnIgnores().stream().map(ColumnIgnoreValue::new)
+        .collect(ImmutableSet.toImmutableSet());
+    this.columnCompulsory = adaptee.getColumnCompulsory().stream().map(ColumnCompulsoryValue::new)
         .collect(ImmutableSet.toImmutableSet());
     this.columnAmbiguities = adaptee.getColumnAmbiguities().stream().map(ColumnAmbiguityValue::new)
         .collect(ImmutableSet.toImmutableSet());
@@ -105,6 +105,14 @@ public final class FeedbackValue implements Serializable {
   }
 
   /**
+   * @return the column compulsory
+   */
+  @RdfProperty("http://odalic.eu/internal/Feedback/columnCompulsory")
+  public Set<ColumnCompulsoryValue> getColumnCompulsory() {
+    return this.columnCompulsory;
+  }
+
+  /**
    * @return the column relations
    */
   @RdfProperty("http://odalic.eu/internal/Feedback/columnRelation")
@@ -129,18 +137,18 @@ public final class FeedbackValue implements Serializable {
   }
 
   /**
-   * @return the subject column positions
+   * @return the subject columns positions
    */
-  @RdfProperty("http://odalic.eu/internal/Feedback/subjectColumnPositions")
-  public Set<KnowledgeBaseColumnPositionEntry> getSubjectColumnPositions() {
-    return this.subjectColumnPositions;
+  @RdfProperty("http://odalic.eu/internal/Feedback/subjectColumnsPositions")
+  public Set<KnowledgeBaseColumnPositionSetEntry> getSubjectColumnsPositions() {
+    return this.subjectColumnsPositions;
   }
 
   /**
    * @param ambiguities the ambiguities to set
    */
   public void setAmbiguities(final Set<? extends AmbiguityValue> ambiguities) {
-    Preconditions.checkNotNull(ambiguities);
+    Preconditions.checkNotNull(ambiguities, "The ambiguities cannot be null!");
 
     this.ambiguities = ImmutableSet.copyOf(ambiguities);
   }
@@ -149,7 +157,7 @@ public final class FeedbackValue implements Serializable {
    * @param classifications the classifications to set
    */
   public void setClassifications(final Set<? extends ClassificationValue> classifications) {
-    Preconditions.checkNotNull(classifications);
+    Preconditions.checkNotNull(classifications, "The classifications cannot be null!");
 
     this.classifications = ImmutableSet.copyOf(classifications);
   }
@@ -158,7 +166,7 @@ public final class FeedbackValue implements Serializable {
    * @param columnAmbiguities the column ambiguities to set
    */
   public void setColumnAmbiguities(final Set<? extends ColumnAmbiguityValue> columnAmbiguities) {
-    Preconditions.checkNotNull(columnAmbiguities);
+    Preconditions.checkNotNull(columnAmbiguities, "The columnAmbiguities cannot be null!");
 
     this.columnAmbiguities = ImmutableSet.copyOf(columnAmbiguities);
   }
@@ -167,16 +175,25 @@ public final class FeedbackValue implements Serializable {
    * @param columnIgnores the column ignores to set
    */
   public void setColumnIgnores(final Set<? extends ColumnIgnoreValue> columnIgnores) {
-    Preconditions.checkNotNull(columnIgnores);
+    Preconditions.checkNotNull(columnIgnores, "The columnIgnores cannot be null!");
 
     this.columnIgnores = ImmutableSet.copyOf(columnIgnores);
+  }
+
+  /**
+   * @param columnCompulsory the column compulsory to set
+   */
+  public void setColumnCompulsory(final Set<? extends ColumnCompulsoryValue> columnCompulsory) {
+    Preconditions.checkNotNull(columnCompulsory, "The columnCompulsory cannot be null!");
+
+    this.columnCompulsory = ImmutableSet.copyOf(columnCompulsory);
   }
 
   /**
    * @param columnRelations the column relations to set
    */
   public void setColumnRelations(final Set<? extends ColumnRelationValue> columnRelations) {
-    Preconditions.checkNotNull(columnRelations);
+    Preconditions.checkNotNull(columnRelations, "The columnRelations cannot be null!");
 
     this.columnRelations = ImmutableSet.copyOf(columnRelations);
   }
@@ -186,7 +203,7 @@ public final class FeedbackValue implements Serializable {
    */
   public void setDataCubeComponents(
       final Set<? extends DataCubeComponentValue> dataCubeComponents) {
-    Preconditions.checkNotNull(dataCubeComponents);
+    Preconditions.checkNotNull(dataCubeComponents, "The dataCubeComponents cannot be null!");
 
     this.dataCubeComponents = ImmutableSet.copyOf(dataCubeComponents);
   }
@@ -195,31 +212,26 @@ public final class FeedbackValue implements Serializable {
    * @param disambiguations the disambiguations to set
    */
   public void setDisambiguations(final Set<? extends DisambiguationValue> disambiguations) {
-    Preconditions.checkNotNull(disambiguations);
+    Preconditions.checkNotNull(disambiguations, "The disambiguations cannot be null!");
 
     this.disambiguations = ImmutableSet.copyOf(disambiguations);
   }
 
   /**
-   * @param subjectColumnPositions the subject column positions to set
+   * @param subjectColumnsPositions the subject columns positions to set
    */
-  public void setSubjectColumnPositions(
-      final Set<? extends KnowledgeBaseColumnPositionEntry> subjectColumnPositions) {
-    Preconditions.checkNotNull(subjectColumnPositions);
+  public void setSubjectColumnsPositions(
+      final Set<? extends KnowledgeBaseColumnPositionSetEntry> subjectColumnsPositions) {
+    Preconditions.checkNotNull(subjectColumnsPositions, "The subjectColumnsPositions cannot be null!");
 
-    this.subjectColumnPositions = ImmutableSet.copyOf(subjectColumnPositions);
+    this.subjectColumnsPositions = ImmutableSet.copyOf(subjectColumnsPositions);
   }
 
   public Feedback toFeedback() {
-    final ImmutableMap.Builder<KnowledgeBase, ColumnPosition> subjectColumnPositionsMapBuilder =
-        ImmutableMap.builder();
-    for (final KnowledgeBaseColumnPositionEntry entry : this.subjectColumnPositions) {
-      subjectColumnPositionsMapBuilder.put(entry.getBase().toKnowledgeBase(),
-          entry.getValue().toColumnPosition());
-    }
-
-    return new Feedback(subjectColumnPositionsMapBuilder.build(),
+    return new Feedback(Annotations.toPositionDomain(this.subjectColumnsPositions),
         this.columnIgnores.stream().map(ColumnIgnoreValue::toColumnIgnore)
+            .collect(ImmutableSet.toImmutableSet()),
+        this.columnCompulsory.stream().map(ColumnCompulsoryValue::toColumnCompulsory)
             .collect(ImmutableSet.toImmutableSet()),
         this.columnAmbiguities.stream().map(ColumnAmbiguityValue::toColumnAmbiguity)
             .collect(ImmutableSet.toImmutableSet()),
@@ -237,10 +249,10 @@ public final class FeedbackValue implements Serializable {
 
   @Override
   public String toString() {
-    return "FeedbackValue [subjectColumnPositions=" + this.subjectColumnPositions
-        + ", columnIgnores=" + this.columnIgnores + ", columnAmbiguities=" + this.columnAmbiguities
-        + ", classifications=" + this.classifications + ", columnRelations=" + this.columnRelations
-        + ", disambiguations=" + this.disambiguations + ", ambiguities=" + this.ambiguities
-        + ", dataCubeComponents=" + this.dataCubeComponents + "]";
+    return "FeedbackValue [subjectColumnsPositions=" + subjectColumnsPositions + ", columnIgnores="
+        + columnIgnores + ", columnCompulsory=" + columnCompulsory + ", columnAmbiguities="
+        + columnAmbiguities + ", classifications=" + classifications + ", columnRelations="
+        + columnRelations + ", disambiguations=" + disambiguations + ", ambiguities=" + ambiguities
+        + ", dataCubeComponents=" + dataCubeComponents + "]";
   }
 }

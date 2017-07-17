@@ -44,7 +44,7 @@ public final class ClassProposal implements Serializable {
 
   public ClassProposal(final String label, final Set<? extends String> alternativeLabels,
       final URI suffix, final Entity superClass) {
-    Preconditions.checkNotNull(label);
+    Preconditions.checkNotNull(label, "The label cannot be null!");
     Preconditions.checkArgument((suffix == null) || !suffix.isAbsolute(),
         "The suffix must be a relative URI!");
 

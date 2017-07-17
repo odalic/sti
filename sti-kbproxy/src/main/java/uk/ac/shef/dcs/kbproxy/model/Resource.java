@@ -1,6 +1,6 @@
 package uk.ac.shef.dcs.kbproxy.model;
 
-import uk.ac.shef.dcs.kbproxy.KBDefinition;
+import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public abstract class Resource implements Serializable {
   private String description; // a description, if available
   private Set<String> aliases; // aliases, if available
 
-  public String getDescription(KBDefinition definition) {
+  public String getDescription(ProxyDefinition definition) {
     if (description == null || description.equals("")) {
       for (Attribute attr : getAttributes()) {
         if (attr.isDirect() && attr.isDescription(definition)) {
@@ -34,7 +34,7 @@ public abstract class Resource implements Serializable {
     return description;
   }
 
-  public Set<String> getAliases(KBDefinition definition) {
+  public Set<String> getAliases(ProxyDefinition definition) {
     if (aliases == null) {
       aliases = new HashSet<>();
       return aliases;

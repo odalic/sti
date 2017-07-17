@@ -92,7 +92,7 @@ public final class EntityCandidateValue implements Serializable, Comparable<Enti
    * @param entity the entity to set
    */
   public void setEntity(final Entity entity) {
-    Preconditions.checkNotNull(entity);
+    Preconditions.checkNotNull(entity, "The entity cannot be null!");
 
     this.entity = entity;
   }
@@ -101,7 +101,7 @@ public final class EntityCandidateValue implements Serializable, Comparable<Enti
    * @param score the score to set
    */
   public void setScore(final Score score) {
-    Preconditions.checkNotNull(score);
+    Preconditions.checkNotNull(score, "The score cannot be null!");
 
     this.score = score;
   }

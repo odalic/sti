@@ -86,7 +86,7 @@ public final class ClassProposalValue implements Serializable {
    * @param label the label to set
    */
   public void setLabel(final String label) {
-    Preconditions.checkNotNull(label);
+    Preconditions.checkNotNull(label, "The label cannot be null!");
 
     this.label = label;
   }

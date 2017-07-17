@@ -20,7 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableSet;
 
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.feedbacks.FeedbackToConstraintsAdapter;
 import cz.cuni.mff.xrg.odalic.files.FileService;
@@ -29,10 +32,9 @@ import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.input.InputToTableAdapter;
 import cz.cuni.mff.xrg.odalic.input.ParsingResult;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
-import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
+import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
 import cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
@@ -58,8 +60,9 @@ public final class FutureBasedExecutionService implements ExecutionService {
   private static final Logger logger = LoggerFactory.getLogger(FutureBasedExecutionService.class);
 
   private final ConfigurationService configurationService;
-  private final FeedbackService feedbackService;
+  private final InputSnapshotsService inputSnapshotsService;
   private final FileService fileService;
+  private final BasesService basesService;
   private final AnnotationToResultAdapter annotationResultAdapter;
   private final SemanticTableInterpreterFactory semanticTableInterpreterFactory;
   private final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter;
@@ -74,23 +77,25 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
   @Autowired
   public FutureBasedExecutionService(final ConfigurationService configurationService,
-      final FeedbackService feedbackService, final FileService fileService,
-      final AnnotationToResultAdapter annotationToResultAdapter,
+      final InputSnapshotsService inputSnapshotsService, final FileService fileService,
+      final BasesService basesService, final AnnotationToResultAdapter annotationToResultAdapter,
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
       final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter) {
-    Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(feedbackService);
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(annotationToResultAdapter);
-    Preconditions.checkNotNull(semanticTableInterpreterFactory);
-    Preconditions.checkNotNull(feedbackToConstraintsAdapter);
-    Preconditions.checkNotNull(csvInputParser);
-    Preconditions.checkNotNull(inputToTableAdapter);
+    Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
+    Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(annotationToResultAdapter, "The annotationToResultAdapter cannot be null!");
+    Preconditions.checkNotNull(semanticTableInterpreterFactory, "The semanticTableInterpreterFactory cannot be null!");
+    Preconditions.checkNotNull(feedbackToConstraintsAdapter, "The feedbackToConstraintsAdapter cannot be null!");
+    Preconditions.checkNotNull(csvInputParser, "The csvInputParser cannot be null!");
+    Preconditions.checkNotNull(inputToTableAdapter, "The inputToTableAdapter cannot be null!");
 
     this.configurationService = configurationService;
-    this.feedbackService = feedbackService;
+    this.inputSnapshotsService = inputSnapshotsService;
     this.fileService = fileService;
+    this.basesService = basesService;
     this.annotationResultAdapter = annotationToResultAdapter;
     this.semanticTableInterpreterFactory = semanticTableInterpreterFactory;
     this.feedbackToConstraintsAdapter = feedbackToConstraintsAdapter;
@@ -104,9 +109,9 @@ public final class FutureBasedExecutionService implements ExecutionService {
   public void cancelForTaskId(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
+    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
-    Preconditions.checkState(resultFuture.cancel(false));
+    Preconditions.checkState(resultFuture.cancel(false), String.format("The task %s could not be canceled!", taskId));
   }
 
   @Override
@@ -114,7 +119,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
       throws InterruptedException, ExecutionException, CancellationException {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
+    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     return resultFuture.get();
   }
@@ -167,14 +172,14 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
   private void checkNotAlreadyScheduled(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
-    Preconditions.checkState((resultFuture == null) || resultFuture.isDone());
+    Preconditions.checkState((resultFuture == null) || resultFuture.isDone(), String.format("The task %s is already scheduled and in progress!", taskId));
   }
 
   @Override
   public boolean isCanceledForTaskId(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
+    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     return resultFuture.isCancelled();
   }
@@ -183,7 +188,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
   public boolean isDoneForTaskId(final String userId, final String taskId) {
     final Future<Result> resultFuture = this.userTaskIdsToResults.get(userId, taskId);
 
-    Preconditions.checkArgument(resultFuture != null);
+    Preconditions.checkArgument(resultFuture != null, String.format("There is no scheduled execution of task %s registered to user %s", taskId, userId));
 
     return resultFuture.isDone();
   }
@@ -227,30 +232,31 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
     final String fileId = configuration.getInput().getId();
     final Feedback feedback = configuration.getFeedback();
-    final Set<KnowledgeBase> usedBases = configuration.getUsedBases();
+    final Set<String> usedBaseNames = configuration.getUsedBases();
     final int rowsLimit = configuration.getRowsLimit();
 
     final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
     final Input input = parsingResult.getInput();
 
-    this.feedbackService.setInputSnapshotForTaskid(userId, taskId, input);
+    this.inputSnapshotsService.setInputSnapshotForTaskid(userId, taskId, input);
 
     final Callable<Result> execution = () -> {
       try {
         final Table table = this.inputToTableAdapter.toTable(input);
         final boolean isStatistical = configuration.isStatistical();
 
+        final Set<KnowledgeBase> usedBases =
+            usedBaseNames.stream().map(e -> this.basesService.getByName(userId, e))
+                .collect(ImmutableSet.toImmutableSet());
+
         final Map<String, SemanticTableInterpreter> interpreters =
-            this.semanticTableInterpreterFactory.getInterpreters();
+            this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases);
 
         final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
 
         for (final Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters
             .entrySet()) {
-          final KnowledgeBase base = new KnowledgeBase(interpreterEntry.getKey());
-          if (!usedBases.contains(base)) {
-            continue;
-          }
+          final KnowledgeBase base = this.basesService.getByName(userId, interpreterEntry.getKey());
 
           final Constraints constraints =
               this.feedbackToConstraintsAdapter.toConstraints(feedback, base);
@@ -275,7 +281,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
   @Override
   public void unscheduleAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     this.userTaskIdsToResults.row(userId).entrySet().stream()
         .forEach(e -> e.getValue().cancel(false));
@@ -289,5 +295,10 @@ public final class FutureBasedExecutionService implements ExecutionService {
     }
 
     resultFuture.cancel(false);
+  }
+
+  @Override
+  public void mergeWithResultForTaskId(String userId, String taskId, Feedback feedback) {
+    throw new UnsupportedOperationException(); //TODO: Implement.
   }
 }

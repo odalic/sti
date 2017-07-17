@@ -32,9 +32,9 @@ public final class ColumnRelationPosition implements Serializable {
    * @param second second column position
    */
   public ColumnRelationPosition(final ColumnPosition first, final ColumnPosition second) {
-    Preconditions.checkNotNull(first);
-    Preconditions.checkNotNull(second);
-    Preconditions.checkArgument(first.getIndex() != second.getIndex());
+    Preconditions.checkNotNull(first, "The first cannot be null!");
+    Preconditions.checkNotNull(second, "The second cannot be null!");
+    Preconditions.checkArgument(first.getIndex() != second.getIndex(), "Column relation indices cannot be equal, because the relation must be between two different columns!");
 
     this.first = first;
     this.second = second;

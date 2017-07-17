@@ -17,7 +17,7 @@ public final class TableToListsBackedInputAdapter implements TableToInputAdapter
   private final ListsBackedInputBuilder builder;
 
   public TableToListsBackedInputAdapter(final ListsBackedInputBuilder builder) {
-    Preconditions.checkNotNull(builder);
+    Preconditions.checkNotNull(builder, "The builder cannot be null!");
 
     this.builder = builder;
   }

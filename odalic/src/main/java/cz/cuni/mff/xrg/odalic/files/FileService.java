@@ -105,18 +105,16 @@ public interface FileService {
   void setFormatForFileId(String userId, String fileId, Format format);
 
   /**
-   * Subscribe the task for utilizing the file.
+   * Subscribe the task for utilizing its input {@link File}.
    *
-   * @param file utilized file
    * @param task utilizing task
    */
-  void subscribe(File file, Task task);
+  void subscribe(Task task);
 
   /**
-   * Unsubscribe the task from utilizing the file.
+   * Unsubscribe the task from utilizing its input file.
    *
-   * @param file utilized file
    * @param task utilizing task
    */
-  void unsubscribe(File file, Task task);
+  void unsubscribe(Task task);
 }

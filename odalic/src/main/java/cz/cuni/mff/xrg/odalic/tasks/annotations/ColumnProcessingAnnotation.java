@@ -24,7 +24,7 @@ public final class ColumnProcessingAnnotation implements Serializable {
 
   private static final long serialVersionUID = -1695807148169080424L;
 
-  private final Map<KnowledgeBase, ColumnProcessingTypeValue> processingType;
+  private final Map<String, ColumnProcessingTypeValue> processingType;
 
   /**
    * Creates new annotation.
@@ -32,12 +32,12 @@ public final class ColumnProcessingAnnotation implements Serializable {
    * @param processingType type of statistical component
    */
   public ColumnProcessingAnnotation(
-      final Map<? extends KnowledgeBase, ? extends ColumnProcessingTypeValue> processingType) {
-    Preconditions.checkNotNull(processingType);
+      final Map<? extends String, ? extends ColumnProcessingTypeValue> processingType) {
+    Preconditions.checkNotNull(processingType, "The processingType cannot be null!");
 
-    final ImmutableMap.Builder<KnowledgeBase, ColumnProcessingTypeValue> processingTypeBuilder =
+    final ImmutableMap.Builder<String, ColumnProcessingTypeValue> processingTypeBuilder =
         ImmutableMap.builder();
-    for (final Map.Entry<? extends KnowledgeBase, ? extends ColumnProcessingTypeValue> componentEntry : processingType
+    for (final Map.Entry<? extends String, ? extends ColumnProcessingTypeValue> componentEntry : processingType
         .entrySet()) {
       processingTypeBuilder.put(componentEntry.getKey(), componentEntry.getValue());
     }
@@ -74,7 +74,7 @@ public final class ColumnProcessingAnnotation implements Serializable {
   /**
    * @return the processing type
    */
-  public Map<KnowledgeBase, ColumnProcessingTypeValue> getProcessingType() {
+  public Map<String, ColumnProcessingTypeValue> getProcessingType() {
     return this.processingType;
   }
 
@@ -102,7 +102,7 @@ public final class ColumnProcessingAnnotation implements Serializable {
    */
   public ColumnProcessingAnnotation merge(final ColumnProcessingAnnotation other)
       throws IllegalArgumentException {
-    final ImmutableMap.Builder<KnowledgeBase, ColumnProcessingTypeValue> processingTypeBuilder =
+    final ImmutableMap.Builder<String, ColumnProcessingTypeValue> processingTypeBuilder =
         ImmutableMap.builder();
     processingTypeBuilder.putAll(this.processingType);
     processingTypeBuilder.putAll(other.processingType);

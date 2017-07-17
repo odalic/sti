@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
@@ -20,7 +22,7 @@ import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
-import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
+import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
@@ -35,11 +37,13 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
 
   private final ExecutionService executionService;
 
-  private final FeedbackService feedbackService;
+  private final InputSnapshotsService inputSnapshotsService;
 
   private final ConfigurationService configurationService;
 
   private final FileService fileService;
+
+  private final BasesService basesService;
 
   private final ResultToCSVExportAdapter resultToCsvExportAdapter;
 
@@ -47,20 +51,22 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
 
   @Autowired
   public ResultAdaptingCsvExportService(final ExecutionService executionService,
-      final FeedbackService feedbackService, final ConfigurationService configurationService,
-      final FileService fileService, final ResultToCSVExportAdapter resultToCsvExportAdapter,
-      final CSVExporter csvExporter) {
-    Preconditions.checkNotNull(feedbackService);
-    Preconditions.checkNotNull(executionService);
-    Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(fileService);
-    Preconditions.checkNotNull(resultToCsvExportAdapter);
-    Preconditions.checkNotNull(csvExporter);
+      final InputSnapshotsService inputSnapshotsService, final ConfigurationService configurationService,
+      final FileService fileService, final BasesService basesService,
+      final ResultToCSVExportAdapter resultToCsvExportAdapter, final CSVExporter csvExporter) {
+    Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
+    Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
+    Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(resultToCsvExportAdapter, "The resultToCsvExportAdapter cannot be null!");
+    Preconditions.checkNotNull(csvExporter, "The csvExporter cannot be null!");
 
     this.executionService = executionService;
-    this.feedbackService = feedbackService;
+    this.inputSnapshotsService = inputSnapshotsService;
     this.configurationService = configurationService;
     this.fileService = fileService;
+    this.basesService = basesService;
     this.resultToCsvExportAdapter = resultToCsvExportAdapter;
     this.csvExporter = csvExporter;
   }
@@ -80,10 +86,13 @@ public class ResultAdaptingCsvExportService implements CsvExportService {
   public Input getExtendedInputForTaskId(final String userId, final String taskId)
       throws CancellationException, InterruptedException, ExecutionException, IOException {
     final Result result = this.executionService.getResultForTaskId(userId, taskId);
-    final Input input = this.feedbackService.getInputSnapshotForTaskId(userId, taskId);
+    final Input input = this.inputSnapshotsService.getInputSnapshotForTaskId(userId, taskId);
     final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
+    final KnowledgeBase primaryBase =
+        this.basesService.getByName(userId, configuration.getPrimaryBase());
 
-    final Input output = this.resultToCsvExportAdapter.toCSVExport(result, input, configuration);
+    final Input output = this.resultToCsvExportAdapter.toCSVExport(result, input,
+        configuration.isStatistical(), primaryBase);
 
     return output;
   }

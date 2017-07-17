@@ -4,23 +4,24 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>uk.ac.shef.dcs</groupId>
+    <groupId>eu.odalic.sti</groupId>
     <artifactId>sti-kbproxy</artifactId>
-    <version>1.0</version>
+    <version>1.1.1</version>
     <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jcloverslf4j.version>1.7.21</jcloverslf4j.version>
-    </properties>
+		<spring.version>4.3.0.RELEASE</spring.version>
+	</properties>
 
     <dependencies>
 
         <dependency>
-            <groupId>uk.ac.shef.dcs</groupId>
+            <groupId>eu.odalic.sti</groupId>
             <artifactId>sti-common-util</artifactId>
-            <version>1.0</version>
+            <version>1.1.1</version>
         </dependency>
         
         <dependency>
@@ -118,7 +119,13 @@
             a binary distributable. As a result, a local copy of binary is created and
             called 4.1.0L. Run mvninstall.bat to add it to your local maven repository -->
         </dependency>
-
+        
+        <!-- Spring -->
+        <dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
     </dependencies>
 
     <build>

@@ -21,7 +21,7 @@ public final class Ambiguity implements Serializable {
    * @param position position of the cell
    */
   public Ambiguity(final CellPosition position) {
-    Preconditions.checkNotNull(position);
+    Preconditions.checkNotNull(position, "The position cannot be null!");
 
     this.position = position;
   }

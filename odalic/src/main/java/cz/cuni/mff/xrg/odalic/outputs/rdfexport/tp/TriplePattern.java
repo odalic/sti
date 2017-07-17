@@ -17,8 +17,8 @@ public class TriplePattern {
   private final IRI predicate;
 
   public TriplePattern(final String subjectPattern, final IRI predicate) {
-    Preconditions.checkNotNull(subjectPattern);
-    Preconditions.checkNotNull(predicate);
+    Preconditions.checkNotNull(subjectPattern, "The subjectPattern cannot be null!");
+    Preconditions.checkNotNull(predicate, "The predicate cannot be null!");
 
     this.subjectPattern = subjectPattern;
     this.predicate = predicate;

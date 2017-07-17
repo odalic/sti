@@ -32,9 +32,9 @@ import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ConfigurationValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.CredentialsValue;
+import cz.cuni.mff.xrg.odalic.api.rest.values.KnowledgeBaseNameValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.TaskValue;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.users.Credentials;
 
 /**
@@ -118,9 +118,9 @@ public class TaskCreateTest {
     ConfigurationValue configuration = new ConfigurationValue();
     configuration.setInput(file.getName());
     configuration.setFeedback(CoreExecutionBatch.createFeedback(true));
-    configuration.setUsedBases(ImmutableSet.of(new KnowledgeBase("DBpedia"),
-        new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")));
-    configuration.setPrimaryBase(new KnowledgeBase("DBpedia"));
+    configuration.setUsedBases(ImmutableSet.of(getBase("DBpedia"),
+        getBase("DBpedia Clone"), getBase("German DBpedia")));
+    configuration.setPrimaryBase(getBase("DBpedia"));
     configuration.setRowsLimit(rowsLimit);
     configuration.setStatistical(statistical);
 
@@ -139,5 +139,11 @@ public class TaskCreateTest {
   public static void afterClass() {
 
     client.close();
+  }
+
+  private static KnowledgeBaseNameValue getBase(final String name) {
+    final KnowledgeBaseNameValue base = new KnowledgeBaseNameValue();
+    base.setName(name);
+    return base;
   }
 }

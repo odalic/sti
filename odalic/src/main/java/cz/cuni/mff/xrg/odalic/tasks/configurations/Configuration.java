@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSet;
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.ConfigurationAdapter;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.File;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * Task configuration.
@@ -36,9 +35,9 @@ public final class Configuration implements Serializable {
 
   private final Feedback feedback;
 
-  private final Set<KnowledgeBase> usedBases;
+  private final Set<String> usedBases;
 
-  private final KnowledgeBase primaryBase;
+  private final String primaryBase;
 
   private final int rowsLimit;
 
@@ -58,15 +57,15 @@ public final class Configuration implements Serializable {
    *
    * @throws IllegalArgumentException when the {@code rowsLimit} is a negative number or zero
    */
-  public Configuration(final File input, final Set<? extends KnowledgeBase> usedBases,
-      final KnowledgeBase primaryBase, final @Nullable Feedback feedback,
+  public Configuration(final File input, final Set<? extends String> usedBases,
+      final String primaryBase, final @Nullable Feedback feedback,
       @Nullable final Integer rowsLimit, @Nullable final Boolean statistical) {
-    Preconditions.checkNotNull(input);
-    Preconditions.checkNotNull(usedBases);
-    Preconditions.checkNotNull(primaryBase);
+    Preconditions.checkNotNull(input, "The input cannot be null!");
+    Preconditions.checkNotNull(usedBases, "The usedBases cannot be null!");
+    Preconditions.checkNotNull(primaryBase, "The primaryBase cannot be null!");
 
-    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0));
-    Preconditions.checkArgument(usedBases.contains(primaryBase));
+    Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0), "The rows limit must be positive, if present!");
+    Preconditions.checkArgument(usedBases.contains(primaryBase), "The primary base is not among the used ones!");
 
     this.input = input;
     this.usedBases = ImmutableSet.copyOf(usedBases);
@@ -126,7 +125,7 @@ public final class Configuration implements Serializable {
   /**
    * @return the primary knowledge base
    */
-  public KnowledgeBase getPrimaryBase() {
+  public String getPrimaryBase() {
     return this.primaryBase;
   }
 
@@ -140,7 +139,7 @@ public final class Configuration implements Serializable {
   /**
    * @return the bases selected for the task
    */
-  public Set<KnowledgeBase> getUsedBases() {
+  public Set<String> getUsedBases() {
     return this.usedBases;
   }
 

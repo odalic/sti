@@ -8,6 +8,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.shef.dcs.kbproxy.DefaultProxiesFactory;
+import uk.ac.shef.dcs.kbproxy.solr.MemoryOnlySolrCacheProviderService;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
@@ -22,12 +24,19 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import cz.cuni.mff.xrg.odalic.api.rest.values.ComponentTypeValue;
+import cz.cuni.mff.xrg.odalic.bases.MemoryOnlyAdvancedBaseTypesService;
+import cz.cuni.mff.xrg.odalic.bases.MemoryOnlyBasesService;
+import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
+import cz.cuni.mff.xrg.odalic.bases.proxies.MemoryOnlyKnowledgeBaseProxiesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.entities.PrefixMappingEntitiesFactory;
 import cz.cuni.mff.xrg.odalic.feedbacks.Ambiguity;
 import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnAmbiguity;
+import cz.cuni.mff.xrg.odalic.feedbacks.ColumnCompulsory;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnIgnore;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnRelation;
 import cz.cuni.mff.xrg.odalic.feedbacks.DataCubeComponent;
@@ -37,6 +46,7 @@ import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
+import cz.cuni.mff.xrg.odalic.groups.MemoryOnlyGroupsService;
 import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.DefaultInputToTableAdapter;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
@@ -49,7 +59,6 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.TurtleConfigurablePrefixMappingService;
@@ -65,7 +74,7 @@ public class CoreExecutionBatch {
 
   private static final Logger log = LoggerFactory.getLogger(CoreExecutionBatch.class);
 
-  private static KnowledgeBaseProxyFactory kbf;
+  private static KnowledgeBaseProxiesService kbf;
 
   /**
    * Expects sti.properties file path as the first and test input CSV file path as the second
@@ -91,7 +100,7 @@ public class CoreExecutionBatch {
 
     // File settings
     final Path path = Paths.get(testInputFilePath);
-    File file;
+    final File file;
     try {
       file = new File(new User("test@odalic.eu", "passwordHash", Role.USER),
           path.getFileName().toString(), path.toUri().toURL(), new Format(
@@ -116,49 +125,64 @@ public class CoreExecutionBatch {
     }
 
     // Parsed format settings
-    file = new File(file.getOwner(), file.getId(), file.getUploaded(), file.getLocation(),
+    final File parsedFile = new File(file.getOwner(), file.getId(), file.getUploaded(), file.getLocation(),
         parsingResult.getFormat(), file.isCached());
-
-    // Configuration settings
-    Configuration configuration = new Configuration(file, ImmutableSet.of(new KnowledgeBase("DBpedia"),
-        new KnowledgeBase("DBpedia Clone"), new KnowledgeBase("German DBpedia")),
-        new KnowledgeBase("DBpedia"), createFeedback(true), rowsLimit, false);
 
     // input Table creation
     final Table table = new DefaultInputToTableAdapter().toTable(parsingResult.getInput());
 
-    // PrefixMappingService
+    // services for bases
+    DefaultPropertiesService dps;
     TurtleConfigurablePrefixMappingService pms;
     try {
-      pms = new TurtleConfigurablePrefixMappingService(new DefaultPropertiesService());
+      dps = new DefaultPropertiesService();
+      pms = new TurtleConfigurablePrefixMappingService(dps);
     } catch (IOException e) {
-      log.error("Error - prefix mapping service loading:", e);
+      log.error("Error - services loading:", e);
       return null;
     }
+    MemoryOnlySolrCacheProviderService cps = new MemoryOnlySolrCacheProviderService(dps);
+    DefaultProxiesFactory dpf = new DefaultProxiesFactory(cps);
+    MemoryOnlyGroupsService mgs = new MemoryOnlyGroupsService(dps);
+    MemoryOnlyAdvancedBaseTypesService abs = new MemoryOnlyAdvancedBaseTypesService(mgs);
+    kbf = new MemoryOnlyKnowledgeBaseProxiesService(dpf, abs, pms);
+    MemoryOnlyBasesService mbs = new MemoryOnlyBasesService(kbf, mgs, abs, dps);
+
+    // groups and bases initialization
+    try {
+      mgs.initializeDefaults(parsedFile.getOwner());
+      mbs.initializeDefaults(parsedFile.getOwner(), mgs);
+    } catch (IOException e) {
+      log.error("Error - groups and bases initialization:", e);
+      return null;
+    }
+
+    // Configuration settings
+    final KnowledgeBase primaryBase = mbs.getByName(parsedFile.getOwner().getEmail(), "DBpedia");
+    final Configuration configuration = new Configuration(parsedFile,
+        ImmutableSet.of(primaryBase.getName(),
+            "DBpedia Clone", "German DBpedia"),
+        primaryBase.getName(), createFeedback(true), rowsLimit, false);
 
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
-      kbf = new DefaultKnowledgeBaseProxyFactory(pms);
-      semanticTableInterpreters = new TableMinerPlusFactory(kbf).getInterpreters();
-    } catch (IOException e) {
-      log.error("Error - TMP initialization process fails to load its configuration:", e);
-      return null;
-    } catch (STIException e) {
-      log.error("Error - TMP interpreters fail to initialize:", e);
+      semanticTableInterpreters = new TableMinerPlusFactory(kbf, cps, dps).getInterpreters(
+          configuration.getInput().getOwner().getEmail(), configuration.getUsedBases().stream().map(e ->
+          mbs.getByName(configuration.getInput().getOwner().getEmail(), e)).collect(ImmutableSet.toImmutableSet()));
+    } catch (final Exception e) {
+      log.error("Error - TMP interpreters failed to initialize:", e);
       return null;
     }
-    Preconditions.checkNotNull(semanticTableInterpreters);
+    Preconditions.checkNotNull(semanticTableInterpreters, "The semanticTableInterpreters cannot be null!");
 
     // TableMinerPlus algorithm run
     Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
     try {
       for (Map.Entry<String, SemanticTableInterpreter> interpreterEntry : semanticTableInterpreters
           .entrySet()) {
-        final KnowledgeBase base = new KnowledgeBase(interpreterEntry.getKey());
-        if (!configuration.getUsedBases().contains(base)) {
-          continue;
-        }
+        final KnowledgeBase base = mbs.getByName(configuration.getInput().getOwner().getEmail(),
+            interpreterEntry.getKey());
 
         Constraints constraints = new DefaultFeedbackToConstraintsAdapter().toConstraints(
             configuration.getFeedback(), base);
@@ -178,10 +202,10 @@ public class CoreExecutionBatch {
         new PrefixMappingEntitiesFactory(pms)).toResult(results);
     log.info("Odalic Result is: " + odalicResult);
 
-    return new CoreSnapshot(odalicResult, parsingResult.getInput(), configuration);
+    return new CoreSnapshot(odalicResult, parsingResult.getInput(), configuration, primaryBase);
   }
 
-  public static KnowledgeBaseProxyFactory getKnowledgeBaseProxyFactory() {
+  public static KnowledgeBaseProxiesService getKnowledgeBaseProxyFactory() {
     return kbf;
   }
 
@@ -190,9 +214,12 @@ public class CoreExecutionBatch {
       return new Feedback();
     }
     else {
-      // subject columns example
-      HashMap<KnowledgeBase, ColumnPosition> subjectColumns = new HashMap<>();
-      subjectColumns.put(new KnowledgeBase("DBpedia Clone"), new ColumnPosition(0));
+      // subject columns positions example
+      HashSet<ColumnPosition> subjectPositions = new HashSet<>();
+      subjectPositions.add(new ColumnPosition(0));
+      subjectPositions.add(new ColumnPosition(1));
+      HashMap<String, Set<ColumnPosition>> subjectColumnsPositions = new HashMap<>();
+      subjectColumnsPositions.put("DBpedia Clone", subjectPositions);
 
       // classifications example
       HashSet<EntityCandidate> candidatesClassification = new HashSet<>();
@@ -200,8 +227,8 @@ public class CoreExecutionBatch {
           new EntityCandidate(Entity.of("http://schema.org/Bookxyz", "Booooook"), new Score(1.0)));
       candidatesClassification
           .add(new EntityCandidate(Entity.of("http://schema.org/Book", "Book"), new Score(1.0)));
-      HashMap<KnowledgeBase, HashSet<EntityCandidate>> headerAnnotation = new HashMap<>();
-      headerAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesClassification);
+      HashMap<String, HashSet<EntityCandidate>> headerAnnotation = new HashMap<>();
+      headerAnnotation.put("DBpedia Clone", candidatesClassification);
       HashSet<Classification> classifications = new HashSet<>();
       classifications.add(new Classification(new ColumnPosition(0),
           new HeaderAnnotation(headerAnnotation, headerAnnotation)));
@@ -214,8 +241,8 @@ public class CoreExecutionBatch {
       candidatesDisambiguation.add(new EntityCandidate(
           Entity.of("http://dbpedia.org/resource/Gardens_of_the_Moon", "Gardens of the Moon"),
           new Score(1.0)));
-      HashMap<KnowledgeBase, HashSet<EntityCandidate>> cellAnnotation = new HashMap<>();
-      cellAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesDisambiguation);
+      HashMap<String, HashSet<EntityCandidate>> cellAnnotation = new HashMap<>();
+      cellAnnotation.put("DBpedia Clone", candidatesDisambiguation);
       HashSet<Disambiguation> disambiguations = new HashSet<>();
       disambiguations.add(new Disambiguation(new CellPosition(0, 0),
           new CellAnnotation(cellAnnotation, cellAnnotation)));
@@ -226,8 +253,8 @@ public class CoreExecutionBatch {
           Entity.of("http://dbpedia.org/property/authorxyz", ""), new Score(1.0)));
       candidatesRelation.add(
           new EntityCandidate(Entity.of("http://dbpedia.org/property/author", ""), new Score(1.0)));
-      HashMap<KnowledgeBase, HashSet<EntityCandidate>> columnRelationAnnotation = new HashMap<>();
-      columnRelationAnnotation.put(new KnowledgeBase("DBpedia Clone"), candidatesRelation);
+      HashMap<String, HashSet<EntityCandidate>> columnRelationAnnotation = new HashMap<>();
+      columnRelationAnnotation.put("DBpedia Clone", candidatesRelation);
       HashSet<ColumnRelation> relations = new HashSet<>();
       relations.add(new ColumnRelation(new ColumnRelationPosition(0, 1),
           new ColumnRelationAnnotation(columnRelationAnnotation, columnRelationAnnotation)));
@@ -235,6 +262,10 @@ public class CoreExecutionBatch {
       // ignore columns example
       HashSet<ColumnIgnore> columnIgnores = new HashSet<>();
       columnIgnores.add(new ColumnIgnore(new ColumnPosition(3)));
+
+      // compulsory columns example
+      HashSet<ColumnCompulsory> columnCompulsory = new HashSet<>();
+      columnCompulsory.add(new ColumnCompulsory(new ColumnPosition(2)));
 
       // column ambiguities example
       HashSet<ColumnAmbiguity> columnAmbiguities = new HashSet<>();
@@ -257,26 +288,19 @@ public class CoreExecutionBatch {
       dataCubeComponents.add(createDCC(8, ComponentTypeValue.MEASURE,
           "http://dbpedia.org/ontology/year", "Year"));
 
-      /**/
       // statistical data feedback example
       return new Feedback(ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(),
-          ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), dataCubeComponents);
-      /*/
-
-      // construction example
-      return new Feedback(subjectColumns, columnIgnores, columnAmbiguities, classifications,
-          relations, disambiguations, ambiguities, ImmutableSet.of());
-      /**/
+          ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(), dataCubeComponents);
     }
   }
 
   private static DataCubeComponent createDCC(int col, ComponentTypeValue comp, String uri, String label) {
-    HashMap<KnowledgeBase, ComponentTypeValue> compMap = new HashMap<>();
-    compMap.put(new KnowledgeBase("DBpedia"), comp);
+    HashMap<String, ComponentTypeValue> compMap = new HashMap<>();
+    compMap.put("DBpedia", comp);
     HashSet<EntityCandidate> predicateSet = new HashSet<>();
     predicateSet.add(new EntityCandidate(Entity.of(uri, label), new Score(1.0)));
-    HashMap<KnowledgeBase, HashSet<EntityCandidate>> predicateMap = new HashMap<>();
-    predicateMap.put(new KnowledgeBase("DBpedia"), predicateSet);
+    HashMap<String, HashSet<EntityCandidate>> predicateMap = new HashMap<>();
+    predicateMap.put("DBpedia", predicateSet);
     return new DataCubeComponent(new ColumnPosition(col), new StatisticalAnnotation(compMap, predicateMap));
   }
 }

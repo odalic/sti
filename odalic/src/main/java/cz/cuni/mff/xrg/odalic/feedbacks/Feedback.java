@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -14,7 +13,6 @@ import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.FeedbackAdapter;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.KnowledgeBase;
 
 /**
  * User feedback for the result of annotating algorithm. Expresses also input constraints for the
@@ -29,9 +27,12 @@ public final class Feedback implements Serializable {
 
   private static final long serialVersionUID = -6359038623760039155L;
 
-  private final Map<KnowledgeBase, ColumnPosition> subjectColumnPositions;
+
+  private final Map<String, Set<ColumnPosition>> subjectColumnsPositions;
 
   private final Set<ColumnIgnore> columnIgnores;
+
+  private final Set<ColumnCompulsory> columnCompulsory;
 
   private final Set<Classification> classifications;
 
@@ -50,8 +51,9 @@ public final class Feedback implements Serializable {
    * Creates empty feedback.
    */
   public Feedback() {
-    this.subjectColumnPositions = ImmutableMap.of();
+    this.subjectColumnsPositions = ImmutableMap.of();
     this.columnIgnores = ImmutableSet.of();
+    this.columnCompulsory = ImmutableSet.of();
     this.columnAmbiguities = ImmutableSet.of();
     this.classifications = ImmutableSet.of();
     this.columnRelations = ImmutableSet.of();
@@ -63,8 +65,9 @@ public final class Feedback implements Serializable {
   /**
    * Creates feedback.
    *
-   * @param subjectColumnPositions positions of the subject columns
+   * @param subjectColumnsPositions positions of the subject columns
    * @param columnIgnores ignored columns
+   * @param columnCompulsory compulsory columns
    * @param columnAmbiguities columns whose cells will not be disambiguated
    * @param classifications classification hints for columns
    * @param columnRelations hints with relation between columns
@@ -73,23 +76,27 @@ public final class Feedback implements Serializable {
    * @param dataCubeComponents dataCubeComponents hints for columns
    */
   public Feedback(
-      final Map<? extends KnowledgeBase, ? extends ColumnPosition> subjectColumnPositions,
+      final Map<? extends String, Set<ColumnPosition>> subjectColumnsPositions,
       final Set<? extends ColumnIgnore> columnIgnores,
+      final Set<? extends ColumnCompulsory> columnCompulsory,
       final Set<? extends ColumnAmbiguity> columnAmbiguities,
       final Set<? extends Classification> classifications,
       final Set<? extends ColumnRelation> columnRelations,
       final Set<? extends Disambiguation> disambiguations,
       final Set<? extends Ambiguity> ambiguities,
       final Set<? extends DataCubeComponent> dataCubeComponents) {
-    Preconditions.checkNotNull(columnIgnores);
-    Preconditions.checkNotNull(columnAmbiguities);
-    Preconditions.checkNotNull(classifications);
-    Preconditions.checkNotNull(columnRelations);
-    Preconditions.checkNotNull(disambiguations);
-    Preconditions.checkNotNull(ambiguities);
+    Preconditions.checkNotNull(subjectColumnsPositions, "The subjectColumnsPositions cannot be null!");
+    Preconditions.checkNotNull(columnIgnores, "The columnIgnores cannot be null!");
+    Preconditions.checkNotNull(columnCompulsory, "The columnCompulsory cannot be null!");
+    Preconditions.checkNotNull(columnAmbiguities, "The columnAmbiguities cannot be null!");
+    Preconditions.checkNotNull(classifications, "The classifications cannot be null!");
+    Preconditions.checkNotNull(columnRelations, "The columnRelations cannot be null!");
+    Preconditions.checkNotNull(disambiguations, "The disambiguations cannot be null!");
+    Preconditions.checkNotNull(ambiguities, "The ambiguities cannot be null!");
 
-    this.subjectColumnPositions = ImmutableMap.copyOf(subjectColumnPositions);
+    this.subjectColumnsPositions = ImmutableMap.copyOf(subjectColumnsPositions);
     this.columnIgnores = ImmutableSet.copyOf(columnIgnores);
+    this.columnCompulsory = ImmutableSet.copyOf(columnCompulsory);
     this.columnAmbiguities = ImmutableSet.copyOf(columnAmbiguities);
     this.classifications = ImmutableSet.copyOf(classifications);
     this.columnRelations = ImmutableSet.copyOf(columnRelations);
@@ -140,6 +147,13 @@ public final class Feedback implements Serializable {
     } else if (!this.columnIgnores.equals(other.columnIgnores)) {
       return false;
     }
+    if (this.columnCompulsory == null) {
+      if (other.columnCompulsory != null) {
+        return false;
+      }
+    } else if (!this.columnCompulsory.equals(other.columnCompulsory)) {
+      return false;
+    }
     if (this.columnRelations == null) {
       if (other.columnRelations != null) {
         return false;
@@ -161,11 +175,11 @@ public final class Feedback implements Serializable {
     } else if (!this.dataCubeComponents.equals(other.dataCubeComponents)) {
       return false;
     }
-    if (this.subjectColumnPositions == null) {
-      if (other.subjectColumnPositions != null) {
+    if (this.subjectColumnsPositions == null) {
+      if (other.subjectColumnsPositions != null) {
         return false;
       }
-    } else if (!this.subjectColumnPositions.equals(other.subjectColumnPositions)) {
+    } else if (!this.subjectColumnsPositions.equals(other.subjectColumnsPositions)) {
       return false;
     }
     return true;
@@ -200,6 +214,13 @@ public final class Feedback implements Serializable {
   }
 
   /**
+   * @return compulsory columns
+   */
+  public Set<ColumnCompulsory> getColumnCompulsory() {
+    return this.columnCompulsory;
+  }
+
+  /**
    * @return the column relations
    */
   public Set<ColumnRelation> getColumnRelations() {
@@ -221,11 +242,10 @@ public final class Feedback implements Serializable {
   }
 
   /**
-   * @return the subject column position
+   * @return the subject columns positions
    */
-  @Nullable
-  public Map<KnowledgeBase, ColumnPosition> getSubjectColumnPositions() {
-    return this.subjectColumnPositions;
+  public Map<String, Set<ColumnPosition>> getSubjectColumnsPositions() {
+    return this.subjectColumnsPositions;
   }
 
   @Override
@@ -238,6 +258,7 @@ public final class Feedback implements Serializable {
     result = (prime * result)
         + ((this.columnAmbiguities == null) ? 0 : this.columnAmbiguities.hashCode());
     result = (prime * result) + ((this.columnIgnores == null) ? 0 : this.columnIgnores.hashCode());
+    result = (prime * result) + ((this.columnCompulsory == null) ? 0 : this.columnCompulsory.hashCode());
     result =
         (prime * result) + ((this.columnRelations == null) ? 0 : this.columnRelations.hashCode());
     result =
@@ -245,46 +266,43 @@ public final class Feedback implements Serializable {
     result = (prime * result)
         + ((this.dataCubeComponents == null) ? 0 : this.dataCubeComponents.hashCode());
     result = (prime * result)
-        + ((this.subjectColumnPositions == null) ? 0 : this.subjectColumnPositions.hashCode());
+        + ((this.subjectColumnsPositions == null) ? 0 : this.subjectColumnsPositions.hashCode());
     return result;
   }
 
   private void checkConflicts() {
-    // check the conflict when ignore columns contain the subject column
-    if (this.subjectColumnPositions == null) {
-      return;
+    // check the conflict when ignore columns contain some subject column
+    for (final String baseName : this.subjectColumnsPositions.keySet()) {
+      final Set<ColumnPosition> subjectPositions = this.subjectColumnsPositions.get(baseName);
+      if (subjectPositions == null) {
+        continue;
+      }
+
+      for (ColumnPosition subjCol : subjectPositions) {
+        if (this.columnIgnores.stream()
+            .anyMatch(e -> e.getPosition().getIndex() == subjCol.getIndex())) {
+          throw new IllegalArgumentException("The column (position: " + subjCol.getIndex()
+              + ") which is ignored cannot be a subject column.");
+        }
+      }
     }
 
-    for (final KnowledgeBase base : this.subjectColumnPositions.keySet()) {
-      final ColumnPosition subjCol = this.subjectColumnPositions.get(base);
-      if (subjCol == null) {
-        return;
-      }
-
+    // check the conflict when ignore columns contain some compulsory column
+    for (ColumnCompulsory compCol : this.columnCompulsory) {
       if (this.columnIgnores.stream()
-          .anyMatch(e -> e.getPosition().getIndex() == subjCol.getIndex())) {
-        throw new IllegalArgumentException("The column (position: " + subjCol.getIndex()
-            + ") which is ignored does not have to be a subject column.");
-      }
-
-      for (final Classification classification : this.classifications) {
-        if ((classification.getPosition().getIndex() == subjCol.getIndex())
-            && (classification.getAnnotation().getChosen().get(base) != null)
-            && classification.getAnnotation().getChosen().get(base).isEmpty()) {
-          throw new IllegalArgumentException("The column (position: " + subjCol.getIndex()
-              + ") which has empty chosen classification set (for " + base.getName()
-              + " KB) does not have to be a subject column (for that KB).");
-        }
+          .anyMatch(e -> e.getPosition().getIndex() == compCol.getPosition().getIndex())) {
+        throw new IllegalArgumentException("The column (position: " + compCol.getPosition().getIndex()
+            + ") which is ignored cannot be a compulsory column.");
       }
     }
   }
 
   @Override
   public String toString() {
-    return "Feedback [subjectColumnPositions=" + this.subjectColumnPositions + ", columnIgnores="
-        + this.columnIgnores + ", columnAmbiguities=" + this.columnAmbiguities
-        + ", classifications=" + this.classifications + ", columnRelations=" + this.columnRelations
-        + ", disambiguations=" + this.disambiguations + ", ambiguities=" + this.ambiguities
-        + ", dataCubeComponents=" + this.dataCubeComponents + "]";
+    return "Feedback [subjectColumnsPositions=" + subjectColumnsPositions + ", columnIgnores="
+        + columnIgnores + ", columnCompulsory=" + columnCompulsory + ", classifications="
+        + classifications + ", columnAmbiguities=" + columnAmbiguities + ", ambiguities="
+        + ambiguities + ", disambiguations=" + disambiguations + ", columnRelations="
+        + columnRelations + ", dataCubeComponents=" + dataCubeComponents + "]";
   }
 }

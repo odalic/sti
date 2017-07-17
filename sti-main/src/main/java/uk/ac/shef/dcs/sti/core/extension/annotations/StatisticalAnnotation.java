@@ -28,8 +28,8 @@ public final class StatisticalAnnotation {
    */
   public StatisticalAnnotation(final ComponentTypeValue component,
       final Set<? extends EntityCandidate> predicate) {
-    Preconditions.checkNotNull(component);
-    Preconditions.checkNotNull(predicate);
+    Preconditions.checkNotNull(component, "The component cannot be null!");
+    Preconditions.checkNotNull(predicate, "The predicate cannot be null!");
 
     this.component = component;
     this.predicate = ImmutableSet.copyOf(predicate);

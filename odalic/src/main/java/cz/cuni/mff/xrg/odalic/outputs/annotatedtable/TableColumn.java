@@ -62,7 +62,7 @@ public class TableColumn implements Serializable {
       final String dataType, final Boolean virtual, final Boolean suppressOutput,
       final String aboutUrl, final String separator, final String propertyUrl,
       final String valueUrl) {
-    Preconditions.checkNotNull(name);
+    Preconditions.checkNotNull(name, "The name cannot be null!");
 
     this.name = name;
     this.titles = titles;

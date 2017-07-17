@@ -52,7 +52,7 @@ public class CellPositionValue {
    * @param columnPosition the columnPosition to set
    */
   public void setColumnPosition(final ColumnPosition columnPosition) {
-    Preconditions.checkNotNull(columnPosition);
+    Preconditions.checkNotNull(columnPosition, "The columnPosition cannot be null!");
 
     this.columnPosition = columnPosition;
   }
@@ -61,7 +61,7 @@ public class CellPositionValue {
    * @param rowPosition the rowPosition to set
    */
   public void setRowPosition(final RowPosition rowPosition) {
-    Preconditions.checkNotNull(rowPosition);
+    Preconditions.checkNotNull(rowPosition, "The rowPosition cannot be null!");
 
     this.rowPosition = rowPosition;
   }

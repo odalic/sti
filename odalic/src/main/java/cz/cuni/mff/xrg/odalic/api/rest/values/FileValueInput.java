@@ -56,7 +56,7 @@ public final class FileValueInput implements Serializable {
    * @param format the format to set
    */
   public void setFormat(final Format format) {
-    Preconditions.checkNotNull(format);
+    Preconditions.checkNotNull(format, "The format cannot be null!");
 
     this.format = format;
   }
@@ -65,7 +65,7 @@ public final class FileValueInput implements Serializable {
    * @param location the location to set
    */
   public void setLocation(final URL location) {
-    Preconditions.checkNotNull(location);
+    Preconditions.checkNotNull(location, "The location cannot be null!");
 
     this.location = location;
   }

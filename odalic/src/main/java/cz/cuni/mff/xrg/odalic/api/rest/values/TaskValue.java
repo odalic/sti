@@ -85,7 +85,7 @@ public final class TaskValue implements Serializable {
    * @param configuration the configuration to set
    */
   public void setConfiguration(final ConfigurationValue configuration) {
-    Preconditions.checkNotNull(configuration);
+    Preconditions.checkNotNull(configuration, "The configuration cannot be null!");
 
     this.configuration = configuration;
   }
@@ -94,7 +94,7 @@ public final class TaskValue implements Serializable {
    * @param created the created to set
    */
   public void setCreated(final Date created) {
-    Preconditions.checkNotNull(created);
+    Preconditions.checkNotNull(created, "The created cannot be null!");
 
     this.created = created;
   }
@@ -103,7 +103,7 @@ public final class TaskValue implements Serializable {
    * @param description the task description
    */
   public void setDescription(final String description) {
-    Preconditions.checkNotNull(description);
+    Preconditions.checkNotNull(description, "The description cannot be null!");
 
     this.description = description;
   }
@@ -112,7 +112,7 @@ public final class TaskValue implements Serializable {
    * @param id the id to set
    */
   public void setId(final String id) {
-    Preconditions.checkNotNull(id);
+    Preconditions.checkNotNull(id, "The id cannot be null!");
 
     this.id = id;
   }

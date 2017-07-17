@@ -24,7 +24,7 @@ public final class PrefixMappingEntitiesFactory implements EntitiesFactory {
 
   @Autowired
   public PrefixMappingEntitiesFactory(final PrefixMappingService prefixMappingService) {
-    Preconditions.checkNotNull(prefixMappingService);
+    Preconditions.checkNotNull(prefixMappingService, "The prefixMappingService cannot be null!");
 
     this.prefixMappingService = prefixMappingService;
   }

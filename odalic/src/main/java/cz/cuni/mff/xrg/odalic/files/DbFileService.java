@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.tasks.Task;
+import cz.cuni.mff.xrg.odalic.users.User;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 
 /**
@@ -59,7 +60,7 @@ public final class DbFileService implements FileService {
   @Autowired
   @SuppressWarnings("unchecked")
   public DbFileService(final DbService dbService) {
-    Preconditions.checkNotNull(dbService);
+    Preconditions.checkNotNull(dbService, "The dbService cannot be null!");
 
     this.db = dbService.getDb();
 
@@ -77,58 +78,78 @@ public final class DbFileService implements FileService {
 
   @Override
   public void create(final File file) {
-    Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
+    final String userId = file.getOwner().getEmail();
+
+    Preconditions.checkArgument(!existsFileWithId(userId, file.getId()), String.format(
+        "There is already a file with name %s registered to user %s!", file.getId(), userId));
 
     replace(file);
   }
 
   @Override
   public void create(final File file, final InputStream fileInputStream) throws IOException {
-    Preconditions.checkArgument(!existsFileWithId(file.getOwner().getEmail(), file.getId()));
+    final String userId = file.getOwner().getEmail();
+
+    Preconditions.checkArgument(!existsFileWithId(userId, file.getId()), String.format(
+        "There is already a file with name %s registered to user %s!", file.getId(), userId));
 
     replace(file, fileInputStream);
   }
 
   @Override
   public void deleteAll(final String userId) {
-    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
 
     final Object[] userIdKey = new Object[] {userId};
 
-    final Map<Object[], File> fileIdsToFiles = this.files.prefixSubMap(userIdKey);
-    fileIdsToFiles.entrySet().stream().forEach(e -> checkUtilization(userId, e.getValue().getId()));
-    fileIdsToFiles.clear();
+    try {
+      final Map<Object[], File> fileIdsToFiles = this.files.prefixSubMap(userIdKey);
+      fileIdsToFiles.entrySet().stream()
+          .forEach(e -> checkUtilization(userId, e.getValue().getId()));
+      fileIdsToFiles.clear();
 
-    this.data.prefixSubMap(userIdKey).clear();
+      this.data.prefixSubMap(userIdKey).clear();
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
+
+    this.db.commit();
   }
 
   @Override
   public void deleteById(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     checkUtilization(userId, fileId);
 
-    final File file = this.files.remove(new Object[] {userId, fileId});
-    Preconditions.checkArgument(file != null);
+    try {
+      final File file = this.files.remove(new Object[] {userId, fileId});
+      Preconditions.checkArgument(file != null,
+          String.format("There is no file %s registered to user %s", userId, fileId));
 
-    this.data.remove(new Object[] {userId, file.getLocation().toString()});
+      this.data.remove(new Object[] {userId, file.getLocation().toString()});
+    } catch (final Exception e) {
+      this.db.rollback();
+      throw e;
+    }
 
     this.db.commit();
   }
 
   @Override
   public boolean existsFileWithId(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     return this.files.containsKey(new Object[] {userId, fileId});
   }
 
   @Override
   public File getById(final String userId, final String fileId) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
 
     final File file = this.files.get(new Object[] {userId, fileId});
     Preconditions.checkArgument(file != null, "File does not exists!");
@@ -192,7 +213,8 @@ public final class DbFileService implements FileService {
 
   @Override
   public void replace(final File file, final InputStream fileInputStream) throws IOException {
-    Preconditions.checkArgument(file.isCached());
+    Preconditions.checkArgument(file.isCached(),
+        "The provided file cannot be replaced by the content of the stream, because it is not cached by the server in the first place!");
 
     final String userId = file.getOwner().getEmail();
     final String fileId = file.getId();
@@ -206,9 +228,9 @@ public final class DbFileService implements FileService {
 
   @Override
   public void setFormatForFileId(final String userId, final String fileId, final Format format) {
-    Preconditions.checkNotNull(userId);
-    Preconditions.checkNotNull(fileId);
-    Preconditions.checkNotNull(format);
+    Preconditions.checkNotNull(userId, "The userId cannot be null!");
+    Preconditions.checkNotNull(fileId, "The fileId cannot be null!");
+    Preconditions.checkNotNull(format, "The format cannot be null!");
 
     final Object[] userFileId = new Object[] {userId, fileId};
 
@@ -222,8 +244,14 @@ public final class DbFileService implements FileService {
   }
 
   @Override
-  public void subscribe(final File file, final Task task) {
-    final String userId = file.getOwner().getEmail();
+  public void subscribe(final Task task) {
+    final File file = task.getConfiguration().getInput();
+
+    final User owner = file.getOwner();
+    Preconditions.checkArgument(owner.equals(task.getOwner()),
+        "The owner of the file is not the same as the owner of the task!");
+
+    final String userId = owner.getEmail();
     final String fileId = file.getId();
 
     Preconditions.checkArgument(this.files.get(new Object[] {userId, fileId}).equals(file),
@@ -236,8 +264,14 @@ public final class DbFileService implements FileService {
   }
 
   @Override
-  public void unsubscribe(final File file, final Task task) {
-    final String userId = file.getOwner().getEmail();
+  public void unsubscribe(final Task task) {
+    final File file = task.getConfiguration().getInput();
+
+    final User owner = file.getOwner();
+    Preconditions.checkArgument(owner.equals(task.getOwner()),
+        "The owner of the file is not the same as the owner of the task!");
+
+    final String userId = owner.getEmail();
     final String fileId = file.getId();
 
     Preconditions.checkArgument(this.files.get(new Object[] {userId, fileId}).equals(file),

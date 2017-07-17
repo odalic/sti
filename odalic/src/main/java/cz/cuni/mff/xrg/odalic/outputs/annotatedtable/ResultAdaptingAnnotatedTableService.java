@@ -13,11 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
+import cz.cuni.mff.xrg.odalic.bases.BasesService;
+import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
-import cz.cuni.mff.xrg.odalic.tasks.feedbacks.FeedbackService;
+import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
@@ -32,24 +34,31 @@ public final class ResultAdaptingAnnotatedTableService implements AnnotatedTable
 
   private final ExecutionService executionService;
 
-  private final FeedbackService feedbackService;
+  private final InputSnapshotsService inputSnapshotsService;
 
   private final ConfigurationService configurationService;
 
+  private final BasesService basesService;
+
   private final ResultToAnnotatedTableAdapter resultToAnnotatedTableAdapter;
+
 
   @Autowired
   public ResultAdaptingAnnotatedTableService(final ExecutionService executionService,
-      final FeedbackService feedbackService, final ConfigurationService configurationService,
+      final InputSnapshotsService inputSnapshotsService,
+      final ConfigurationService configurationService, final BasesService basesService,
       final ResultToAnnotatedTableAdapter resultToAnnotatedTableAdapter) {
-    Preconditions.checkNotNull(feedbackService);
-    Preconditions.checkNotNull(executionService);
-    Preconditions.checkNotNull(configurationService);
-    Preconditions.checkNotNull(resultToAnnotatedTableAdapter);
+    Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
+    Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
+    Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
+    Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
+    Preconditions.checkNotNull(resultToAnnotatedTableAdapter,
+        "The resultToAnnotatedTableAdapter cannot be null!");
 
     this.executionService = executionService;
-    this.feedbackService = feedbackService;
+    this.inputSnapshotsService = inputSnapshotsService;
     this.configurationService = configurationService;
+    this.basesService = basesService;
     this.resultToAnnotatedTableAdapter = resultToAnnotatedTableAdapter;
   }
 
@@ -58,10 +67,13 @@ public final class ResultAdaptingAnnotatedTableService implements AnnotatedTable
       throws IllegalArgumentException, CancellationException, InterruptedException,
       ExecutionException, IOException {
     final Result result = this.executionService.getResultForTaskId(userId, taskId);
-    final Input input = this.feedbackService.getInputSnapshotForTaskId(userId, taskId);
+    final Input input = this.inputSnapshotsService.getInputSnapshotForTaskId(userId, taskId);
     final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
+    final KnowledgeBase primaryBase =
+        this.basesService.getByName(userId, configuration.getPrimaryBase());
 
-    return this.resultToAnnotatedTableAdapter.toAnnotatedTable(result, input, configuration);
+    return this.resultToAnnotatedTableAdapter.toAnnotatedTable(result, input,
+        configuration.isStatistical(), primaryBase);
   }
 
 }
