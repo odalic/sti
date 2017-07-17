@@ -46,7 +46,7 @@ public class HttpRequestExecutorForPP {
      *
      * http://adequate-project-pp.semantic-web.at/PoolParty/api?method=createConcept
      *
-     * @return HTTP response
+     * @return HTTP response - in this case URL of the created resource
      * @throws Exception
      *             if request execution fails
      */
@@ -172,7 +172,7 @@ public class HttpRequestExecutorForPP {
 
 
     /**
-     * Add literal
+     * Apply type request
      *
      * http://<server-url>/PoolParty/api/thesaurus/APItests/applyType?resource=http://test.info/glossary/2614&type=http://vocabulary.poolparty.biz/PoolParty/schema/Geonames/Continent
      *
@@ -297,7 +297,7 @@ public class HttpRequestExecutorForPP {
 
             response = client.execute(request);
 
-            //process response
+            //TODO process response (now the response String is returned?)
             //checkHttpResponseStatus(response);
 
             //get response
@@ -403,8 +403,6 @@ public class HttpRequestExecutorForPP {
 //            JSONObject singleBoolean = new JSONObject();
 //            singleBoolean.put("boolean","false");
             json.put("single", "false");
-
-
 
             URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/schema/createDirectedRelation");
 

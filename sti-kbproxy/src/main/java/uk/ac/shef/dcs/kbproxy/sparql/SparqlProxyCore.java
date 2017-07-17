@@ -51,7 +51,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public final class SparqlProxyCore implements ProxyCore {
+public class SparqlProxyCore implements ProxyCore {
 
   private static final String LANGUAGE_TAG_SEPARATOR = "@";
   private static final String SPARQL_PREFIX = "PREFIX %1$s: <%2$s>";
@@ -90,7 +90,7 @@ public final class SparqlProxyCore implements ProxyCore {
     SPARQL_ESCAPE_REPLACEMENTS = Collections.unmodifiableMap(map);
   }
 
-  private final SparqlProxyDefinition definition;
+  protected final SparqlProxyDefinition definition;
   private final Map<String, String> prefixToUriMap;
   private final StringMetric stringMetric;
   
@@ -625,7 +625,7 @@ public final class SparqlProxyCore implements ProxyCore {
     }
   }
 
-  private void performInsertChecks(String label) throws ProxyException {
+  protected void performInsertChecks(String label) throws ProxyException {
     if (!isInsertSupported()){
       throw new ProxyException("Insertion of is not supported for the " + definition.getName() + " knowledge base.");
     }
@@ -712,7 +712,7 @@ public final class SparqlProxyCore implements ProxyCore {
     queryExecution.execute();
   }
 
-  private String checkOrGenerateUrl(URI baseURI, URI uri) throws ProxyException {
+  protected String checkOrGenerateUrl(URI baseURI, URI uri) throws ProxyException {
     if (uri == null) {
       return combineURI(baseURI, UUID.randomUUID().toString());
     } else {

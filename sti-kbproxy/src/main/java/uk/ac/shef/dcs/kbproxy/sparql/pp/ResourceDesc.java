@@ -1,7 +1,10 @@
 package uk.ac.shef.dcs.kbproxy.sparql.pp;
 
 /**
- * Created by tomasknap on 09/02/17.
+ * Helper class to hold description of a class
+ *
+ * //TODO have two helpers - one for holding URIs of concepts (instances), second to hold classes
+ *
  */
 public class ResourceDesc {
 

@@ -5,11 +5,11 @@ import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.shef.dcs.kbproxy.KBDefinition;
-import uk.ac.shef.dcs.kbproxy.KBProxyException;
+import uk.ac.shef.dcs.kbproxy.ProxyException;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
-import uk.ac.shef.dcs.kbproxy.sparql.DBpediaSearchResultFilter;
-import uk.ac.shef.dcs.kbproxy.sparql.SPARQLProxy;
+import uk.ac.shef.dcs.kbproxy.model.PropertyType;
+import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyCore;
+import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyDefinition;
 
 import java.io.IOException;
 import java.net.URI;
@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * Created by tomasknap on 20/12/16.
  */
-public class PPProxy extends SPARQLProxy {
+public class PPProxy extends SparqlProxyCore {
 
     private static final Logger log = LoggerFactory.getLogger(PPProxy.class);
 
@@ -29,22 +29,17 @@ public class PPProxy extends SPARQLProxy {
 
     /**
      * @param kbDefinition   the definition of the knowledge base.
-     * @param fuzzyKeywords  given a query string, kbproxy will firstly try to fetch results matching the exact query. when no match is
-     *                       found, you can set fuzzyKeywords to true, to let kbproxy to break the query string based on conjunective words.
-     *                       So if the query string is "tom and jerry", it will try "tom" and "jerry"
-     * @param cachesBasePath Base path for the initialized solr caches.
-     * @throws IOException
      */
-    public PPProxy(KBDefinition kbDefinition, Boolean fuzzyKeywords, String cachesBasePath, Map<String, String> prefixToUriMap) throws IOException, KBProxyException {
-        super(kbDefinition, fuzzyKeywords, cachesBasePath, prefixToUriMap);
+    public PPProxy(SparqlProxyDefinition kbDefinition, Map<String, String> prefixToUriMap) throws IOException, ProxyException {
+        super(kbDefinition, prefixToUriMap);
 
         this.helper = new HttpRequestExecutorForPP();
 
-        String ontologyURL = kbDefinition.getOntologyUri();
-        if (ontologyURL != null) {
-            ontology = loadModel(ontologyURL);
-        }
-        resultFilter = new DBpediaSearchResultFilter(kbDefinition.getStopListFile());
+//        String ontologyURL = kbDefinition.getOntologyUri();
+//        if (ontologyURL != null) {
+//            ontology = loadModel(ontologyURL);
+//        }
+//        resultFilter = new DBpediaSearchResultFilter(kbDefinition.getStopListFile());
     }
 
     private OntModel loadModel(String ontURL) {
@@ -66,25 +61,37 @@ public class PPProxy extends SPARQLProxy {
      * @param alternativeLabels
      * @param superClass
      * @return
-     * @throws KBProxyException
+     * @throws ProxyException
      */
     @Override
-    public Entity insertClass(URI uri, String label, Collection<String> alternativeLabels, String superClass) throws KBProxyException {
-
+    public Entity insertClass(URI uri, String label, Collection<String> alternativeLabels, String superClass) throws ProxyException {
 
         performInsertChecks(label);
 
-        String url = checkOrGenerateUrl(kbDefinition.getInsertSchemaElementPrefix(), uri);
+        //create uri of the new class
+        String url = checkOrGenerateUrl(definition.getInsertPrefixSchema(), uri);
 
-        //prepare new entity description - the entity being created
+        if (isNullOrEmpty(superClass)){
+            superClass = definition.getInsertDefaultClass();
+        }
+
+//originally:
+//        StringBuilder tripleDefinition = createTripleDefinitionBase(url, label);
+//        appendCollection(tripleDefinition, definition.getInsertPredicateAlternativeLabel(), alternativeLabels, true);
+//        appendValue(tripleDefinition, definition.getInsertPredicateSubclassOf(), superClass, false);
+//        appendValue(tripleDefinition, definition.getStructureInstanceOf(), definition.getInsertTypeClass(), false);
+//
+//        insert(tripleDefinition.toString());
+
+        //prepare new resource description - the entity (in this case class) being created
         ResourceDesc resourceToBeCreatedDesc = new ResourceDesc(url, label);
 
-
-        //Step: Add class as well (not just the concept) and add that class also to custom schema at the same time (required)
+        // Add class as well (not just the concept) and
+        // add that class also to custom schema at the same time (required)
         try {
             helper.createClassRequest(resourceToBeCreatedDesc);
         } catch (PPRestApiCallException ex) {
-            throw new KBProxyException(ex);
+            throw new ProxyException(ex);
         }
 
         return new Entity(url, label);
@@ -92,7 +99,6 @@ public class PPProxy extends SPARQLProxy {
     }
 
     /**
-     *
      * Inserts new concept to the taxonomy.
      *
      * See: https://grips.semantic-web.at/pages/editpage.action?pageId=75563973
@@ -102,17 +108,17 @@ public class PPProxy extends SPARQLProxy {
      * @param alternativeLabels
      * @param classes
      * @return
-     * @throws KBProxyException
+     * @throws ProxyException
      */
     @Override
-    public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels, Collection<String> classes) throws KBProxyException {
+    public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels, Collection<String> classes) throws ProxyException {
 
         performInsertChecks(label);
 
         //TODO such url is never used, it is always generated
-        String url = checkOrGenerateUrl(kbDefinition.getInsertDataElementPrefix(), uri);
+        String url = checkOrGenerateUrl(definition.getInsertPrefixData(), uri);
 
-        //prepare new entity description - the entity being created
+        //prepare new entity description - the entity being created - in this case concept
         ResourceDesc resourceToBeCreatedDesc = new ResourceDesc(label);
 
         //Step 1: Create concept
@@ -123,7 +129,7 @@ public class PPProxy extends SPARQLProxy {
             urlCreated = helper.createConceptRequest(resourceToBeCreatedDesc);
             resourceToBeCreatedDesc.setConceptUrl(urlCreated);
         } catch (PPRestApiCallException ex) {
-            throw new KBProxyException(ex);
+            throw new ProxyException(ex);
         }
 
         //Step 2: Add alternative labels
@@ -171,8 +177,6 @@ public class PPProxy extends SPARQLProxy {
      *  TODO Differentiate Object and DataProperties (ObjectProperties in this method, DataProperties have to be added as attributes)
      *      http://adequate-project-pp.semantic-web.at/PoolParty/api?method=createAttribute
      *
-     *  TODO Properties are instance of swc:DirectedProperty!
-     *
      *  TODO How to handle alternative labels?
      *  TODO Add sub-super property relation
      *
@@ -183,39 +187,43 @@ public class PPProxy extends SPARQLProxy {
      * @param domain
      * @param range
      * @return
-     * @throws KBProxyException
+     * @throws ProxyException
      */
     @Override
-    public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range) throws KBProxyException {
+    public Entity insertProperty(URI uri, String label, Collection<String> alternativeLabels, String superProperty, String domain, String range, PropertyType type) throws ProxyException {
         performInsertChecks(label);
 
-        String url = checkOrGenerateUrl(kbDefinition.getInsertSchemaElementPrefix(), uri);
+        String url = checkOrGenerateUrl(definition.getInsertPrefixSchema(), uri);
 
-        //TODO properties
+//originally:
+//        StringBuilder tripleDefinition = createTripleDefinitionBase(url, label);
+//        appendCollection(tripleDefinition, definition.getInsertPredicateAlternativeLabel(), alternativeLabels, true);
+//
+//        switch (type)
+//        {
+//            case Object:
+//                appendValue(tripleDefinition, definition.getStructureInstanceOf(), definition.getInsertTypeObjectProperty(), false);
+//                break;
+//            case Data:
+//                appendValue(tripleDefinition, definition.getStructureInstanceOf(), definition.getInsertTypeDataProperty(), false);
+//                break;
+//        }
+//
+//        appendValueIfNotEmpty(tripleDefinition, definition.getInsertPredicateSubPropertyOf(), superProperty, false);
+//        appendValueIfNotEmpty(tripleDefinition, definition.getStructureDomain(), domain, false);
+//        appendValueIfNotEmpty(tripleDefinition, definition.getStructureRange(), range, false);
+//
+//        insert(tripleDefinition.toString());
 
         //prepare new entity description - the entity being created
         RelationDesc resourceToBeCreatedDesc = new RelationDesc(url.toString(), label, domain, range);
-
 
         //Step: Add class as well (not just the concept) and add that class also to custom schema at the same time (required)
         try {
             helper.createRelationRequest(resourceToBeCreatedDesc);
         } catch (PPRestApiCallException ex) {
-            throw new KBProxyException(ex);
+            throw new ProxyException(ex);
         }
-
-//        String url = checkOrGenerateUrl(kbDefinition.getInsertSchemaElementPrefix(), uri);
-//
-//        StringBuilder tripleDefinition = createTripleDefinitionBase(url, label);
-//        appendCollection(tripleDefinition, kbDefinition.getInsertAlternativeLabel(), alternativeLabels, true);
-//        appendValue(tripleDefinition, kbDefinition.getInsertInstanceOf(), kbDefinition.getInsertPropertyType(), false);
-//
-//        appendValueIfNotEmpty(tripleDefinition, kbDefinition.getInsertSubProperty(), superProperty, false);
-//        appendValueIfNotEmpty(tripleDefinition, kbDefinition.getInsertDomain(), domain, false);
-//        appendValueIfNotEmpty(tripleDefinition, kbDefinition.getInsertRange(), range, false);
-//
-//        insert(tripleDefinition.toString());
-
 
         return new Entity(url, label);
     }
