@@ -15,6 +15,10 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ClassDesc;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ResourceDesc;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.PPRestApiCallException;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.RelationDesc;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -258,7 +262,7 @@ public class HttpRequestExecutorForPP {
      * @throws Exception
      *             if request execution fails
      */
-    public String createClassRequest(ResourceDesc createdEntityDesc) throws PPRestApiCallException {
+    public String createClassRequest(ClassDesc createdEntityDesc) throws PPRestApiCallException {
         CloseableHttpResponse response = null;
         try {
 

@@ -1,4 +1,4 @@
-package uk.ac.shef.dcs.kbproxy.sparql.pp;
+package uk.ac.shef.dcs.kbproxy.sparql.pp.helpers;
 
 /**
  * Created by tomasknap on 09/02/17.

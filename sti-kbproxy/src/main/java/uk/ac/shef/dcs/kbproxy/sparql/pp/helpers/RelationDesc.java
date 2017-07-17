@@ -1,9 +1,9 @@
-package uk.ac.shef.dcs.kbproxy.sparql.pp;
+package uk.ac.shef.dcs.kbproxy.sparql.pp.helpers;
 
 /**
  * Created by tomasknap on 09/02/17.
  */
-public class RelationDesc extends ResourceDesc{
+public class RelationDesc extends ResourceDesc {
 
     private String domain;
     private String range;

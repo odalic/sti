@@ -10,6 +10,10 @@ import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyCore;
 import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyDefinition;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ClassDesc;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ResourceDesc;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.PPRestApiCallException;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.RelationDesc;
 
 import java.io.IOException;
 import java.net.URI;
@@ -84,12 +88,12 @@ public class PPProxy extends SparqlProxyCore {
 //        insert(tripleDefinition.toString());
 
         //prepare new resource description - the entity (in this case class) being created
-        ResourceDesc resourceToBeCreatedDesc = new ResourceDesc(url, label);
+        ClassDesc classToBeCreated = new ClassDesc(url, label);
 
         // Add class as well (not just the concept) and
         // add that class also to custom schema at the same time (required)
         try {
-            helper.createClassRequest(resourceToBeCreatedDesc);
+            helper.createClassRequest(classToBeCreated);
         } catch (PPRestApiCallException ex) {
             throw new ProxyException(ex);
         }
@@ -127,7 +131,7 @@ public class PPProxy extends SparqlProxyCore {
         String urlCreated;
         try {
             urlCreated = helper.createConceptRequest(resourceToBeCreatedDesc);
-            resourceToBeCreatedDesc.setConceptUrl(urlCreated);
+            resourceToBeCreatedDesc.setUrl(urlCreated);
         } catch (PPRestApiCallException ex) {
             throw new ProxyException(ex);
         }
@@ -138,7 +142,7 @@ public class PPProxy extends SparqlProxyCore {
                 try {
                     helper.addLiteralRequest(resourceToBeCreatedDesc, altLabel);
                 } catch (PPRestApiCallException ex) {
-                    log.error("Cannot add alternative label {} to concept {}, reason: {}", altLabel, resourceToBeCreatedDesc.getConceptUrl(), ex.getStackTrace());
+                    log.error("Cannot add alternative label {} to concept {}, reason: {}", altLabel, resourceToBeCreatedDesc.getUrl(), ex.getStackTrace());
                 }
             }
         }
@@ -157,7 +161,7 @@ public class PPProxy extends SparqlProxyCore {
                 try {
                     helper.applyTypeRequest(resourceToBeCreatedDesc, c);
                 } catch (PPRestApiCallException ex) {
-                    log.error("Cannot apply type {} to concept {}, reason: {}", c, resourceToBeCreatedDesc.getConceptUrl(), ex.getStackTrace());
+                    log.error("Cannot apply type {} to concept {}, reason: {}", c, resourceToBeCreatedDesc.getUrl(), ex.getStackTrace());
                 }
             }
         }

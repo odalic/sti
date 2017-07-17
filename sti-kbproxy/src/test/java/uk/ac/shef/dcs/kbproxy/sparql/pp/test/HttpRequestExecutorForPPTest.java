@@ -3,8 +3,9 @@ package uk.ac.shef.dcs.kbproxy.sparql.pp.test;
 import org.junit.Test;
 
 import uk.ac.shef.dcs.kbproxy.sparql.pp.HttpRequestExecutorForPP;
-import uk.ac.shef.dcs.kbproxy.sparql.pp.RelationDesc;
-import uk.ac.shef.dcs.kbproxy.sparql.pp.ResourceDesc;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.RelationDesc;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ResourceDesc;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ClassDesc;
 
 public class HttpRequestExecutorForPPTest {
 
@@ -22,7 +23,7 @@ public class HttpRequestExecutorForPPTest {
     public void POSTCreateClass() throws Exception {
 
         HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();
-        ResourceDesc ed = new ResourceDesc("http://example.org/object/xx-test/", "xx-test"); //the url is the class URL
+        ClassDesc ed = new ClassDesc("http://example.org/object/xx-test/", "xx-test"); //the url is the class URL
         //ResourceDesc ed = new ResourceDesc("http://example.org/subjecthttp://example.org/class/test03", "test03"); //the url is the class URL
         //String url = executor.createConceptRequest(ed);
         //ed.setConceptUrl(url);
@@ -59,7 +60,7 @@ public class HttpRequestExecutorForPPTest {
         HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();
         ResourceDesc ed = new ResourceDesc("test02");
         String url = executor.createConceptRequest(ed);
-        ed.setConceptUrl(url);
+        ed.setUrl(url);
         executor.addLiteralRequest(ed,"test02a");
         executor.addLiteralRequest(ed,"test02b");
     }
@@ -67,7 +68,7 @@ public class HttpRequestExecutorForPPTest {
     //@Before
     public void createClass() {
         HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();
-        ResourceDesc ed = new ResourceDesc("http://example.org/class/test04", "test04"); //the url is the class URL
+        ClassDesc ed = new ClassDesc("http://example.org/class/test04", "test04"); //the url is the class URL
         executor.createClassRequest(ed);
     }
 
@@ -78,7 +79,7 @@ public class HttpRequestExecutorForPPTest {
         HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();
         ResourceDesc ed = new ResourceDesc("test04");
         String url = executor.createConceptRequest(ed);
-        ed.setConceptUrl(url);
+        ed.setUrl(url);
         executor.applyTypeRequest(ed,"http://example.org/class/test04");
     }
 
