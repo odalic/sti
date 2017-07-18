@@ -2,6 +2,7 @@ package uk.ac.shef.dcs.kbproxy.sparql.pp.test;
 
 import org.junit.Test;
 
+import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.HttpRequestExecutorForPP;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.RelationDesc;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ResourceDesc;
@@ -19,7 +20,7 @@ public class HttpRequestExecutorForPPTest {
 
 
     //create class
-    @Test
+    //@Test
     public void POSTCreateClass() throws Exception {
 
         HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();
@@ -31,15 +32,26 @@ public class HttpRequestExecutorForPPTest {
     }
 
 
-    //create relation
+    //create OBJECT relation
     //@Test
-    public void POSTCreateRelation() throws Exception {
+    public void POSTCreateObjectRelation() throws Exception {
 
         HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();
-        RelationDesc ed = new RelationDesc("http://example.org/class/relation02", "relation", "http://example.org/class/test03","http://example.org/class/test04"); //the url is the class URL
+        RelationDesc ed = new RelationDesc("http://example.org/class/relationXX-1", "relationXX-1", "http://example.org/class/test03","http://example.org/class/test04", PropertyType.Object); //the url is the class URL
         //String url = executor.createConceptRequest(ed);
         //ed.setConceptUrl(url);
-        executor.createRelationRequest(ed);
+        executor.createObjectRelationRequest(ed);
+    }
+
+    //create DATA relation
+    @Test
+    public void POSTCreateDataRelation() throws Exception {
+
+        HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP();
+        RelationDesc ed = new RelationDesc("http://example.org/class/relationXX-data-1", "relationXX-data-1", "http://example.org/class/test03", PropertyType.Data); //the url is the class URL
+        //String url = executor.createConceptRequest(ed);
+        //ed.setConceptUrl(url);
+        executor.createDataTypeRelationRequest(ed);
     }
 
 

@@ -57,8 +57,11 @@ public class PPProxy extends SparqlProxyCore {
      *
      * See: https://grips.semantic-web.at/pages/editpage.action?pageId=75563973
      *
-     *  TODO Should it also create concept? Otherwise not able to use alternative labels!, also PPX is using only concepts
-     *  TODO Add subclass superclass relation if available
+     *  TODO: For now, not supporting alternative labels! Should we adjust UI to rather support label/comment?
+     *
+     *  NOTE: Superclass not yet supported (also not in UI) - For now not supported
+     *
+     *  QUESTION: Should it also create concept? Otherwise not able to use alternative labels!, also PPX is using only concepts!
      *
      * @param uri
      * @param label
@@ -119,7 +122,7 @@ public class PPProxy extends SparqlProxyCore {
 
         performInsertChecks(label);
 
-        //TODO such url is never used, it is always generated
+        //TODO? requested URL suffix not supported, new URL is always generated - is that ok? Probably yes, but UI should be adjusted?
         String url = checkOrGenerateUrl(definition.getInsertPrefixData(), uri);
 
         //prepare new entity description - the entity being created - in this case concept
@@ -127,7 +130,6 @@ public class PPProxy extends SparqlProxyCore {
 
         //Step 1: Create concept
         //For the list of API calls, see: https://grips.semantic-web.at/pages/viewpage.action?pageId=75563973
-        //TODO requested URL suffix not supported? - So new URL for the concept is used. - is that ok?
         String urlCreated;
         try {
             urlCreated = helper.createConceptRequest(resourceToBeCreatedDesc);
@@ -178,11 +180,12 @@ public class PPProxy extends SparqlProxyCore {
      *
      * http://adequate-project-pp.semantic-web.at/PoolParty/api?method=createDirectedRelation
      *
-     *  TODO Differentiate Object and DataProperties (ObjectProperties in this method, DataProperties have to be added as attributes)
-     *      http://adequate-project-pp.semantic-web.at/PoolParty/api?method=createAttribute
+     * TODO: For now, not supporting alternative labels! Should we change UI to support for relations/classes rather label/comment and not alternative labels?
+     * TODO: There is range in UI, but not anyhow used in the call. Plain Literal is produced. Discuss support for types !
      *
-     *  TODO How to handle alternative labels?
-     *  TODO Add sub-super property relation
+     *  QUESTION: Should it also create concept? Otherwise not able to use alternative labels!, also PPX is using only concepts!
+     *
+     *  NOTE: Sub/super property relation not supported by UI - not implemented for now (also not in UI!)
      *
      * @param uri
      * @param label
@@ -220,13 +223,22 @@ public class PPProxy extends SparqlProxyCore {
 //        insert(tripleDefinition.toString());
 
         //prepare new entity description - the entity being created
-        RelationDesc resourceToBeCreatedDesc = new RelationDesc(url.toString(), label, domain, range);
+        RelationDesc resourceToBeCreatedDesc = new RelationDesc(url.toString(), label, domain, range, type);
 
-        //Step: Add class as well (not just the concept) and add that class also to custom schema at the same time (required)
-        try {
-            helper.createRelationRequest(resourceToBeCreatedDesc);
-        } catch (PPRestApiCallException ex) {
-            throw new ProxyException(ex);
+        if (resourceToBeCreatedDesc.getType().equals(PropertyType.Object)) {
+            //Step: Add object property
+            try {
+                helper.createObjectRelationRequest(resourceToBeCreatedDesc);
+            } catch (PPRestApiCallException ex) {
+                throw new ProxyException(ex);
+            }
+        } else {
+            //Step: Add data property
+            try {
+                helper.createDataTypeRelationRequest(resourceToBeCreatedDesc);
+            } catch (PPRestApiCallException ex) {
+                throw new ProxyException(ex);
+            }
         }
 
         return new Entity(url, label);

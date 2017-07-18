@@ -130,7 +130,7 @@ public class HttpRequestExecutorForPP {
         try {
 
             URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/thesaurus/" + ConnectionConfig.projectId + "/addLiteral");
-            uriBuilder.addParameter("concept",createdEntityDesc.getConceptUrl());
+            uriBuilder.addParameter("concept",createdEntityDesc.getUrl());
             uriBuilder.addParameter("label",  altLabel);
             uriBuilder.addParameter("property","alternativeLabel");
 
@@ -189,7 +189,7 @@ public class HttpRequestExecutorForPP {
         try {
 
             URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/thesaurus/" + ConnectionConfig.projectId + "/applyType");
-            uriBuilder.addParameter("resource",createdEntityDesc.getConceptUrl());
+            uriBuilder.addParameter("resource",createdEntityDesc.getUrl());
             uriBuilder.addParameter("type", targetClass);
             uriBuilder.addParameter("propagate","false");
 
@@ -336,33 +336,15 @@ public class HttpRequestExecutorForPP {
 
 
     /**
-     * Creates class
+     * Creates relation - object property
      *
-     * http://adequate-project-pp.semantic-web.at/PoolParty/!/api?method=createClass
-     *
-     * Sample:
-     * {
-     "schemaUri": {
-     "uri": "http://localhost:8080/some"
-     },
-     "uri": {
-     "uri": "http://localhost:8080/some/sf"
-     },
-     "label": {
-     "label" : "Test"
-     },
-     "addToCustomScheme" : [
-     {
-     "uri" : "http://localhost:8080/testdf"
-     }]
-     }
-     *
+     * http://adequate-project-pp.semantic-web.at/PoolParty/api?method=createDirectedRelation
      *
      * @return HTTP response
      * @throws Exception
      *             if request execution fails
      */
-    public String createRelationRequest(RelationDesc createdEntityDesc) throws PPRestApiCallException {
+    public String createObjectRelationRequest(RelationDesc createdEntityDesc) throws PPRestApiCallException {
         CloseableHttpResponse response = null;
         try {
 
@@ -373,7 +355,7 @@ public class HttpRequestExecutorForPP {
             json.put("schemaUri", schemaUri);
 
             JSONObject targetUri = new JSONObject();
-            targetUri.put("uri",createdEntityDesc.getClassUrl());
+            targetUri.put("uri",createdEntityDesc.getUrl());
             json.put("uri", targetUri);
 
             JSONObject label = new JSONObject();
@@ -422,7 +404,7 @@ public class HttpRequestExecutorForPP {
             response = client.execute(request);
 
             //process response
-            //checkHttpResponseStatus(response);
+            checkHttpResponseStatus(response);
 
             //get response
             HttpEntity responseHttpEntity = response.getEntity();
@@ -454,7 +436,107 @@ public class HttpRequestExecutorForPP {
         }
     }
 
+    /**
+     * Creates relation - data property
+     *
+     * http://adequate-project-pp.semantic-web.at/PoolParty/api?method=createAttribute
+     *
+     * @return HTTP response
+     * @throws Exception
+     *             if request execution fails
+     */
+    public String createDataTypeRelationRequest(RelationDesc createdEntityDesc) throws PPRestApiCallException {
+        CloseableHttpResponse response = null;
+        try {
 
+            JSONObject json = new JSONObject();
+
+            JSONObject schemaUri = new JSONObject();
+            schemaUri.put("uri", ConnectionConfig.ontologyUrl);
+            json.put("schemaUri", schemaUri);
+
+            JSONObject targetUri = new JSONObject();
+            targetUri.put("uri",createdEntityDesc.getUrl());
+            json.put("uri", targetUri);
+
+            JSONObject label = new JSONObject();
+            label.put("label",createdEntityDesc.getLabel());
+            json.put("label", label);
+
+            JSONObject addToCustomSchema = new JSONObject();
+            addToCustomSchema.put("uri", ConnectionConfig.customSchemaUrl);
+            JSONArray array = new JSONArray();
+            array.add(addToCustomSchema);
+
+            json.put("addToCustomScheme", array);
+
+            //domain
+            JSONObject domain = new JSONObject();
+            domain.put("uri", createdEntityDesc.getDomain());
+            JSONArray arrayDomains = new JSONArray();
+            arrayDomains.add(domain);
+
+            json.put("domain", arrayDomains);
+
+//            //value restriction
+//            JSONObject range = new JSONObject();
+//            range.put("uri", createdEntityDesc.getRange());
+//            JSONArray arrayRanges = new JSONArray();
+//            arrayRanges.add(range);
+//
+//            json.put("range", arrayRanges);
+
+            //value restriction
+            //for value restrictions, see: ValueRestriction object in ppt
+            json.put("valueRestriction", "LITERAL");
+
+            json.put("single", "false");
+
+            URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/schema/createAttribute");
+
+            HttpPost request = new HttpPost(uriBuilder.build().normalize());
+            request.addHeader("content-type", "application/json");
+
+            StringEntity params = new StringEntity(json.toString());
+            params.setContentType("application/json");
+            request.setEntity(params);
+
+            addBasiAuthenticationForHttpRequest(request, ConnectionConfig.ppUser, ConnectionConfig.ppPassword);
+
+            response = client.execute(request);
+
+            //process response
+            //checkHttpResponseStatus(response);
+
+            //get response
+            HttpEntity responseHttpEntity = response.getEntity();
+            InputStream content = responseHttpEntity.getContent();
+            BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+            String line;
+            String responseString = "";
+
+            while ((line = buffer.readLine()) != null) {
+                responseString += line;
+            }
+
+            try {
+                //release all resources held by the responseHttpEntity
+                EntityUtils.consume(responseHttpEntity);
+
+                //close the stream
+                response.close();
+            } finally {
+                response.close();
+            }
+
+            return responseString;
+
+        } catch (URISyntaxException | IllegalStateException | IOException ex) {
+            String errorMsg = String.format("Failed to execute HTTP raw POST request to URL %s", "xx");
+            LOG.error(errorMsg);
+            throw new PPRestApiCallException(errorMsg, ex);
+        }
+    }
 
 
 
