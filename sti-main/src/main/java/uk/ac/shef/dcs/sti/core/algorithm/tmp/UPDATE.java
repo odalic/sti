@@ -126,7 +126,7 @@ public class UPDATE {
         ignore++;
       }
     }
-    if (candidates.isEmpty()) {
+    if (candidates.isEmpty() && !constraints.existClassifChosenForColumn(table_cell_col)) {
       final ProxyResult<List<Entity>> candidatesResult =
           this.kbSearch.findEntityCandidatesOfTypes(tcc.getText());
 

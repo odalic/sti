@@ -61,7 +61,7 @@ public class LEARNINGPreliminaryDisamb {
       candidatesResult.appendExistingWarning(warnings);
     }
 
-    if (candidates.isEmpty()) {
+    if (candidates.isEmpty() && !constraints.existClassifChosenForColumn(column)) {
       final ProxyResult<List<Entity>> candidatesResult =
           this.kbSearch.findEntityCandidatesOfTypes(tcc.getText());
 
