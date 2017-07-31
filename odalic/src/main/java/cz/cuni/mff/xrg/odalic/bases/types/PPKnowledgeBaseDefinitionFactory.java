@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyDefinition;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.PPProxyDefinition;
 
+import java.util.Map;
 import java.util.Set;
 
 @Component
@@ -17,8 +18,9 @@ public final class PPKnowledgeBaseDefinitionFactory
 
   @Override
   public PPProxyDefinition create(final KnowledgeBase base, final Set<? extends Group> availableGroups) {
-    final PPProxyDefinition.Builder builder = PPProxyDefinition.builder();
-    
+    final PPProxyDefinition.PPBuilder builder = PPProxyDefinition.builder();
+
+    //Common properties (the same for SPARQLKnowledgeBaseDefinitionFactory
     // Name
     builder.setName(base.getQualifiedName());
 
@@ -26,11 +28,12 @@ public final class PPKnowledgeBaseDefinitionFactory
     builder.setInsertSupported(base.isInsertEnabled());
     
     if (base.isInsertEnabled()) {
-//      if (base.getInsertEndpoint() == null) {
-//        builder.setInsertEndpoint(base.getEndpoint().toString());
-//      } else {
-//        builder.setInsertEndpoint(base.getInsertEndpoint().toString());
-//      }
+      //Note:InsertEndpoint not used!
+      if (base.getInsertEndpoint() == null) {
+        builder.setInsertEndpoint(base.getEndpoint().toString());
+      } else {
+        builder.setInsertEndpoint(base.getInsertEndpoint().toString());
+      }
       
       builder.setInsertPrefixData(base.getUserResourcesPrefix());
       builder.setInsertPrefixSchema(base.getUserClassesPrefix());
@@ -68,8 +71,10 @@ public final class PPKnowledgeBaseDefinitionFactory
 
     // SPARQL insert
     if (base.isInsertEnabled()) {
-//      builder.setInsertGraph(base.getInsertGraph() == null
-//          ? SparqlProxyDefinition.DEFAULT_INSERT_GRAPH : base.getInsertGraph().toString());
+
+      //Note:InsertGraph not used!
+      builder.setInsertGraph(base.getInsertGraph() == null
+          ? SparqlProxyDefinition.DEFAULT_INSERT_GRAPH : base.getInsertGraph().toString());
 
       builder.setInsertDefaultClass(SparqlProxyDefinition.DEFAULT_INSERT_DEFAULT_CLASS);
       builder.setInsertPredicateLabel(SparqlProxyDefinition.DEFAULT_INSERT_PREDICATE_LABEL);
@@ -86,7 +91,33 @@ public final class PPKnowledgeBaseDefinitionFactory
     
     // Apply URI heuristics
     builder.setUriLabelHeuristicApplied(true);
-      
+
+    //end of common properties (the same for SPARQLKnowledgeBaseDefinitionFactory
+
+
+    //apply custom PP properties
+    Map<String, String> advancedProperties = base.getAdvancedProperties();
+
+    if (advancedProperties.containsKey(PPProxyDefinition.POOLPARTY_SERVER_URL)) {
+      builder.setPpServerUrl(advancedProperties.get(PPProxyDefinition.POOLPARTY_SERVER_URL));
+    }
+
+    if (advancedProperties.containsKey(PPProxyDefinition.POOLPARTY_PROJECT_ID)) {
+      builder.setPpProjectId(advancedProperties.get(PPProxyDefinition.POOLPARTY_PROJECT_ID));
+    }
+
+    if (advancedProperties.containsKey(PPProxyDefinition.POOLPARTY_ONTOLOGY_URL)) {
+      builder.setPpOntologyUrl(advancedProperties.get(PPProxyDefinition.POOLPARTY_ONTOLOGY_URL));
+    }
+
+    if (advancedProperties.containsKey(PPProxyDefinition.POOLPARTY_CUSTOM_SCHEMA_URL)) {
+      builder.setPpCustomSchemaUrl(advancedProperties.get(PPProxyDefinition.POOLPARTY_CUSTOM_SCHEMA_URL));
+    }
+
+    if (advancedProperties.containsKey(PPProxyDefinition.POOLPARTY_CONCEPT_SCHEMA_PROPOSED_URL)) {
+      builder.setPpConceptSchemaProposed(advancedProperties.get(PPProxyDefinition.POOLPARTY_CONCEPT_SCHEMA_PROPOSED_URL));
+    }
+
     return builder.build();
   }
 

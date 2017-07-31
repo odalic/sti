@@ -1,21 +1,16 @@
 package uk.ac.shef.dcs.kbproxy.sparql.pp;
 
-import org.apache.jena.ontology.OntModel;
-import org.apache.jena.ontology.OntModelSpec;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.shef.dcs.kbproxy.ProxyException;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyCore;
-import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyDefinition;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ClassDesc;
-import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ResourceDesc;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.PPRestApiCallException;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.RelationDesc;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ResourceDesc;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
@@ -23,33 +18,24 @@ import java.util.Map;
 /**
  * Created by tomasknap on 20/12/16.
  */
-public class PPProxy extends SparqlProxyCore {
+public class PPProxyCore extends SparqlProxyCore {
 
-    private static final Logger log = LoggerFactory.getLogger(PPProxy.class);
+    private static final Logger log = LoggerFactory.getLogger(PPProxyCore.class);
 
-    private OntModel ontology;
+    private HttpRequestExecutorForPP queryExecutor;
 
-    private HttpRequestExecutorForPP helper;
+    PPProxyDefinition ppDefinition;
+
 
     /**
-     * @param kbDefinition   the definition of the knowledge base.
+     * @param definition   the definition of the knowledge base.
      */
-    public PPProxy(SparqlProxyDefinition kbDefinition, Map<String, String> prefixToUriMap) throws IOException, ProxyException {
-        super(kbDefinition, prefixToUriMap);
+    public PPProxyCore(PPProxyDefinition definition, Map<String, String> prefixToUriMap)  {
+        super(definition, prefixToUriMap);
 
-        this.helper = new HttpRequestExecutorForPP();
+        this.ppDefinition = definition;
+        this.queryExecutor = new HttpRequestExecutorForPP(ppDefinition);
 
-//        String ontologyURL = kbDefinition.getOntologyUri();
-//        if (ontologyURL != null) {
-//            ontology = loadModel(ontologyURL);
-//        }
-//        resultFilter = new DBpediaSearchResultFilter(kbDefinition.getStopListFile());
-    }
-
-    private OntModel loadModel(String ontURL) {
-        OntModel base = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM);
-        base.read(ontURL);
-        return ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF, base);
     }
 
     /**
@@ -96,7 +82,7 @@ public class PPProxy extends SparqlProxyCore {
         // Add class as well (not just the concept) and
         // add that class also to custom schema at the same time (required)
         try {
-            helper.createClassRequest(classToBeCreated);
+            queryExecutor.createClassRequest(classToBeCreated);
         } catch (PPRestApiCallException ex) {
             throw new ProxyException(ex);
         }
@@ -132,7 +118,7 @@ public class PPProxy extends SparqlProxyCore {
         //For the list of API calls, see: https://grips.semantic-web.at/pages/viewpage.action?pageId=75563973
         String urlCreated;
         try {
-            urlCreated = helper.createConceptRequest(resourceToBeCreatedDesc);
+            urlCreated = queryExecutor.createConceptRequest(resourceToBeCreatedDesc);
             resourceToBeCreatedDesc.setUrl(urlCreated);
         } catch (PPRestApiCallException ex) {
             throw new ProxyException(ex);
@@ -142,7 +128,7 @@ public class PPProxy extends SparqlProxyCore {
         for (String altLabel : alternativeLabels) {
             if (!altLabel.isEmpty()) {
                 try {
-                    helper.addLiteralRequest(resourceToBeCreatedDesc, altLabel);
+                    queryExecutor.addLiteralRequest(resourceToBeCreatedDesc, altLabel);
                 } catch (PPRestApiCallException ex) {
                     log.error("Cannot add alternative label {} to concept {}, reason: {}", altLabel, resourceToBeCreatedDesc.getUrl(), ex.getStackTrace());
                 }
@@ -161,7 +147,7 @@ public class PPProxy extends SparqlProxyCore {
             //there is exactly one class
             for (String c : classes) {
                 try {
-                    helper.applyTypeRequest(resourceToBeCreatedDesc, c);
+                    queryExecutor.applyTypeRequest(resourceToBeCreatedDesc, c);
                 } catch (PPRestApiCallException ex) {
                     log.error("Cannot apply type {} to concept {}, reason: {}", c, resourceToBeCreatedDesc.getUrl(), ex.getStackTrace());
                 }
@@ -228,14 +214,14 @@ public class PPProxy extends SparqlProxyCore {
         if (resourceToBeCreatedDesc.getType().equals(PropertyType.Object)) {
             //Step: Add object property
             try {
-                helper.createObjectRelationRequest(resourceToBeCreatedDesc);
+                queryExecutor.createObjectRelationRequest(resourceToBeCreatedDesc);
             } catch (PPRestApiCallException ex) {
                 throw new ProxyException(ex);
             }
         } else {
             //Step: Add data property
             try {
-                helper.createDataTypeRelationRequest(resourceToBeCreatedDesc);
+                queryExecutor.createDataTypeRelationRequest(resourceToBeCreatedDesc);
             } catch (PPRestApiCallException ex) {
                 throw new ProxyException(ex);
             }

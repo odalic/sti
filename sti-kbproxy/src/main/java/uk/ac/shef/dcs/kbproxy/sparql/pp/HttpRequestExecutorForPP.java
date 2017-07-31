@@ -37,12 +37,15 @@ public class HttpRequestExecutorForPP {
 
     private DefaultHttpClient client;
 
-    public HttpRequestExecutorForPP() {
+    private PPProxyDefinition ppDefinition;
+
+    public HttpRequestExecutorForPP(PPProxyDefinition ppDefinition) {
 
         //this.requestExecutor = new HttpRequestExecutorForPP();
         //this.client = HttpClients.custom().disableContentCompression().build();
         client = new DefaultHttpClient();
         client.setRedirectStrategy(new LaxRedirectStrategy());
+        this.ppDefinition = ppDefinition;
     }
 
     /**
@@ -58,7 +61,7 @@ public class HttpRequestExecutorForPP {
         CloseableHttpResponse response = null;
         try {
 
-            URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/thesaurus/" + ConnectionConfig.projectId + "/createConcept");
+            URIBuilder uriBuilder = new URIBuilder(ppDefinition.getPpServerUrl() + "/api/thesaurus/" + ppDefinition.getPpProjectId() + "/createConcept");
             //TODO TEMP hack to add everything under "top"
             //uriBuilder.addParameter("parent",ConnectionConfig.conceptSchemaProposedUrl);
             uriBuilder.addParameter("parent","http://adequate-project-pp.semantic-web.at/ADEQUATe_KB/9bcc103d-77b6-4d2d-a006-f69f3192025c");
@@ -68,7 +71,7 @@ public class HttpRequestExecutorForPP {
             HttpPost request = new HttpPost(uriBuilder.build().normalize());
             request.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
-            addBasiAuthenticationForHttpRequest(request, ConnectionConfig.ppUser, ConnectionConfig.ppPassword);
+            addBasiAuthenticationForHttpRequest(request, ppDefinition.getLogin(), ppDefinition.getPassword());
 
             response = client.execute(request);
 

@@ -16,6 +16,8 @@ import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
 import java.util.Map;
 import java.util.SortedSet;
 
+import static uk.ac.shef.dcs.kbproxy.sparql.pp.PPProxyDefinition.*;
+
 /**
  * Default {@link AdvancedBaseTypesService} implementation.
  *
@@ -26,7 +28,11 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
   public static final AdvancedBaseType SPARQL_BASE_TYPE = new AdvancedBaseType(SPARQL_BASE_TYPE_NAME, ImmutableSet.of(), ImmutableMap.of(), ImmutableMap.of());
 
   public static final String PP_BASE_TYPE_NAME = "PoolParty";
-  public static final AdvancedBaseType PP_BASE_TYPE = new AdvancedBaseType(PP_BASE_TYPE_NAME, ImmutableSet.of("ppServerUrl", "ppPassword"), ImmutableMap.of(), ImmutableMap.of());
+  public static final AdvancedBaseType PP_BASE_TYPE = new AdvancedBaseType(PP_BASE_TYPE_NAME,
+          ImmutableSet.of(POOLPARTY_SERVER_URL, POOLPARTY_PROJECT_ID, POOLPARTY_ONTOLOGY_URL, POOLPARTY_CUSTOM_SCHEMA_URL, POOLPARTY_CONCEPT_SCHEMA_PROPOSED_URL),
+          ImmutableMap.of(POOLPARTY_SERVER_URL, "http://adequate-project-pp.semantic-web.at/PoolParty", POOLPARTY_PROJECT_ID, "1DDFF124-EE5B-0001-B0C2-1F8031F51970", POOLPARTY_ONTOLOGY_URL, "http://adequate-project-pp.semantic-web.at/ADEQUATe-test", POOLPARTY_CUSTOM_SCHEMA_URL, "http://adequate-project-pp.semantic-web.at/ADEQUATe-test-scheme", POOLPARTY_CONCEPT_SCHEMA_PROPOSED_URL, "http://adequate-project-pp.semantic-web.at/ADEQUATe_KB/b39c6dab-2bf2-4788-aff0-98f2fbab4b54" ),
+          ImmutableMap.of(POOLPARTY_SERVER_URL, "A PoolParty Thesaurus Server url", POOLPARTY_PROJECT_ID, "A project in the PoolParty Thesaurus Manager", POOLPARTY_ONTOLOGY_URL, "Url for the ontology", POOLPARTY_CUSTOM_SCHEMA_URL, "Url for the custom schema", POOLPARTY_CONCEPT_SCHEMA_PROPOSED_URL, "Concept Schema to which new concepts are proposed")
+          );
 
   private final GroupsService groupsService;
   
@@ -37,7 +43,7 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
 
   @Autowired
   public MemoryOnlyAdvancedBaseTypesService(final GroupsService groupsService) {
-    this(groupsService, ImmutableMap.of(SPARQL_BASE_TYPE_NAME, SPARQL_BASE_TYPE,PP_BASE_TYPE_NAME, PP_BASE_TYPE), ImmutableMap.of(SPARQL_BASE_TYPE, new SparqlKnowledgeBaseDefinitionFactory(), PP_BASE_TYPE, new PPKnowledgeBaseDefinitionFactory()));
+    this(groupsService, ImmutableMap.of(SPARQL_BASE_TYPE_NAME, SPARQL_BASE_TYPE, PP_BASE_TYPE_NAME, PP_BASE_TYPE), ImmutableMap.of(SPARQL_BASE_TYPE, new SparqlKnowledgeBaseDefinitionFactory(), PP_BASE_TYPE, new PPKnowledgeBaseDefinitionFactory()));
   }
   
   private MemoryOnlyAdvancedBaseTypesService(final GroupsService groupsService, final Map<? extends String, ? extends AdvancedBaseType> types, final Map<? extends AdvancedBaseType, ? extends ProxyDefinitionFactory> typesToDefinitionFactories) {
