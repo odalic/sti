@@ -13,6 +13,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIException;
@@ -39,11 +40,12 @@ public class TColumnClassifier {
   public Map<TColumnHeaderAnnotation, Double> generateCandidateClazz(
       final List<Pair<Entity, Map<String, Double>>> entityScoresForBlock,
       final List<TColumnHeaderAnnotation> existingColumnClazzCandidates, final Table table,
-      final List<Integer> blockOfRows, final int column, final int tableRowsTotal)
+      final List<Integer> blockOfRows, final int column, final int tableRowsTotal,
+      final Proxy kbProxy)
       throws STIException {
     final Collection<TColumnHeaderAnnotation> candidateHeaderAnnotations =
         this.clazzScorer.computeElementScores(entityScoresForBlock, existingColumnClazzCandidates,
-            table, blockOfRows, column);
+            table, blockOfRows, column, kbProxy);
 
     LOG.info("\t\t>> update candidate clazz on column, existing="
         + existingColumnClazzCandidates.size());

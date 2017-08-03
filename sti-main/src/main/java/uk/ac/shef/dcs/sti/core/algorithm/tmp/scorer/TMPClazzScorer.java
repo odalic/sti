@@ -13,6 +13,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
@@ -47,6 +48,8 @@ public class TMPClazzScorer implements ClazzScorer {
   public static final String SCORE_CTX_IN_COLUMN = "ctx_column_text";
   public static final String SCORE_CTX_OUT = "ctx_out_context";
   public static final String SCORE_DOMAIN_CONSENSUS = "domain_consensus";
+
+  public static final String SCORE_CLASS_HIERARCHY = "hierarchy_score";
 
   private static final Logger LOG = LoggerFactory.getLogger(TMPClazzScorer.class.getName());
 
@@ -281,12 +284,15 @@ public class TMPClazzScorer implements ClazzScorer {
   public List<TColumnHeaderAnnotation> computeElementScores(
       final List<Pair<Entity, Map<String, Double>>> input,
       final Collection<TColumnHeaderAnnotation> headerAnnotationCandidates, final Table table,
-      final List<Integer> rows, final int column) {
+      final List<Integer> rows, final int column,
+      final Proxy kbProxy) {
     List<TColumnHeaderAnnotation> candidates = new ArrayList<>();
     for (final int row : rows) {
       candidates = computeCEScore(input, headerAnnotationCandidates, table, row, column);
     }
     candidates = computeCCScore(candidates, table, column);
+
+    candidates = computeHierarchyScore(candidates, kbProxy);
 
     return candidates;
   }
@@ -316,6 +322,13 @@ public class TMPClazzScorer implements ClazzScorer {
         ce += e.getValue();
       }
     }
+
+    Double score_hierarchy = scoreElements.get(SCORE_CLASS_HIERARCHY);
+    if (score_hierarchy == null) {
+      score_hierarchy = 1.0;
+    }
+    ce *= score_hierarchy;
+
     scoreElements.put(TColumnHeaderAnnotation.SCORE_FINAL, ce);
     ha.setFinalScore(ce);
     return scoreElements;
@@ -448,5 +461,23 @@ public class TMPClazzScorer implements ClazzScorer {
      * double score_entity_vote = sum_entity_vote / total_table_rows; double base_score =
      * score_entity_vote * (sum_ce / sum_entity_vote); return base_score;
      */
+  }
+
+  private List<TColumnHeaderAnnotation> computeHierarchyScore(
+      final Collection<TColumnHeaderAnnotation> candidates, final Proxy kbProxy) {
+    for (final TColumnHeaderAnnotation ha : candidates) {
+      final Double scoreClassHierarchy = ha.getScoreElements().get(SCORE_CLASS_HIERARCHY);
+
+      if (scoreClassHierarchy == null) {
+        final double score_hierarchy = 1 + 0.1 * kbProxy.findGranularityOfClazz(ha.getAnnotation().getId()).getResult();
+        ha.getScoreElements().put(SCORE_CLASS_HIERARCHY, score_hierarchy);
+      }
+    }
+
+    if (candidates instanceof List) {
+      return (List<TColumnHeaderAnnotation>) candidates;
+    } else {
+      return new ArrayList<>(candidates);
+    }
   }
 }

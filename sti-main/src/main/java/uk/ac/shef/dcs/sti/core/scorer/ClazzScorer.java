@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.model.TColumnHeaderAnnotation;
@@ -39,7 +40,7 @@ public interface ClazzScorer {
   // intput: list of entities and their preliminary disamb scores on the current row;
   List<TColumnHeaderAnnotation> computeElementScores(List<Pair<Entity, Map<String, Double>>> input,
       Collection<TColumnHeaderAnnotation> headerAnnotationCandidates, Table table,
-      List<Integer> rows, int column) throws STIException;
+      List<Integer> rows, int column, Proxy kbProxy) throws STIException;
 
   // input: key is table row index; value is list of candidate entities and their disambiguation
   // scores for that row

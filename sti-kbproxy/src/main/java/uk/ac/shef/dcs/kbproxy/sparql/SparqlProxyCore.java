@@ -1174,7 +1174,44 @@ public final class SparqlProxyCore implements ProxyCore {
 
   @Override
   public Double findGranularityOfClazz(String clazz) {
-    return 0d;
+    List<String> classChain = new ArrayList<>();
+    String parent = findParentClass(clazz);
+
+    while (parent != null) {
+      if (classChain.contains(parent)) {
+        log.info("Cycle detected in ontology chain for clazz " + clazz + " and last parent " + parent);
+        for (String id : classChain) {
+          log.info(id);
+        }
+        return 0.0;
+      }
+
+      classChain.add(parent);
+      parent = findParentClass(parent);
+    }
+
+    return (double)classChain.size();
+  }
+
+  private String findParentClass(String clazz) {
+    if (clazz.length() == 0)
+      return null;
+
+    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_OBJECT)
+        .addWhere(createSPARQLResource(clazz), "<http://www.w3.org/2000/01/rdf-schema#subClassOf>", SPARQL_VARIABLE_OBJECT);
+
+    Query query = builder.build();
+    QueryExecution qExec = getQueryExecution(query);
+
+    ResultSet rs = qExec.execSelect();
+    if (rs.hasNext()) {
+      QuerySolution qs = rs.next();
+      RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+      if (object != null) {
+        return object.toString();
+      }
+    }
+    return null;
   }
 
   @Override
