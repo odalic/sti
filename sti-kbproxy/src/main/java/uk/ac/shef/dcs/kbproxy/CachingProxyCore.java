@@ -236,6 +236,11 @@ public class CachingProxyCore implements ProxyCore {
   }
 
   @Override
+  public String findParentClazz(String clazz) {
+    return this.core.findParentClazz(clazz);
+  }
+
+  @Override
   public List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain, URI range)
       throws ProxyException {
     return this.core.findPredicateByFulltext(pattern, limit, domain, range);

@@ -1175,7 +1175,7 @@ public final class SparqlProxyCore implements ProxyCore {
   @Override
   public Double findGranularityOfClazz(String clazz) {
     List<String> classChain = new ArrayList<>();
-    String parent = findParentClass(clazz);
+    String parent = findParentClazz(clazz);
 
     while (parent != null) {
       if (classChain.contains(parent)) {
@@ -1187,13 +1187,14 @@ public final class SparqlProxyCore implements ProxyCore {
       }
 
       classChain.add(parent);
-      parent = findParentClass(parent);
+      parent = findParentClazz(parent);
     }
 
     return (double)classChain.size();
   }
 
-  private String findParentClass(String clazz) {
+  @Override
+  public String findParentClazz(String clazz) {
     if (clazz.length() == 0)
       return null;
 
