@@ -1174,23 +1174,7 @@ public final class SparqlProxyCore implements ProxyCore {
 
   @Override
   public Double findGranularityOfClazz(String clazz) {
-    List<String> classChain = new ArrayList<>();
-    String parent = findParentClazz(clazz);
-
-    while (parent != null) {
-      if (classChain.contains(parent)) {
-        log.info("Cycle detected in ontology chain for clazz " + clazz + " and last parent " + parent);
-        for (String id : classChain) {
-          log.info(id);
-        }
-        return 0.0;
-      }
-
-      classChain.add(parent);
-      parent = findParentClazz(parent);
-    }
-
-    return (double)classChain.size();
+    return 0d;
   }
 
   @Override

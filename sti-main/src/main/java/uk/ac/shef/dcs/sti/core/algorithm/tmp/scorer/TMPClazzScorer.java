@@ -49,6 +49,7 @@ public class TMPClazzScorer implements ClazzScorer {
   public static final String SCORE_CTX_OUT = "ctx_out_context";
   public static final String SCORE_DOMAIN_CONSENSUS = "domain_consensus";
 
+  public static final String SCORE_FORMER = "former_score";
   public static final String SCORE_CLASS_HIERARCHY = "hierarchy_score";
 
   private static final Logger LOG = LoggerFactory.getLogger(TMPClazzScorer.class.getName());
@@ -59,12 +60,20 @@ public class TMPClazzScorer implements ClazzScorer {
   private final double[] wt; // header text, column, out table ctx: title&caption, out table
                              // ctx:other
 
+  /**
+   * @key - class from KB
+   * @value - depth of class in hierarchy
+   */
+  private Map<String, Integer> depths;
+
   public TMPClazzScorer(final String nlpResources, final OntologyBasedBoWCreator bowCreator,
       final List<String> stopWords, final double[] weights) throws IOException {
     this.lemmatizer = NLPTools.getInstance(nlpResources).getLemmatizer();
     this.bowCreator = bowCreator;
     this.stopWords = stopWords;
     this.wt = weights;
+
+    this.depths = new HashMap<>();
   }
 
   /**
@@ -323,6 +332,8 @@ public class TMPClazzScorer implements ClazzScorer {
       }
     }
 
+    scoreElements.put(SCORE_FORMER, ce);
+
     Double score_hierarchy = scoreElements.get(SCORE_CLASS_HIERARCHY);
     if (score_hierarchy == null) {
       score_hierarchy = 1.0;
@@ -469,7 +480,7 @@ public class TMPClazzScorer implements ClazzScorer {
       final Double scoreClassHierarchy = ha.getScoreElements().get(SCORE_CLASS_HIERARCHY);
 
       if (scoreClassHierarchy == null) {
-        final double score_hierarchy = 1 + 0.1 * kbProxy.findGranularityOfClazz(ha.getAnnotation().getId()).getResult();
+        final double score_hierarchy = 1 + 0.1 * findDepthOfClazz(ha.getAnnotation().getId(), kbProxy);
         ha.getScoreElements().put(SCORE_CLASS_HIERARCHY, score_hierarchy);
       }
     }
@@ -478,6 +489,59 @@ public class TMPClazzScorer implements ClazzScorer {
       return (List<TColumnHeaderAnnotation>) candidates;
     } else {
       return new ArrayList<>(candidates);
+    }
+  }
+
+  private int findDepthOfClazz(final String clazz, final Proxy kbProxy) {
+    if (!depths.containsKey(clazz)) {
+      fetchDepthsForClasses(clazz, kbProxy);
+    }
+
+    return (depths.get(clazz) < 0) ? 0 : depths.get(clazz);
+  }
+
+  private void fetchDepthsForClasses(String clazz, Proxy kbProxy) {
+    List<String> classChain = new ArrayList<>();
+    Integer lastDepth = null;
+
+    while (clazz != null) {
+      if (depths.containsKey(clazz)) {
+        // parent's depth is fetched
+        lastDepth = depths.get(clazz);
+        break;
+      }
+
+      if (classChain.contains(clazz)) {
+        // cycle detected in ontology chain
+        lastDepth = -1;
+        break;
+      }
+      classChain.add(clazz);
+
+      clazz = kbProxy.findParentClazz(clazz).getResult();
+    }
+
+    if (lastDepth == null) {
+      // add new chain
+      int itemDepth = classChain.size() - 1;
+      for (String chainItem : classChain) {
+        depths.put(chainItem, itemDepth);
+        itemDepth--;
+      }
+    }
+    else if (lastDepth < 0) {
+      // cycle
+      for (String chainItem : classChain) {
+        depths.put(chainItem, lastDepth);
+      }
+    }
+    else {
+      // add to existing chain
+      int itemDepth = classChain.size() + lastDepth;
+      for (String chainItem : classChain) {
+        depths.put(chainItem, itemDepth);
+        itemDepth--;
+      }
     }
   }
 }
