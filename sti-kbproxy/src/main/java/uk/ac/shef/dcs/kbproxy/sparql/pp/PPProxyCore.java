@@ -68,14 +68,6 @@ public class PPProxyCore extends SparqlProxyCore {
             superClass = definition.getInsertDefaultClass();
         }
 
-//originally:
-//        StringBuilder tripleDefinition = createTripleDefinitionBase(url, label);
-//        appendCollection(tripleDefinition, definition.getInsertPredicateAlternativeLabel(), alternativeLabels, true);
-//        appendValue(tripleDefinition, definition.getInsertPredicateSubclassOf(), superClass, false);
-//        appendValue(tripleDefinition, definition.getStructureInstanceOf(), definition.getInsertTypeClass(), false);
-//
-//        insert(tripleDefinition.toString());
-
         //prepare new resource description - the entity (in this case class) being created
         ClassDesc classToBeCreated = new ClassDesc(url, label);
 
@@ -150,6 +142,7 @@ public class PPProxyCore extends SparqlProxyCore {
                     queryExecutor.applyTypeRequest(resourceToBeCreatedDesc, c);
                 } catch (PPRestApiCallException ex) {
                     log.error("Cannot apply type {} to concept {}, reason: {}", c, resourceToBeCreatedDesc.getUrl(), ex.getStackTrace());
+                    log.info("Usually this is the case when you try to apply type which is not a class (e.g. it is a skos:Concept) or it is not available in the KB");
                 }
             }
         }
@@ -187,26 +180,6 @@ public class PPProxyCore extends SparqlProxyCore {
         performInsertChecks(label);
 
         String url = checkOrGenerateUrl(definition.getInsertPrefixSchema(), uri);
-
-//originally:
-//        StringBuilder tripleDefinition = createTripleDefinitionBase(url, label);
-//        appendCollection(tripleDefinition, definition.getInsertPredicateAlternativeLabel(), alternativeLabels, true);
-//
-//        switch (type)
-//        {
-//            case Object:
-//                appendValue(tripleDefinition, definition.getStructureInstanceOf(), definition.getInsertTypeObjectProperty(), false);
-//                break;
-//            case Data:
-//                appendValue(tripleDefinition, definition.getStructureInstanceOf(), definition.getInsertTypeDataProperty(), false);
-//                break;
-//        }
-//
-//        appendValueIfNotEmpty(tripleDefinition, definition.getInsertPredicateSubPropertyOf(), superProperty, false);
-//        appendValueIfNotEmpty(tripleDefinition, definition.getStructureDomain(), domain, false);
-//        appendValueIfNotEmpty(tripleDefinition, definition.getStructureRange(), range, false);
-//
-//        insert(tripleDefinition.toString());
 
         //prepare new entity description - the entity being created
         RelationDesc resourceToBeCreatedDesc = new RelationDesc(url.toString(), label, domain, range, type);

@@ -3,7 +3,6 @@ package uk.ac.shef.dcs.kbproxy.sparql.pp.test;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.ac.shef.dcs.kbproxy.model.PropertyType;
-import uk.ac.shef.dcs.kbproxy.sparql.pp.ConnectionConfig;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.HttpRequestExecutorForPP;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.PPProxyDefinition;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ClassDesc;
@@ -48,7 +47,7 @@ public class HttpRequestExecutorForPPTest {
     }
 
     //create DATA relation
-    @Test
+    //@Test
     public void POSTCreateDataRelation() throws Exception {
 
         HttpRequestExecutorForPP executor = new HttpRequestExecutorForPP(ppDefinition);

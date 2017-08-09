@@ -1,13 +1,13 @@
-package uk.ac.shef.dcs.kbproxy.sparql.pp;
+package uk.ac.shef.dcs.kbproxy.sparql.pp.test;
 
 /**
  * Created by tomasknap on 09/02/17.
  */
 public class ConnectionConfig {
 
-//    public static String ppServerUrl = "http://adequate-project-pp.semantic-web.at/PoolParty";
-//    public static String ppUser = "superadmin";
-//    public static String ppPassword = "";
+    public static String ppServerUrl = "http://adequate-project-pp.semantic-web.at/PoolParty";
+    public static String ppUser = "superadmin";
+    public static String ppPassword = "";
 
     //ADEQUATe Knowledge Base project
 //    public static String projectId = "1DDFF124-EE5B-0001-B0C2-1F8031F51970";

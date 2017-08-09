@@ -62,9 +62,8 @@ public class HttpRequestExecutorForPP {
         try {
 
             URIBuilder uriBuilder = new URIBuilder(ppDefinition.getPpServerUrl() + "/api/thesaurus/" + ppDefinition.getPpProjectId() + "/createConcept");
-            //TODO TEMP hack to add everything under "top"
-            //uriBuilder.addParameter("parent",ConnectionConfig.conceptSchemaProposedUrl);
-            uriBuilder.addParameter("parent","http://adequate-project-pp.semantic-web.at/ADEQUATe_KB/9bcc103d-77b6-4d2d-a006-f69f3192025c");
+
+            uriBuilder.addParameter("parent",ppDefinition.getPpConceptSchemaProposed());
 
             uriBuilder.addParameter("prefLabel",createdEntityDesc.getLabel());
 
@@ -90,7 +89,7 @@ public class HttpRequestExecutorForPP {
             }
 
             urlCreated = urlCreated.replaceAll("\"","");
-
+            LOG.info("URL of the created concept is: {}", urlCreated);
 
             //check the validatity of URL
             try {
@@ -132,7 +131,7 @@ public class HttpRequestExecutorForPP {
         CloseableHttpResponse response = null;
         try {
 
-            URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/thesaurus/" + ConnectionConfig.projectId + "/addLiteral");
+            URIBuilder uriBuilder = new URIBuilder(ppDefinition.getPpServerUrl() + "/api/thesaurus/" + ppDefinition.getPpProjectId() + "/addLiteral");
             uriBuilder.addParameter("concept",createdEntityDesc.getUrl());
             uriBuilder.addParameter("label",  altLabel);
             uriBuilder.addParameter("property","alternativeLabel");
@@ -140,7 +139,7 @@ public class HttpRequestExecutorForPP {
             HttpPost request = new HttpPost(uriBuilder.build().normalize());
             request.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
-            addBasiAuthenticationForHttpRequest(request, ConnectionConfig.ppUser, ConnectionConfig.ppPassword);
+            addBasiAuthenticationForHttpRequest(request, ppDefinition.getLogin(), ppDefinition.getPassword());
 
             response = client.execute(request);
 
@@ -168,6 +167,7 @@ public class HttpRequestExecutorForPP {
                 response.close();
             }
 
+            LOG.info("Adding literal, response {}", responseString);
             return responseString;
 
         } catch (URISyntaxException | IllegalStateException | IOException ex) {
@@ -191,7 +191,7 @@ public class HttpRequestExecutorForPP {
         CloseableHttpResponse response = null;
         try {
 
-            URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/thesaurus/" + ConnectionConfig.projectId + "/applyType");
+            URIBuilder uriBuilder = new URIBuilder(ppDefinition.getPpServerUrl() + "/api/thesaurus/" + ppDefinition.getPpProjectId() + "/applyType");
             uriBuilder.addParameter("resource",createdEntityDesc.getUrl());
             uriBuilder.addParameter("type", targetClass);
             uriBuilder.addParameter("propagate","false");
@@ -199,7 +199,7 @@ public class HttpRequestExecutorForPP {
             HttpPost request = new HttpPost(uriBuilder.build().normalize());
             request.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
-            addBasiAuthenticationForHttpRequest(request, ConnectionConfig.ppUser, ConnectionConfig.ppPassword);
+            addBasiAuthenticationForHttpRequest(request, ppDefinition.getLogin(), ppDefinition.getPassword());
 
             response = client.execute(request);
 
@@ -227,6 +227,7 @@ public class HttpRequestExecutorForPP {
                 response.close();
             }
 
+            LOG.info("Applying type, response {}", responseString);
             return responseString;
 
         } catch (URISyntaxException | IllegalStateException | IOException ex) {
@@ -272,7 +273,7 @@ public class HttpRequestExecutorForPP {
             JSONObject json = new JSONObject();
 
             JSONObject schemaUri = new JSONObject();
-            schemaUri.put("uri", ConnectionConfig.ontologyUrl);
+            schemaUri.put("uri", ppDefinition.getPpOntologyUrl());
             json.put("schemaUri", schemaUri);
 
             JSONObject targetUri = new JSONObject();
@@ -284,14 +285,14 @@ public class HttpRequestExecutorForPP {
             json.put("label", label);
 
             JSONObject addToCustomSchema = new JSONObject();
-            addToCustomSchema.put("uri", ConnectionConfig.customSchemaUrl);
+            addToCustomSchema.put("uri", ppDefinition.getPpCustomSchemaUrl());
             JSONArray array = new JSONArray();
             array.add(addToCustomSchema);
 
             json.put("addToCustomScheme", array);
 
 
-            URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/schema/createClass");
+            URIBuilder uriBuilder = new URIBuilder(ppDefinition.getPpServerUrl() + "/api/schema/createClass");
 
             HttpPost request = new HttpPost(uriBuilder.build().normalize());
             request.addHeader("content-type", "application/json");
@@ -300,12 +301,11 @@ public class HttpRequestExecutorForPP {
             params.setContentType("application/json");
             request.setEntity(params);
 
-            addBasiAuthenticationForHttpRequest(request, ConnectionConfig.ppUser, ConnectionConfig.ppPassword);
+            addBasiAuthenticationForHttpRequest(request, ppDefinition.getLogin(), ppDefinition.getPassword());
 
             response = client.execute(request);
 
-            //TODO process response (now the response String is returned?)
-            //checkHttpResponseStatus(response);
+            checkHttpResponseStatus(response);
 
             //get response
             HttpEntity responseHttpEntity = response.getEntity();
@@ -328,6 +328,7 @@ public class HttpRequestExecutorForPP {
                 response.close();
             }
 
+            LOG.info("Creating class, response {}", responseString);
             return responseString;
 
         } catch (URISyntaxException | IllegalStateException | IOException ex) {
@@ -354,7 +355,7 @@ public class HttpRequestExecutorForPP {
             JSONObject json = new JSONObject();
 
             JSONObject schemaUri = new JSONObject();
-            schemaUri.put("uri", ConnectionConfig.ontologyUrl);
+            schemaUri.put("uri", ppDefinition.getPpOntologyUrl());
             json.put("schemaUri", schemaUri);
 
             JSONObject targetUri = new JSONObject();
@@ -366,7 +367,7 @@ public class HttpRequestExecutorForPP {
             json.put("label", label);
 
             JSONObject addToCustomSchema = new JSONObject();
-            addToCustomSchema.put("uri", ConnectionConfig.customSchemaUrl);
+            addToCustomSchema.put("uri", ppDefinition.getPpCustomSchemaUrl());
             JSONArray array = new JSONArray();
             array.add(addToCustomSchema);
 
@@ -393,7 +394,7 @@ public class HttpRequestExecutorForPP {
 //            singleBoolean.put("boolean","false");
             json.put("single", "false");
 
-            URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/schema/createDirectedRelation");
+            URIBuilder uriBuilder = new URIBuilder(ppDefinition.getPpServerUrl() + "/api/schema/createDirectedRelation");
 
             HttpPost request = new HttpPost(uriBuilder.build().normalize());
             request.addHeader("content-type", "application/json");
@@ -402,7 +403,7 @@ public class HttpRequestExecutorForPP {
             params.setContentType("application/json");
             request.setEntity(params);
 
-            addBasiAuthenticationForHttpRequest(request, ConnectionConfig.ppUser, ConnectionConfig.ppPassword);
+            addBasiAuthenticationForHttpRequest(request, ppDefinition.getLogin(), ppDefinition.getPassword());
 
             response = client.execute(request);
 
@@ -430,6 +431,7 @@ public class HttpRequestExecutorForPP {
                 response.close();
             }
 
+            LOG.info("Creating object relation, response {}", responseString);
             return responseString;
 
         } catch (URISyntaxException | IllegalStateException | IOException ex) {
@@ -455,7 +457,7 @@ public class HttpRequestExecutorForPP {
             JSONObject json = new JSONObject();
 
             JSONObject schemaUri = new JSONObject();
-            schemaUri.put("uri", ConnectionConfig.ontologyUrl);
+            schemaUri.put("uri", ppDefinition.getPpOntologyUrl());
             json.put("schemaUri", schemaUri);
 
             JSONObject targetUri = new JSONObject();
@@ -467,7 +469,7 @@ public class HttpRequestExecutorForPP {
             json.put("label", label);
 
             JSONObject addToCustomSchema = new JSONObject();
-            addToCustomSchema.put("uri", ConnectionConfig.customSchemaUrl);
+            addToCustomSchema.put("uri", ppDefinition.getPpCustomSchemaUrl());
             JSONArray array = new JSONArray();
             array.add(addToCustomSchema);
 
@@ -495,7 +497,7 @@ public class HttpRequestExecutorForPP {
 
             json.put("single", "false");
 
-            URIBuilder uriBuilder = new URIBuilder(ConnectionConfig.ppServerUrl + "/api/schema/createAttribute");
+            URIBuilder uriBuilder = new URIBuilder(ppDefinition.getPpServerUrl() + "/api/schema/createAttribute");
 
             HttpPost request = new HttpPost(uriBuilder.build().normalize());
             request.addHeader("content-type", "application/json");
@@ -504,12 +506,12 @@ public class HttpRequestExecutorForPP {
             params.setContentType("application/json");
             request.setEntity(params);
 
-            addBasiAuthenticationForHttpRequest(request, ConnectionConfig.ppUser, ConnectionConfig.ppPassword);
+            addBasiAuthenticationForHttpRequest(request, ppDefinition.getLogin(), ppDefinition.getPassword());
 
             response = client.execute(request);
 
             //process response
-            //checkHttpResponseStatus(response);
+            checkHttpResponseStatus(response);
 
             //get response
             HttpEntity responseHttpEntity = response.getEntity();
@@ -532,6 +534,7 @@ public class HttpRequestExecutorForPP {
                 response.close();
             }
 
+            LOG.info("Creating datatype relation, response {}", responseString);
             return responseString;
 
         } catch (URISyntaxException | IllegalStateException | IOException ex) {
@@ -557,7 +560,7 @@ public class HttpRequestExecutorForPP {
             try {
                 LOG.error("Response content: {}", EntityUtils.toString(response.getEntity()));
             } catch (Exception err) {
-                // ignore
+                throw new PPRestApiCallException(err.getLocalizedMessage());
             }
             throw new PPRestApiCallException(errorMsg);
         }
