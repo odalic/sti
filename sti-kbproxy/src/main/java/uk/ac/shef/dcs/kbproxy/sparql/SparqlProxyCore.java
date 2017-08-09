@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 public class SparqlProxyCore implements ProxyCore {
 
@@ -69,6 +70,8 @@ public class SparqlProxyCore implements ProxyCore {
 
   private static final String SPARQL_STRING_LITERAL = "\"%1$s\"";
   private static final String SPARQL_RESOURCE = "<%1$s>";
+
+  private static final long queryTimeout = 30L; //10s
 
   /**
    * Escape patterns from http://www.w3.org/TR/rdf-sparql-query/#grammarEscapes
@@ -261,11 +264,14 @@ public class SparqlProxyCore implements ProxyCore {
 
   protected boolean ask(Query sparqlQuery) {
     QueryExecution queryExecution = getQueryExecution(sparqlQuery);
-    
+    queryExecution.setTimeout(queryTimeout, TimeUnit.SECONDS);
+
     try {
       return queryExecution.execAsk();
     } catch (final Exception e) {
       throw new RuntimeException(String.format("Querying of the proxy %s failed with error: %s", this.definition.getName(), e.getMessage()), e);
+    } finally {
+      queryExecution.close();
     }
   }
 
@@ -283,17 +289,25 @@ public class SparqlProxyCore implements ProxyCore {
 
   protected List<Pair<RDFNode, RDFNode>> queryReturnNodeTuples(Query query) {
     QueryExecution qExec = getQueryExecution(query);
-
+    qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
     List<Pair<RDFNode, RDFNode>> out = new ArrayList<>();
-    ResultSet rs = qExec.execSelect();
-    while (rs.hasNext()) {
 
-      QuerySolution qs = rs.next();
-      RDFNode subject = qs.get(SPARQL_VARIABLE_SUBJECT);
-      RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+    try {
+      ResultSet rs = qExec.execSelect();
+      while (rs.hasNext()) {
 
-      out.add(new Pair<>(subject, object));
+        QuerySolution qs = rs.next();
+        RDFNode subject = qs.get(SPARQL_VARIABLE_SUBJECT);
+        RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+
+        out.add(new Pair<>(subject, object));
+      }
+    } catch(org.apache.jena.query.QueryCancelledException e) {
+      log.info("Timeout reached for query {}", query);
+    } finally {
+      qExec.close();
     }
+
     return out;
   }
 
@@ -313,13 +327,23 @@ public class SparqlProxyCore implements ProxyCore {
   protected List<RDFNode> queryReturnSingleNodes(Query query, String columnName) {
     QueryExecution qExec = getQueryExecution(query);
 
+    qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
+
     List<RDFNode> out = new ArrayList<>();
-    ResultSet rs = qExec.execSelect();
-    while (rs.hasNext()) {
-      QuerySolution qs = rs.next();
-      RDFNode columnNode = qs.get(columnName);
-      out.add(columnNode);
+    try {
+      ResultSet rs = qExec.execSelect();
+      while (rs.hasNext()) {
+        QuerySolution qs = rs.next();
+        RDFNode columnNode = qs.get(columnName);
+        out.add(columnNode);
+      }
+
+    } catch(org.apache.jena.query.QueryCancelledException e) {
+      log.info("Timeout reached for query {}", query);
+    } finally {
+      qExec.close();
     }
+
     return out;
   }
 
@@ -813,7 +837,7 @@ public class SparqlProxyCore implements ProxyCore {
   private void adjustValueOfURLResource(Attribute attr, final ProxyCore dependenciesProxy) throws ProxyException {
     // TODO: This is a mess, re-factor!
     String valueLabel = dependenciesProxy.getResourceLabel(attr.getValue());
-    String relationLabel = dependenciesProxy. getResourceLabel(attr.getRelationURI());
+    String relationLabel = dependenciesProxy.getResourceLabel(attr.getRelationURI());
 
     attr.setValueURI(attr.getValue());
     attr.setValue(valueLabel);
@@ -851,16 +875,23 @@ public class SparqlProxyCore implements ProxyCore {
 
     Query query = builder.build();
     QueryExecution qExec = getQueryExecution(query);
+    qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
 
-    ResultSet rs = qExec.execSelect();
-    while (rs.hasNext()) {
-      QuerySolution qs = rs.next();
-      RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
-      RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
-      if (object != null) {
-        Attribute attr = new SparqlAttribute(predicate.toString(), object.toString());
-        res.add(attr);
+    try {
+      ResultSet rs = qExec.execSelect();
+      while (rs.hasNext()) {
+        QuerySolution qs = rs.next();
+        RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
+        RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+        if (object != null) {
+          Attribute attr = new SparqlAttribute(predicate.toString(), object.toString());
+          res.add(attr);
+        }
       }
+    } catch(org.apache.jena.query.QueryCancelledException e) {
+      log.info("Timeout reached for query {}", query);
+    } finally {
+      qExec.close();
     }
     
     return res;
