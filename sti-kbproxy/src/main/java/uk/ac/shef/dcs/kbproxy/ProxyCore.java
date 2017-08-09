@@ -40,6 +40,8 @@ public interface ProxyCore {
   /**
    * Given a string, fetch candidate entities (classes) from the KB based on a fulltext search.
    *
+   * Executed when searching for classes over knowledge base
+   *
    * @param pattern
    * @param limit
    * @return
