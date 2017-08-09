@@ -1116,7 +1116,7 @@ public class SparqlProxyCore implements ProxyCore {
   private String createSPARQLLiteral(String value, boolean addLanguageSuffix) {
     String result = String.format(SPARQL_STRING_LITERAL, escapeSPARQLLiteral(value));
 
-    if (addLanguageSuffix){
+    if (addLanguageSuffix && !definition.getLanguageSuffix().isEmpty()){
       result += LANGUAGE_TAG_SEPARATOR + definition.getLanguageSuffix();
     }
 
