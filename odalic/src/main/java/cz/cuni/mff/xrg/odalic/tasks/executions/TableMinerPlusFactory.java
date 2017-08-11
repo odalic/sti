@@ -21,6 +21,8 @@ import com.google.common.collect.Table;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
+import cz.cuni.mff.xrg.odalic.util.logging.PerformanceLogger;
+
 import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.solr.CacheProviderService;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
@@ -80,15 +82,16 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
 
   private final KnowledgeBaseProxiesService knowledgeBaseProxyFactory;
   private final CacheProviderService cacheProviderService;
+  private final PerformanceLogger performanceLogger;
 
   private final Properties properties;
 
   @Autowired
-  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService, final PropertiesService propertiesService) {
-    this(knowledgeBaseProxyFactory, cacheProviderService, propertiesService.get());
+  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService, final PropertiesService propertiesService, final PerformanceLogger performanceLogger) {
+    this(knowledgeBaseProxyFactory, cacheProviderService, propertiesService.get(), performanceLogger);
   }
 
-  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService, final Properties properties) {
+  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService, final Properties properties, final PerformanceLogger performanceLogger) {
     Preconditions.checkNotNull(knowledgeBaseProxyFactory, "The knowledgeBaseProxyFactory cannot be null!");
     Preconditions.checkNotNull(cacheProviderService, "The cacheProviderService cannot be null!");
     Preconditions.checkNotNull(properties, "The properties cannot be null!");
@@ -96,6 +99,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
     this.cacheProviderService = cacheProviderService;
     this.properties = properties;
+    this.performanceLogger = performanceLogger;
   }
 
   private String getAbsolutePath(final String propertyName) {
@@ -161,7 +165,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
         final LiteralColumnTagger literalColumnTagger = new LiteralColumnTaggerImpl();
 
         final SemanticTableInterpreter interpreter = new TMPOdalicInterpreter(subcolDetector,
-            learning, update, relationEnumerator, literalColumnTagger);
+            learning, update, relationEnumerator, literalColumnTagger, performanceLogger);
 
         interpreters.put(kbProxyEntry.getKey(), interpreter);
       }
@@ -195,7 +199,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       final LEARNINGPreliminaryDisamb preliminaryDisamb =
           new LEARNINGPreliminaryDisamb(kbProxy, disambiguator, classifier);
 
-      return new LEARNING(preliminaryClassify, preliminaryDisamb);
+      return new LEARNING(preliminaryClassify, preliminaryDisamb, performanceLogger);
     } catch (final Exception e) {
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing LEARNING components.", e);
@@ -247,7 +251,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     logger.info("Initializing UPDATE components ...");
     try {
       return new UPDATE(selector, kbProxy, disambiguator, classifier, getStopwords(),
-          getNLPResourcesDir());
+          getNLPResourcesDir(), performanceLogger);
     } catch (final Exception e) {
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing UPDATE components.", e);

@@ -82,6 +82,7 @@
 	<bean id="taskSerializationService" class="cz.cuni.mff.xrg.odalic.api.rdf.TurtleRdfMappingTaskSerializationService" />
 	<bean id="knowledgeBaseSerializationService" class="cz.cuni.mff.xrg.odalic.api.rdf.TurtleRdfMappingKnowledgeBaseSerializationService" />
 	<bean id="groupsService" class="cz.cuni.mff.xrg.odalic.groups.DbGroupsService" />
+	<bean id="performanceLogger" class="cz.cuni.mff.xrg.odalic.util.logging.DefaultPerformanceLogger"/>
 
 	<!-- Resources -->
 	<bean id="configurationResource"

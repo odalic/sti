@@ -65,6 +65,7 @@ import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
 import cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
+import cz.cuni.mff.xrg.odalic.util.logging.PerformanceLogger;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
@@ -93,6 +94,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   private final CsvInputParser csvInputParser;
   private final InputToTableAdapter inputToTableAdapter;
   private final ExecutorService executorService = Executors.newFixedThreadPool(1);
+  private final PerformanceLogger performanceLogger;
 
   /**
    * Table of result futures where rows are indexed by user IDs and the columns by task IDs.
@@ -118,7 +120,8 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
       final AnnotationToResultAdapter annotationToResultAdapter,
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
-      final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter) {
+      final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter,
+      final PerformanceLogger performanceLogger) {
     Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
     Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
     Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
@@ -142,6 +145,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     this.feedbackToConstraintsAdapter = feedbackToConstraintsAdapter;
     this.csvInputParser = csvInputParser;
     this.inputToTableAdapter = inputToTableAdapter;
+    this.performanceLogger = performanceLogger;
 
     this.userTaskIdsToResults = HashBasedTable.create();
 
@@ -300,11 +304,18 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     final Set<String> usedBaseNames = configuration.getUsedBases();
     final int rowsLimit = configuration.getRowsLimit();
 
-    final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
-    final Input input = parsingResult.getInput();
+    performanceLogger.clearLog();
+    final Input input = performanceLogger.doThrowableFunction("Settings input - " + taskId, () ->
+    {
+      final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
+      final Input result = parsingResult.getInput();
 
-    this.inputSnapshotsService.setInputSnapshotForTaskid(userId, taskId, input);
-    this.db.commit();
+      this.inputSnapshotsService.setInputSnapshotForTaskid(userId, taskId, result);
+      this.db.commit();
+
+      return result;
+    });
+    logger.info(performanceLogger.getLog());
 
     final Callable<Result> execution = () -> {
       try {
@@ -322,18 +333,28 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
         for (final Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters
             .entrySet()) {
+          performanceLogger.clearLog();
+
           final KnowledgeBase base = this.basesService.getByName(userId, interpreterEntry.getKey());
 
           final Constraints constraints =
-              this.feedbackToConstraintsAdapter.toConstraints(feedback, base);
+                  this.feedbackToConstraintsAdapter.toConstraints(feedback, base);
           final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
 
-          final TAnnotation annotationResult = interpreter.start(table, isStatistical, constraints);
+          performanceLogger.doThrowableMethod("_Task execution - " + taskId + "(" + base.getName() + ")", () ->
+          {
 
-          results.put(base, annotationResult);
+            final TAnnotation annotationResult = interpreter.start(table, isStatistical, constraints);
+            results.put(base, annotationResult);
+          });
+
+          logger.info(performanceLogger.getLog());
         }
 
-        final Result result = this.annotationResultAdapter.toResult(results);
+        performanceLogger.clearLog();
+        final Result result = performanceLogger.doThrowableFunction("Transforming output - " + taskId,
+                () -> this.annotationResultAdapter.toResult(results));
+        logger.info(performanceLogger.getLog());
 
         this.userTaskIdsToCachedResults.put(new Object[] {userId, taskId}, result);
         this.db.commit();

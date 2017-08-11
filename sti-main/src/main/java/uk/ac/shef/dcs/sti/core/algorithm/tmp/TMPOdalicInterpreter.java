@@ -29,6 +29,8 @@ import uk.ac.shef.dcs.sti.core.subjectcol.SubjectColumnDetector;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
 import uk.ac.shef.dcs.util.Pair;
 
+import cz.cuni.mff.xrg.odalic.util.logging.PerformanceLogger;
+
 public class TMPOdalicInterpreter extends SemanticTableInterpreter {
 
   private static final Logger LOG = LoggerFactory.getLogger(TMPOdalicInterpreter.class.getName());
@@ -36,18 +38,21 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
   private final LEARNING learning;
   private final LiteralColumnTagger literalColumnTagger;
   private final TColumnColumnRelationEnumerator relationEnumerator;
+  private final PerformanceLogger performanceLogger;
 
   private final UPDATE update;
 
   public TMPOdalicInterpreter(final SubjectColumnDetector subjectColumnDetector,
       final LEARNING learning, final UPDATE update,
       final TColumnColumnRelationEnumerator relationEnumerator,
-      final LiteralColumnTagger literalColumnTagger) {
+      final LiteralColumnTagger literalColumnTagger,
+      final PerformanceLogger performanceLogger) {
     super(new int[0], new int[0]);
     this.subjectColumnDetector = subjectColumnDetector;
     this.learning = learning;
     this.literalColumnTagger = literalColumnTagger;
     this.relationEnumerator = relationEnumerator;
+    this.performanceLogger = performanceLogger;
     this.update = update;
   }
 
@@ -170,7 +175,8 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       // find the main subject column of this table
       LOG.info("\t> PHASE: Detecting subject column ...");
       final List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnScores =
-          this.subjectColumnDetector.compute(table, ignoreColumnsArray);
+          performanceLogger.doThrowableFunction("Interpreter - 1 - Subject column detection",
+                  () -> this.subjectColumnDetector.compute(table, ignoreColumnsArray));
       tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
 
       // set column processing annotations
@@ -183,47 +189,60 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
           constraints.getClassifications(), constraints.getColumnRelations(),
           constraints.getDisambiguations(), newAmbiguities, constraints.getDataCubeComponents());
 
+      final Constraints finalConstraints = constraints;
+
       // learning phase
       final List<Integer> annotatedColumns = new ArrayList<>();
       LOG.info("\t> PHASE: LEARNING ...");
-      for (int col = 0; col < table.getNumCols(); col++) {
-        if (getIgnoreColumns().contains(col)) {
-          continue;
-        }
-        annotatedColumns.add(col);
+      performanceLogger.doThrowableMethod("Interpreter - 2 - Preliminary classification and disambiguation", () ->
+      {
+        for (int col = 0; col < table.getNumCols(); col++) {
+          if (getIgnoreColumns().contains(col)) {
+            continue;
+          }
+          annotatedColumns.add(col);
 
-        LOG.info("\t>> Column=" + col);
-        this.learning.learn(table, tableAnnotations, col, constraints);
-      }
+          LOG.info("\t>> Column=" + col);
+          this.learning.learn(table, tableAnnotations, col, finalConstraints);
+        }
+      });
 
       // update phase
       if (this.update != null) {
         LOG.info("\t> PHASE: UPDATE phase ...");
-        this.update.update(annotatedColumns, table, tableAnnotations, constraints);
+        performanceLogger.doThrowableMethod("Interpreter - 3 - Classification and disambiguation",
+                () -> this.update.update(annotatedColumns, table, tableAnnotations, finalConstraints));
       }
 
       // set statistical annotations or discover relations
       if (statistical) {
         LOG.info("\t> PHASE: Statistical annotation enumeration ...");
-        setStatisticalAnnotations(annotatedColumns, table, tableAnnotations, constraints);
+        performanceLogger.doThrowableMethod("Interpreter - 4 - Statistical annotation",
+                () -> setStatisticalAnnotations(annotatedColumns, table, tableAnnotations, finalConstraints));
       } else {
         LOG.info("\t> PHASE: RELATION ENUMERATION ...");
-        if (constraints.getSubjectColumnsPositions().isEmpty()) {
-          new RELATIONENUMERATION().enumerate(subjectColumnScores, getIgnoreColumns(),
-              this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
-              constraints);
-        } else {
-          new RELATIONENUMERATION().enumerate(
-              this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
-              constraints);
-        }
+        performanceLogger.doThrowableMethod("Interpreter - 4 - Relations discovery", () ->
+        {
+          if (finalConstraints.getSubjectColumnsPositions().isEmpty()) {
+            new RELATIONENUMERATION().enumerate(subjectColumnScores, getIgnoreColumns(),
+                    this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
+                    finalConstraints);
+          } else {
+            new RELATIONENUMERATION().enumerate(
+                    this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
+                    finalConstraints);
+          }
+        });
 
         // consolidation - for columns that have relation with subject columns:
         // if the column is entity column, do column typing and disambiguation;
         // otherwise, simply create header annotation
         LOG.info("\t\t>> Annotate literal-columns in relation with main column");
-        this.literalColumnTagger.annotate(table, tableAnnotations, constraints,
-            annotatedColumns.toArray(new Integer[0]));
+        performanceLogger.doThrowableMethod("Interpreter - 5 - Literal columns consolidation", () ->
+        {
+          this.literalColumnTagger.annotate(table, tableAnnotations, finalConstraints,
+                  annotatedColumns.toArray(new Integer[0]));
+        });
       }
 
       return tableAnnotations;

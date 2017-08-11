@@ -69,6 +69,8 @@ import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import cz.cuni.mff.xrg.odalic.users.Role;
 import cz.cuni.mff.xrg.odalic.users.User;
 import cz.cuni.mff.xrg.odalic.util.configuration.DefaultPropertiesService;
+import cz.cuni.mff.xrg.odalic.util.logging.DefaultPerformanceLogger;
+import cz.cuni.mff.xrg.odalic.util.logging.PerformanceLogger;
 
 public class CoreExecutionBatch {
 
@@ -97,6 +99,9 @@ public class CoreExecutionBatch {
 
   public static CoreSnapshot testCoreExecution(String propertyFilePath, String testInputFilePath) {
     System.setProperty("cz.cuni.mff.xrg.odalic.sti", propertyFilePath);
+
+    // Performance logger
+    final PerformanceLogger performanceLogger = new DefaultPerformanceLogger();
 
     // File settings
     final Path path = Paths.get(testInputFilePath);
@@ -142,7 +147,7 @@ public class CoreExecutionBatch {
       return null;
     }
     MemoryOnlySolrCacheProviderService cps = new MemoryOnlySolrCacheProviderService(dps);
-    DefaultProxiesFactory dpf = new DefaultProxiesFactory(cps);
+    DefaultProxiesFactory dpf = new DefaultProxiesFactory(cps, performanceLogger);
     MemoryOnlyGroupsService mgs = new MemoryOnlyGroupsService(dps);
     MemoryOnlyAdvancedBaseTypesService abs = new MemoryOnlyAdvancedBaseTypesService(mgs);
     kbf = new MemoryOnlyKnowledgeBaseProxiesService(dpf, abs, pms);
@@ -167,7 +172,7 @@ public class CoreExecutionBatch {
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
-      semanticTableInterpreters = new TableMinerPlusFactory(kbf, cps, dps).getInterpreters(
+      semanticTableInterpreters = new TableMinerPlusFactory(kbf, cps, dps, performanceLogger).getInterpreters(
           configuration.getInput().getOwner().getEmail(), configuration.getUsedBases().stream().map(e ->
           mbs.getByName(configuration.getInput().getOwner().getEmail(), e)).collect(ImmutableSet.toImmutableSet()));
     } catch (final Exception e) {

@@ -393,7 +393,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
     }
   }
   
-  public static enum SEARCH_CLASS_TYPE_MODE_VALUE {
+  public enum SEARCH_CLASS_TYPE_MODE_VALUE {
     DIRECT, INDIRECT
   }
   

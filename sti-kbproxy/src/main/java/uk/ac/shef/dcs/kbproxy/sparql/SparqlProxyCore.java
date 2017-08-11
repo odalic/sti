@@ -51,6 +51,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import cz.cuni.mff.xrg.odalic.util.logging.PerformanceLogger;
+
 public final class SparqlProxyCore implements ProxyCore {
 
   private static final String LANGUAGE_TAG_SEPARATOR = "@";
@@ -97,14 +99,15 @@ public final class SparqlProxyCore implements ProxyCore {
   private static final Logger log = LoggerFactory.getLogger(SparqlProxyCore.class);
 
   private final HttpClient httpClient;
+  private final PerformanceLogger performanceLogger;
   
   public SparqlProxyCore(final SparqlProxyDefinition definition,
-      final Map<String, String> prefixToUriMap) {
-    this(definition, prefixToUriMap, new Levenshtein());
+      final Map<String, String> prefixToUriMap, final PerformanceLogger performanceLogger) {
+    this(definition, prefixToUriMap, performanceLogger, new Levenshtein());
   }
   
   private SparqlProxyCore(final SparqlProxyDefinition definition,
-          final Map<String, String> prefixToUriMap,
+          final Map<String, String> prefixToUriMap, final PerformanceLogger performanceLogger,
           final StringMetric stringMetric) {
     Preconditions.checkNotNull(definition, "The definition cannot be null!");
     Preconditions.checkNotNull(prefixToUriMap, "The prefixToUriMap cannot be null!");
@@ -113,6 +116,7 @@ public final class SparqlProxyCore implements ProxyCore {
     this.definition = definition;
     this.prefixToUriMap = ImmutableMap.copyOf(prefixToUriMap);
     this.stringMetric = stringMetric;
+    this.performanceLogger = performanceLogger;
 
     if (!isNullOrEmpty(definition.getLogin())) {
       Credentials credentials = new UsernamePasswordCredentials(definition.getLogin(), definition.getPassword());
@@ -260,13 +264,16 @@ public final class SparqlProxyCore implements ProxyCore {
   }
 
   protected boolean ask(Query sparqlQuery) {
-    QueryExecution queryExecution = getQueryExecution(sparqlQuery);
-    
-    try {
-      return queryExecution.execAsk();
-    } catch (final Exception e) {
-      throw new RuntimeException(String.format("Querying of the proxy %s failed with error: %s", this.definition.getName(), e.getMessage()), e);
-    }
+    return performanceLogger.doFunction("SPARQL - Ask", () ->
+    {
+      QueryExecution queryExecution = getQueryExecution(sparqlQuery);
+
+      try {
+        return queryExecution.execAsk();
+      } catch (final Exception e) {
+        throw new RuntimeException(String.format("Querying of the proxy %s failed with error: %s", this.definition.getName(), e.getMessage()), e);
+      }
+    });
   }
 
 
@@ -282,18 +289,21 @@ public final class SparqlProxyCore implements ProxyCore {
   }
 
   protected List<Pair<RDFNode, RDFNode>> queryReturnNodeTuples(Query query) {
-    QueryExecution qExec = getQueryExecution(query);
-
     List<Pair<RDFNode, RDFNode>> out = new ArrayList<>();
-    ResultSet rs = qExec.execSelect();
-    while (rs.hasNext()) {
 
-      QuerySolution qs = rs.next();
-      RDFNode subject = qs.get(SPARQL_VARIABLE_SUBJECT);
-      RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+    performanceLogger.doMethod("SPARQL - General select", () ->
+    {
+      QueryExecution qExec = getQueryExecution(query);
+      ResultSet rs = qExec.execSelect();
+      while (rs.hasNext()) {
 
-      out.add(new Pair<>(subject, object));
-    }
+        QuerySolution qs = rs.next();
+        RDFNode subject = qs.get(SPARQL_VARIABLE_SUBJECT);
+        RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+
+        out.add(new Pair<>(subject, object));
+      }
+    });
     return out;
   }
 
@@ -311,15 +321,18 @@ public final class SparqlProxyCore implements ProxyCore {
   }
 
   protected List<RDFNode> queryReturnSingleNodes(Query query, String columnName) {
-    QueryExecution qExec = getQueryExecution(query);
-
     List<RDFNode> out = new ArrayList<>();
-    ResultSet rs = qExec.execSelect();
-    while (rs.hasNext()) {
-      QuerySolution qs = rs.next();
-      RDFNode columnNode = qs.get(columnName);
-      out.add(columnNode);
-    }
+
+    performanceLogger.doMethod("SPARQL - General select", () ->
+    {
+      QueryExecution qExec = getQueryExecution(query);
+      ResultSet rs = qExec.execSelect();
+      while (rs.hasNext()) {
+        QuerySolution qs = rs.next();
+        RDFNode columnNode = qs.get(columnName);
+        out.add(columnNode);
+      }
+    });
     return out;
   }
 
@@ -850,19 +863,23 @@ public final class SparqlProxyCore implements ProxyCore {
             .addWhere(createSPARQLResource(resourceId), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
 
     Query query = builder.build();
-    QueryExecution qExec = getQueryExecution(query);
 
-    ResultSet rs = qExec.execSelect();
-    while (rs.hasNext()) {
-      QuerySolution qs = rs.next();
-      RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
-      RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
-      if (object != null) {
-        Attribute attr = new SparqlAttribute(predicate.toString(), object.toString());
-        res.add(attr);
+    performanceLogger.doMethod("SPARQL - Get attributes", () ->
+    {
+      QueryExecution qExec = getQueryExecution(query);
+
+      ResultSet rs = qExec.execSelect();
+      while (rs.hasNext()) {
+        QuerySolution qs = rs.next();
+        RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
+        RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+        if (object != null) {
+          Attribute attr = new SparqlAttribute(predicate.toString(), object.toString());
+          res.add(attr);
+        }
       }
-    }
-    
+    });
+
     return res;
   }
 

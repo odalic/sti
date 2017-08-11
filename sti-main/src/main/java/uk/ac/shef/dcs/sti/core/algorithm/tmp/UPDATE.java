@@ -30,6 +30,8 @@ import uk.ac.shef.dcs.sti.core.model.Table;
 import uk.ac.shef.dcs.sti.nlp.NLPTools;
 import uk.ac.shef.dcs.util.StringUtils;
 
+import cz.cuni.mff.xrg.odalic.util.logging.PerformanceLogger;
+
 /**
 
  */
@@ -42,16 +44,19 @@ public class UPDATE {
   private final String nlpResourcesDir;
   private final TContentCellRanker selector;
   private final List<String> stopWords;
+  private final PerformanceLogger performanceLogger;
 
   public UPDATE(final TContentCellRanker selector, final Proxy kbSearch,
       final TCellDisambiguator disambiguator, final TColumnClassifier classifier,
-      final List<String> stopwords, final String nlpResourcesDir) {
+      final List<String> stopwords, final String nlpResourcesDir,
+      final PerformanceLogger performanceLogger) {
     this.selector = selector;
     this.kbSearch = kbSearch;
     this.disambiguator = disambiguator;
     this.classifier = classifier;
     this.nlpResourcesDir = nlpResourcesDir;
     this.stopWords = stopwords;
+    this.performanceLogger = performanceLogger;
   }
 
   private Set<String> collectAllEntityCandidateIds(final Table table,
@@ -136,8 +141,9 @@ public class UPDATE {
     LOG.debug("\t\t>> Rows=" + rowBlock + "/" + totalRowBlocks + " (Total candidates="
         + candidates.size() + ", previously already processed=" + ignore + ")");
     // now each candidate is given scores
-    entity_and_scoreMap = this.disambiguator.constrainedDisambiguate(candidates, table, rowBlock,
-        table_cell_col, totalRowBlocks, false);
+    final List<Entity> finalCandidates = candidates;
+    entity_and_scoreMap = performanceLogger.doThrowableFunction("Interpreter - 3 - Disambiguation", () ->
+        this.disambiguator.constrainedDisambiguate(finalCandidates, table, rowBlock, table_cell_col, totalRowBlocks, false));
 
     entity_and_scoreMap.getWarnings().addAll(warnings);
 
@@ -237,8 +243,8 @@ public class UPDATE {
             columnTypes, rows, c, ranking.size(), constraints);
 
         if (entity_and_scoreMap.getResult().size() > 0) {
-          this.disambiguator.addCellAnnotation(table, currentAnnotation, rows, c,
-              entity_and_scoreMap);
+          performanceLogger.doThrowableMethod("Interpreter - 3 - Disambiguation", () ->
+              this.disambiguator.addCellAnnotation(table, currentAnnotation, rows, c, entity_and_scoreMap));
           updated.addAll(rows);
         } else {
           for (final int row : rows) {
@@ -248,7 +254,8 @@ public class UPDATE {
       }
 
 
-      this.classifier.updateColumnClazz(updated, c, currentAnnotation, table, true);
+      performanceLogger.doThrowableMethod("Interpreter - 3 - Classification", () ->
+              this.classifier.updateColumnClazz(updated, c, currentAnnotation, table, true));
       // at this point, DC should have been computed. But updateColumnClazz does not add DC to the
       // newly compuetd clazz score.
       // we should add DC to the total score here. however we should use existing DC calculated
@@ -314,7 +321,10 @@ public class UPDATE {
       // headers will have dc computeElementScores added
       domainRep = createDomainRep(table, currentAnnotation, interpretedColumnIndexes);
       // update clazz scores with dc scores
-      this.classifier.updateClazzScoresByDC(currentAnnotation, domainRep, interpretedColumnIndexes);
+      final TAnnotation finalCurrentAnnotation = currentAnnotation;
+      final List<String> finalDomainRep = domainRep;
+      performanceLogger.doThrowableMethod("Interpreter - 3 - Classification", () ->
+          this.classifier.updateClazzScoresByDC(finalCurrentAnnotation, finalDomainRep, interpretedColumnIndexes));
 
       prevAnnotation = new TAnnotation(currentAnnotation.getRows(), currentAnnotation.getCols());
       TAnnotation.copy(currentAnnotation, prevAnnotation);

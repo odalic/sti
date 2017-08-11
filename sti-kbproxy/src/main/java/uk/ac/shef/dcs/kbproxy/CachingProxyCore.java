@@ -10,10 +10,14 @@ import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 import uk.ac.shef.dcs.kbproxy.solr.CacheQueries;
 import uk.ac.shef.dcs.util.Cache;
+
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import cz.cuni.mff.xrg.odalic.util.logging.PerformanceLogger;
 
 public class CachingProxyCore implements ProxyCore {
 
@@ -30,8 +34,11 @@ public class CachingProxyCore implements ProxyCore {
   private final String structureDomain;
   private final String structureRange;
 
+  private final PerformanceLogger performanceLogger;
+
   public CachingProxyCore(final ProxyCore proxy, final Cache cache,
-      final String structureDomain, final String structureRange) {
+                          final String structureDomain, final String structureRange,
+                          final PerformanceLogger performanceLogger) {
     Preconditions.checkNotNull(proxy, "The proxy cannot be null!");
     Preconditions.checkNotNull(cache, "The cache cannot be null!");
     Preconditions.checkNotNull(structureDomain, "The structureDomain cannot be null!");
@@ -41,6 +48,7 @@ public class CachingProxyCore implements ProxyCore {
     this.cache = cache;
     this.structureDomain = structureDomain;
     this.structureRange = structureRange;
+    this.performanceLogger = performanceLogger;
   }
 
   @SuppressWarnings("unchecked")
@@ -48,7 +56,7 @@ public class CachingProxyCore implements ProxyCore {
     try {
       log.debug("QUERY (" + this.cache + ", cache load)=" + queryCache);
 
-      return (T) cache.retrieve(queryCache);
+      return performanceLogger.doThrowableFunction("Cache - retrieve value", () -> (T) cache.retrieve(queryCache));
     } catch (final Exception ex) {
       log.error("Error fetching resource from the cache.", ex);
 
@@ -78,7 +86,7 @@ public class CachingProxyCore implements ProxyCore {
   private void cacheValue(final String queryCache, final Object value) {
     try {
       log.debug("QUERY (" + cache + ", cache save)=" + queryCache);
-      cache.cache(queryCache, value, true);
+      performanceLogger.doThrowableMethod("Cache - save value", () -> cache.cache(queryCache, value, true));
     } catch (final Exception ex) {
       log.error("Error saving resource to the cache.", ex);
     }
