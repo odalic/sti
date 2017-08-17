@@ -19,6 +19,17 @@ public interface ClazzScorer {
 
 
   /**
+   * compute Hierarchy scores for column clazz annotation candidates, ONLY IF the Hierarchy score
+   * is not yet computed
+   *
+   * @param candidates
+   * @param kbProxy
+   * @return
+   */
+  List<TColumnHeaderAnnotation> computeHierarchyScore(Collection<TColumnHeaderAnnotation> candidates,
+      Proxy kbProxy);
+
+  /**
    * compute CC scores for column clazz annotation candidates, ONLY IF the CC score is not yet
    * computed
    *

@@ -173,7 +173,7 @@ public class LEARNINGPreliminaryDisamb {
     LOG.info("\t\t>> constrained cell disambiguation complete " + updated.size() + "/"
         + ranking.size() + " rows");
     LOG.info("\t\t>> reset candidate column class annotations");
-    this.classifier.updateColumnClazz(updated, column, tableAnnotation, table, false);
+    this.classifier.updateColumnClazz(updated, column, tableAnnotation, table, this.kbSearch, false);
 
   }
 }

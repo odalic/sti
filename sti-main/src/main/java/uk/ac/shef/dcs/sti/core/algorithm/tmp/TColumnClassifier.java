@@ -123,7 +123,8 @@ public class TColumnClassifier {
    *        disambiguated rows in rowsUpdated are counted
    */
   protected void updateColumnClazz(final List<Integer> rowsUpdated, final int column,
-      final TAnnotation tableAnnotations, final Table table, final boolean resetCESums)
+      final TAnnotation tableAnnotations, final Table table,
+      final Proxy kbProxy, final boolean resetCESums)
       throws STIException {
     List<TColumnHeaderAnnotation> existingColumnClazzAnnotations;
     existingColumnClazzAnnotations =
@@ -149,7 +150,8 @@ public class TColumnClassifier {
     toAdd.addAll(existingColumnClazzAnnotations);
     final TColumnHeaderAnnotation[] result =
         updateColumnClazzAnnotationScores(rowsUpdated, column, table.getNumRows(),
-            existingColumnClazzAnnotations, table, tableAnnotations, this.clazzScorer, resetCESums);
+            existingColumnClazzAnnotations, table, tableAnnotations, this.clazzScorer,
+            kbProxy, resetCESums);
     tableAnnotations.setHeaderAnnotation(column, result);
   }
 
@@ -170,11 +172,16 @@ public class TColumnClassifier {
   private TColumnHeaderAnnotation[] updateColumnClazzAnnotationScores(
       final Collection<Integer> updatedRows, final int column, final int totalRows,
       Collection<TColumnHeaderAnnotation> candidateColumnClazzAnnotations, final Table table,
-      final TAnnotation tableAnnotations, final ClazzScorer clazzScorer, final boolean resetCESums)
+      final TAnnotation tableAnnotations, final ClazzScorer clazzScorer,
+      final Proxy kbProxy, final boolean resetCESums)
       throws STIException {
     // for the candidate column clazz annotations compute CC score
     candidateColumnClazzAnnotations =
         clazzScorer.computeCCScore(candidateColumnClazzAnnotations, table, column);
+
+    // for the candidate column clazz annotations compute Hierarchy score
+    candidateColumnClazzAnnotations =
+        clazzScorer.computeHierarchyScore(candidateColumnClazzAnnotations, kbProxy);
 
     if (resetCESums) {
       for (final TColumnHeaderAnnotation ha : candidateColumnClazzAnnotations) {

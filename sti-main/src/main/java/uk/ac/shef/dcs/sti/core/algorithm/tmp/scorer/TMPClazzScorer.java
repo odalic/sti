@@ -336,9 +336,9 @@ public class TMPClazzScorer implements ClazzScorer {
 
     Double score_hierarchy = scoreElements.get(SCORE_CLASS_HIERARCHY);
     if (score_hierarchy == null) {
-      score_hierarchy = 1.0;
+      score_hierarchy = 0.0;
     }
-    ce *= score_hierarchy;
+    ce += score_hierarchy;
 
     scoreElements.put(TColumnHeaderAnnotation.SCORE_FINAL, ce);
     ha.setFinalScore(ce);
@@ -474,13 +474,14 @@ public class TMPClazzScorer implements ClazzScorer {
      */
   }
 
-  private List<TColumnHeaderAnnotation> computeHierarchyScore(
+  @Override
+  public List<TColumnHeaderAnnotation> computeHierarchyScore(
       final Collection<TColumnHeaderAnnotation> candidates, final Proxy kbProxy) {
     for (final TColumnHeaderAnnotation ha : candidates) {
       final Double scoreClassHierarchy = ha.getScoreElements().get(SCORE_CLASS_HIERARCHY);
 
       if (scoreClassHierarchy == null) {
-        final double score_hierarchy = 1 + 0.1 * findDepthOfClazz(ha.getAnnotation().getId(), kbProxy);
+        final double score_hierarchy = 0.02 * findDepthOfClazz(ha.getAnnotation().getId(), kbProxy);
         ha.getScoreElements().put(SCORE_CLASS_HIERARCHY, score_hierarchy);
       }
     }
