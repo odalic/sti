@@ -1,15 +1,14 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
+import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
+
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
-
-import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
 
 public class SparqlProxyDefinition implements ProxyDefinition {
 
@@ -485,7 +484,7 @@ public class SparqlProxyDefinition implements ProxyDefinition {
   
   private final boolean uriLabelHeuristicApplied;
   
-  private SparqlProxyDefinition(final Builder builder) {
+  protected SparqlProxyDefinition(final Builder builder) {
     Preconditions.checkArgument(!builder.structurePredicateLabel.isEmpty(), "No label predicate defined!");
     Preconditions.checkArgument(!builder.structurePredicateType.isEmpty(), "No type predicate defined!");
     

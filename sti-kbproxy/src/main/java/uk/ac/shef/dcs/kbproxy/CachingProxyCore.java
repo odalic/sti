@@ -27,6 +27,7 @@ public class CachingProxyCore implements ProxyCore {
 
   private static final Logger log = LoggerFactory.getLogger(CachingProxyCore.class);
 
+  //to point to the ProxyCore (e.g. certain SPARQL based or PP based proxy)
   private final ProxyCore core;
 
   private final Cache cache;

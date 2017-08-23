@@ -22,7 +22,14 @@ public final class FilteringProxyCore implements ProxyCore {
   private final ProxyCore core;
   
   private final ProxyResultFilter resultFilter;
-  
+
+  /**
+   * Wraps CachingProxyCore to filter certain types/predicates
+   *
+   * TODO: Inefficient and probably also not correct, see: https://grips.semantic-web.at/display/ADEQ/Performance+bottlenecks
+   * @param core
+   * @param filter
+   */
   public FilteringProxyCore(final ProxyCore core, final ProxyResultFilter filter) {
     Preconditions.checkNotNull(core, "The core cannot be null!");
     Preconditions.checkNotNull(filter, "The filter cannot be null!");

@@ -1,19 +1,19 @@
 package uk.ac.shef.dcs.kbproxy;
 
-import java.io.IOException;
-import java.util.Map;
-
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-
 import uk.ac.shef.dcs.kbproxy.solr.CacheProviderService;
-import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyDefinition;
 import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyCoreFactory;
+import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyDefinition;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.PPProxyCoreFactory;
+import uk.ac.shef.dcs.kbproxy.sparql.pp.PPProxyDefinition;
+
+import java.io.IOException;
+import java.util.Map;
 
 import cz.cuni.mff.xrg.odalic.util.logging.PerformanceLogger;
 
@@ -34,10 +34,10 @@ public final class DefaultProxiesFactory implements ProxiesFactory {
   private final Map<Class<? extends ProxyDefinition>, ProxyCoreFactory> definitionClassesToCoreFactories;
 
   private final PerformanceLogger performanceLogger;
-  
+
   @Autowired
   public DefaultProxiesFactory(final CacheProviderService cacheProviderService, final PerformanceLogger performanceLogger) {
-    this(cacheProviderService, performanceLogger, ImmutableMap.of(SparqlProxyDefinition.class, new SparqlProxyCoreFactory()));
+    this(cacheProviderService, performanceLogger, ImmutableMap.of(SparqlProxyDefinition.class, new SparqlProxyCoreFactory(), PPProxyDefinition.class, new PPProxyCoreFactory()));
   }
   
   private DefaultProxiesFactory(final CacheProviderService cacheProviderService, final PerformanceLogger performanceLogger, final Map<Class<? extends ProxyDefinition>, ProxyCoreFactory> definitionClassesToCores) {
@@ -63,7 +63,7 @@ public final class DefaultProxiesFactory implements ProxiesFactory {
       final ProxyCore filteringCore = new FilteringProxyCore(cachingCore, filter);
 
       final ProxyCore performanceLoggingCore = new PerformanceLoggingProxyCore(filteringCore, performanceLogger);
-      
+
       return new CoreExceptionsWrappingProxy(performanceLoggingCore);
   }
   
