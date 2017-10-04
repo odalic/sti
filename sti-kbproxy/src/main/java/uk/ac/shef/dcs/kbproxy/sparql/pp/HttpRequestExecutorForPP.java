@@ -3,7 +3,9 @@ package uk.ac.shef.dcs.kbproxy.sparql.pp;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
@@ -11,6 +13,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.util.EntityUtils;
+import org.apache.jena.query.Query;
+import org.apache.jena.rdf.model.RDFNode;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -27,6 +31,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * Created by tomasknap on 09/02/17.
@@ -47,6 +53,61 @@ public class HttpRequestExecutorForPP {
         client.setRedirectStrategy(new LaxRedirectStrategy());
         this.ppDefinition = ppDefinition;
     }
+
+    /**
+     * Gets
+     */
+    public String getSparqlQueryResult(Query query) throws PPRestApiCallException {
+
+        CloseableHttpResponse response = null;
+        try {
+
+            URIBuilder uriBuilder = new URIBuilder(ppDefinition.getPpServerUrl() + "/api/schema/sparql/select");
+            String queryToBeExecuted = query.toString();
+            uriBuilder.addParameter("query", queryToBeExecuted);
+
+            HttpGet request = new HttpGet(uriBuilder.build().normalize());
+            request.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            addBasiAuthenticationForHttpRequest(request, ppDefinition.getLogin(), ppDefinition.getPassword());
+
+            response = client.execute(request);
+
+            //process response
+            checkHttpResponseStatus(response);
+
+
+            //get response
+            HttpEntity responseHttpEntity = response.getEntity();
+            InputStream content = responseHttpEntity.getContent();
+            BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+            String line;
+            String responseString = "";
+
+            while ((line = buffer.readLine()) != null) {
+                responseString += line;
+            }
+
+            try {
+                //release all resources held by the responseHttpEntity
+                EntityUtils.consume(responseHttpEntity);
+
+                //close the stream
+                response.close();
+            } finally {
+                response.close();
+            }
+
+            LOG.info("Adding literal, response {}", responseString);
+            return responseString;
+
+        } catch (URISyntaxException | IllegalStateException | IOException ex) {
+            String errorMsg = String.format("Failed to execute HTTP raw POST request to URL %s", "xx");
+            LOG.error(errorMsg);
+            throw new PPRestApiCallException(errorMsg, ex);
+        }
+    }
+
 
     /**
      * Creates concept
