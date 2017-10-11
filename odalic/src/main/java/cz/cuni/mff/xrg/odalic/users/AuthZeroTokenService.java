@@ -59,15 +59,15 @@ public class AuthZeroTokenService implements TokenService {
     this.verifier = initializeVerifier(this.secret, this.issuer);
   }
 
-  public AuthZeroTokenService(final String secret, final String issuer) {
-    Preconditions.checkNotNull(secret, "The secret cannot be null!");
-    Preconditions.checkNotNull(issuer, "The issuer cannot be null!");
-
-    this.secret = secret;
-    this.issuer = issuer;
-
-    this.verifier = initializeVerifier(secret, issuer);
-  }
+//  public AuthZeroTokenService(final String secret, final String issuer) {
+//    Preconditions.checkNotNull(secret, "The secret cannot be null!");
+//    Preconditions.checkNotNull(issuer, "The issuer cannot be null!");
+//
+//    this.secret = secret;
+//    this.issuer = issuer;
+//
+//    this.verifier = initializeVerifier(secret, issuer);
+//  }
 
   @Override
   public Token create(final UUID id, final String subject, final Instant expiration) {
