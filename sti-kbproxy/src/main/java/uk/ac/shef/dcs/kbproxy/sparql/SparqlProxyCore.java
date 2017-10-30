@@ -1010,6 +1010,10 @@ public class SparqlProxyCore implements ProxyCore {
       builder = builder.addFilter(regexFilter);
     }
 
+    if (!definition.getLanguageSuffix().isEmpty()) {
+      builder = builder.addFilter(String.format(SPARQL_FILTER_LANGMATCHES, SPARQL_VARIABLE_OBJECT, definition.getLanguageSuffix()));
+    }
+
     // Types restriction
     builder = addTypeRestriction(builder, Arrays.asList(types));
 
