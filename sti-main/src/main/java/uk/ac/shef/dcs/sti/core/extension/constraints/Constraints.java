@@ -189,6 +189,17 @@ public final class Constraints implements Serializable {
   }
 
   /**
+  *
+  * @param columnIndex
+  *
+  * @return true if there exist entities chosen for classification of given column
+  */
+  public boolean existClassifChosenForColumn(final int columnIndex) {
+    return getClassifications().stream()
+        .anyMatch(e -> (e.getPosition().getIndex() == columnIndex));
+  }
+
+  /**
    *
    * @param columnIndex
    * @param rowIndex
