@@ -22,9 +22,11 @@ public abstract class Attribute implements Serializable {
   // is used to indicate whether the attribute is a direct attribute of the resource or not
 
 
-  public Attribute(String relationURI, String value) {
+  public Attribute(String relationLabel, String relationURI, String value, String valueURI) {
+    this.relationLabel = relationLabel;
     this.relationURI = relationURI;
     this.value = fixValue(value);
+    this.valueURI = valueURI;
   }
 
   // TODO: Fix the dependency on KBDefinition

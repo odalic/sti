@@ -15,8 +15,10 @@ public class SelectBuilder {
   private Map<String, String> prefixes = new HashMap<>();
   private Set<String> variables = new HashSet<>();
   private List<SelectBuilder> unions = new ArrayList<>();
+  private List<SelectBuilder> optionals = new ArrayList<>();
   private List<SelectBuilder> subExpressions = new ArrayList<>();
   private List<WhereExpression> whereExpressions = new ArrayList<>();
+  private List<String> valuesClauses = new ArrayList<>();
   private List<String> filters = new ArrayList<>();
 
   public SelectBuilder setDistinct(boolean isDistinct) {
@@ -44,6 +46,11 @@ public class SelectBuilder {
     return this;
   }
 
+  public SelectBuilder addOptional(SelectBuilder optionalBuilder) {
+    optionals.add(optionalBuilder);
+    return this;
+  }
+
   public SelectBuilder addSubExpression(SelectBuilder subBuilder) {
     subExpressions.add(subBuilder);
     return this;
@@ -51,6 +58,11 @@ public class SelectBuilder {
 
   public SelectBuilder addWhere(String subject, String predicate, String object) {
     whereExpressions.add(new WhereExpression(subject, predicate, object));
+    return this;
+  }
+
+  public SelectBuilder addValuesClause(String valuesClause) {
+    valuesClauses.add(valuesClause);
     return this;
   }
 
@@ -122,6 +134,21 @@ public class SelectBuilder {
       builder.append(expression.predicate);
       builder.append(" ");
       builder.append(expression.object);
+      builder.append(" .");
+      builder.append("\n");
+    });
+
+    optionals.forEach(optionalBuilder -> {
+      builder.append(innerPrefix);
+      builder.append("OPTIONAL");
+      builder.append("\n");
+      optionalBuilder.buildWhere(builder, innerPrefix, true);
+    });
+
+    valuesClauses.forEach(valuesClause -> {
+      builder.append(innerPrefix);
+      builder.append("VALUES ");
+      builder.append(valuesClause);
       builder.append(" .");
       builder.append("\n");
     });

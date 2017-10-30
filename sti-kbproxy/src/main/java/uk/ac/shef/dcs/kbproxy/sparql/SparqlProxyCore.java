@@ -63,10 +63,13 @@ public class SparqlProxyCore implements ProxyCore {
   protected static final String SPARQL_VARIABLE_OBJECT = "?object";
   protected static final String SPARQL_VARIABLE_CLASS = "?class";
   protected static final String SPARQL_VARIABLE_TEMP_INSTANCE = "?temp_instance";
+  private static final String SPARQL_VARIABLE_PREDICATE_LABEL = "?predicateLabel";
+  private static final String SPARQL_VARIABLE_OBJECT_LABEL = "?objectLabel";
 
   protected static final String SPARQL_PREDICATE_BIF_CONTAINS = "<bif:contains>";
 
   protected static final String SPARQL_FILTER_REGEX = "regex (str(%1$s), %2$s, \"i\")";
+  private static final String SPARQL_FILTER_LANGMATCHES = "langMatches (lang(%1$s), \"%2$s\")";
 
   protected static final String SPARQL_STRING_LITERAL = "\"%1$s\"";
   protected static final String SPARQL_RESOURCE = "<%1$s>";
@@ -381,28 +384,34 @@ public class SparqlProxyCore implements ProxyCore {
     // The resource has no statement with label property, apply simple heuristics to parse the
     // resource URI.
     if (labels.size() == 0) {
-      // URI like https://www.w3.org/1999/02/22-rdf-syntax-ns#type
-      int trimPosition = resourceURI.lastIndexOf("#");
-
-      // URI like http://dbpedia.org/property/name
-      if (trimPosition == -1) {
-        trimPosition = resourceURI.lastIndexOf("/");
-      }
-
-      if (trimPosition != -1) {
-        // Remove anything that is not a character or digit
-        // TODO: For a future improvement, take into account the "_" character.
-        String stringValue = resourceURI.substring(trimPosition + 1).replaceAll("[^a-zA-Z0-9]", "").trim();
-
-        // Derived KBs can have custom URI conventions.
-        stringValue = applyCustomUriHeuristics(resourceURI, stringValue);
-        stringValue = StringUtils.splitCamelCase(stringValue);
-
-        filteredLabels.add(stringValue);
-      }
+      filteredLabels.add(parseLabelFromResource(resourceURI));
     }
 
     return filteredLabels;
+  }
+
+  protected String parseLabelFromResource(String resourceURI) {
+    // URI like https://www.w3.org/1999/02/22-rdf-syntax-ns#type
+    int trimPosition = resourceURI.lastIndexOf("#");
+
+    // URI like http://dbpedia.org/property/name
+    if (trimPosition == -1) {
+      trimPosition = resourceURI.lastIndexOf("/");
+    }
+
+    if (trimPosition != -1) {
+      // Remove anything that is not a character or digit
+      // TODO: For a future improvement, take into account the "_" character.
+      String stringValue = resourceURI.substring(trimPosition + 1).replaceAll("[^a-zA-Z0-9]", "").trim();
+
+      // Derived KBs can have custom URI conventions.
+      stringValue = applyCustomUriHeuristics(resourceURI, stringValue);
+      stringValue = StringUtils.splitCamelCase(stringValue);
+
+      return stringValue;
+    }
+
+    return resourceURI;
   }
 
   protected String applyCustomUriHeuristics(String resourceURI, String label) {
@@ -839,22 +848,11 @@ public class SparqlProxyCore implements ProxyCore {
     List<Attribute> attributes = dependenciesProxy.findAttributes(ec.getId());
     ec.setAttributes(attributes);
     for (Attribute attr : attributes) {
-      adjustValueOfURLResource(attr, dependenciesProxy);
       if (Uris.httpVersionAgnosticContains(definition.getStructurePredicateType(), attr.getRelationURI()) &&
           !ec.hasType(attr.getValueURI())) {
         ec.addType(new Clazz(attr.getValueURI(), attr.getValue()));
       }
     }
-  }
-
-  private void adjustValueOfURLResource(Attribute attr, final ProxyCore dependenciesProxy) throws ProxyException {
-    // TODO: This is a mess, re-factor!
-    String valueLabel = dependenciesProxy.getResourceLabel(attr.getValue(), StructureOrDataQueries.BOTH);  //could be also type or any other object
-    String relationLabel = dependenciesProxy.getResourceLabel(attr.getRelationURI(), StructureOrDataQueries.STRUCTURE);
-
-    attr.setValueURI(attr.getValue());
-    attr.setValue(valueLabel);
-    attr.setRelationLabel(relationLabel);
   }
 
   @Override
@@ -883,6 +881,65 @@ public class SparqlProxyCore implements ProxyCore {
 
     List<Attribute> res = new ArrayList<>();
 
+    String suffix = definition.getLanguageSuffix();
+    if (isNullOrEmpty(suffix)) {
+      // TODO: When the KB language suffix (for filtering of attributes) is missing, should we set it to default value "en"?
+      suffix = "en";
+    }
+    if (suffix.startsWith(LANGUAGE_TAG_SEPARATOR)) {
+      suffix = suffix.substring(1);
+    }
+    String structurePredicateLabels = definition.getStructurePredicateLabel().stream()
+        .map(predicate -> createSPARQLResource(predicate)).collect(Collectors.joining(" "));
+
+    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_PREDICATE_LABEL,
+        SPARQL_VARIABLE_OBJECT, SPARQL_VARIABLE_OBJECT_LABEL)
+        .addWhere(createSPARQLResource(resourceId), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT)
+        .addOptional(new SelectBuilder().addWhere(SPARQL_VARIABLE_PREDICATE, "?pLabelPred", SPARQL_VARIABLE_PREDICATE_LABEL)
+            .addValuesClause(String.format("?pLabelPred {%s}", structurePredicateLabels))
+            .addFilter(String.format(SPARQL_FILTER_LANGMATCHES, SPARQL_VARIABLE_PREDICATE_LABEL, suffix)))
+        .addOptional(new SelectBuilder().addWhere(SPARQL_VARIABLE_OBJECT, "?oLabelPred", SPARQL_VARIABLE_OBJECT_LABEL)
+            .addValuesClause(String.format("?oLabelPred {%s}", structurePredicateLabels))
+            .addFilter(String.format(SPARQL_FILTER_LANGMATCHES, SPARQL_VARIABLE_OBJECT_LABEL, suffix)));
+
+    String query = builder.build();
+    QueryExecution qExec = getQueryExecution(query);
+    qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
+
+    try {
+      ResultSet rs = qExec.execSelect();
+      while (rs.hasNext()) {
+        QuerySolution qs = rs.next();
+        RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
+        RDFNode predicateLabel = qs.get(SPARQL_VARIABLE_PREDICATE_LABEL);
+        RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+        RDFNode objectLabel = qs.get(SPARQL_VARIABLE_OBJECT_LABEL);
+        if (object != null) {
+          res.add(
+              new SparqlAttribute(
+                  (predicateLabel != null) ? (predicateLabel.toString()) : (parseLabelFromResource(predicate.toString())),
+                  predicate.toString(),
+                  (objectLabel != null) ? (objectLabel.toString()) : (parseLabelFromResource(object.toString())),
+                  object.toString()
+              ));
+        }
+      }
+    } catch(org.apache.jena.query.QueryCancelledException e) {
+      log.info("Timeout reached for query {}", query);
+    } finally {
+      qExec.close();
+    }
+
+    return res;
+  }
+
+  @Deprecated
+  public List<Attribute> findAttributesOldVersion(String resourceId) throws ProxyException {
+    if (resourceId.length() == 0)
+      return new ArrayList<>();
+
+    List<Attribute> res = new ArrayList<>();
+
     SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT)
             .addWhere(createSPARQLResource(resourceId), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
 
@@ -898,7 +955,7 @@ public class SparqlProxyCore implements ProxyCore {
         RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
         RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
         if (object != null) {
-          Attribute attr = new SparqlAttribute(predicate.toString(), object.toString());
+          Attribute attr = new SparqlAttribute("", predicate.toString(), object.toString(), "");
           res.add(attr);
         }
       }
@@ -906,6 +963,15 @@ public class SparqlProxyCore implements ProxyCore {
       log.info("Timeout reached for query {}", query);
     } finally {
       qExec.close();
+    }
+
+    for (Attribute attr : res) {
+      String valueLabel = getResourceLabel(attr.getValue());
+      String relationLabel = getResourceLabel(attr.getRelationURI());
+
+      attr.setValueURI(attr.getValue());
+      attr.setValue(valueLabel);
+      attr.setRelationLabel(relationLabel);
     }
     
     return res;
@@ -945,6 +1011,10 @@ public class SparqlProxyCore implements ProxyCore {
     if (!definition.isUseBifContains()) {
       String regexFilter = String.format(SPARQL_FILTER_REGEX, SPARQL_VARIABLE_OBJECT, createSPARQLLiteral(content));
       builder = builder.addFilter(regexFilter);
+    }
+
+    if (!definition.getLanguageSuffix().isEmpty()) {
+      builder = builder.addFilter(String.format(SPARQL_FILTER_LANGMATCHES, SPARQL_VARIABLE_OBJECT, definition.getLanguageSuffix()));
     }
 
     // Types restriction
