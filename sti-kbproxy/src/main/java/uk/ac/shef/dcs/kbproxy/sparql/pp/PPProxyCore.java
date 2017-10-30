@@ -110,7 +110,7 @@ public class PPProxyCore extends SparqlProxyCore {
                 while (iterator.hasNext()) {
                     //process bindings:
                     JSONObject o = (JSONObject) iterator.next();
-                    JSONObject subject = (JSONObject)o.get("subject");
+                    JSONObject subject = (JSONObject)o.get("object");
                     String type = (String) subject.get("type");
                     String value = (String) subject.get("value");
 
