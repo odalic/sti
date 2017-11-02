@@ -933,49 +933,49 @@ public class SparqlProxyCore implements ProxyCore {
     return res;
   }
 
-  @Deprecated
-  public List<Attribute> findAttributesOldVersion(String resourceId) throws ProxyException {
-    if (resourceId.length() == 0)
-      return new ArrayList<>();
-
-    List<Attribute> res = new ArrayList<>();
-
-    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT)
-            .addWhere(createSPARQLResource(resourceId), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
-
-    String query = builder.build();
-    QueryExecution qExec = getQueryExecution(query);
-
-    qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
-
-    try {
-      ResultSet rs = qExec.execSelect();
-      while (rs.hasNext()) {
-        QuerySolution qs = rs.next();
-        RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
-        RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
-        if (object != null) {
-          Attribute attr = new SparqlAttribute("", predicate.toString(), object.toString(), "");
-          res.add(attr);
-        }
-      }
-    } catch(org.apache.jena.query.QueryCancelledException e) {
-      log.info("Timeout reached for query {}", query);
-    } finally {
-      qExec.close();
-    }
-
-    for (Attribute attr : res) {
-      String valueLabel = getResourceLabel(attr.getValue());
-      String relationLabel = getResourceLabel(attr.getRelationURI());
-
-      attr.setValueURI(attr.getValue());
-      attr.setValue(valueLabel);
-      attr.setRelationLabel(relationLabel);
-    }
-    
-    return res;
-  }
+//  @Deprecated
+//  public List<Attribute> findAttributesOldVersion(String resourceId) throws ProxyException {
+//    if (resourceId.length() == 0)
+//      return new ArrayList<>();
+//
+//    List<Attribute> res = new ArrayList<>();
+//
+//    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT)
+//            .addWhere(createSPARQLResource(resourceId), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
+//
+//    String query = builder.build();
+//    QueryExecution qExec = getQueryExecution(query);
+//
+//    qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
+//
+//    try {
+//      ResultSet rs = qExec.execSelect();
+//      while (rs.hasNext()) {
+//        QuerySolution qs = rs.next();
+//        RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
+//        RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+//        if (object != null) {
+//          Attribute attr = new SparqlAttribute("", predicate.toString(), object.toString(), "");
+//          res.add(attr);
+//        }
+//      }
+//    } catch(org.apache.jena.query.QueryCancelledException e) {
+//      log.info("Timeout reached for query {}", query);
+//    } finally {
+//      qExec.close();
+//    }
+//
+//    for (Attribute attr : res) {
+//      String valueLabel = getResourceLabel(attr.getValue());
+//      String relationLabel = getResourceLabel(attr.getRelationURI());
+//
+//      attr.setValueURI(attr.getValue());
+//      attr.setValue(valueLabel);
+//      attr.setRelationLabel(relationLabel);
+//    }
+//
+//    return res;
+//  }
 
 //  @Override
 //  public List<Attribute> findAttributesOfClazz(String clazzId) throws ProxyException {

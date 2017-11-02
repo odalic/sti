@@ -93,7 +93,7 @@ public class PPProxyCore extends SparqlProxyCore {
 //    }
 
     @Override
-    protected List<RDFNode> queryReturnSingleNodes(Query query, String columnName, StructureOrDataQueries typeOfQuery) {
+    protected List<RDFNode> queryReturnSingleNodes(String query, String columnName, StructureOrDataQueries typeOfQuery) {
         //column name is "SPARQL_VARIABLE_SUBJECT" by default
 
         List<RDFNode> out = new ArrayList<>();
@@ -190,7 +190,7 @@ public class PPProxyCore extends SparqlProxyCore {
     }
 
     @Override
-    protected List<Pair<RDFNode, RDFNode>> queryReturnNodeTuples(Query query, StructureOrDataQueries typeOfQuery ) {
+    protected List<Pair<RDFNode, RDFNode>> queryReturnNodeTuples(String query, StructureOrDataQueries typeOfQuery ) {
 
         if (typeOfQuery.equals(StructureOrDataQueries.STRUCTURE)) {
 

@@ -57,7 +57,7 @@ public class HttpRequestExecutorForPP {
     /**
      * Gets
      */
-    public String getSparqlQueryResult(Query query) throws PPRestApiCallException {
+    public String getSparqlQueryResult(String query) throws PPRestApiCallException {
 
         CloseableHttpResponse response = null;
         try {
