@@ -14,8 +14,8 @@ public interface ProxyCore {
 
   public enum StructureOrDataQueries {
     STRUCTURE,
-    DATA,
-    BOTH
+    DATA
+    //BOTH
   }
 
   void closeConnection() throws ProxyException;

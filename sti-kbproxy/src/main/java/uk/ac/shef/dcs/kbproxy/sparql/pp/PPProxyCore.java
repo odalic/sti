@@ -97,7 +97,7 @@ public class PPProxyCore extends SparqlProxyCore {
         //column name is "SPARQL_VARIABLE_SUBJECT" by default
 
         List<RDFNode> out = new ArrayList<>();
-        if (typeOfQuery.equals(StructureOrDataQueries.STRUCTURE) || typeOfQuery.equals(StructureOrDataQueries.BOTH)) {
+        if (typeOfQuery.equals(StructureOrDataQueries.STRUCTURE)) { // || typeOfQuery.equals(StructureOrDataQueries.BOTH)) {
 
             String queryResultString = queryExecutor.getSparqlQueryResult(query);
 
@@ -111,6 +111,10 @@ public class PPProxyCore extends SparqlProxyCore {
                     //process bindings:
                     JSONObject o = (JSONObject) iterator.next();
                     JSONObject subject = (JSONObject)o.get("object");
+                    if (subject == null) {
+                        //TODO Unify, so that it is always the same binding name!
+                        subject = (JSONObject)o.get("subject");
+                    }
                     String type = (String) subject.get("type");
                     String value = (String) subject.get("value");
 
@@ -128,7 +132,7 @@ public class PPProxyCore extends SparqlProxyCore {
             return out;
         }
 
-        if (typeOfQuery.equals(StructureOrDataQueries.DATA) || typeOfQuery.equals(StructureOrDataQueries.BOTH)) {
+        if (typeOfQuery.equals(StructureOrDataQueries.DATA)) { // || typeOfQuery.equals(StructureOrDataQueries.BOTH)) {
             if (out.isEmpty()) {
                 //if there was not result using PP API query, try the standard approach for data
                 //works, because BOTH mode is used only when querying for resource label, where it is expected to have just one match!
@@ -213,7 +217,7 @@ public class PPProxyCore extends SparqlProxyCore {
                     String subjectValue = (String) subject.get("value");
 
                     JSONObject object = (JSONObject) o.get("object");
-                    String objectType = (String) subject.get("type");
+                    String objectType = (String) object.get("type");
                     String objectValue = (String) object.get("value");
 
                     if (subjectType.equals("uri")) {
@@ -243,26 +247,6 @@ public class PPProxyCore extends SparqlProxyCore {
 
         return new ArrayList<>();
 
-
-//        QueryExecution qExec = getQueryExecution(query);
-//        qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
-//        List<Pair<RDFNode, RDFNode>> out = new ArrayList<>();
-//
-//        try {
-//            ResultSet rs = qExec.execSelect();
-//            while (rs.hasNext()) {
-//
-//                QuerySolution qs = rs.next();
-//                RDFNode subject = qs.get(SPARQL_VARIABLE_SUBJECT);
-//                RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
-//
-//                out.add(new Pair<>(subject, object));
-//            }
-//        } catch(org.apache.jena.query.QueryCancelledException e) {
-//            log.info("Timeout reached for query {}", query);
-//        } finally {
-//            qExec.close();
-//        }
 
 
     }

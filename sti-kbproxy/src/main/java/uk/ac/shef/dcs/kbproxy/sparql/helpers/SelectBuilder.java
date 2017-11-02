@@ -28,7 +28,7 @@ public class SelectBuilder {
 
   public SelectBuilder setLimit(Integer limit) {
     this.limit = limit;
-    return null;
+    return this;
   }
 
   public SelectBuilder addPrefix(String key, String value) {
