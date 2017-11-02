@@ -16,10 +16,10 @@ public interface Proxy {
 
   void commitChanges() throws ProxyException;
 
-  /**
-   * get attributes of the class
-   */
-  ProxyResult<List<Attribute>> findAttributesOfClazz(String clazzId);
+//  /**
+//   * get attributes of the class
+//   */
+//  ProxyResult<List<Attribute>> findAttributesOfClazz(String clazzId);
 
   /**
    * Get attributes of the entity candidate (all predicates and object values of the triples where
@@ -29,10 +29,10 @@ public interface Proxy {
    */
   ProxyResult<List<Attribute>> findAttributesOfEntities(Entity ec);
 
-  /**
-   * get attributes of the property
-   */
-  ProxyResult<List<Attribute>> findAttributesOfProperty(String propertyId);
+//  /**
+//   * get attributes of the property
+//   */
+//  ProxyResult<List<Attribute>> findAttributesOfProperty(String propertyId);
 
   /**
    * Given a string, fetch candidate entities (classes) from the KB based on a fulltext search.
@@ -62,15 +62,15 @@ public interface Proxy {
   
   ProxyResult<List<Entity>> findEntityCandidatesOfTypes(String content, final ProxyCore dependenciesProxy, String... types);
 
-  /**
-   * compute the seamntic similarity between an entity and a class
-   */
-  ProxyResult<Double> findEntityClazzSimilarity(String entity_id, String clazz_url);
+//  /**
+//   * compute the seamntic similarity between an entity and a class
+//   */
+//  ProxyResult<Double> findEntityClazzSimilarity(String entity_id, String clazz_url);
 
-  /**
-   * @return the granularity of the class in the KB.
-   */
-  ProxyResult<Double> findGranularityOfClazz(String clazz);
+//  /**
+//   * @return the granularity of the class in the KB.
+//   */
+//  ProxyResult<Double> findGranularityOfClazz(String clazz);
 
   /**
    * Given a string, fetch candidate entities (predicates) from the KB based on a fulltext search.
@@ -146,7 +146,7 @@ public interface Proxy {
   
   ProxyResult<Entity> loadEntity(String uri, ProxyCore dependenciesProxy);
 
-  String getResourceLabel(String uri) throws ProxyException;
+  String getResourceLabel(String uri, ProxyCore.StructureOrDataQueries typeOfQuery) throws ProxyException;
 
   List<Attribute> findAttributes(String resourceId) throws ProxyException;
 

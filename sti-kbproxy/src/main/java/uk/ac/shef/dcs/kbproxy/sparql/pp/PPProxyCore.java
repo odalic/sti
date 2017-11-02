@@ -1,19 +1,38 @@
 package uk.ac.shef.dcs.kbproxy.sparql.pp;
 
+import org.apache.http.util.Asserts;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.impl.ResourceImpl;
+import org.apache.jena.sparql.lang.sparql_11.ParseException;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
 import uk.ac.shef.dcs.kbproxy.ProxyException;
+import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.kbproxy.model.PropertyType;
+import uk.ac.shef.dcs.kbproxy.sparql.SparqlAttribute;
 import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyCore;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ClassDesc;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.PPRestApiCallException;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.RelationDesc;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ResourceDesc;
+import uk.ac.shef.dcs.util.Pair;
 
+import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Created by tomasknap on 20/12/16.
@@ -37,6 +56,265 @@ public class PPProxyCore extends SparqlProxyCore {
         this.queryExecutor = new HttpRequestExecutorForPP(ppDefinition);
 
     }
+
+
+//    @Override
+//    public  List<Entity> findClassByFulltext(String pattern, int limit)  {
+//
+//        try {
+//            return findByFulltext(() -> createExactMatchQueryForClasses(pattern, limit), () -> createFulltextQueryForClasses(pattern, limit), pattern);
+//        }
+//        catch (Exception e){
+//            // If the search expression causes any error on the KB side, we only log
+//            // the exception and return no results. The error is very likely due to
+//            // fulltext search requirements defined by the KB.
+//            log.error("Unexpected exception during class search.", e);
+//            return new ArrayList<>();
+//        }
+//
+//    }
+
+//    @Override
+//    public List<Entity> findPredicateByFulltext(String pattern, int limit, URI domain, URI range) {
+//        String domainString = domain != null ? domain.toString() : null;
+//        String rangeString = range != null ? range.toString() : null;
+//
+//        try {
+//            return findByFulltext(() -> createExactMatchQueryForPredicates(pattern, limit, domainString, rangeString), () -> createFulltextQueryForPredicates(pattern, limit, domainString, rangeString), pattern);
+//        }
+//        catch (Exception e){
+//            // If the search expression causes any error on the KB side, we only log
+//            // the exception and return no results. The error is very likely due to
+//            // fulltext search requirements defined by the KB.
+//            log.error("Unexpected exception during predicate search.", e);
+//            return new ArrayList<>();
+//        }
+//
+//    }
+
+    @Override
+    protected List<RDFNode> queryReturnSingleNodes(String query, String columnName, StructureOrDataQueries typeOfQuery) {
+        //column name is "SPARQL_VARIABLE_SUBJECT" by default
+
+        List<RDFNode> out = new ArrayList<>();
+        if (typeOfQuery.equals(StructureOrDataQueries.STRUCTURE)) { // || typeOfQuery.equals(StructureOrDataQueries.BOTH)) {
+
+            String queryResultString = queryExecutor.getSparqlQueryResult(query);
+
+            JSONParser parser = new JSONParser();
+            try {
+                JSONObject queryResultJson = (JSONObject) parser.parse(queryResultString);
+
+                JSONArray bindings = (JSONArray) ((JSONObject)queryResultJson.get("results")).get("bindings");
+                Iterator<JSONObject> iterator = bindings.iterator();
+                while (iterator.hasNext()) {
+                    //process bindings:
+                    JSONObject o = (JSONObject) iterator.next();
+                    JSONObject subject = (JSONObject)o.get("object");
+                    if (subject == null) {
+                        //TODO Unify, so that it is always the same binding name!
+                        subject = (JSONObject)o.get("subject");
+                    }
+                    String type = (String) subject.get("type");
+                    String value = (String) subject.get("value");
+
+                    if (type.equals("uri")) {
+                        RDFNode node = new ResourceImpl(value);
+                        out.add(node);
+                    } else {
+                        log.error("Cannot parse output of PP sparql API call, the returned resource {} is not URI resource as depicted by attribute type: {}", value, type );
+                    }
+
+                }
+            } catch (org.json.simple.parser.ParseException e) {
+                log.error("Cannot parse output of PP sparql API call, {}, {}", e.getLocalizedMessage(), e.getStackTrace());
+            }
+            return out;
+        }
+
+        if (typeOfQuery.equals(StructureOrDataQueries.DATA)) { // || typeOfQuery.equals(StructureOrDataQueries.BOTH)) {
+            if (out.isEmpty()) {
+                //if there was not result using PP API query, try the standard approach for data
+                //works, because BOTH mode is used only when querying for resource label, where it is expected to have just one match!
+                //so it does not make sense to union the results
+                return super.queryReturnSingleNodes(query, columnName, typeOfQuery);
+            }
+        }
+
+
+        return out;
+
+
+//query Exact Match (for classes)
+//        SELECT DISTINCT  ?subject
+//                WHERE
+//        { { SELECT DISTINCT  ?subject
+//                WHERE
+//            {   { ?subject  foaf:name  "Literacy Composition"@en}
+//                UNION
+//                { ?subject  dbpprop:fullname  "Literacy Composition"@en}
+//                UNION
+//                { ?subject  rdfs:label  "Literacy Composition"@en}
+//                UNION
+//                { ?subject  dbpprop:name  "Literacy Composition"@en}
+//                UNION
+//                { ?subject  skos:prefLabel  "Literacy Composition"@en}}
+//        }
+//            { SELECT DISTINCT  ?subject
+//                    WHERE
+//                {   { ?subject  rdf:type  skos:Concept}
+//                    UNION
+//                    { ?subject  rdf:type  rdfs:Class}
+//                    UNION
+//                    { ?subject  rdf:type  owl:Class}}
+//            }
+//        }
+//        LIMIT   10
+
+
+//        QueryExecution qExec = getQueryExecution(query);
+//
+//        qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
+//
+//        List<RDFNode> out = new ArrayList<>();
+//        try {
+//            ResultSet rs = qExec.execSelect();
+//            while (rs.hasNext()) {
+//                QuerySolution qs = rs.next();
+//                RDFNode columnNode = qs.get(columnName);
+//                out.add(columnNode);
+//            }
+//
+//        } catch(org.apache.jena.query.QueryCancelledException e) {
+//            log.info("Timeout reached for query {}", query);
+//        } finally {
+//            qExec.close();
+//        }
+
+    }
+
+    @Override
+    protected List<Pair<RDFNode, RDFNode>> queryReturnNodeTuples(String query, StructureOrDataQueries typeOfQuery ) {
+
+        if (typeOfQuery.equals(StructureOrDataQueries.STRUCTURE)) {
+
+            //TODO execute and fetch results
+            List<Pair<RDFNode, RDFNode>> out = new ArrayList<>();
+
+            String queryResultString = queryExecutor.getSparqlQueryResult(query);
+
+            JSONParser parser = new JSONParser();
+            try {
+                JSONObject queryResultJson = (JSONObject) parser.parse(queryResultString);
+
+                JSONArray bindings = (JSONArray) ((JSONObject) queryResultJson.get("results")).get("bindings");
+                Iterator<JSONObject> iterator = bindings.iterator();
+                while (iterator.hasNext()) {
+                    //process bindings:
+                    JSONObject o = (JSONObject) iterator.next();
+                    JSONObject subject = (JSONObject) o.get("subject");
+                    String subjectType = (String) subject.get("type");
+                    String subjectValue = (String) subject.get("value");
+
+                    JSONObject object = (JSONObject) o.get("object");
+                    String objectType = (String) object.get("type");
+                    String objectValue = (String) object.get("value");
+
+                    if (subjectType.equals("uri")) {
+                        if (objectType.equals("literal")) {
+                            RDFNode subjectNode = new ResourceImpl(subjectValue);
+                            RDFNode objectNode = new ResourceImpl(objectValue);
+                            out.add(new Pair<>(subjectNode, objectNode));
+                        } else {
+                            log.error("Cannot parse output of PP sparql API call, the returned object {} is not literal as depicted by attribute type: {}", objectValue, objectType);
+
+                        }
+                    } else {
+                        log.error("Cannot parse output of PP sparql API call, the returned subject {} is not URI resource as depicted by attribute type: {}", subjectValue, subjectType);
+                    }
+                }
+            } catch (org.json.simple.parser.ParseException e) {
+                log.error("Cannot parse output of PP sparql API call, {}, {}", e.getLocalizedMessage(), e.getStackTrace());
+            }
+            return out;
+        }
+        else if (typeOfQuery.equals(StructureOrDataQueries.DATA)) {
+            return super.queryReturnNodeTuples(query, typeOfQuery);
+        }
+        else {
+            log.error("Unsupported mode {} for queryReturnNodeTuples", typeOfQuery);
+        }
+
+        return new ArrayList<>();
+
+
+
+    }
+
+//    @Override
+//    public List<String> getPropertyDomains(String uri) throws ProxyException{
+//        return getPropertyValues(uri, definition.getStructureDomain());
+//    }
+//
+//    @Override
+//    public List<String> getPropertyRanges(String uri) throws ProxyException{
+//        return getPropertyValues(uri, definition.getStructureRange());
+//    }
+//
+//    private List<String> getPropertyValues(String uri, String propertyUri) throws ProxyException {
+//        Asserts.notBlank(uri, "uri");
+//        Asserts.notBlank(propertyUri, "propertyUri");
+//
+//        SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_OBJECT)
+//                .addWhere(createSPARQLResource(uri), createSPARQLResource(propertyUri), SPARQL_VARIABLE_OBJECT);
+//        return queryReturnSingleValues(builder.build(), SPARQL_VARIABLE_OBJECT);
+//
+//    }
+
+//    @Override
+//    public List<Attribute> findAttributes(String resourceId) throws ProxyException {
+//        if (resourceId.length() == 0)
+//            return new ArrayList<>();
+//
+//        List<Attribute> res = new ArrayList<>();
+//
+//        SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT)
+//                .addWhere(createSPARQLResource(resourceId), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
+//
+//        Query query = builder.build();
+//
+//
+//        //TODO run query, collect results attributes
+//
+////        QueryExecution qExec = getQueryExecution(query);
+////
+////        qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
+////
+////        try {
+////            ResultSet rs = qExec.execSelect();
+////            while (rs.hasNext()) {
+////                QuerySolution qs = rs.next();
+////                RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
+////                RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+////                if (object != null) {
+////                    Attribute attr = new SparqlAttribute(predicate.toString(), object.toString());
+////                    res.add(attr);
+////                }
+////            }
+////        } catch(org.apache.jena.query.QueryCancelledException e) {
+////            log.info("Timeout reached for query {}", query);
+////        } finally {
+////            qExec.close();
+////        }
+//
+//        return res;
+//    }
+
+
+
+
+
+
 
     /**
      * Inserts class to the ontology and custom schema.
@@ -203,6 +481,11 @@ public class PPProxyCore extends SparqlProxyCore {
         return new Entity(url, label);
     }
 
+
+    @Override
+    public ProxyDefinition getDefinition() {
+        return ppDefinition;
+    }
 
 
 }

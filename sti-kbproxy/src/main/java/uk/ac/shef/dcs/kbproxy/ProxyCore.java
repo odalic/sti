@@ -12,15 +12,24 @@ import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 
 public interface ProxyCore {
 
+  public enum StructureOrDataQueries {
+    STRUCTURE,
+    DATA
+    //BOTH
+  }
+
   void closeConnection() throws ProxyException;
 
   void commitChanges() throws ProxyException;
 
-  /**
-   * get attributes of the class
-   * @throws ProxyException 
-   */
-  List<Attribute> findAttributesOfClazz(String clazzId) throws ProxyException;
+//  /**
+//   * Get attributes of the class
+//   * @throws ProxyException
+//   */
+//  List<Attribute> findAttributesOfClazz(String clazzId) throws ProxyException;
+//
+//  List<Attribute> findAttributesOfClazz(String clazzId,
+//          ProxyCore dependenciesProxy) throws ProxyException;
 
   /**
    * Get attributes of the entity candidate (all predicates and object values of the triples where
@@ -31,11 +40,17 @@ public interface ProxyCore {
    */
   List<Attribute> findAttributesOfEntities(Entity ec) throws ProxyException;
 
-  /**
-   * get attributes of the property
-   * @throws ProxyException 
-   */
-  List<Attribute> findAttributesOfProperty(String propertyId) throws ProxyException;
+  List<Attribute> findAttributesOfEntities(Entity ec,
+          ProxyCore dependenciesProxy) throws ProxyException;
+
+//  /**
+//   * Get attributes of the property
+//   * @throws ProxyException
+//   */
+//  List<Attribute> findAttributesOfProperty(String propertyId) throws ProxyException;
+//
+//  List<Attribute> findAttributesOfProperty(String propertyId,
+//          ProxyCore dependenciesProxy) throws ProxyException;
 
   /**
    * Given a string, fetch candidate entities (classes) from the KB based on a fulltext search.
@@ -68,16 +83,6 @@ public interface ProxyCore {
   List<Entity> findEntityCandidatesOfTypes(String content, String... types) throws ProxyException;
   
   List<Entity> findEntityCandidatesOfTypes(String content, final ProxyCore dependenciesProxy, String... types) throws ProxyException;
-
-  /**
-   * compute the seamntic similarity between an entity and a class
-   */
-  Double findEntityClazzSimilarity(String entity_id, String clazz_url);
-
-  /**
-   * @return the granularity of the class in the KB.
-   */
-  Double findGranularityOfClazz(String clazz);
 
   /**
    * Given a string, fetch candidate entities (predicates) from the KB based on a fulltext search.
@@ -154,18 +159,25 @@ public interface ProxyCore {
   
   Entity loadEntity(String uri, ProxyCore dependenciesProxy) throws ProxyException;
 
-  String getResourceLabel(String uri) throws ProxyException;
+  /**
+   * Gets label for the given resource
+   * @param uri
+   * @return Label for the resource
+   * @throws ProxyException
+   */
+  String getResourceLabel(String uri, StructureOrDataQueries typeOfQuery) throws ProxyException;
 
+  /**
+   * Find attributes for a resource - common method for finding attributes of a class/predicate/entity
+   * @param resourceId
+   * @return
+   * @throws ProxyException
+   */
   List<Attribute> findAttributes(String resourceId) throws ProxyException;
 
-  List<Attribute> findAttributesOfClazz(String clazzId,
-      ProxyCore dependenciesProxy) throws ProxyException;
-
-  List<Attribute> findAttributesOfEntities(Entity ec,
-      ProxyCore dependenciesProxy) throws ProxyException;
-  
-  List<Attribute> findAttributesOfProperty(String propertyId,
-      ProxyCore dependenciesProxy) throws ProxyException;
-
+  /**
+   * Get definition of the knowledge base (configuration)
+   * @return Knowledge base definition
+   */
   ProxyDefinition getDefinition();
 }

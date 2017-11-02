@@ -54,27 +54,28 @@ import java.util.concurrent.TimeUnit;
 
 public class SparqlProxyCore implements ProxyCore {
 
-  private static final String LANGUAGE_TAG_SEPARATOR = "@";
-  private static final String SPARQL_PREFIX = "PREFIX %1$s: <%2$s>";
-  private static final String INSERT_BASE = "INSERT DATA {GRAPH <%1$s> {%2$s .}}";
+  protected static final String LANGUAGE_TAG_SEPARATOR = "@";
+  protected static final String SPARQL_PREFIX = "PREFIX %1$s: <%2$s>";
+  protected static final String INSERT_BASE = "INSERT DATA {GRAPH <%1$s> {%2$s .}}";
 
-  private static final String SPARQL_VARIABLE_SUBJECT = "?subject";
-  private static final String SPARQL_VARIABLE_PREDICATE = "?predicate";
+  protected static final String SPARQL_VARIABLE_SUBJECT = "?subject";
+  protected static final String SPARQL_VARIABLE_PREDICATE = "?predicate";
   protected static final String SPARQL_VARIABLE_OBJECT = "?object";
+  protected static final String SPARQL_VARIABLE_CLASS = "?class";
+  protected static final String SPARQL_VARIABLE_TEMP_INSTANCE = "?temp_instance";
   private static final String SPARQL_VARIABLE_PREDICATE_LABEL = "?predicateLabel";
   private static final String SPARQL_VARIABLE_OBJECT_LABEL = "?objectLabel";
-  private static final String SPARQL_VARIABLE_CLASS = "?class";
-  private static final String SPARQL_VARIABLE_TEMP_INSTANCE = "?temp_instance";
 
-  private static final String SPARQL_PREDICATE_BIF_CONTAINS = "<bif:contains>";
+  protected static final String SPARQL_PREDICATE_BIF_CONTAINS = "<bif:contains>";
 
-  private static final String SPARQL_FILTER_REGEX = "regex (str(%1$s), %2$s, \"i\")";
+  protected static final String SPARQL_FILTER_REGEX = "regex (str(%1$s), %2$s, \"i\")";
   private static final String SPARQL_FILTER_LANGMATCHES = "langMatches (lang(%1$s), \"%2$s\")";
 
-  private static final String SPARQL_STRING_LITERAL = "\"%1$s\"";
-  private static final String SPARQL_RESOURCE = "<%1$s>";
+  protected static final String SPARQL_STRING_LITERAL = "\"%1$s\"";
+  protected static final String SPARQL_RESOURCE = "<%1$s>";
 
-  private static final long queryTimeout = 30L; //10s
+  protected static final long queryTimeout = 30L; //10s
+
 
   /**
    * Escape patterns from http://www.w3.org/TR/rdf-sparql-query/#grammarEscapes
@@ -284,13 +285,13 @@ public class SparqlProxyCore implements ProxyCore {
    * @param query
    * @return
    */
-  protected List<Pair<String, String>> queryReturnTuples(String query, String defaultObjectValue) {
-    return  queryReturnNodeTuples(query).stream()
+  protected List<Pair<String, String>> queryReturnTuples(String query, String defaultObjectValue, StructureOrDataQueries typeOfQuery) {
+    return  queryReturnNodeTuples(query, typeOfQuery).stream()
             .map(item -> new Pair<>(item.getKey().toString(), item.getValue() != null ? item.getValue().toString() : defaultObjectValue))
             .collect(Collectors.toList());
   }
 
-  protected List<Pair<RDFNode, RDFNode>> queryReturnNodeTuples(String query) {
+  protected List<Pair<RDFNode, RDFNode>> queryReturnNodeTuples(String query, StructureOrDataQueries typeOfQuery) {
     QueryExecution qExec = getQueryExecution(query);
     qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
     List<Pair<RDFNode, RDFNode>> out = new ArrayList<>();
@@ -317,17 +318,18 @@ public class SparqlProxyCore implements ProxyCore {
   /**
    * Returns the entity URL
    * @param query
+   * @param typeOfQuery
    * @return
    */
-  protected List<String> queryReturnSingleValues(String query) {
-    return  queryReturnSingleValues(query, SPARQL_VARIABLE_SUBJECT);
+  protected List<String> queryReturnSingleValues(String query, StructureOrDataQueries typeOfQuery) {
+    return  queryReturnSingleValues(query, SPARQL_VARIABLE_SUBJECT, typeOfQuery);
   }
 
-  protected List<String> queryReturnSingleValues(String query, String columnName) {
-    return queryReturnSingleNodes(query, columnName).stream().map(RDFNode::toString).collect(Collectors.toList());
+  protected List<String> queryReturnSingleValues(String query, String columnName, StructureOrDataQueries typeOfQuery) {
+    return queryReturnSingleNodes(query, columnName, typeOfQuery).stream().map(RDFNode::toString).collect(Collectors.toList());
   }
 
-  protected List<RDFNode> queryReturnSingleNodes(String query, String columnName) {
+  protected List<RDFNode> queryReturnSingleNodes(String query, String columnName, StructureOrDataQueries typeOfQuery) {
     QueryExecution qExec = getQueryExecution(query);
 
     qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
@@ -350,9 +352,9 @@ public class SparqlProxyCore implements ProxyCore {
     return out;
   }
 
-  protected List<String> queryForLabel(String sparqlQuery, String resourceURI) throws ProxyException {
+  protected List<String> queryForLabel(String sparqlQuery, String resourceURI, StructureOrDataQueries typeOfQuery) throws ProxyException {
     // Query all labels of the resource.
-    List<RDFNode> nodes = queryReturnSingleNodes(sparqlQuery, SPARQL_VARIABLE_OBJECT);
+    List<RDFNode> nodes = queryReturnSingleNodes(sparqlQuery, SPARQL_VARIABLE_OBJECT, typeOfQuery);
     List<Label> labels = nodes.stream()
             .filter(item -> item.isLiteral() && !isNullOrEmpty(item.toString()))
             .map(node -> new Label(node.asLiteral().getString(), node.asLiteral().getLanguage()))
@@ -476,14 +478,14 @@ public class SparqlProxyCore implements ProxyCore {
 
     SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_OBJECT)
               .addWhere(createSPARQLResource(uri), createSPARQLResource(propertyUri), SPARQL_VARIABLE_OBJECT);
-    return queryReturnSingleValues(builder.build(), SPARQL_VARIABLE_OBJECT);
+    return queryReturnSingleValues(builder.build(), SPARQL_VARIABLE_OBJECT, StructureOrDataQueries.STRUCTURE);
   }
 
   @Override
   public List<Entity> findResourceByFulltext(String pattern, int limit) {
     try {
       // Proposed resources can have types, that are not classes.
-      return findByFulltext(() -> createExactMatchQueryForResources(pattern, limit, false), () -> createFulltextQueryForResources(pattern, limit, false), pattern);
+      return findByFulltext(() -> createExactMatchQueryForResources(pattern, limit, false), () -> createFulltextQueryForResources(pattern, limit, false), pattern, StructureOrDataQueries.DATA);
     }
     catch (Exception e){
       // If the search expression causes any error on the KB side, we only log
@@ -497,7 +499,7 @@ public class SparqlProxyCore implements ProxyCore {
   @Override
   public List<Entity> findClassByFulltext(String pattern, int limit) {
     try {
-      return findByFulltext(() -> createExactMatchQueryForClasses(pattern, limit), () -> createFulltextQueryForClasses(pattern, limit), pattern);
+      return findByFulltext(() -> createExactMatchQueryForClasses(pattern, limit), () -> createFulltextQueryForClasses(pattern, limit), pattern, StructureOrDataQueries.STRUCTURE);
     }
     catch (Exception e){
       // If the search expression causes any error on the KB side, we only log
@@ -514,7 +516,7 @@ public class SparqlProxyCore implements ProxyCore {
     String rangeString = range != null ? range.toString() : null;
 
     try {
-      return findByFulltext(() -> createExactMatchQueryForPredicates(pattern, limit, domainString, rangeString), () -> createFulltextQueryForPredicates(pattern, limit, domainString, rangeString), pattern);
+      return findByFulltext(() -> createExactMatchQueryForPredicates(pattern, limit, domainString, rangeString), () -> createFulltextQueryForPredicates(pattern, limit, domainString, rangeString), pattern, StructureOrDataQueries.STRUCTURE);
     }
     catch (Exception e){
       // If the search expression causes any error on the KB side, we only log
@@ -544,7 +546,7 @@ public class SparqlProxyCore implements ProxyCore {
       return null;
     }
 
-    String label = dependenciesProxy.getResourceLabel(uri);
+    String label = dependenciesProxy.getResourceLabel(uri, StructureOrDataQueries.DATA);
     Entity res = new Entity(uri, label);
     loadEntityAttributes(res, dependenciesProxy);
 
@@ -619,13 +621,13 @@ public class SparqlProxyCore implements ProxyCore {
     return new Entity(url, label);
   }
 
-  private List<Entity> findByFulltext(QueryGetter exactQueryGetter, QueryGetter fulltextQueryGetter, String content) throws SolrServerException, ClassNotFoundException, IOException, ProxyException, ParseException {
+  protected List<Entity> findByFulltext(QueryGetter exactQueryGetter, QueryGetter fulltextQueryGetter, String content, StructureOrDataQueries typeOfQuery) throws SolrServerException, ClassNotFoundException, IOException, ProxyException, ParseException {
     // Find results by both fulltext and exact match
     String exactQuery = exactQueryGetter.getQuery();
-    List<String> exactQueryResult = queryReturnSingleValues(exactQuery);
+    List<String> exactQueryResult = queryReturnSingleValues(exactQuery, typeOfQuery);
 
     String fulltextQuery = fulltextQueryGetter.getQuery();
-    List<Pair<RDFNode, RDFNode>> fulltextQueryResult = queryReturnNodeTuples(fulltextQuery);
+    List<Pair<RDFNode, RDFNode>> fulltextQueryResult = queryReturnNodeTuples(fulltextQuery, typeOfQuery);
 
     // Marge results and prefer the exact match.
     Map<String, Entity> result = exactQueryResult.stream().collect(Collectors.toMap(item -> item, item -> new Entity(item, content)));
@@ -811,7 +813,7 @@ public class SparqlProxyCore implements ProxyCore {
     //1. try exact string
     // prepare the query
     String sparqlQuery = createExactMatchQueryForResources(unescapedContent,null, false, types);
-    List<String> resourceAndType = queryReturnSingleValues(sparqlQuery);
+    List<String> resourceAndType = queryReturnSingleValues(sparqlQuery, StructureOrDataQueries.DATA);
     for(String resource : resourceAndType) {
       queryResult.add(new Pair<>(resource, unescapedContent)); //I may add content because it is exact match
     }
@@ -821,7 +823,7 @@ public class SparqlProxyCore implements ProxyCore {
     if (resourceAndType.size() == 0 && definition.isFulltextEnabled()) {
       log.debug("(query by regex. This can take a long time)");
       sparqlQuery = createFulltextQueryForResources(unescapedContent, null, false,  types);
-      queryResult = queryReturnTuples(sparqlQuery, unescapedContent);
+      queryResult = queryReturnTuples(sparqlQuery, unescapedContent, StructureOrDataQueries.DATA);
     }
     
     //3. rank result by the degree of matches.
@@ -854,10 +856,10 @@ public class SparqlProxyCore implements ProxyCore {
   }
 
   @Override
-  public String getResourceLabel(String uri) throws ProxyException {
+  public String getResourceLabel(String uri, StructureOrDataQueries typeOfQuery ) throws ProxyException {
     if (uri.startsWith("http")) {
       String sparqlQuery = createGetLabelQuery(uri);
-      List<String> result = queryForLabel(sparqlQuery, uri);
+      List<String> result = queryForLabel(sparqlQuery, uri, typeOfQuery);
 
       if (result.size() > 0) {
         return result.get(0);
@@ -931,58 +933,59 @@ public class SparqlProxyCore implements ProxyCore {
     return res;
   }
 
-  @Deprecated
-  public List<Attribute> findAttributesOldVersion(String resourceId) throws ProxyException {
-    if (resourceId.length() == 0)
-      return new ArrayList<>();
+//  @Deprecated
+//  public List<Attribute> findAttributesOldVersion(String resourceId) throws ProxyException {
+//    if (resourceId.length() == 0)
+//      return new ArrayList<>();
+//
+//    List<Attribute> res = new ArrayList<>();
+//
+//    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT)
+//            .addWhere(createSPARQLResource(resourceId), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
+//
+//    String query = builder.build();
+//    QueryExecution qExec = getQueryExecution(query);
+//
+//    qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
+//
+//    try {
+//      ResultSet rs = qExec.execSelect();
+//      while (rs.hasNext()) {
+//        QuerySolution qs = rs.next();
+//        RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
+//        RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+//        if (object != null) {
+//          Attribute attr = new SparqlAttribute("", predicate.toString(), object.toString(), "");
+//          res.add(attr);
+//        }
+//      }
+//    } catch(org.apache.jena.query.QueryCancelledException e) {
+//      log.info("Timeout reached for query {}", query);
+//    } finally {
+//      qExec.close();
+//    }
+//
+//    for (Attribute attr : res) {
+//      String valueLabel = getResourceLabel(attr.getValue());
+//      String relationLabel = getResourceLabel(attr.getRelationURI());
+//
+//      attr.setValueURI(attr.getValue());
+//      attr.setValue(valueLabel);
+//      attr.setRelationLabel(relationLabel);
+//    }
+//
+//    return res;
+//  }
 
-    List<Attribute> res = new ArrayList<>();
-
-    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT)
-            .addWhere(createSPARQLResource(resourceId), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
-
-    String query = builder.build();
-    QueryExecution qExec = getQueryExecution(query);
-    qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
-
-    try {
-      ResultSet rs = qExec.execSelect();
-      while (rs.hasNext()) {
-        QuerySolution qs = rs.next();
-        RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
-        RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
-        if (object != null) {
-          Attribute attr = new SparqlAttribute("", predicate.toString(), object.toString(), "");
-          res.add(attr);
-        }
-      }
-    } catch(org.apache.jena.query.QueryCancelledException e) {
-      log.info("Timeout reached for query {}", query);
-    } finally {
-      qExec.close();
-    }
-
-    for (Attribute attr : res) {
-      String valueLabel = getResourceLabel(attr.getValue());
-      String relationLabel = getResourceLabel(attr.getRelationURI());
-
-      attr.setValueURI(attr.getValue());
-      attr.setValue(valueLabel);
-      attr.setRelationLabel(relationLabel);
-    }
-    
-    return res;
-  }
-
-  @Override
-  public List<Attribute> findAttributesOfClazz(String clazzId) throws ProxyException {
-    return findAttributes(clazzId);
-  }
-
-  @Override
-  public List<Attribute> findAttributesOfProperty(String propertyId) throws ProxyException {
-    return findAttributes(propertyId);
-  }
+//  @Override
+//  public List<Attribute> findAttributesOfClazz(String clazzId) throws ProxyException {
+//    return findAttributes(clazzId);
+//  }
+//
+//  @Override
+//  public List<Attribute> findAttributesOfProperty(String propertyId) throws ProxyException {
+//    return findAttributes(propertyId);
+//  }
 
   private SelectBuilder createFulltextQueryBuilder(String content, Integer limit, String... types) {
     SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_SUBJECT, SPARQL_VARIABLE_OBJECT);
@@ -1152,7 +1155,7 @@ public class SparqlProxyCore implements ProxyCore {
     return builder;
   }
 
-  private SelectBuilder getSelectBuilder(String... variables) {
+  protected SelectBuilder getSelectBuilder(String... variables) {
     SelectBuilder builder = new SelectBuilder();
 
     builder = builder.setDistinct(true);
@@ -1181,7 +1184,7 @@ public class SparqlProxyCore implements ProxyCore {
     return builder;
   }
 
-  private static String createSPARQLResource(String url) {
+  protected static String createSPARQLResource(String url) {
     return String.format(SPARQL_RESOURCE, url);
   }
 
@@ -1234,7 +1237,7 @@ public class SparqlProxyCore implements ProxyCore {
     return builder.addSubExpression(subBuilder);
   }
 
-  private interface QueryGetter {
+  protected interface QueryGetter {
     String getQuery() throws ProxyException, ParseException;
   }
 
@@ -1271,16 +1274,6 @@ public class SparqlProxyCore implements ProxyCore {
   }
 
   @Override
-  public Double findEntityClazzSimilarity(String entity_id, String clazz_url) {
-    return 0d;
-  }
-
-  @Override
-  public Double findGranularityOfClazz(String clazz) {
-    return 0d;
-  }
-
-  @Override
   public String getName() {
     return this.definition.getName();
   }
@@ -1290,17 +1283,17 @@ public class SparqlProxyCore implements ProxyCore {
     return loadEntity(uri, this);
   }
 
-  @Override
-  public List<Attribute> findAttributesOfClazz(final String clazzId,
-      final ProxyCore dependenciesProxy) throws ProxyException {
-    return dependenciesProxy.findAttributes(clazzId);
-  }
+//  @Override
+//  public List<Attribute> findAttributesOfClazz(final String clazzId,
+//      final ProxyCore dependenciesProxy) throws ProxyException {
+//    return dependenciesProxy.findAttributes(clazzId);
+//  }
 
-  @Override
-  public List<Attribute> findAttributesOfProperty(final String propertyId,
-      final ProxyCore dependenciesProxy) throws ProxyException {
-    return dependenciesProxy.findAttributesOfProperty(propertyId);
-  }
+//  @Override
+//  public List<Attribute> findAttributesOfProperty(final String propertyId,
+//      final ProxyCore dependenciesProxy) throws ProxyException {
+//    return dependenciesProxy.findAttributesOfProperty(propertyId);
+//  }
 
   @Override
   public List<Attribute> findAttributesOfEntities(Entity ec,
