@@ -62,6 +62,10 @@ public class WSScorer {
   @SuppressWarnings("unchecked")
   protected List<WebSearchResultDoc> findInCache(final String queryId)
       throws IOException, ClassNotFoundException, SolrServerException {
+    if (this.cache == null) {
+      return null;
+    }
+
     return (List<WebSearchResultDoc>) this.cache.retrieve(queryId);
   }
 
@@ -304,8 +308,9 @@ public class WSScorer {
 
     // 2. if not in cache, perform web search, computeElementScores results, and cache results
     if (result == null/* ||result.size()==0 */) {
+      LOG.info("Web Search query: \n" + queryId);
       final Date start = new Date();
-      try {
+
         final InputStream is = this.searcher.search(queryId);
         List<WebSearchResultDoc> searchResult = null;
         try {
@@ -316,7 +321,10 @@ public class WSScorer {
 
         result = searchResult == null ? new ArrayList<>() : searchResult;
 
-        this.cache.cache(queryId, result, true);
+      try {
+        if (this.cache != null) {
+          this.cache.cache(queryId, result, true);
+        }
       } catch (final Exception e) {
         LOG.warn("Caching Web Search Results failed: " + e);
       }

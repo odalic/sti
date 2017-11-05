@@ -47,12 +47,14 @@ public final class DefaultProxiesFactory implements ProxiesFactory {
 
   @Override
   public Proxy create(final ProxyDefinition definition, final Map<String, String> prefixesToUris) {
+      boolean useCache = false;
+
       final ProxyCoreFactory factory = this.definitionClassesToCoreFactories.get(definition.getClass());
       Preconditions.checkArgument(factory != null, "Unknwon definition type!");
       
       final ProxyCore core = factory.create(definition, prefixesToUris);
       
-      final ProxyCore cachingCore = new CachingProxyCore(core, cacheProviderService.getCache(core.getName(), DEFAULT_CORE_ID), definition.getStructureDomain(), definition.getStructureRange());
+      final ProxyCore cachingCore = useCache ? new CachingProxyCore(core, cacheProviderService.getCache(core.getName(), DEFAULT_CORE_ID), definition.getStructureDomain(), definition.getStructureRange()) : core;
       
       final ProxyResultFilter filter = new ProxyResultFilter(definition.getStoppedClasses(), definition.getStoppedAttributes());
       final ProxyCore filteringCore = new FilteringProxyCore(cachingCore, filter);

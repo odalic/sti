@@ -1,5 +1,6 @@
 package uk.ac.shef.dcs.websearch;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -24,7 +25,7 @@ public abstract class WebSearch {
    * @return input stream with the result
    * @throws Exception when something goes awry during the search
    */
-  public abstract InputStream search(String string) throws Exception;
+  public abstract InputStream search(String string) throws IOException;
 
   /**
    * @return instance capable of parsing the result of {@link #search(String)} method
