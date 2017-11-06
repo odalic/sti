@@ -391,6 +391,10 @@ public class SparqlProxyCore implements ProxyCore {
   }
 
   protected String parseLabelFromResource(String resourceURI) {
+    if (!resourceURI.startsWith("http")) {
+      return resourceURI;
+    }
+
     // URI like https://www.w3.org/1999/02/22-rdf-syntax-ns#type
     int trimPosition = resourceURI.lastIndexOf("#");
 
@@ -881,26 +885,31 @@ public class SparqlProxyCore implements ProxyCore {
 
     List<Attribute> res = new ArrayList<>();
 
-    String suffix = definition.getLanguageSuffix();
-    if (isNullOrEmpty(suffix)) {
-      // TODO: When the KB language suffix (for filtering of attributes) is missing, should we set it to default value "en"?
-      suffix = "en";
-    }
-    if (suffix.startsWith(LANGUAGE_TAG_SEPARATOR)) {
-      suffix = suffix.substring(1);
-    }
     String structurePredicateLabels = definition.getStructurePredicateLabel().stream()
         .map(predicate -> createSPARQLResource(predicate)).collect(Collectors.joining(" "));
+
+    SelectBuilder builderPredLabel = new SelectBuilder()
+        .addWhere(SPARQL_VARIABLE_PREDICATE, "?pLabelPred", SPARQL_VARIABLE_PREDICATE_LABEL)
+        .addValuesClause(String.format("?pLabelPred {%s}", structurePredicateLabels));
+
+    SelectBuilder builderObjLabel = new SelectBuilder()
+        .addWhere(SPARQL_VARIABLE_OBJECT, "?oLabelPred", SPARQL_VARIABLE_OBJECT_LABEL)
+        .addValuesClause(String.format("?oLabelPred {%s}", structurePredicateLabels));
+
+    String suffix = definition.getLanguageSuffix();
+    if (!isNullOrEmpty(suffix)) {
+      if (suffix.startsWith(LANGUAGE_TAG_SEPARATOR)) {
+        suffix = suffix.substring(1);
+      }
+
+      builderPredLabel.addFilter(String.format(SPARQL_FILTER_LANGMATCHES, SPARQL_VARIABLE_PREDICATE_LABEL, suffix));
+      builderObjLabel.addFilter(String.format(SPARQL_FILTER_LANGMATCHES, SPARQL_VARIABLE_OBJECT_LABEL, suffix));
+    }
 
     SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_PREDICATE_LABEL,
         SPARQL_VARIABLE_OBJECT, SPARQL_VARIABLE_OBJECT_LABEL)
         .addWhere(createSPARQLResource(resourceId), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT)
-        .addOptional(new SelectBuilder().addWhere(SPARQL_VARIABLE_PREDICATE, "?pLabelPred", SPARQL_VARIABLE_PREDICATE_LABEL)
-            .addValuesClause(String.format("?pLabelPred {%s}", structurePredicateLabels))
-            .addFilter(String.format(SPARQL_FILTER_LANGMATCHES, SPARQL_VARIABLE_PREDICATE_LABEL, suffix)))
-        .addOptional(new SelectBuilder().addWhere(SPARQL_VARIABLE_OBJECT, "?oLabelPred", SPARQL_VARIABLE_OBJECT_LABEL)
-            .addValuesClause(String.format("?oLabelPred {%s}", structurePredicateLabels))
-            .addFilter(String.format(SPARQL_FILTER_LANGMATCHES, SPARQL_VARIABLE_OBJECT_LABEL, suffix)));
+        .addOptional(builderPredLabel).addOptional(builderObjLabel);
 
     String query = builder.build();
     QueryExecution qExec = getQueryExecution(query);
