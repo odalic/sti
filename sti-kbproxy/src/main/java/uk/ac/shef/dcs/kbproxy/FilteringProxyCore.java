@@ -138,6 +138,15 @@ public final class FilteringProxyCore implements ProxyCore {
   }
 
   /**
+   * @param clazz
+   * @return parent clazz of given clazz
+   */
+  @Override
+  public String findParentClazz(String clazz) {
+    return this.core.findParentClazz(clazz);
+  }
+
+  /**
    * Given a string, fetch candidate entities (predicates) from the KB based on a fulltext search.
    *
    * @param pattern

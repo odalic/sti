@@ -126,6 +126,14 @@ public final class CoreExceptionsWrappingProxy implements Proxy {
   }
 
   /**
+   * @param clazz
+   * @return parent clazz of given clazz
+   */
+  public ProxyResult<String> findParentClazz(final String clazz) {
+    return Do(() -> this.core.findParentClazz(clazz), null);
+  }
+
+  /**
    * Given a string, fetch candidate entities (predicates) from the KB based on a fulltext search.
    *
    * @param pattern

@@ -1283,6 +1283,28 @@ public class SparqlProxyCore implements ProxyCore {
   }
 
   @Override
+  public String findParentClazz(String clazz) {
+    if (clazz.length() == 0)
+      return null;
+
+    SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_OBJECT)
+        .addWhere(createSPARQLResource(clazz), "<http://www.w3.org/2000/01/rdf-schema#subClassOf>", SPARQL_VARIABLE_OBJECT);
+
+    Query query = builder.build();
+    QueryExecution qExec = getQueryExecution(query);
+
+    ResultSet rs = qExec.execSelect();
+    if (rs.hasNext()) {
+      QuerySolution qs = rs.next();
+      RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
+      if (object != null) {
+        return object.toString();
+      }
+    }
+    return null;
+  }
+
+  @Override
   public String getName() {
     return this.definition.getName();
   }

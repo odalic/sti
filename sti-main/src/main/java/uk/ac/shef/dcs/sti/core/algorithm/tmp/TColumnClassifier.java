@@ -13,6 +13,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.shef.dcs.kbproxy.Proxy;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.sti.STIException;
@@ -39,11 +40,12 @@ public class TColumnClassifier {
   public Map<TColumnHeaderAnnotation, Double> generateCandidateClazz(
       final List<Pair<Entity, Map<String, Double>>> entityScoresForBlock,
       final List<TColumnHeaderAnnotation> existingColumnClazzCandidates, final Table table,
-      final List<Integer> blockOfRows, final int column, final int tableRowsTotal)
+      final List<Integer> blockOfRows, final int column, final int tableRowsTotal,
+      final Proxy kbProxy)
       throws STIException {
     final Collection<TColumnHeaderAnnotation> candidateHeaderAnnotations =
         this.clazzScorer.computeElementScores(entityScoresForBlock, existingColumnClazzCandidates,
-            table, blockOfRows, column);
+            table, blockOfRows, column, kbProxy);
 
     LOG.info("\t\t>> update candidate clazz on column, existing="
         + existingColumnClazzCandidates.size());
@@ -121,7 +123,8 @@ public class TColumnClassifier {
    *        disambiguated rows in rowsUpdated are counted
    */
   protected void updateColumnClazz(final List<Integer> rowsUpdated, final int column,
-      final TAnnotation tableAnnotations, final Table table, final boolean resetCESums)
+      final TAnnotation tableAnnotations, final Table table,
+      final Proxy kbProxy, final boolean resetCESums)
       throws STIException {
     List<TColumnHeaderAnnotation> existingColumnClazzAnnotations;
     existingColumnClazzAnnotations =
@@ -147,7 +150,8 @@ public class TColumnClassifier {
     toAdd.addAll(existingColumnClazzAnnotations);
     final TColumnHeaderAnnotation[] result =
         updateColumnClazzAnnotationScores(rowsUpdated, column, table.getNumRows(),
-            existingColumnClazzAnnotations, table, tableAnnotations, this.clazzScorer, resetCESums);
+            existingColumnClazzAnnotations, table, tableAnnotations, this.clazzScorer,
+            kbProxy, resetCESums);
     tableAnnotations.setHeaderAnnotation(column, result);
   }
 
@@ -168,11 +172,16 @@ public class TColumnClassifier {
   private TColumnHeaderAnnotation[] updateColumnClazzAnnotationScores(
       final Collection<Integer> updatedRows, final int column, final int totalRows,
       Collection<TColumnHeaderAnnotation> candidateColumnClazzAnnotations, final Table table,
-      final TAnnotation tableAnnotations, final ClazzScorer clazzScorer, final boolean resetCESums)
+      final TAnnotation tableAnnotations, final ClazzScorer clazzScorer,
+      final Proxy kbProxy, final boolean resetCESums)
       throws STIException {
     // for the candidate column clazz annotations compute CC score
     candidateColumnClazzAnnotations =
         clazzScorer.computeCCScore(candidateColumnClazzAnnotations, table, column);
+
+    // for the candidate column clazz annotations compute Hierarchy score
+    candidateColumnClazzAnnotations =
+        clazzScorer.computeHierarchyScore(candidateColumnClazzAnnotations, kbProxy);
 
     if (resetCESums) {
       for (final TColumnHeaderAnnotation ha : candidateColumnClazzAnnotations) {

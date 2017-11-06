@@ -85,6 +85,12 @@ public interface ProxyCore {
   List<Entity> findEntityCandidatesOfTypes(String content, final ProxyCore dependenciesProxy, String... types) throws ProxyException;
 
   /**
+   * @param clazz
+   * @return parent clazz of given clazz
+   */
+  String findParentClazz(String clazz);
+
+  /**
    * Given a string, fetch candidate entities (predicates) from the KB based on a fulltext search.
    *
    * @param pattern
