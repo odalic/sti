@@ -1,29 +1,6 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.NavigableSet;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.base.Preconditions;
-
 import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
@@ -33,11 +10,19 @@ import cz.cuni.mff.xrg.odalic.files.FileService;
 import cz.cuni.mff.xrg.odalic.groups.GroupsService;
 import cz.cuni.mff.xrg.odalic.tasks.TaskService;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
-import cz.cuni.mff.xrg.odalic.users.Credentials;
-import cz.cuni.mff.xrg.odalic.users.Role;
-import cz.cuni.mff.xrg.odalic.users.Token;
-import cz.cuni.mff.xrg.odalic.users.User;
-import cz.cuni.mff.xrg.odalic.users.UserService;
+import cz.cuni.mff.xrg.odalic.users.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.NavigableSet;
 
 /**
  * Sign-up resource definition.

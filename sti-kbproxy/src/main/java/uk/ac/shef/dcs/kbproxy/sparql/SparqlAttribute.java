@@ -14,8 +14,8 @@ public class SparqlAttribute extends Attribute {
 
   private static final long serialVersionUID = -1365433077663956951L;
 
-  public SparqlAttribute(String relationURI, String value) {
-    super(relationURI, value);
+  public SparqlAttribute(String relationLabel, String relationURI, String value, String valueURI) {
+    super(relationLabel, relationURI, value, valueURI);
   }
 
   @Override

@@ -23,6 +23,7 @@ public class CachingProxyCore implements ProxyCore {
 
   private static final Logger log = LoggerFactory.getLogger(CachingProxyCore.class);
 
+  //to point to the ProxyCore (e.g. certain SPARQL based or PP based proxy)
   private final ProxyCore core;
 
   private final Cache cache;
@@ -148,7 +149,7 @@ public class CachingProxyCore implements ProxyCore {
     });
   }
 
-  public String getResourceLabel(String uri) throws ProxyException {
+  public String getResourceLabel(String uri, StructureOrDataQueries typeOfQuery) throws ProxyException {
     if (!uri.startsWith("http")) {
       return uri;
     }
@@ -156,7 +157,7 @@ public class CachingProxyCore implements ProxyCore {
     final String queryCache = CacheQueries.findLabelForResource(uri);
 
     return retrieveOrTryExecute(queryCache, () -> {
-      return this.core.getResourceLabel(uri);
+      return this.core.getResourceLabel(uri, typeOfQuery);
     });
   }
 
@@ -193,20 +194,20 @@ public class CachingProxyCore implements ProxyCore {
     this.core.commitChanges();
   }
 
-  @Override
-  public List<Attribute> findAttributesOfClazz(String clazzId) throws ProxyException {
-    return this.core.findAttributesOfClazz(clazzId, this);
-  }
+//  @Override
+//  public List<Attribute> findAttributesOfClazz(String clazzId) throws ProxyException {
+//    return this.core.findAttributesOfClazz(clazzId, this);
+//  }
 
   @Override
   public List<Attribute> findAttributesOfEntities(Entity ec) throws ProxyException {
     return this.core.findAttributesOfEntities(ec, this);
   }
 
-  @Override
-  public List<Attribute> findAttributesOfProperty(String propertyId) throws ProxyException {
-    return this.core.findAttributesOfProperty(propertyId, this);
-  }
+//  @Override
+//  public List<Attribute> findAttributesOfProperty(String propertyId) throws ProxyException {
+//    return this.core.findAttributesOfProperty(propertyId, this);
+//  }
 
   @Override
   public List<Entity> findClassByFulltext(String pattern, int limit) throws ProxyException {
@@ -223,16 +224,6 @@ public class CachingProxyCore implements ProxyCore {
   public List<Entity> findEntityCandidatesOfTypes(String content,
       ProxyCore dependenciesProxy, String... types) throws ProxyException {
     return this.core.findEntityCandidatesOfTypes(content, dependenciesProxy, types);
-  }
-
-  @Override
-  public Double findEntityClazzSimilarity(String entity_id, String clazz_url) {
-    return this.core.findEntityClazzSimilarity(entity_id, clazz_url);
-  }
-
-  @Override
-  public Double findGranularityOfClazz(String clazz) {
-    return this.core.findGranularityOfClazz(clazz);
   }
 
   @Override
@@ -285,11 +276,11 @@ public class CachingProxyCore implements ProxyCore {
     return this.core.loadEntity(uri, dependenciesProxy);
   }
 
-  @Override
-  public List<Attribute> findAttributesOfClazz(String clazzId,
-      ProxyCore dependenciesProxy) throws ProxyException {
-    return this.core.findAttributesOfClazz(clazzId, dependenciesProxy);
-  }
+//  @Override
+//  public List<Attribute> findAttributesOfClazz(String clazzId,
+//      ProxyCore dependenciesProxy) throws ProxyException {
+//    return this.core.findAttributesOfClazz(clazzId, dependenciesProxy);
+//  }
 
   @Override
   public List<Attribute> findAttributesOfEntities(Entity ec,
@@ -297,11 +288,11 @@ public class CachingProxyCore implements ProxyCore {
     return this.core.findAttributesOfEntities(ec, dependenciesProxy);
   }
 
-  @Override
-  public List<Attribute> findAttributesOfProperty(String propertyId,
-      ProxyCore dependenciesProxy) throws ProxyException {
-    return this.core.findAttributesOfProperty(propertyId, dependenciesProxy);
-  }
+//  @Override
+//  public List<Attribute> findAttributesOfProperty(String propertyId,
+//      ProxyCore dependenciesProxy) throws ProxyException {
+//    return this.core.findAttributesOfProperty(propertyId, dependenciesProxy);
+//  }
 
   @Override
   public ProxyDefinition getDefinition() {
