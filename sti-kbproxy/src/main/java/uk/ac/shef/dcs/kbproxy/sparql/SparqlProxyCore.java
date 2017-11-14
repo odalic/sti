@@ -1290,7 +1290,7 @@ public class SparqlProxyCore implements ProxyCore {
     SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_OBJECT)
         .addWhere(createSPARQLResource(clazz), "<http://www.w3.org/2000/01/rdf-schema#subClassOf>", SPARQL_VARIABLE_OBJECT);
 
-    Query query = builder.build();
+    String query = builder.build();
     QueryExecution qExec = getQueryExecution(query);
 
     ResultSet rs = qExec.execSelect();
