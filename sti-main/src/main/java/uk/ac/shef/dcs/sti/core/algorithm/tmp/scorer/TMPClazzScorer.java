@@ -301,7 +301,7 @@ public class TMPClazzScorer implements ClazzScorer {
     }
     candidates = computeCCScore(candidates, table, column);
 
-    candidates = computeHierarchyScore(candidates, kbProxy);
+//    candidates = computeHierarchyScore(candidates, kbProxy);
 
     return candidates;
   }

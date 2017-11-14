@@ -179,9 +179,9 @@ public class TColumnClassifier {
     candidateColumnClazzAnnotations =
         clazzScorer.computeCCScore(candidateColumnClazzAnnotations, table, column);
 
-    // for the candidate column clazz annotations compute Hierarchy score
-    candidateColumnClazzAnnotations =
-        clazzScorer.computeHierarchyScore(candidateColumnClazzAnnotations, kbProxy);
+//    // for the candidate column clazz annotations compute Hierarchy score
+//    candidateColumnClazzAnnotations =
+//        clazzScorer.computeHierarchyScore(candidateColumnClazzAnnotations, kbProxy);
 
     if (resetCESums) {
       for (final TColumnHeaderAnnotation ha : candidateColumnClazzAnnotations) {
