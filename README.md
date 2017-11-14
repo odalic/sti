@@ -1,3 +1,5 @@
+Master branch: ![Build status for master branch](https://api.travis-ci.org/odalic/sti.svg?branch=master) Develop branch: ![Build status for develop branch](https://api.travis-ci.org/odalic/sti.svg?branch=develop)
+
 # Odalic Semantic Table Interpretation
 
 Odalic Semantic Table Interpretation is a fork of https://github.com/ziqizhang/sti , which is a tool allowing to extract Linked Data from web pages containing HTML tables.
