@@ -26,25 +26,24 @@ import uk.ac.shef.dcs.kbproxy.solr.CacheProviderService;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.LEARNING;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.LEARNINGPreliminaryColumnClassifier;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.LEARNINGPreliminaryDisamb;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.LiteralColumnTagger;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.LiteralColumnTaggerImpl;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.TCellDisambiguator;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.TColumnClassifier;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.TColumnColumnRelationEnumerator;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.TMPOdalicInterpreter;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.UPDATE;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.*;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.OSPD_nonEmpty;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentCellRanker;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentTContentRowRankerImpl;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPClazzScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPEntityScorer;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPMLClazzScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPRelationScorer;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.DefaultMLFeatureDetector;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.MLClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.MLFeatureDetector;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.RandomForestMLClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.CsvDatasetFileReader;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.DatasetFileReader;
 import uk.ac.shef.dcs.sti.core.feature.ConceptBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.feature.RelationBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.scorer.AttributeValueMatcher;
+import uk.ac.shef.dcs.sti.core.scorer.ClazzScorer;
 import uk.ac.shef.dcs.sti.core.scorer.RelationScorer;
 import uk.ac.shef.dcs.sti.core.subjectcol.SubjectColumnDetector;
 import uk.ac.shef.dcs.sti.util.FileUtils;
@@ -75,6 +74,12 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       "sti.tmp.iinf.learning.stopping.class";
   private static final String PROPERTY_TMP_IINF_LEARNING_STOPPING_CLASS_CONSTR_PARAM =
       "sti.tmp.iinf.learning.stopping.class.constructor.params";
+
+  private static final String PROPERTY_USE_ML_CLASSIFIER =
+      "sti.tmp.ml.use.ml.classifier";
+
+  private static final String PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH =
+      "sti.tmp.ml.training.dataset.file.path";
 
   private static final Logger logger = LoggerFactory.getLogger(TableMinerPlusFactory.class);
 
@@ -109,14 +114,35 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   }
 
   private String getNLPResourcesDir() throws STIException {
-    final String prop = getAbsolutePath(PROPERTY_NLP_RESOURCES);
+    return getAndValidatePath(PROPERTY_NLP_RESOURCES, "nlp resources folder");
+  }
+
+  private String getMLClassifierTrainingDatasetFilePath() throws STIException {
+    return getAndValidatePath(PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH, "ML Classifier training dataset file");
+  }
+
+  private String getAndValidatePath(String pathPropertyName, String propertyDescription) throws STIException {
+    final String prop = getAbsolutePath(pathPropertyName);
     if ((prop == null) || !new File(prop).exists()) {
-      final String error = "Cannot proceed: nlp resources folder is not set or does not exist. "
-          + PROPERTY_NLP_RESOURCES + "=" + prop;
+      final String error = "Cannot proceed: " + propertyDescription + " is not set or does not exist. "
+              + pathPropertyName + "=" + prop;
       logger.error(error);
       throw new STIException(error);
     }
     return prop;
+  }
+
+  private boolean useMlClassifier() throws STIException {
+    final String prop = this.properties.getProperty(PROPERTY_USE_ML_CLASSIFIER);
+
+    if (prop != null) {
+      return Boolean.valueOf(prop);
+    } else {
+      final String error = "Cannot proceed: '" + PROPERTY_USE_ML_CLASSIFIER + "' is not set or is invalid. "
+              + PROPERTY_USE_ML_CLASSIFIER + "=" + prop;
+      logger.error(error);
+      throw new STIException(error);
+    }
   }
 
   private List<String> getStopwords() throws STIException, IOException {
@@ -125,18 +151,35 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
 
   private TColumnClassifier initClassifier() throws STIException {
     try {
-      return new TColumnClassifier(
-          new TMPClazzScorer(getNLPResourcesDir(), new ConceptBoWCreatorImpl(), getStopwords(),
-              STIConstantProperty.SCORER_CLAZZ_CONTEXT_WEIGHT) // all 1.0
-      ); // header, column, out trivial, out important
+      ClazzScorer clazzScorer = initClazzScorer();
+
+      if (useMlClassifier()) {
+        final MLClassifier mlClassifier = initMLClassifier(getMLClassifierTrainingDatasetFilePath());
+        final ClazzScorer mlClazzScorer = new TMPMLClazzScorer(clazzScorer, mlClassifier);
+        return new TColumnClassifier(mlClazzScorer);
+      } else {
+        return new TColumnClassifier(clazzScorer); // header, column, out trivial, out important
+      }
     } catch (final Exception e) {
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing LEARNING components.", e);
     }
   }
 
+  private TMPClazzScorer initClazzScorer() throws STIException {
+    try {
+      return new TMPClazzScorer(getNLPResourcesDir(), new ConceptBoWCreatorImpl(), getStopwords(),
+              STIConstantProperty.SCORER_CLAZZ_CONTEXT_WEIGHT); // all 1.0
+    } catch (final Exception e) {
+      logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
+      throw new STIException("Failed initializing Clazz Scorer components.", e);
+    }
+  }
+
   // Initialize kbsearcher, websearcher
-  private synchronized Map<String, SemanticTableInterpreter> initializeInterpreters(final String userId, final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
+  private synchronized Map<String, SemanticTableInterpreter> initializeInterpreters(final String userId,
+                                          final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
+
       // object to fetch things from KB
       final Table<String, String, Proxy> kbProxyInstances = this.knowledgeBaseProxyFactory.toProxies(bases);
 
@@ -167,6 +210,20 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       }
       
       return interpreters;
+  }
+
+  private MLClassifier initMLClassifier(String trainingSetFilePath) throws STIException {
+    try {
+      final DatasetFileReader mlDatasetFileReader = new CsvDatasetFileReader();
+      final MLFeatureDetector mlFeatureDetector = new DefaultMLFeatureDetector();
+
+      MLClassifier classifier = new RandomForestMLClassifier(mlDatasetFileReader, mlFeatureDetector);
+      classifier.trainClassifier(trainingSetFilePath);
+      return classifier;
+    } catch (final Exception e) {
+      logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
+      throw new STIException("Failed initializing Machine Learning Classifier components.", e);
+    }
   }
 
   private TCellDisambiguator initDisambiguator(final Proxy kbProxy) throws STIException {
