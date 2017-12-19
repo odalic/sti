@@ -55,7 +55,7 @@ public class AttributeValueMatcher {
 
   protected boolean isValidType(final DataTypeClassifier.DataType dataType) {
     if (dataType.equals(DataTypeClassifier.DataType.ORDERED_NUMBER)) {
-      return false;
+      return true;
     }
     if (dataType.equals(DataTypeClassifier.DataType.EMPTY)) {
       return false;
