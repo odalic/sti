@@ -65,7 +65,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
   }
 
   private Value createIRIorLiteral(final String object, final String dataType) {
-    if (notValidIRI(object) || (!object.startsWith("http") && object.split(PREFIX_SEPARATOR).length != 2)) {
+    if (notValidIRI(object)) {
       log.info("Not a valid (absolute) IRI: " + object + " , literal will be created.");
       if ((dataType == null) || notValidIRI(dataType)) {
         return this.factory.createLiteral(object);
@@ -103,10 +103,11 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
    *
    * @param iriString A string-representation of the IRI.
    * @return true If the supplied string does not resolve to a legal IRI (i.e. if it does not
-   *         contain a colon).
+   *         contain a colon (or does not start with "http" and contains more than one colon)).
    */
   private boolean notValidIRI(final String iriString) {
-    return iriString.indexOf(PREFIX_SEPARATOR) < 0;
+    return iriString.indexOf(PREFIX_SEPARATOR) < 0 ||
+        (!iriString.startsWith("http") && iriString.split(PREFIX_SEPARATOR).length > 2);
   }
 
   /**
