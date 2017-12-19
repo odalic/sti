@@ -65,7 +65,7 @@ public class DefaultAnnotatedTableToRDFExportAdapter implements AnnotatedTableTo
   }
 
   private Value createIRIorLiteral(final String object, final String dataType) {
-    if (notValidIRI(object)) {
+    if (notValidIRI(object) || (!object.startsWith("http") && object.split(PREFIX_SEPARATOR).length != 2)) {
       log.info("Not a valid (absolute) IRI: " + object + " , literal will be created.");
       if ((dataType == null) || notValidIRI(dataType)) {
         return this.factory.createLiteral(object);
