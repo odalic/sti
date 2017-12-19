@@ -358,6 +358,7 @@ public class HttpRequestExecutorForPP {
             HttpPost request = new HttpPost(uriBuilder.build().normalize());
             request.addHeader("content-type", "application/json");
 
+            LOG.debug("Request for proposing class: {}", json.toString());
             StringEntity params = new StringEntity(json.toString());
             params.setContentType("application/json");
             request.setEntity(params);
