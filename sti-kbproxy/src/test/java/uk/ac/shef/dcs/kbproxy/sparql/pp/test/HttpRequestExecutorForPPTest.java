@@ -1,7 +1,6 @@
 package uk.ac.shef.dcs.kbproxy.sparql.pp.test;
 
 import org.junit.BeforeClass;
-import org.junit.Test;
 import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.HttpRequestExecutorForPP;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.PPProxyDefinition;
