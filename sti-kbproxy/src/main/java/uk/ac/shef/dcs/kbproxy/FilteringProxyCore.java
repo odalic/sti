@@ -122,7 +122,13 @@ public final class FilteringProxyCore implements ProxyCore {
   @Override
   public List<Entity> findEntityCandidatesOfTypes(final String content,
       final String... types) throws ProxyException {
-    return findEntityCandidatesOfTypes(content, this, types);
+    final List<Entity> result = this.core.findEntityCandidatesOfTypes(content, types);
+
+    for (Entity ec : result) {
+      filterEntityTypes(ec);
+    }
+
+    return result;
   }
   
   @Override
