@@ -38,7 +38,7 @@ public class TColumnColumnRelationEnumerator {
     this.relationScorer = scorer;
   }
 
-  private void enumerateColumnColumnRelation(final TAnnotation annotations, final Table table,
+  protected void enumerateColumnColumnRelation(final TAnnotation annotations, final Table table,
       final Constraints constraints) throws STIException {
     for (final Map.Entry<RelationColumns, Map<Integer, List<TCellCellRelationAnotation>>> entry : annotations
         .getCellcellRelations().entrySet()) {
@@ -109,15 +109,7 @@ public class TColumnColumnRelationEnumerator {
   private void generateCellCellRelations(final TAnnotation annotations, final Table table,
       final int subjectCol, final Constraints constraints) throws STIException {
     // select columns that are likely to form a relation with subject column
-    final Map<Integer, DataTypeClassifier.DataType> columnDataTypes = new HashMap<>();
-    for (int c = 0; c < table.getNumCols(); c++) {
-      final DataTypeClassifier.DataType type = table.getColumnHeader(c).getTypes().get(0).getType();
-      if (type.equals(DataTypeClassifier.DataType.ORDERED_NUMBER)) {
-        continue; // ordered numbered columns are not interesting
-      } else {
-        columnDataTypes.put(c, type);
-      }
-    }
+    final Map<Integer, DataTypeClassifier.DataType> columnDataTypes = getDataTypesOfColumns(table);
 
     // for each row, get the annotation for that (row, col)
     for (int row = 0; row < table.getNumRows(); row++) {
@@ -139,14 +131,24 @@ public class TColumnColumnRelationEnumerator {
       }
 
       // collect cell values on the same row, from other columns
-      final Map<Integer, String> cellValuesToMatch = new HashMap<>();
-      for (final int col : columnDataTypes.keySet()) {
-        if ((col != subjectCol)
-            && !isRelationSuggested(subjectCol, col, constraints.getColumnRelations())) {
-          final String cellValue = table.getContentCell(row, col).getText();
-          cellValuesToMatch.put(col, cellValue);
-        }
-      }
+      final Map<Integer, String> cellValuesToMatch = getCellValuesToMatch(table, subjectCol, row, columnDataTypes, constraints);
+
+//      1) Jednoduchy pripad na zacatek
+//        trenovaci test data maji stejny header
+//        mapovani se vygeneruje automaticky (nejaky prefix + label sloupce)
+//        automaticky predpokladame, ze pracujeme s relacema
+//        zapojit v relation discovery fazi!!
+
+      // TODO implement ML classifier to suggest column relation for 'cellValuesToMatch'
+      // TODO scoring for ML suggested relations
+      // TODO scoring for matchedAttributeValues include ML scoring
+
+
+//
+//      2)
+//        + classifier relace + klasicka relation discovery Odalicu - spojit dohromady .
+//              klasicka relation discovery jen pro sloupce kde klasifier neuspeje
+
 
       // perform matching and scoring
       // key=col id; value: contains the attr that matched with the highest score against cell in
@@ -175,26 +177,72 @@ public class TColumnColumnRelationEnumerator {
     return this.relationScorer;
   }
 
+  protected Map<Integer, DataTypeClassifier.DataType> getDataTypesOfColumns(final Table table) {
+    final Map<Integer, DataTypeClassifier.DataType> columnDataTypes = new HashMap<>();
+    for (int c = 0; c < table.getNumCols(); c++) {
+      final DataTypeClassifier.DataType type = table.getColumnHeader(c).getTypes().get(0).getType();
+      if (type.equals(DataTypeClassifier.DataType.ORDERED_NUMBER)) {
+        continue; // ordered numbered columns are not interesting
+      } else {
+        columnDataTypes.put(c, type);
+      }
+    }
+    return columnDataTypes;
+  }
+
+  protected Map<Integer, String> getCellValuesToMatch(final Table table, int subjectCol, int row,
+          final Map<Integer, DataTypeClassifier.DataType> columnDataTypes, final Constraints constraints) {
+
+    final Map<Integer, String> cellValuesToMatch = new HashMap<>();
+    for (final int col : columnDataTypes.keySet()) {
+      if ((col != subjectCol)
+              && !isRelationSuggested(subjectCol, col, constraints.getColumnRelations())) {
+        final String cellValue = table.getContentCell(row, col).getText();
+        cellValuesToMatch.put(col, cellValue);
+      }
+    }
+    return cellValuesToMatch;
+  }
+
   private boolean isRelationSuggested(final int subjectCol, final int objectCol,
       final Set<ColumnRelation> columnRelations) {
     for (final ColumnRelation relation : columnRelations) {
       if ((relation.getPosition().getFirstIndex() == subjectCol)
           && (relation.getPosition().getSecondIndex() == objectCol)) {
-        this.suggestedRelationPositionsVisited++;
+
+        increaseSuggestedRelationPositionsVisited();
         return true;
       }
     }
     return false;
   }
 
+  /**
+   * Increases the value of suggestedRelationPositionsVisited property by 1.
+   */
+  protected void increaseSuggestedRelationPositionsVisited() {
+    this.suggestedRelationPositionsVisited++;
+  }
+
+  /**
+   * Sets suggestedRelationPositionsVisited to 0.
+   */
+  protected void resetSuggestedRelationPositionsVisited() {
+    this.suggestedRelationPositionsVisited = 0;
+  }
+
+  protected int getSuggestedRelationPositionsVisited() {
+    return this.suggestedRelationPositionsVisited;
+  }
+
   public int runRelationEnumeration(final TAnnotation annotations, final Table table,
       final int subjectCol, final Constraints constraints) throws STIException {
-    this.suggestedRelationPositionsVisited = 0;
+    resetSuggestedRelationPositionsVisited();
     generateCellCellRelations(annotations, table, subjectCol, constraints);
     // now we have created relation annotations per row, consolidate them to create column-column
     // relation
     enumerateColumnColumnRelation(annotations, table, constraints);
-    return annotations.getCellcellRelations().size() + this.suggestedRelationPositionsVisited;
+    return annotations.getCellcellRelations().size() + getSuggestedRelationPositionsVisited();
   }
 
 }

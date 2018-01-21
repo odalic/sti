@@ -81,17 +81,22 @@ public class DefaultMLFeatureDetector implements MLFeatureDetector {
         features.addIntFeature(F_INT_NUMBER_OF_WHITESPACE_CHARACTERS, numberOfWhitespaceCharacters);
         features.addIntFeature(F_INT_NUMBER_OF_SPECIAL_CHARACTERS, numberOfSpecialCharacters);
 
+        boolean isIntegralNumericValue = false;
+        boolean isDecimalNumericValue = false;
         try {
             long longValue = Long.parseLong(inputValueTrimmed);
-            features.addBoolFeature(F_BOOL_IS_INTEGRAL_NUMERIC_VALUE, true);
+            isIntegralNumericValue = true;
         }catch (NumberFormatException e) {
             try {
                 double doubleValue = Double.parseDouble(inputValueTrimmed);
-                features.addBoolFeature(F_BOOL_IS_DECIMAL_NUMERIC_VALUE, true);
+                isDecimalNumericValue = true;
             }catch (NumberFormatException ex) {
                 //ignore
             }
         }
+        features.addBoolFeature(F_BOOL_IS_NUMERIC_VALUE, isIntegralNumericValue || isDecimalNumericValue);
+        features.addBoolFeature(F_BOOL_IS_INTEGRAL_NUMERIC_VALUE, isIntegralNumericValue);
+        features.addBoolFeature(F_BOOL_IS_DECIMAL_NUMERIC_VALUE, isDecimalNumericValue);
         features.addBoolFeature(F_BOOL_IS_PREFIXED_NUMBER_VALUE, isPrefixedNumber(inputValueTrimmed));
         features.addBoolFeature(F_BOOL_IS_POSTFIXED_NUMBER_VALUE, isPostfixedNumber(inputValueTrimmed));
         return features;

@@ -13,8 +13,8 @@ public class RandomForestMLClassifier extends MLClassifier {
 
     private RandomForest classifier;
 
-    public RandomForestMLClassifier(DatasetFileReader fileReader, MLFeatureDetector featureDetector) {
-        super(fileReader, featureDetector);
+    public RandomForestMLClassifier(String homePath, String propsFilePath, DatasetFileReader fileReader, MLFeatureDetector featureDetector) {
+        super(homePath, propsFilePath, fileReader, featureDetector);
         this.classifier = new RandomForest();
         this.classifier.setMaxDepth(MAX_DEPTH);
         this.classifier.setNumFeatures(NUM_FEATURES);

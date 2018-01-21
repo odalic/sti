@@ -1,15 +1,22 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml;
 
+import org.apache.jena.atlas.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.shef.dcs.kbproxy.sparql.SparqlAttribute;
+import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.DatasetFileReader;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputWithFeatures;
 import weka.classifiers.Classifier;
 import weka.core.*;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+
+import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
 
 public abstract class MLClassifier {
 
@@ -21,6 +28,12 @@ public abstract class MLClassifier {
     private static final String TRAINING_RELATION_NAME = "traning_dataset";
     private static final String EMPTY_CLASS_VALUE = "";
 
+    private static final String PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH =
+            "sti.tmp.ml.training.dataset.file.path";
+
+    private String homePath;
+    private String propsFilePath;
+    private Properties props;
     private DatasetFileReader fileReader;
     private MLFeatureDetector featureDetector;
 
@@ -29,23 +42,40 @@ public abstract class MLClassifier {
      */
     private List<String> classifierClasses;
 
-    public MLClassifier(DatasetFileReader fileReader, MLFeatureDetector featureDetector) {
+    public MLClassifier(String homePath, String propsFilePath, DatasetFileReader fileReader, MLFeatureDetector featureDetector) {
+        this.homePath = homePath;
+        this.propsFilePath = propsFilePath;
         this.fileReader = fileReader;
         this.featureDetector = featureDetector;
     }
 
-    public void trainClassifier(String trainingDatasetFilePath) throws MLException {
+    private Properties loadProps(String propsFilePath) throws IOException {
+        final Properties properties = new Properties();
+        properties.load(new FileInputStream(propsFilePath));
+        return properties;
+    }
+
+
+    public void trainClassifier() throws MLException {
         try {
-            Instances trainingDataset = readDatasetFile(trainingDatasetFilePath);
+            this.props = loadProps(this.propsFilePath);
+            LOG.debug("ML Classifier training: properties loaded.");
+
+            Instances trainingDataset = readDatasetFile(getMLClassifierTrainingDatasetFilePath());
+            LOG.info("ML Classifier training: training dataset file reading done.");
+            LOG.info("ML Classifier training: Parsed {} instances.", trainingDataset.size());
             classifierClasses = getClassesFromInstances(trainingDataset);
-            getClassifier().buildClassifier(trainingDataset);
+            LOG.info("ML Classifier training: retrieved {} classes.", classifierClasses.size());
+            Classifier classifier = getClassifier();
+            LOG.info("ML Classifier training: retrieved classifier: " + classifier.toString() + ". Building..");
+            classifier.buildClassifier(trainingDataset);
+            LOG.info("ML Classifier training: classifier built.");
         } catch (Exception e) {
             throw new MLException("Failed to train RandomForest classifier: " + e.getMessage());
         }
     }
 
-    // TODO change return type to more appropriate one
-    public String classify(String valueToClassify) throws MLException {
+    public MLAttributeClassification classifyToAttribute(String valueToClassify) throws MLException {
         if (classifierClasses == null || classifierClasses.size() == 0) {
             throw new MLException("Classifier not trained!");
         }
@@ -59,11 +89,13 @@ public abstract class MLClassifier {
             Classifier classifier = getClassifier();
             LOG.debug("Classificating '" + valueToClassify + "' using " + classifier.getClass().getSimpleName() + ".");
 
-            double classifiedClass = classifier.classifyInstance(instanceToClassify);
-            instanceToClassify.setClassValue(classifiedClass);
+            double[] instanceDistribution = classifier.distributionForInstance(instanceToClassify);
+            // find index of class with highest classifier score
+            MLAttributeClassification classification = findMostProbableClass(valueToClassify, instanceToClassify, instanceDistribution);
 
-            // return class classified by classifier
-            return classifierClasses.get((int) classifiedClass);
+            // add URI prefix
+            return classification.withUriPrefix("http://kadlecek.sk/tmp/");
+
         } catch (Exception e) {
             throw new MLException("Failed to classify instance: " + e.getMessage(), e);
         }
@@ -106,32 +138,34 @@ public abstract class MLClassifier {
         List<String> boolFeatureKeys = inputValues[0].getBoolFeaturesKeys();
 
         ArrayList<Attribute> fvWekaAttributes = initInstanceWekaAttributes(intFeatureKeys, boolFeatureKeys);
+
+        // get list of distinct classes
+        Set<String> allDistinctClasses = new HashSet<>();
+        for (InputWithFeatures inputValue : inputValues) {
+            allDistinctClasses.add(inputValue.getClazz());
+        }
+        List<String> lstAllDistinctClasses = new ArrayList<>(allDistinctClasses);
+
+        Attribute classAttribute = new Attribute(CLASS_ATTRIBUTE_NAME, lstAllDistinctClasses);
+        fvWekaAttributes.add(classAttribute);
         int classAttributeIndex = fvWekaAttributes.size() - 1;
 
-        // create Instance entities
-        Set<String> allDistinctClasses = new HashSet<>();
-        List<Instance> lstInstances = new ArrayList<>();
-        for (InputWithFeatures inputValue : inputValues) {
+        // create instances entity - needs to be created before actual Instance entities, as
+        // it has side effect on fvWekaAttributes list
+        Instances instances = new Instances(TRAINING_RELATION_NAME, fvWekaAttributes, inputValues.length);
+        instances.setClassIndex(classAttributeIndex);
 
+        // create Instance entities
+        for (InputWithFeatures inputValue : inputValues) {
             String clazz = inputValue.getClazz();
             allDistinctClasses.add(clazz);
 
-            Instance instance = createInstanceFromInputWithFeatures(intFeatureKeys, boolFeatureKeys, fvWekaAttributes, inputValue);
+            Instance instance = createInstanceFromInputWithFeatures(intFeatureKeys, boolFeatureKeys,
+                    fvWekaAttributes, inputValue);
             // assign class value to instance
-            instance.setValue(classAttributeIndex, inputValue.getClazz());
-            lstInstances.add(instance);
-        }
-
-        List<String> lstAllDistinctClasses = new ArrayList<>(allDistinctClasses);
-        fvWekaAttributes.add(new Attribute(CLASS_ATTRIBUTE_NAME, lstAllDistinctClasses));
-
-        Instances instances = new Instances(TRAINING_RELATION_NAME, fvWekaAttributes, lstInstances.size());
-        instances.setClassIndex(classAttributeIndex);
-
-        for (Instance instance : lstInstances) {
+            instance.setValue(classAttribute, inputValue.getClazz());
             instances.add(instance);
         }
-
         return instances;
     }
 
@@ -140,12 +174,13 @@ public abstract class MLClassifier {
         List<String> boolFeatureKeys = valueToClassify.getBoolFeaturesKeys();
 
         ArrayList<Attribute> fvWekaAttributes = initInstanceWekaAttributes(intFeatureKeys, boolFeatureKeys);
-        fvWekaAttributes.add(new Attribute(CLASS_ATTRIBUTE_NAME, classifierClasses));
+        Attribute classAttribute = new Attribute(CLASS_ATTRIBUTE_NAME, classifierClasses);
+        fvWekaAttributes.add(classAttribute);
 
-        Instance instance = createInstanceFromInputWithFeatures(intFeatureKeys, boolFeatureKeys, fvWekaAttributes, valueToClassify);
-        // assign class value to instance
-        int classAttributeIndex = fvWekaAttributes.size() - 1;
-        instance.setValue(classAttributeIndex, Utils.missingValue());
+        DenseInstance instance = createInstanceFromInputWithFeatures(intFeatureKeys, boolFeatureKeys,
+                fvWekaAttributes, valueToClassify);
+
+        instance.setValue(classAttribute, Utils.missingValue());
         return instance;
     }
 
@@ -162,7 +197,6 @@ public abstract class MLClassifier {
         for (String intKey : intFeatureKeys) {
             fvWekaAttributes.add(new Attribute(intKey));
         }
-
         for (String boolKey : boolFeatureKeys) {
             fvWekaAttributes.add(new Attribute(boolKey, booleanValues));
         }
@@ -173,12 +207,13 @@ public abstract class MLClassifier {
         return intFeatureKeys.size() + boolFeatureKeys.size() + 1;
     }
 
-    private Instance createInstanceFromInputWithFeatures(List<String> intFeatureKeys, List<String> boolFeatureKeys,
-                                                         List<Attribute> fvWekaAttributes, InputWithFeatures inputValue) {
+    private DenseInstance createInstanceFromInputWithFeatures(List<String> intFeatureKeys, List<String> boolFeatureKeys,
+                                                              List<Attribute> fvWekaAttributes,
+                                                              InputWithFeatures inputValue) {
 
         int totalNumberOfFeatures = getTotalNumberOfFeatures(intFeatureKeys, boolFeatureKeys);
 
-        Instance instance = new DenseInstance(totalNumberOfFeatures);
+        DenseInstance instance = new DenseInstance(totalNumberOfFeatures);
         for (int intKeyIdx = 0; intKeyIdx < intFeatureKeys.size(); intKeyIdx++) {
             instance.setValue(
                     fvWekaAttributes.get(intKeyIdx),
@@ -195,9 +230,58 @@ public abstract class MLClassifier {
         return instance;
     }
 
+    private MLAttributeClassification findMostProbableClass(String value, Instance instance, double[] classificationDistribution) {
+        double maxValue = 0;
+        int maxValueIndex = -1;
+        for (int i = 0; i < classificationDistribution.length; i++) {
+            if (classificationDistribution[i] > maxValue) {
+                maxValue = classificationDistribution[i];
+                maxValueIndex = i;
+            }
+        }
+        if (maxValueIndex > -1) {
+            String className = instance.classAttribute().value(maxValueIndex);
+            return createMLAttributeClassification(value, className, maxValue);
+        }else {
+            // classifier did not return any valid classification
+            String className = instance.classAttribute().value(0);
+            return createMLAttributeClassification(value, className, maxValue);
+        }
+    }
+
+    private MLAttributeClassification createMLAttributeClassification(String value, String className, double score) {
+        uk.ac.shef.dcs.kbproxy.model.Attribute stiAttribute = new SparqlAttribute(className, value);
+        return new MLAttributeClassification(value, stiAttribute, score);
+    }
+
     protected abstract Classifier getClassifier();
 
     protected MLFeatureDetector getFeatureDetector() {
         return featureDetector;
     }
+
+    private String getMLClassifierTrainingDatasetFilePath() throws MLException {
+        String propertyDescription = "ML Classifier training dataset file";
+        String trainingDatasetFilePath = this.props.getProperty(PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH);
+
+        if (trainingDatasetFilePath != null) {
+            String fullPath = combinePaths(homePath, trainingDatasetFilePath);
+
+            LOG.info("ML Classifier training dataset file: '" + fullPath +"'.");
+
+            if ((fullPath != null) && new File(fullPath).exists()) {
+                return fullPath;
+            } else {
+                final String error = "Cannot proceed: " + propertyDescription + " is not set or does not exist. "
+                        + PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH + "=" + trainingDatasetFilePath;
+                throw new MLException(error);
+            }
+        } else {
+            final String error = "Cannot proceed: " + propertyDescription + " is not set. "
+                    + "Property: " + PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH;
+            throw new MLException(error);
+        }
+
+    }
+
 }

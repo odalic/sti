@@ -3,6 +3,7 @@ package cz.cuni.mff.xrg.odalic.tasks.executions;
 import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +33,6 @@ import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentCellRanker;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentTContentRowRankerImpl;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPClazzScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPEntityScorer;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPMLClazzScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPRelationScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.DefaultMLFeatureDetector;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.MLClassifier;
@@ -59,6 +59,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
 
   private static final String PROPERTY_HOME = "sti.home";
   private static final String PROPERTY_WEBSEARCH_PROP_FILE = "sti.websearch.properties";
+  private static final String PROPERTY_ML_PROP_FILE = "sti.ml.properties";
   private static final String PROPERTY_NLP_RESOURCES = "sti.nlp";
 
   private static final String PROPERTY_WEBSEARCH_CACHE_CORENAME = "websearch";
@@ -75,11 +76,8 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   private static final String PROPERTY_TMP_IINF_LEARNING_STOPPING_CLASS_CONSTR_PARAM =
       "sti.tmp.iinf.learning.stopping.class.constructor.params";
 
-  private static final String PROPERTY_USE_ML_CLASSIFIER =
-      "sti.tmp.ml.use.ml.classifier";
-
-  private static final String PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH =
-      "sti.tmp.ml.training.dataset.file.path";
+  private static final String PROPERTY_RELATIONS_USE_ML_CLASSIFIER =
+      "sti.learning.relation.ml.classifier";
 
   private static final Logger logger = LoggerFactory.getLogger(TableMinerPlusFactory.class);
 
@@ -117,10 +115,6 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     return getAndValidatePath(PROPERTY_NLP_RESOURCES, "nlp resources folder");
   }
 
-  private String getMLClassifierTrainingDatasetFilePath() throws STIException {
-    return getAndValidatePath(PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH, "ML Classifier training dataset file");
-  }
-
   private String getAndValidatePath(String pathPropertyName, String propertyDescription) throws STIException {
     final String prop = getAbsolutePath(pathPropertyName);
     if ((prop == null) || !new File(prop).exists()) {
@@ -133,13 +127,13 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   }
 
   private boolean useMlClassifier() throws STIException {
-    final String prop = this.properties.getProperty(PROPERTY_USE_ML_CLASSIFIER);
+    final String prop = this.properties.getProperty(PROPERTY_RELATIONS_USE_ML_CLASSIFIER);
 
     if (prop != null) {
       return Boolean.valueOf(prop);
     } else {
-      final String error = "Cannot proceed: '" + PROPERTY_USE_ML_CLASSIFIER + "' is not set or is invalid. "
-              + PROPERTY_USE_ML_CLASSIFIER + "=" + prop;
+      final String error = "Cannot proceed: '" + PROPERTY_RELATIONS_USE_ML_CLASSIFIER + "' is not set or is invalid. "
+              + PROPERTY_RELATIONS_USE_ML_CLASSIFIER + "=" + prop;
       logger.error(error);
       throw new STIException(error);
     }
@@ -152,14 +146,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   private TColumnClassifier initClassifier() throws STIException {
     try {
       ClazzScorer clazzScorer = initClazzScorer();
-
-      if (useMlClassifier()) {
-        final MLClassifier mlClassifier = initMLClassifier(getMLClassifierTrainingDatasetFilePath());
-        final ClazzScorer mlClazzScorer = new TMPMLClazzScorer(clazzScorer, mlClassifier);
-        return new TColumnClassifier(mlClazzScorer);
-      } else {
-        return new TColumnClassifier(clazzScorer); // header, column, out trivial, out important
-      }
+      return new TColumnClassifier(clazzScorer); // header, column, out trivial, out important
     } catch (final Exception e) {
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing LEARNING components.", e);
@@ -212,13 +199,15 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       return interpreters;
   }
 
-  private MLClassifier initMLClassifier(String trainingSetFilePath) throws STIException {
+  private MLClassifier initMLClassifier(String mlPropsFilePath) throws STIException {
     try {
       final DatasetFileReader mlDatasetFileReader = new CsvDatasetFileReader();
       final MLFeatureDetector mlFeatureDetector = new DefaultMLFeatureDetector();
 
-      MLClassifier classifier = new RandomForestMLClassifier(mlDatasetFileReader, mlFeatureDetector);
-      classifier.trainClassifier(trainingSetFilePath);
+      MLClassifier classifier = new RandomForestMLClassifier(
+          this.properties.getProperty(PROPERTY_HOME), mlPropsFilePath, mlDatasetFileReader, mlFeatureDetector
+      );
+      classifier.trainClassifier();
       return classifier;
     } catch (final Exception e) {
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
@@ -268,10 +257,24 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
               getStopwords(), STIConstantProperty.SCORER_RELATION_CONTEXT_WEIGHT
           // new double[]{1.0, 1.0, 0.0, 0.0, 1.0}
           );
-      return new TColumnColumnRelationEnumerator(
-          new AttributeValueMatcher(STIConstantProperty.ATTRIBUTE_MATCHER_MIN_SCORE, getStopwords(),
-              StringMetrics.levenshtein()),
-          relationScorer);
+
+
+      if (useMlClassifier()) {
+        // append ML Classifier to existing components
+        final MLClassifier mlClassifier = initMLClassifier(getAbsolutePath(PROPERTY_ML_PROP_FILE));
+        return new TMLColumnColumnRelationEnumerator(
+                new AttributeValueMatcher(STIConstantProperty.ATTRIBUTE_MATCHER_MIN_SCORE, getStopwords(),
+                        StringMetrics.levenshtein()),
+                relationScorer,
+                mlClassifier);
+
+      } else {
+        // dont use ML Classifier
+        return new TColumnColumnRelationEnumerator(
+                new AttributeValueMatcher(STIConstantProperty.ATTRIBUTE_MATCHER_MIN_SCORE, getStopwords(),
+                        StringMetrics.levenshtein()),
+                relationScorer);
+      }
     } catch (final Exception e) {
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing RELATIONLEARNING components.", e);
