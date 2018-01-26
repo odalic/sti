@@ -1,15 +1,7 @@
 package uk.ac.shef.dcs.kbproxy.sparql.pp;
 
-import org.apache.http.util.Asserts;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.impl.ResourceImpl;
-import org.apache.jena.sparql.lang.sparql_11.ParseException;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -17,10 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
 import uk.ac.shef.dcs.kbproxy.ProxyException;
-import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.kbproxy.model.PropertyType;
-import uk.ac.shef.dcs.kbproxy.sparql.SparqlAttribute;
 import uk.ac.shef.dcs.kbproxy.sparql.SparqlProxyCore;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ClassDesc;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.PPRestApiCallException;
@@ -28,11 +18,8 @@ import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.RelationDesc;
 import uk.ac.shef.dcs.kbproxy.sparql.pp.helpers.ResourceDesc;
 import uk.ac.shef.dcs.util.Pair;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Created by tomasknap on 20/12/16.
