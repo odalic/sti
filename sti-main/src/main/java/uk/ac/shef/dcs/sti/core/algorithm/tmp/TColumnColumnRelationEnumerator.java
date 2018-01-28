@@ -132,24 +132,7 @@ public class TColumnColumnRelationEnumerator {
 
       // collect cell values on the same row, from other columns
       final Map<Integer, String> cellValuesToMatch = getCellValuesToMatch(table, subjectCol, row, columnDataTypes, constraints);
-
-//      1) Jednoduchy pripad na zacatek
-//        trenovaci test data maji stejny header
-//        mapovani se vygeneruje automaticky (nejaky prefix + label sloupce)
-//        automaticky predpokladame, ze pracujeme s relacema
-//        zapojit v relation discovery fazi!!
-
-      // TODO implement ML classifier to suggest column relation for 'cellValuesToMatch'
-      // TODO scoring for ML suggested relations
-      // TODO scoring for matchedAttributeValues include ML scoring
-
-
-//
-//      2)
-//        + classifier relace + klasicka relation discovery Odalicu - spojit dohromady .
-//              klasicka relation discovery jen pro sloupce kde klasifier neuspeje
-
-
+      
       // perform matching and scoring
       // key=col id; value: contains the attr that matched with the highest score against cell in
       // that column

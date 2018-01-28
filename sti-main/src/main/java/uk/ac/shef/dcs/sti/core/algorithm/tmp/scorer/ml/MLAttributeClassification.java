@@ -18,6 +18,7 @@ public class MLAttributeClassification {
     public MLAttributeClassification withUriPrefix(String prefix) {
         String uriWoPrefix = attribute.getRelationURI();
         Attribute newAttribute = new SparqlAttribute(prefix + uriWoPrefix, value);
+        newAttribute.setRelationLabel(attribute.getRelationLabel());
         return new MLAttributeClassification(value, newAttribute, score);
     }
 

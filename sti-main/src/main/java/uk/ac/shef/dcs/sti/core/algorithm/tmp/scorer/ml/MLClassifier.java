@@ -26,6 +26,7 @@ public abstract class MLClassifier {
     private static final String BOOLEAN_TRUE = "true";
     private static final String BOOLEAN_FALSE = "false";
     private static final String TRAINING_RELATION_NAME = "traning_dataset";
+    private static final String CLASSIFYING_RELATION_NAME = "classifying_dataset";
     private static final String EMPTY_CLASS_VALUE = "";
 
     private static final String PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH =
@@ -83,7 +84,8 @@ public abstract class MLClassifier {
             // convert to instance (calculate features, assign classes and attributes)
             InputValue inputValue = new InputValue(valueToClassify, EMPTY_CLASS_VALUE);
             InputWithFeatures inputValueWithFeatures = featureDetector.detectFeatures(inputValue);
-            Instance instanceToClassify = convertUnknownClassValueToInstance(inputValueWithFeatures);
+            Instances instancesToClassify = convertUnknownClassValueToInstance(inputValueWithFeatures);
+            Instance instanceToClassify = instancesToClassify.firstInstance();
 
             // classify converted value using classifier
             Classifier classifier = getClassifier();
@@ -169,7 +171,7 @@ public abstract class MLClassifier {
         return instances;
     }
 
-    private Instance convertUnknownClassValueToInstance(InputWithFeatures valueToClassify) {
+    private Instances convertUnknownClassValueToInstance(InputWithFeatures valueToClassify) {
         List<String> intFeatureKeys = valueToClassify.getIntFeaturesKeys();
         List<String> boolFeatureKeys = valueToClassify.getBoolFeaturesKeys();
 
@@ -177,11 +179,16 @@ public abstract class MLClassifier {
         Attribute classAttribute = new Attribute(CLASS_ATTRIBUTE_NAME, classifierClasses);
         fvWekaAttributes.add(classAttribute);
 
+        Instances instances = new Instances(CLASSIFYING_RELATION_NAME, fvWekaAttributes, 1);
+        instances.setClassIndex(fvWekaAttributes.size() - 1);
+
         DenseInstance instance = createInstanceFromInputWithFeatures(intFeatureKeys, boolFeatureKeys,
                 fvWekaAttributes, valueToClassify);
 
         instance.setValue(classAttribute, Utils.missingValue());
-        return instance;
+        instances.add(instance);
+
+        return instances;
     }
 
     private ArrayList<Attribute> initInstanceWekaAttributes(List<String> intFeatureKeys, List<String> boolFeatureKeys) {
@@ -251,6 +258,7 @@ public abstract class MLClassifier {
 
     private MLAttributeClassification createMLAttributeClassification(String value, String className, double score) {
         uk.ac.shef.dcs.kbproxy.model.Attribute stiAttribute = new SparqlAttribute(className, value);
+        stiAttribute.setRelationLabel(className);
         return new MLAttributeClassification(value, stiAttribute, score);
     }
 
