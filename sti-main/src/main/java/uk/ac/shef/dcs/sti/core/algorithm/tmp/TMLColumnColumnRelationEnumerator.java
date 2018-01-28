@@ -49,7 +49,9 @@ public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnum
                 String cellValue = cellValueToMatch.getValue();
 
                 MLAttributeClassification mlClassification = mlClassifier.classifyToAttribute(cellValue);
-                mlClassificationScores.put(columnIndex, mlClassification);
+                if (mlClassification.nonEmpty()) {
+                    mlClassificationScores.put(columnIndex, mlClassification);
+                }
             }
 
             // perform matching and scoring
@@ -79,6 +81,8 @@ public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnum
         resetSuggestedRelationPositionsVisited();
         // discover relations using ML classifier
         try {
+            // TODO ml relation discovery, and if fails, legacy odalic discovery
+
             mlOnlyRelationDiscovery(annotations, table, subjectCol, constraints);
         } catch (MLException e) {
             throw new STIException("ML classifier error: " + e.getMessage(), e);

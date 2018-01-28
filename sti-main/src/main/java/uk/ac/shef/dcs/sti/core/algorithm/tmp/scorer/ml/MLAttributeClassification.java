@@ -8,11 +8,17 @@ public class MLAttributeClassification {
     private String value;
     private Attribute attribute;
     private Double score;
+    private boolean empty = true;
 
     public MLAttributeClassification(String value, Attribute attribute, Double score) {
         this.value = value;
         this.attribute = attribute;
         this.score = score;
+        if (this.attribute == null) {
+            this.empty = true;
+        }else {
+            this.empty = false;
+        }
     }
 
     public MLAttributeClassification withUriPrefix(String prefix) {
@@ -20,6 +26,14 @@ public class MLAttributeClassification {
         Attribute newAttribute = new SparqlAttribute(prefix + uriWoPrefix, value);
         newAttribute.setRelationLabel(attribute.getRelationLabel());
         return new MLAttributeClassification(value, newAttribute, score);
+    }
+
+    public boolean isEmpty() {
+        return empty;
+    }
+
+    public boolean nonEmpty() {
+        return !empty;
     }
 
     public String getValue() {

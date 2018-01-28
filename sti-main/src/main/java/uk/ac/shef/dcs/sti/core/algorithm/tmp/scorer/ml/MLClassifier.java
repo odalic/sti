@@ -1,10 +1,8 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml;
 
-import org.apache.jena.atlas.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.shef.dcs.kbproxy.sparql.SparqlAttribute;
-import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.DatasetFileReader;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputWithFeatures;
@@ -31,6 +29,8 @@ public abstract class MLClassifier {
 
     private static final String PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH =
             "sti.tmp.ml.training.dataset.file.path";
+
+    private static final double ML_CONFIDENCE_THRESHOLD = 0.5;
 
     private String homePath;
     private String propsFilePath;
@@ -94,9 +94,11 @@ public abstract class MLClassifier {
             double[] instanceDistribution = classifier.distributionForInstance(instanceToClassify);
             // find index of class with highest classifier score
             MLAttributeClassification classification = findMostProbableClass(valueToClassify, instanceToClassify, instanceDistribution);
-
-            // add URI prefix
-            return classification.withUriPrefix("http://kadlecek.sk/tmp/");
+            if (classification.nonEmpty()) {
+                // add URI prefix
+                classification = classification.withUriPrefix("http://kadlecek.sk/tmp/");
+            }
+            return classification;
 
         } catch (Exception e) {
             throw new MLException("Failed to classify instance: " + e.getMessage(), e);
@@ -247,12 +249,16 @@ public abstract class MLClassifier {
             }
         }
         if (maxValueIndex > -1) {
-            String className = instance.classAttribute().value(maxValueIndex);
-            return createMLAttributeClassification(value, className, maxValue);
+            if (maxValue >= ML_CONFIDENCE_THRESHOLD) {
+                String className = instance.classAttribute().value(maxValueIndex);
+                return createMLAttributeClassification(value, className, maxValue);
+            } else {
+                // no value with high-enough confidence
+                return createEmptyMLAttributeClassification(value);
+            }
         }else {
             // classifier did not return any valid classification
-            String className = instance.classAttribute().value(0);
-            return createMLAttributeClassification(value, className, maxValue);
+            return createEmptyMLAttributeClassification(value);
         }
     }
 
@@ -260,6 +266,10 @@ public abstract class MLClassifier {
         uk.ac.shef.dcs.kbproxy.model.Attribute stiAttribute = new SparqlAttribute(className, value);
         stiAttribute.setRelationLabel(className);
         return new MLAttributeClassification(value, stiAttribute, score);
+    }
+
+    private MLAttributeClassification createEmptyMLAttributeClassification(String value) {
+        return new MLAttributeClassification(value, null, null);
     }
 
     protected abstract Classifier getClassifier();
