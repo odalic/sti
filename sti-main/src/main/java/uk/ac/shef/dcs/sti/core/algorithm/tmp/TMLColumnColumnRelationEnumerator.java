@@ -13,6 +13,7 @@ import uk.ac.shef.dcs.sti.core.model.Table;
 import uk.ac.shef.dcs.sti.core.scorer.AttributeValueMatcher;
 import uk.ac.shef.dcs.sti.core.scorer.RelationScorer;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
+import uk.ac.shef.dcs.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +43,10 @@ public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnum
             // respect suggested relations passed by user in constrains
             final Map<Integer, String> cellValuesToMatch = getCellValuesToMatch(table, subjectCol, row, columnDataTypes, constraints);
 
+            // a map of cell values, that needs to be matched by 'legacy' relation enumeration methods,
+            // as the ML classifier was unable to classify them
+            final Map<Integer, String> cellValuesToMatchLegacy = new HashMap<>();
+
             // determine relation between subjectCol and other columns using ML classifier, together with a score
             final Map<Integer, MLAttributeClassification> mlClassificationScores = new HashMap<>();
             for (Map.Entry<Integer, String> cellValueToMatch : cellValuesToMatch.entrySet()) {
@@ -51,6 +56,8 @@ public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnum
                 MLAttributeClassification mlClassification = mlClassifier.classifyToAttribute(cellValue);
                 if (mlClassification.nonEmpty()) {
                     mlClassificationScores.put(columnIndex, mlClassification);
+                } else {
+                    cellValuesToMatchLegacy.put(columnIndex, cellValue);
                 }
             }
 
@@ -68,9 +75,22 @@ public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnum
                 matchedValues.add(mlClassificationAttribute);
 
                 final TCellCellRelationAnotation cellcellRelation = new TCellCellRelationAnotation(
-                    subCol_to_objCol, row, relationURI, relationLabel, matchedValues, e.getValue().getScore()
+                        subCol_to_objCol, row, relationURI, relationLabel, matchedValues, e.getValue().getScore()
                 );
                 annotations.addCellCellRelation(cellcellRelation);
+            }
+
+            // annotate missing values using legacy Odalic (TMP) method
+            if (!cellValuesToMatchLegacy.isEmpty()) {
+                try {
+                    Map<Integer, List<Pair<Attribute, Double>>> cellMatchScores =
+                            computeCellMatchScoresForRow(annotations, row, subjectCol, columnDataTypes, cellValuesToMatchLegacy);
+
+                    addCellCellRelationAnnotationsFromCellMatchScores(annotations, cellMatchScores, row, subjectCol);
+                }catch (STIException e) {
+                    throw new MLException("Legacy Relation Discovery failed: " + e.getMessage(), e);
+                }
+
             }
         }
     }

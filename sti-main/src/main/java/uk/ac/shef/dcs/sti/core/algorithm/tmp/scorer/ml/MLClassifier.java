@@ -30,13 +30,17 @@ public abstract class MLClassifier {
     private static final String PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH =
             "sti.tmp.ml.training.dataset.file.path";
 
-    private static final double ML_CONFIDENCE_THRESHOLD = 0.5;
+    private static final String PROPERTY_ML_CLASSIFIER_CONFIDENCE_THRESHOLD =
+            "sti.tmp.ml.confidence.threshold";
+
+    private static final double ML_CONFIDENCE_THRESHOLD_DEFAULT = 0.5;
 
     private String homePath;
     private String propsFilePath;
     private Properties props;
     private DatasetFileReader fileReader;
     private MLFeatureDetector featureDetector;
+    private Double confidenceThreshold = ML_CONFIDENCE_THRESHOLD_DEFAULT;
 
     /**
      * Classes supported by the classifier (loaded from training dataset).
@@ -50,9 +54,17 @@ public abstract class MLClassifier {
         this.featureDetector = featureDetector;
     }
 
-    private Properties loadProps(String propsFilePath) throws IOException {
+    private Properties loadProps(String propsFilePath) throws IOException, MLException {
         final Properties properties = new Properties();
         properties.load(new FileInputStream(propsFilePath));
+
+        Double confidenceThresholdOverride = getDoublePropertyValue(
+            properties, PROPERTY_ML_CLASSIFIER_CONFIDENCE_THRESHOLD, ML_CONFIDENCE_THRESHOLD_DEFAULT
+        );
+        if (confidenceThresholdOverride != null) {
+            this.confidenceThreshold = confidenceThresholdOverride;
+        }
+        LOG.info("ML Classifier: Using confidence threshold: " + this.confidenceThreshold + ".");
         return properties;
     }
 
@@ -249,7 +261,7 @@ public abstract class MLClassifier {
             }
         }
         if (maxValueIndex > -1) {
-            if (maxValue >= ML_CONFIDENCE_THRESHOLD) {
+            if (maxValue >= this.confidenceThreshold) {
                 String className = instance.classAttribute().value(maxValueIndex);
                 return createMLAttributeClassification(value, className, maxValue);
             } else {
@@ -300,6 +312,19 @@ public abstract class MLClassifier {
             throw new MLException(error);
         }
 
+    }
+
+    protected Double getDoublePropertyValue(Properties props, String key, Double defaultValue) throws MLException {
+        String strValue = props.getProperty(key);
+        if (strValue != null) {
+            try {
+                return Double.parseDouble(strValue);
+            } catch (NumberFormatException e){
+                throw new MLException("Can not parse property: " + key + " (value: " + strValue + "). Expected: Double.");
+            }
+        } else {
+            return defaultValue;
+        }
     }
 
 }

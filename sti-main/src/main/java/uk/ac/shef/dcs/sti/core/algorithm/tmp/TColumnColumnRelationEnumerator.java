@@ -113,45 +113,63 @@ public class TColumnColumnRelationEnumerator {
 
     // for each row, get the annotation for that (row, col)
     for (int row = 0; row < table.getNumRows(); row++) {
-      // get the winning annotation for this cell
-      final List<TCellAnnotation> winningCellAnnotations =
-          annotations.getWinningContentCellAnnotation(row, subjectCol);
-
-      // collect attributes from where candidate relations are created
-      final List<Attribute> collectedAttributes = new ArrayList<>();
-      for (final TCellAnnotation cellAnnotation : winningCellAnnotations) {
-        for (Attribute attr : cellAnnotation.getAnnotation().getAttributes()) {
-          int ind = attr.getValue().indexOf("^^");
-          if (ind > 0) {
-            attr.setValue(attr.getValue().substring(0, ind));
-            attr.setValueURI(null);
-          }
-          collectedAttributes.add(attr);
-        }
-      }
 
       // collect cell values on the same row, from other columns
       final Map<Integer, String> cellValuesToMatch = getCellValuesToMatch(table, subjectCol, row, columnDataTypes, constraints);
-      
+
       // perform matching and scoring
       // key=col id; value: contains the attr that matched with the highest score against cell in
       // that column
       final Map<Integer, List<Pair<Attribute, Double>>> cellMatchScores =
-          this.attributeValueMatcher.match(collectedAttributes, cellValuesToMatch, columnDataTypes);
+              computeCellMatchScoresForRow(annotations, row, subjectCol, columnDataTypes, cellValuesToMatch);
 
-      for (final Map.Entry<Integer, List<Pair<Attribute, Double>>> e : cellMatchScores.entrySet()) {
-        final RelationColumns subCol_to_objCol = new RelationColumns(subjectCol, e.getKey());
+      addCellCellRelationAnnotationsFromCellMatchScores(annotations, cellMatchScores, row, subjectCol);
+    }
+  }
 
-        final List<Pair<Attribute, Double>> matchedAttributes = e.getValue();
-        for (final Pair<Attribute, Double> entry : matchedAttributes) {
-          final String relationURI = entry.getKey().getRelationURI();
-          final String relationLabel = entry.getKey().getRelationLabel();
-          final List<Attribute> matchedValues = new ArrayList<>();
-          matchedValues.add(entry.getKey());
-          final TCellCellRelationAnotation cellcellRelation = new TCellCellRelationAnotation(
-              subCol_to_objCol, row, relationURI, relationLabel, matchedValues, entry.getValue());
-          annotations.addCellCellRelation(cellcellRelation);
+  protected Map<Integer, List<Pair<Attribute, Double>>> computeCellMatchScoresForRow(
+          final TAnnotation annotations, int row, int subjectCol, final Map<Integer, DataTypeClassifier.DataType> columnDataTypes,
+          final Map<Integer, String> cellValuesToMatch) throws STIException {
+
+    // get the winning annotation for this cell
+    final List<TCellAnnotation> winningCellAnnotations =
+            annotations.getWinningContentCellAnnotation(row, subjectCol);
+
+    // collect attributes from where candidate relations are created
+    final List<Attribute> collectedAttributes = new ArrayList<>();
+    for (final TCellAnnotation cellAnnotation : winningCellAnnotations) {
+      for (Attribute attr : cellAnnotation.getAnnotation().getAttributes()) {
+        int ind = attr.getValue().indexOf("^^");
+        if (ind > 0) {
+          attr.setValue(attr.getValue().substring(0, ind));
+          attr.setValueURI(null);
         }
+        collectedAttributes.add(attr);
+      }
+    }
+
+    // perform matching and scoring
+    // key=col id; value: contains the attr that matched with the highest score against cell in
+    // that column
+    return this.attributeValueMatcher.match(collectedAttributes, cellValuesToMatch, columnDataTypes);
+  }
+
+  protected void addCellCellRelationAnnotationsFromCellMatchScores(final TAnnotation annotations,
+                                                                   Map<Integer, List<Pair<Attribute, Double>>> cellMatchScores,
+                                                                   int row, int subjectCol) {
+
+    for (final Map.Entry<Integer, List<Pair<Attribute, Double>>> e : cellMatchScores.entrySet()) {
+      final RelationColumns subCol_to_objCol = new RelationColumns(subjectCol, e.getKey());
+
+      final List<Pair<Attribute, Double>> matchedAttributes = e.getValue();
+      for (final Pair<Attribute, Double> entry : matchedAttributes) {
+        final String relationURI = entry.getKey().getRelationURI();
+        final String relationLabel = entry.getKey().getRelationLabel();
+        final List<Attribute> matchedValues = new ArrayList<>();
+        matchedValues.add(entry.getKey());
+        final TCellCellRelationAnotation cellcellRelation = new TCellCellRelationAnotation(
+                subCol_to_objCol, row, relationURI, relationLabel, matchedValues, entry.getValue());
+        annotations.addCellCellRelation(cellcellRelation);
       }
     }
   }
