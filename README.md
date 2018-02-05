@@ -46,8 +46,11 @@ where the {sti.home}/config/sti.properties is a location of the main configurati
 
 [Web](https://odalic.github.io/)
 
-## ACKNOWLEDGEMENT
+## Acknowledgement
 Odalic started as a student project at Charles University in Prague (Vasek Brodec, Josef Janousek, Istvan Satmari, Katerina Bokova, Jan Vana), under the supervision of Tomas Knap, with many useful advices from the original author of the core algorithm - Ziqi Zhang. It is further developed and maintained as part of the [ADEQUATe project](http://adequate.at). 
 
-## LICENCE
+## License
 Apache 2.0
+
+## Odalic research paper to cite
+If you refer to Odalic, please cite [this paper](http://dblp.uni-trier.de/rec/bibtex/conf/semweb/Knap17)
