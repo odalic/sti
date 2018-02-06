@@ -189,11 +189,12 @@ public class TColumnColumnRelationEnumerator {
     final Map<Integer, DataTypeClassifier.DataType> columnDataTypes = new HashMap<>();
     for (int c = 0; c < table.getNumCols(); c++) {
       final DataTypeClassifier.DataType type = table.getColumnHeader(c).getTypes().get(0).getType();
-      if (type.equals(DataTypeClassifier.DataType.ORDERED_NUMBER)) {
-        continue; // ordered numbered columns are not interesting
-      } else {
-        columnDataTypes.put(c, type);
-      }
+      columnDataTypes.put(c, type);
+//      if (type.equals(DataTypeClassifier.DataType.ORDERED_NUMBER)) {
+//        continue; // ordered numbered columns are not interesting
+//      } else {
+//        columnDataTypes.put(c, type);
+//      }
     }
     return columnDataTypes;
   }
