@@ -52,13 +52,13 @@ public final class CoreExceptionsWrappingProxy implements Proxy {
     }
   }
 
-  /**
-   * get attributes of the class
-   */
-  @Override
-  public ProxyResult<List<Attribute>> findAttributesOfClazz(final String clazzId) {
-    return Do(() -> this.core.findAttributesOfClazz(clazzId), new ArrayList<Attribute>());
-  }
+//  /**
+//   * get attributes of the class
+//   */
+//  @Override
+//  public ProxyResult<List<Attribute>> findAttributesOfClazz(final String clazzId) {
+//    return Do(() -> this.core.findAttributesOfClazz(clazzId), new ArrayList<Attribute>());
+//  }
 
   /**
    * Get attributes of the entity candidate (all predicates and object values of the triples where
@@ -71,13 +71,13 @@ public final class CoreExceptionsWrappingProxy implements Proxy {
     return Do(() -> this.core.findAttributesOfEntities(ec), new ArrayList<Attribute>());
   }
 
-  /**
-   * get attributes of the property
-   */
-  @Override
-  public ProxyResult<List<Attribute>> findAttributesOfProperty(final String propertyId) {
-    return Do(() -> this.core.findAttributesOfProperty(propertyId), new ArrayList<Attribute>());
-  }
+//  /**
+//   * get attributes of the property
+//   */
+//  @Override
+//  public ProxyResult<List<Attribute>> findAttributesOfProperty(final String propertyId) {
+//    return Do(() -> this.core.findAttributesOfProperty(propertyId), new ArrayList<Attribute>());
+//  }
 
   /**
    * Given a string, fetch candidate entities (classes) from the KB based on a fulltext search.
@@ -126,20 +126,11 @@ public final class CoreExceptionsWrappingProxy implements Proxy {
   }
 
   /**
-   * compute the seamntic similarity between an entity and a class
+   * @param clazz
+   * @return parent clazz of given clazz
    */
-  @Override
-  public ProxyResult<Double> findEntityClazzSimilarity(final String entity_id,
-      final String clazz_url) {
-    return Do(() -> this.core.findEntityClazzSimilarity(entity_id, clazz_url), 0.0);
-  }
-
-  /**
-   * @return the granularity of the class in the KB.
-   */
-  @Override
-  public ProxyResult<Double> findGranularityOfClazz(final String clazz) {
-    return Do(() -> this.core.findGranularityOfClazz(clazz), 0.0);
+  public ProxyResult<String> findParentClazz(final String clazz) {
+    return Do(() -> this.core.findParentClazz(clazz), null);
   }
 
   /**
@@ -251,8 +242,8 @@ public final class CoreExceptionsWrappingProxy implements Proxy {
   }
 
   @Override
-  public String getResourceLabel(String uri) throws ProxyException {
-    return this.core.getResourceLabel(uri);
+  public String getResourceLabel(String uri, ProxyCore.StructureOrDataQueries typeOfQuery) throws ProxyException {
+    return this.core.getResourceLabel(uri, typeOfQuery);
   }
 
   @Override

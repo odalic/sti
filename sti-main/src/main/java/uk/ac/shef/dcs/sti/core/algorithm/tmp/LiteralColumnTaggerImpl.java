@@ -29,12 +29,7 @@ public class LiteralColumnTaggerImpl implements LiteralColumnTagger {
   public LiteralColumnTaggerImpl() {
 
   }
-
-  public LiteralColumnTaggerImpl(final int... ignoreColumns) {
-    this.ignoreColumns = ignoreColumns;
-
-  }
-
+  
   @Override
   public void annotate(final Table table, final TAnnotation annotations, final Integer... neColumns)
       throws ProxyException {

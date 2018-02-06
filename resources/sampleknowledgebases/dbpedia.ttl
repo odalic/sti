@@ -1,0 +1,13 @@
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/V4/1fe61ce8-e61c-451f-a189-0b47b6c99aaf> a <http://odalic.eu/internal/KnowledgeBase> ;
+	<http://odalic.eu/internal/KnowledgeBase/advancedType> "SPARQL" ;
+	<http://odalic.eu/internal/KnowledgeBase/groupsAutoSelected> true ;
+	<http://odalic.eu/internal/KnowledgeBase/textSearchingMethod> "EXACT" ;
+	<http://odalic.eu/internal/KnowledgeBase/description> "DBpedia" ;
+	<http://odalic.eu/internal/KnowledgeBase/languageTag> "en" ;
+	<http://odalic.eu/internal/KnowledgeBase/skippedAttribute> "http://www.w3.org/ns/prov#wasDerivedFrom" , "http://dbpedia.org/ontology/wikiPageExternalLink" , "http://dbpedia.org/ontology/wikiPageID" , "http://dbpedia.org/ontology/wikiPageLength" , """http://dbpedia.org/ontology/wikiPageOutDegree	""" , "http://dbpedia.org/ontology/wikiPageRevisionID" , "http://xmlns.com/foaf/0.1/isPrimaryTopicOf" , "" ;
+	<http://odalic.eu/internal/KnowledgeBase/endpoint> "http://dbpedia.org/sparql" ;
+	<http://odalic.eu/internal/KnowledgeBase/password> "" ;
+	<http://odalic.eu/internal/KnowledgeBase/skippedClass> "http://www.w3.org/2002/07/owl#Thing" , "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Agent" , "http://www.w3.org/2004/02/skos/core#Concept" , "http://www.opengis.net/gml/_Feature" ;
+	<http://odalic.eu/internal/KnowledgeBase/name> "DBpedia" ;
+	<http://odalic.eu/internal/KnowledgeBase/insertEnabled> false .

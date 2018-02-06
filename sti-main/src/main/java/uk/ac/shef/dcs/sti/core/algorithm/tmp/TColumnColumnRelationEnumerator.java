@@ -110,6 +110,13 @@ public class TColumnColumnRelationEnumerator {
       final int subjectCol, final Constraints constraints) throws STIException {
     // select columns that are likely to form a relation with subject column
     final Map<Integer, DataTypeClassifier.DataType> columnDataTypes = getDataTypesOfColumns(table);
+      columnDataTypes.put(c, type);
+
+//      if (type.equals(DataTypeClassifier.DataType.ORDERED_NUMBER)) {
+//        continue; // ordered numbered columns are not interesting
+//      } else {
+//        columnDataTypes.put(c, type);
+//      }
 
     // for each row, get the annotation for that (row, col)
     for (int row = 0; row < table.getNumRows(); row++) {
@@ -135,7 +142,7 @@ public class TColumnColumnRelationEnumerator {
     final List<TCellAnnotation> winningCellAnnotations =
             annotations.getWinningContentCellAnnotation(row, subjectCol);
 
-    // collect attributes from where candidate relations are created
+      // collect attributes from where candidate relations are created (e.g. for the entity "Graz" all attributes obtained from the KB)
     final List<Attribute> collectedAttributes = new ArrayList<>();
     for (final TCellAnnotation cellAnnotation : winningCellAnnotations) {
       for (Attribute attr : cellAnnotation.getAnnotation().getAttributes()) {

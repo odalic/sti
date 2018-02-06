@@ -83,7 +83,7 @@ public final class KnowledgeBaseValue implements Serializable, Identifiable {
     this.datatypeProperty = adaptee.getDatatypeProperty() == null ? null : adaptee.getDatatypeProperty().toString();
     this.objectProperty = adaptee.getObjectProperty() == null ? null : adaptee.getObjectProperty().toString();
     this.login = adaptee.getLogin();
-    this.password = adaptee.getPassword();
+    this.password = "";
     this.advancedType = adaptee.getAdvancedType().getName();
     this.advancedProperties = adaptee.getAdvancedProperties().entrySet().stream().map(e -> new AdvancedPropertyEntry(e.getKey(), e.getValue())).collect(ImmutableSet.toImmutableSet());
   }

@@ -1,0 +1,70 @@
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/V4/75280c7c-ce33-438c-b957-63d615ec2ea4> a <http://odalic.eu/internal/KnowledgeBase> ;
+	<http://odalic.eu/internal/KnowledgeBase/advancedType> "PoolParty" ;
+	<http://odalic.eu/internal/KnowledgeBase/groupsAutoSelected> false ;
+	<http://odalic.eu/internal/KnowledgeBase/textSearchingMethod> "SUBSTRING" ;
+	<http://odalic.eu/internal/KnowledgeBase/description> "ADEQUATe" ;
+	<http://odalic.eu/internal/KnowledgeBase/languageTag> "de" ;
+	<http://odalic.eu/internal/KnowledgeBase/login> "superadmin" ;
+	<http://odalic.eu/internal/KnowledgeBase/skippedAttribute> "http://purl.org/dc/terms/created" , "http://purl.org/dc/terms/creator" , "http://www.w3.org/2004/02/skos/core#prefLabel" ;
+	<http://odalic.eu/internal/KnowledgeBase/advancedProperty> <http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/e9319a2f041ab009a1c2c7dcd730d77c> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/e9319a2f041ab009a1c2c7dcd730d77c> <http://odalic.eu/internal/AdvancedPropertyEntry/value> "http://adequate-project-pp.semantic-web.at/PoolParty" ;
+	<http://odalic.eu/internal/AdvancedPropertyEntry/key> "ppServerUrl" ;
+	a <http://odalic.eu/internal/AdvancedPropertyEntry> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/V4/75280c7c-ce33-438c-b957-63d615ec2ea4> <http://odalic.eu/internal/KnowledgeBase/advancedProperty> <http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/927b026af80789e7f50a5a91a1b31c72> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/927b026af80789e7f50a5a91a1b31c72> <http://odalic.eu/internal/AdvancedPropertyEntry/key> "ppProjectId" ;
+	<http://odalic.eu/internal/AdvancedPropertyEntry/value> "1DF1A608-FACA-0001-241C-B30064DF1262" ;
+	a <http://odalic.eu/internal/AdvancedPropertyEntry> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/V4/75280c7c-ce33-438c-b957-63d615ec2ea4> <http://odalic.eu/internal/KnowledgeBase/advancedProperty> <http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/b686af4c257cb5dcadebb7afbad8e802> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/b686af4c257cb5dcadebb7afbad8e802> <http://odalic.eu/internal/AdvancedPropertyEntry/key> "ppOntologyUrl" ;
+	a <http://odalic.eu/internal/AdvancedPropertyEntry> ;
+	<http://odalic.eu/internal/AdvancedPropertyEntry/value> "http://adequate-project-pp.semantic-web.at/ADEQUATe" .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/V4/75280c7c-ce33-438c-b957-63d615ec2ea4> <http://odalic.eu/internal/KnowledgeBase/advancedProperty> <http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/61d2116bcecba91525307dbe25676a9b> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/61d2116bcecba91525307dbe25676a9b> <http://odalic.eu/internal/AdvancedPropertyEntry/value> "http://adequate-project-pp.semantic-web.at/ADEQUATe-scheme" ;
+	<http://odalic.eu/internal/AdvancedPropertyEntry/key> "ppCustomSchemaUrl" ;
+	a <http://odalic.eu/internal/AdvancedPropertyEntry> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/V4/75280c7c-ce33-438c-b957-63d615ec2ea4> <http://odalic.eu/internal/KnowledgeBase/advancedProperty> <http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/310a49c94d980d68ba4fae103e000ff4> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/310a49c94d980d68ba4fae103e000ff4> <http://odalic.eu/internal/AdvancedPropertyEntry/value> "https://adequate-project-pp.semantic-web.at/ADEQUATe_KB/b39c6dab-2bf2-4788-aff0-98f2fbab4b54" ;
+	<http://odalic.eu/internal/AdvancedPropertyEntry/key> "ppConceptSchemaProposed" ;
+	a <http://odalic.eu/internal/AdvancedPropertyEntry> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/V4/75280c7c-ce33-438c-b957-63d615ec2ea4> <http://odalic.eu/internal/KnowledgeBase/endpoint> "http://adequate-project-pp.semantic-web.at/PoolParty/sparql/ADEQUATe_KB" ;
+	<http://odalic.eu/internal/KnowledgeBase/password> "" ;
+	<http://odalic.eu/internal/KnowledgeBase/insertGraph> "" ;
+	<http://odalic.eu/internal/KnowledgeBase/userResourcesPrefix> "https://adequate-project-pp.semantic-web.at/ADEQUATe_KB/" ;
+	<http://odalic.eu/internal/KnowledgeBase/skippedClass> "http://www.w3.org/2002/07/owl#Thing" , "http://www.w3.org/2004/02/skos/core#Concept" ;
+	<http://odalic.eu/internal/KnowledgeBase/userClassesPrefix> "https://adequate-project-pp.semantic-web.at/ADEQUATe/" ;
+	<http://odalic.eu/internal/KnowledgeBase/name> "ADEQUATe" ;
+	<http://odalic.eu/internal/KnowledgeBase/objectProperty> "http://www.w3.org/2002/07/owl#ObjectProperty" ;
+	<http://odalic.eu/internal/KnowledgeBase/datatypeProperty> "http://www.w3.org/2002/07/owl#DatatypeProperty" ;
+	<http://odalic.eu/internal/KnowledgeBase/insertEnabled> true ;
+	<http://odalic.eu/internal/KnowledgeBase/selectedGroup> <http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/c4464e8dda0fdc351eeb1e6d15e69256> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/c4464e8dda0fdc351eeb1e6d15e69256> <http://odalic.eu/internal/Group/propertyType> "http://www.w3.org/2002/07/owl#DatatypeProperty" ;
+	a <http://odalic.eu/internal/Group> ;
+	<http://odalic.eu/internal/Group/propertyType> "http://www.w3.org/2002/07/owl#ObjectProperty" ;
+	<http://odalic.eu/internal/Group/id> "owl" ;
+	<http://odalic.eu/internal/Group/classType> "http://www.w3.org/2002/07/owl#Class" .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/V4/75280c7c-ce33-438c-b957-63d615ec2ea4> <http://odalic.eu/internal/KnowledgeBase/selectedGroup> <http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/09afcf22d2213264769f3f365366e02e> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/09afcf22d2213264769f3f365366e02e> <http://odalic.eu/internal/Group/propertyType> "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property" ;
+	<http://odalic.eu/internal/Group/instanceOfPredicate> "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ;
+	<http://odalic.eu/internal/Group/labelPredicate> "http://www.w3.org/2000/01/rdf-schema#label" ;
+	a <http://odalic.eu/internal/Group> ;
+	<http://odalic.eu/internal/Group/id> "rdf" .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/V4/75280c7c-ce33-438c-b957-63d615ec2ea4> <http://odalic.eu/internal/KnowledgeBase/selectedGroup> <http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/a25004116111484276aad5f538b6621a> .
+
+<http://adequate-project-odalic.semantic-web.at/odalic/SerializedKnowledgeBase/Node/a25004116111484276aad5f538b6621a> <http://odalic.eu/internal/Group/labelPredicate> "http://www.w3.org/2004/02/skos/core#prefLabel" ;
+	<http://odalic.eu/internal/Group/id> "skos" ;
+	a <http://odalic.eu/internal/Group> .

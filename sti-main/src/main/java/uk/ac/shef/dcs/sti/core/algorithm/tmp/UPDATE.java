@@ -126,7 +126,7 @@ public class UPDATE {
         ignore++;
       }
     }
-    if (candidates.isEmpty()) {
+    if (candidates.isEmpty() && !constraints.existClassifChosenForColumn(table_cell_col)) {
       final ProxyResult<List<Entity>> candidatesResult =
           this.kbSearch.findEntityCandidatesOfTypes(tcc.getText());
 
@@ -248,7 +248,7 @@ public class UPDATE {
       }
 
 
-      this.classifier.updateColumnClazz(updated, c, currentAnnotation, table, true);
+      this.classifier.updateColumnClazz(updated, c, currentAnnotation, table, this.kbSearch, true);
       // at this point, DC should have been computed. But updateColumnClazz does not add DC to the
       // newly compuetd clazz score.
       // we should add DC to the total score here. however we should use existing DC calculated
