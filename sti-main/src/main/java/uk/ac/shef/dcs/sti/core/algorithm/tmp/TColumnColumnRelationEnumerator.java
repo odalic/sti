@@ -110,7 +110,7 @@ public class TColumnColumnRelationEnumerator {
       final int subjectCol, final Constraints constraints) throws STIException {
     // select columns that are likely to form a relation with subject column
     final Map<Integer, DataTypeClassifier.DataType> columnDataTypes = getDataTypesOfColumns(table);
-      columnDataTypes.put(c, type);
+//      columnDataTypes.put(c, type);
 
 //      if (type.equals(DataTypeClassifier.DataType.ORDERED_NUMBER)) {
 //        continue; // ordered numbered columns are not interesting

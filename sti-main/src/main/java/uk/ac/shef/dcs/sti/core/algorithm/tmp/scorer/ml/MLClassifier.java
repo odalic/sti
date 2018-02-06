@@ -275,7 +275,7 @@ public abstract class MLClassifier {
     }
 
     private MLAttributeClassification createMLAttributeClassification(String value, String className, double score) {
-        uk.ac.shef.dcs.kbproxy.model.Attribute stiAttribute = new SparqlAttribute(className, value);
+        uk.ac.shef.dcs.kbproxy.model.Attribute stiAttribute = new SparqlAttribute(className, className, value, null);
         stiAttribute.setRelationLabel(className);
         return new MLAttributeClassification(value, stiAttribute, score);
     }
