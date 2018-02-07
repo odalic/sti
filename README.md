@@ -58,8 +58,8 @@ To cite Odalic in Your work, please use:
 ```
 @inproceedings{knap2017,
   author    = {Tomáš Knap},
-  title     = {Towards Odalic, a Semantic Table Interpretation Tool in the ADEQUATe
-               Project},
+  title     = {{Towards Odalic, a Semantic Table Interpretation Tool in the ADEQUATe
+               Project}},
   booktitle = {Proceedings of the 5th International Workshop on Linked Data for Information
                Extraction co-located with the 16th International Semantic Web Conference
                {(ISWC} 2017), Vienna, Austria, October 22, 2017.},
