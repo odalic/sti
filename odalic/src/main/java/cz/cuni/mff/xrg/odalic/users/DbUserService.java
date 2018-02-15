@@ -56,6 +56,7 @@ import cz.cuni.mff.xrg.odalic.util.storage.DbService;
  * @author Václav Brodec
  *
  */
+@SuppressWarnings("deprecation")
 public final class DbUserService implements UserService {
 
   private static final String SIGNUP_TOKEN_SUBJECT = "signup";
@@ -675,7 +676,7 @@ public final class DbUserService implements UserService {
 
       userId = fetchEmailAsUserId(respJson);
 
-      //TODO check freshness of the token - OAuth service of gitlab can be used for that (oauth/token/info)
+      // TODO: Check freshness of the token - OAuth service of gitlab can be used for that (oauth/token/info).
     }
 
     return matchAndFetchUser(userId, token);
@@ -716,9 +717,9 @@ public final class DbUserService implements UserService {
         HttpGet request = new HttpGet(uriBuilder.build().normalize());
         //request.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
-        DefaultHttpClient client = new DefaultHttpClient();
-
-        response = client.execute(request);
+        try (final DefaultHttpClient client = new DefaultHttpClient()) {
+        	response = client.execute(request);
+        }
 
         //process response
         checkHttpResponseStatus(response);

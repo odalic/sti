@@ -7,7 +7,7 @@ import uk.ac.shef.dcs.kbproxy.utils.Uris;
 /**
  * Created by - on 10/06/2016.
  *
- * TODO no need for this class, alias predicates, description predicates can be stored in config.
+ * TODO: No need for this class, alias predicates, description predicates can be stored in config.
  *
  */
 public class SparqlAttribute extends Attribute {

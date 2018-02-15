@@ -32,6 +32,7 @@ import java.net.URL;
 /**
  * Created by tomasknap on 09/02/17.
  */
+@SuppressWarnings("deprecation")
 public class HttpRequestExecutorForPP {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestExecutorForPP.class);
@@ -149,7 +150,7 @@ public class HttpRequestExecutorForPP {
 
             //check the validatity of URL
             try {
-                URL url = new URL(urlCreated);
+                new URL(urlCreated);
             } catch (MalformedURLException e) {
                 throw new PPRestApiCallException("Cannot parse the URL created and returned by PP ", e);
             }
@@ -322,7 +323,8 @@ public class HttpRequestExecutorForPP {
      * @throws Exception
      *             if request execution fails
      */
-    public String createClassRequest(ClassDesc createdEntityDesc) throws PPRestApiCallException {
+    @SuppressWarnings("unchecked")
+	public String createClassRequest(ClassDesc createdEntityDesc) throws PPRestApiCallException {
         CloseableHttpResponse response = null;
         try {
 
@@ -405,7 +407,8 @@ public class HttpRequestExecutorForPP {
      * @throws Exception
      *             if request execution fails
      */
-    public String createObjectRelationRequest(RelationDesc createdEntityDesc) throws PPRestApiCallException {
+    @SuppressWarnings("unchecked")
+	public String createObjectRelationRequest(RelationDesc createdEntityDesc) throws PPRestApiCallException {
         CloseableHttpResponse response = null;
         try {
 
@@ -507,7 +510,8 @@ public class HttpRequestExecutorForPP {
      * @throws Exception
      *             if request execution fails
      */
-    public String createDataTypeRelationRequest(RelationDesc createdEntityDesc) throws PPRestApiCallException {
+    @SuppressWarnings("unchecked")
+	public String createDataTypeRelationRequest(RelationDesc createdEntityDesc) throws PPRestApiCallException {
         CloseableHttpResponse response = null;
         try {
 

@@ -14,6 +14,10 @@ import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 
+
+/**
+ * TODO: Inefficient and probably also not correct, see: https://grips.semantic-web.at/display/ADEQ/Performance+bottlenecks
+ */
 public final class FilteringProxyCore implements ProxyCore {
 
   @SuppressWarnings("unused")
@@ -26,7 +30,6 @@ public final class FilteringProxyCore implements ProxyCore {
   /**
    * Wraps CachingProxyCore to filter certain types/predicates
    *
-   * TODO: Inefficient and probably also not correct, see: https://grips.semantic-web.at/display/ADEQ/Performance+bottlenecks
    * @param core
    * @param filter
    */
