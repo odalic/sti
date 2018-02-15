@@ -100,7 +100,7 @@ public class PPProxyCore extends SparqlProxyCore {
                     JSONObject o = (JSONObject) iterator.next();
                     JSONObject subject = (JSONObject)o.get("object");
                     if (subject == null) {
-                        //TODO Unify, so that it is always the same binding name!
+                        // TODO: Unify, so that it is always the same binding name!
                         subject = (JSONObject)o.get("subject");
                     }
                     String type = (String) subject.get("type");
