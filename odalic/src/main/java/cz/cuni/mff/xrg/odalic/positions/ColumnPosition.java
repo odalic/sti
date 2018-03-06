@@ -17,7 +17,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.ColumnPositionAdapter;
  */
 @Immutable
 @XmlJavaTypeAdapter(ColumnPositionAdapter.class)
-public final class ColumnPosition implements Serializable {
+public final class ColumnPosition implements Serializable, Comparable<ColumnPosition> {
 
   private static final long serialVersionUID = -1179554576389130985L;
 
@@ -34,6 +34,12 @@ public final class ColumnPosition implements Serializable {
     this.index = index;
   }
 
+  /**
+   * @return the index
+   */
+  public int getIndex() {
+    return this.index;
+  }
 
   /**
    * Compares for equality (only other column position with the same index passes).
@@ -59,13 +65,6 @@ public final class ColumnPosition implements Serializable {
   }
 
   /**
-   * @return the index
-   */
-  public int getIndex() {
-    return this.index;
-  }
-
-  /**
    * Computes hash code based on the index.
    *
    * @see java.lang.Object#hashCode()
@@ -76,6 +75,11 @@ public final class ColumnPosition implements Serializable {
     int result = 1;
     result = (prime * result) + this.index;
     return result;
+  }
+  
+  @Override
+  public int compareTo(final ColumnPosition other) {
+    return Integer.compare(this.index, other.index);
   }
 
   @Override
