@@ -52,7 +52,6 @@ import cz.cuni.mff.xrg.odalic.input.ParsingResult;
 import cz.cuni.mff.xrg.odalic.positions.CellPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
-import cz.cuni.mff.xrg.odalic.tasks.Task;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
@@ -369,13 +368,11 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
   private Result postProcess(final String userId, final Feedback feedback, final Input input,
       final Set<KnowledgeBase> usedBases, final String primaryBaseName, final Result result) {
-    final Map<String, PostProcessor> postProcessors =
-        this.extraAnnotatorFactory.getPostProcessors(userId, usedBases);
+    final List<PostProcessor> postProcessors =
+        this.extraAnnotatorFactory.getPostProcessors(usedBases);
     
     Result postProcessedResult = result;
-    for (final Map.Entry<String, PostProcessor> postProcessorEntry : postProcessors.entrySet()) {
-      final PostProcessor postProcessor = postProcessorEntry.getValue();
-
+    for (final PostProcessor postProcessor : postProcessors) {
       postProcessedResult = postProcessor.process(input, postProcessedResult, feedback, primaryBaseName);
     }
     return postProcessedResult;

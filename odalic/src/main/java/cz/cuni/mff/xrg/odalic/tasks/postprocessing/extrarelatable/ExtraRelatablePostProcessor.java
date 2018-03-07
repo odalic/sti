@@ -54,6 +54,8 @@ import cz.cuni.mff.xrg.odalic.util.Arrays;
 
 public final class ExtraRelatablePostProcessor implements PostProcessor {
 
+  public static final String LEARN_ANNOTATED_PARAMETER_KEY = "learnAnnotated";
+  
   private static final URI ANNOTATED_SUBPATH = URI.create("annotated");
   private static final String LEARN_QUERY_PARAMETER_NAME = "learn";
 
@@ -66,21 +68,21 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
   private final String baseName;
 
   public ExtraRelatablePostProcessor(final InputConverter inputConverter,
-      final PrefixMappingService prefixMappingService, final URI baseTargetPath,
-      final URI graphName, final boolean learnAnnotated, @Nullable final String languageTag,
-      @Nullable final String user) {
+      final PrefixMappingService prefixMappingService, final URI endpoint,
+      final String baseName, @Nullable final String languageTag, @Nullable final String user,
+      final Map<String, String> parameters) {
     checkNotNull(inputConverter);
     checkNotNull(prefixMappingService);
-    checkNotNull(baseTargetPath);
-    checkNotNull(graphName);
+    checkNotNull(endpoint);
+    checkNotNull(baseName);
 
     this.inputConverter = inputConverter;
     this.prefixMappingService = prefixMappingService;
-    this.targetPath = baseTargetPath.resolve(graphName).resolve(ANNOTATED_SUBPATH);
-    this.learnAnnotated = learnAnnotated;
+    this.targetPath = endpoint.resolve(ANNOTATED_SUBPATH);
+    this.learnAnnotated = Boolean.parseBoolean(parameters.getOrDefault(LEARN_ANNOTATED_PARAMETER_KEY, Boolean.FALSE.toString()));;
     this.languageTag = languageTag;
     this.user = user;
-    this.baseName = graphName.toString();
+    this.baseName = baseName;
   }
 
   @Override
@@ -121,7 +123,12 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     final Map<ColumnRelationPosition, ColumnRelationAnnotation> alteredColumnRelationAnnotations =
         new HashMap<>(result.getColumnRelationAnnotations());
     
-    final int sourceColumnIndex = alteredSubjectColumnPostions.get(primaryBaseName).stream().sorted().findFirst().get().getIndex();
+    final int sourceColumnIndex;
+    if (!this.baseName.equals(primaryBaseName)) {
+      sourceColumnIndex = alteredSubjectColumnPostions.get(primaryBaseName).stream().sorted().findFirst().get().getIndex();
+    } else {
+      sourceColumnIndex = 0; //TODO: Implement detection here too.
+    }
     
     final Map<ColumnRelationPosition, ColumnRelationAnnotation> relationsFeedback = feedback.getColumnRelations().stream().collect(ImmutableMap.toImmutableMap(e -> e.getPosition(), e -> e.getAnnotation()));
     
@@ -182,7 +189,13 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
   private Map<String, Set<ColumnPosition>> alterSubjectColumnPositions(final Result result,
       final Feedback feedback, final String primaryBaseName) {
     final Map<String, Set<ColumnPosition>> alteredSubjectColumnPostions = new HashMap<>(result.getSubjectColumnsPositions());
-    alteredSubjectColumnPostions.put(this.baseName, alteredSubjectColumnPostions.get(primaryBaseName)); // Use same as the primary.
+    
+    if (!this.baseName.equals(primaryBaseName)) {
+      alteredSubjectColumnPostions.put(this.baseName, alteredSubjectColumnPostions.get(primaryBaseName)); // Use same as the primary.      
+    } else {
+      alteredSubjectColumnPostions.put(this.baseName, ImmutableSet.of(new ColumnPosition(0))); // TODO: Implement detection. Until then... use the first.
+    }
+    
     final Set<ColumnPosition> feedbackSubjectColumnPositions = feedback.getSubjectColumnsPositions().get(this.baseName);
     if (feedbackSubjectColumnPositions != null) {
       alteredSubjectColumnPostions.put(this.baseName, feedbackSubjectColumnPositions);
