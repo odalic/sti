@@ -1,8 +1,10 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml;
 
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.DatasetFileReader;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
 import weka.classifiers.Classifier;
 import weka.classifiers.trees.RandomForest;
+
+import java.util.Properties;
 
 public class RandomForestMLClassifier extends MLClassifier {
 
@@ -13,8 +15,9 @@ public class RandomForestMLClassifier extends MLClassifier {
 
     private RandomForest classifier;
 
-    public RandomForestMLClassifier(String homePath, String propsFilePath, DatasetFileReader fileReader, MLFeatureDetector featureDetector) {
-        super(homePath, propsFilePath, fileReader, featureDetector);
+    public RandomForestMLClassifier(String homePath, Properties props, MLFeatureDetector featureDetector,
+                                    InputValue[] trainingDatasetInputValues) {
+        super(homePath, props, featureDetector, trainingDatasetInputValues);
         this.classifier = new RandomForest();
         this.classifier.setMaxDepth(MAX_DEPTH);
         this.classifier.setNumFeatures(NUM_FEATURES);

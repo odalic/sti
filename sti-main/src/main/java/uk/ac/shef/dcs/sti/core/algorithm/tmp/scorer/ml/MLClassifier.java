@@ -3,18 +3,13 @@ package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.shef.dcs.kbproxy.sparql.SparqlAttribute;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.DatasetFileReader;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputWithFeatures;
 import weka.classifiers.Classifier;
 import weka.core.*;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
-
-import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
 
 public abstract class MLClassifier {
 
@@ -27,19 +22,15 @@ public abstract class MLClassifier {
     private static final String CLASSIFYING_RELATION_NAME = "classifying_dataset";
     private static final String EMPTY_CLASS_VALUE = "";
 
-    private static final String PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH =
-            "sti.tmp.ml.training.dataset.file.path";
-
     private static final String PROPERTY_ML_CLASSIFIER_CONFIDENCE_THRESHOLD =
             "sti.tmp.ml.confidence.threshold";
 
     private static final double ML_CONFIDENCE_THRESHOLD_DEFAULT = 0.5;
 
     private String homePath;
-    private String propsFilePath;
     private Properties props;
-    private DatasetFileReader fileReader;
     private MLFeatureDetector featureDetector;
+    private InputValue[] trainingDatasetInputValues;
     private Double confidenceThreshold = ML_CONFIDENCE_THRESHOLD_DEFAULT;
 
     /**
@@ -47,17 +38,14 @@ public abstract class MLClassifier {
      */
     private List<String> classifierClasses;
 
-    public MLClassifier(String homePath, String propsFilePath, DatasetFileReader fileReader, MLFeatureDetector featureDetector) {
+    public MLClassifier(String homePath, Properties props, MLFeatureDetector featureDetector,
+                        InputValue[] trainingDatasetInputValues) {
         this.homePath = homePath;
-        this.propsFilePath = propsFilePath;
-        this.fileReader = fileReader;
         this.featureDetector = featureDetector;
+        this.trainingDatasetInputValues = trainingDatasetInputValues;
     }
 
-    private Properties loadProps(String propsFilePath) throws IOException, MLException {
-        final Properties properties = new Properties();
-        properties.load(new FileInputStream(propsFilePath));
-
+    private Properties loadProps(Properties properties) throws IOException, MLException {
         Double confidenceThresholdOverride = getDoublePropertyValue(
             properties, PROPERTY_ML_CLASSIFIER_CONFIDENCE_THRESHOLD, ML_CONFIDENCE_THRESHOLD_DEFAULT
         );
@@ -71,10 +59,9 @@ public abstract class MLClassifier {
 
     public void trainClassifier() throws MLException {
         try {
-            this.props = loadProps(this.propsFilePath);
             LOG.debug("ML Classifier training: properties loaded.");
 
-            Instances trainingDataset = readDatasetFile(getMLClassifierTrainingDatasetFilePath());
+            Instances trainingDataset = buildTrainingDatasetInstances();
             LOG.info("ML Classifier training: training dataset file reading done.");
             LOG.info("ML Classifier training: Parsed {} instances.", trainingDataset.size());
             classifierClasses = getClassesFromInstances(trainingDataset);
@@ -119,17 +106,13 @@ public abstract class MLClassifier {
     }
 
     /**
-     * Reads the CSV file with given training data, detect features of the records
+     * Detect features of the InpuValues of trainingDatasetInputValues,
      * and output them in form of Weka Instances.
-     * @param filename
      * @return
-     * @throws IOException
      */
-    protected Instances readDatasetFile(String filename) throws IOException {
-        // parse input file
-        InputValue[] parsedInputValues = fileReader.readFile(filename);
+    protected Instances buildTrainingDatasetInstances() {
         // detect features
-        InputWithFeatures[] inputValuesWithFeatures = featureDetector.detectFeatures(parsedInputValues);
+        InputWithFeatures[] inputValuesWithFeatures = featureDetector.detectFeatures(this.trainingDatasetInputValues);
         // build Instances instance
         return convertTrainingDatasetWithFeaturesToInstances(inputValuesWithFeatures);
     }
@@ -288,30 +271,6 @@ public abstract class MLClassifier {
 
     protected MLFeatureDetector getFeatureDetector() {
         return featureDetector;
-    }
-
-    private String getMLClassifierTrainingDatasetFilePath() throws MLException {
-        String propertyDescription = "ML Classifier training dataset file";
-        String trainingDatasetFilePath = this.props.getProperty(PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH);
-
-        if (trainingDatasetFilePath != null) {
-            String fullPath = combinePaths(homePath, trainingDatasetFilePath);
-
-            LOG.info("ML Classifier training dataset file: '" + fullPath +"'.");
-
-            if ((fullPath != null) && new File(fullPath).exists()) {
-                return fullPath;
-            } else {
-                final String error = "Cannot proceed: " + propertyDescription + " is not set or does not exist. "
-                        + PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH + "=" + trainingDatasetFilePath;
-                throw new MLException(error);
-            }
-        } else {
-            final String error = "Cannot proceed: " + propertyDescription + " is not set. "
-                    + "Property: " + PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH;
-            throw new MLException(error);
-        }
-
     }
 
     protected Double getDoublePropertyValue(Properties props, String key, Double defaultValue) throws MLException {

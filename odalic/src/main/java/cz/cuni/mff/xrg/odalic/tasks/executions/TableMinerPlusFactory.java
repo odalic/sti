@@ -3,13 +3,20 @@ package cz.cuni.mff.xrg.odalic.tasks.executions;
 import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
+import cz.cuni.mff.xrg.odalic.files.formats.Format;
+import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
+import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
+import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
+import cz.cuni.mff.xrg.odalic.input.ml.CsvDatasetFileReader;
 import org.apache.commons.lang3.StringUtils;
 import org.simmetrics.metrics.StringMetrics;
 import org.slf4j.Logger;
@@ -34,12 +41,9 @@ import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentTContentRowRankerIm
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPClazzScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPEntityScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPRelationScorer;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.DefaultMLFeatureDetector;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.MLClassifier;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.MLFeatureDetector;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.RandomForestMLClassifier;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.CsvDatasetFileReader;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.DatasetFileReader;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.*;
+import cz.cuni.mff.xrg.odalic.input.ml.DatasetFileReader;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
 import uk.ac.shef.dcs.sti.core.feature.ConceptBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.feature.RelationBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.scorer.AttributeValueMatcher;
@@ -87,11 +91,13 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   private final Properties properties;
 
   @Autowired
-  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService, final PropertiesService propertiesService) {
+  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService,
+                               final PropertiesService propertiesService) {
     this(knowledgeBaseProxyFactory, cacheProviderService, propertiesService.get());
   }
 
-  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService, final Properties properties) {
+  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService,
+                               final Properties properties) {
     Preconditions.checkNotNull(knowledgeBaseProxyFactory, "The knowledgeBaseProxyFactory cannot be null!");
     Preconditions.checkNotNull(cacheProviderService, "The cacheProviderService cannot be null!");
     Preconditions.checkNotNull(properties, "The properties cannot be null!");
@@ -201,11 +207,19 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
 
   private MLClassifier initMLClassifier(String mlPropsFilePath) throws STIException {
     try {
-      final DatasetFileReader mlDatasetFileReader = new CsvDatasetFileReader();
+      final String homePath = this.properties.getProperty(PROPERTY_HOME);
       final MLFeatureDetector mlFeatureDetector = new DefaultMLFeatureDetector();
 
+      // parse input dataset
+      MLPropertiesLoader mlPropertiesLoader = new MLPropertiesLoader(homePath, mlPropsFilePath);
+      String trainingDatasetPath = mlPropertiesLoader.getMLClassifierTrainingDatasetFilePath();
+      // TODO pass format from task submission
+      Format configuration = new Format(Charset.forName("UTF8"), '|', true, null, null, null, "\n");
+      DatasetFileReader datasetFileReader = new CsvDatasetFileReader( new DefaultApacheCsvFormatAdapter());
+      InputValue[] trainingDatasetInputValues = datasetFileReader.readDatasetFile(trainingDatasetPath, configuration);
+
       MLClassifier classifier = new RandomForestMLClassifier(
-          this.properties.getProperty(PROPERTY_HOME), mlPropsFilePath, mlDatasetFileReader, mlFeatureDetector
+          homePath, mlPropertiesLoader.getProperties(), mlFeatureDetector, trainingDatasetInputValues
       );
       classifier.trainClassifier();
       return classifier;
