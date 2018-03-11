@@ -1,5 +1,6 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
+import cz.cuni.mff.xrg.odalic.util.parsing.UriParsingUtil;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -384,13 +385,13 @@ public class SparqlProxyCore implements ProxyCore {
     // The resource has no statement with label property, apply simple heuristics to parse the
     // resource URI.
     if (labels.size() == 0) {
-      filteredLabels.add(parseLabelFromResource(resourceURI));
+      filteredLabels.add(UriParsingUtil.parseLabelFromResourceUri(resourceURI, this.definition.isUriLabelHeuristicApplied()));
     }
 
     return filteredLabels;
   }
 
-  protected String parseLabelFromResource(String resourceURI) {
+  /*protected String parseLabelFromResource(String resourceURI) {
     if (!resourceURI.startsWith("http")) {
       return resourceURI;
     }
@@ -416,9 +417,9 @@ public class SparqlProxyCore implements ProxyCore {
     }
 
     return resourceURI;
-  }
+  }*/
 
-  protected String applyCustomUriHeuristics(String resourceURI, String label) {
+  /*protected String applyCustomUriHeuristics(String resourceURI, String label) {
     if (!this.definition.isUriLabelHeuristicApplied()) {
       return label;
     }
@@ -442,7 +443,7 @@ public class SparqlProxyCore implements ProxyCore {
     }
 
     return label;
-  }
+  }*/
 
   /**
    * Compares the similarity of the object value in the pair (containing the label obtained from the KB) of certain resource (entity) and the cell value text (original label).
@@ -923,12 +924,17 @@ public class SparqlProxyCore implements ProxyCore {
         RDFNode predicateLabel = qs.get(SPARQL_VARIABLE_PREDICATE_LABEL);
         RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
         RDFNode objectLabel = qs.get(SPARQL_VARIABLE_OBJECT_LABEL);
+        boolean applyUriLabelHeuristics = this.definition.isUriLabelHeuristicApplied();
         if (object != null) {
           res.add(
               new SparqlAttribute(
-                  (predicateLabel != null) ? (predicateLabel.toString()) : (parseLabelFromResource(predicate.toString())),
+                  (predicateLabel != null) ? (predicateLabel.toString()) : (
+                          UriParsingUtil.parseLabelFromResourceUri(predicate.toString(), applyUriLabelHeuristics)
+                  ),
                   predicate.toString(),
-                  (objectLabel != null) ? (objectLabel.toString()) : (parseLabelFromResource(object.toString())),
+                  (objectLabel != null) ? (objectLabel.toString()) : (
+                          UriParsingUtil.parseLabelFromResourceUri(object.toString(), applyUriLabelHeuristics)
+                  ),
                   object.toString()
               ));
         }

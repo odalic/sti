@@ -17,6 +17,8 @@ import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.input.ml.CsvDatasetFileReader;
+import cz.cuni.mff.xrg.odalic.input.ml.JsonOntologyMappingReader;
+import cz.cuni.mff.xrg.odalic.input.ml.OntologyMappingReader;
 import org.apache.commons.lang3.StringUtils;
 import org.simmetrics.metrics.StringMetrics;
 import org.slf4j.Logger;
@@ -44,6 +46,7 @@ import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPRelationScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.*;
 import cz.cuni.mff.xrg.odalic.input.ml.DatasetFileReader;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.MLOntologyMapping;
 import uk.ac.shef.dcs.sti.core.feature.ConceptBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.feature.RelationBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.scorer.AttributeValueMatcher;
@@ -210,16 +213,22 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       final String homePath = this.properties.getProperty(PROPERTY_HOME);
       final MLFeatureDetector mlFeatureDetector = new DefaultMLFeatureDetector();
 
-      // parse input dataset
       MLPropertiesLoader mlPropertiesLoader = new MLPropertiesLoader(homePath, mlPropsFilePath);
+
+      // parse input dataset
       String trainingDatasetPath = mlPropertiesLoader.getMLClassifierTrainingDatasetFilePath();
-      // TODO pass format from task submission
-      Format configuration = new Format(Charset.forName("UTF8"), '|', true, null, null, null, "\n");
+      // TODO pass training set path and format from task submission
+      Format trainingDatasetConfiguration = new Format(Charset.forName("UTF8"), '|', true, null, null, null, "\n");
       DatasetFileReader datasetFileReader = new CsvDatasetFileReader( new DefaultApacheCsvFormatAdapter());
-      InputValue[] trainingDatasetInputValues = datasetFileReader.readDatasetFile(trainingDatasetPath, configuration);
+      InputValue[] trainingDatasetInputValues = datasetFileReader.readDatasetFile(trainingDatasetPath, trainingDatasetConfiguration);
+
+      // parse ontology mapping
+      OntologyMappingReader ontologyMappingReader = new JsonOntologyMappingReader();
+      MLOntologyMapping ontologyMapping =
+              ontologyMappingReader.readOntologyMapping(mlPropertiesLoader.getMLClassifierOntologyMappingFilePath());
 
       MLClassifier classifier = new RandomForestMLClassifier(
-          homePath, mlPropertiesLoader.getProperties(), mlFeatureDetector, trainingDatasetInputValues
+          homePath, mlPropertiesLoader.getProperties(), mlFeatureDetector, trainingDatasetInputValues, ontologyMapping
       );
       classifier.trainClassifier();
       return classifier;

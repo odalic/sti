@@ -21,6 +21,9 @@ public class MLPropertiesLoader {
     private static final String PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH =
             "sti.tmp.ml.training.dataset.file.path";
 
+    private static final String PROPERTY_ML_CLASSIFIER_ONTOLOGY_MAPPING_FILEPATH =
+            "sti.tmp.ml.ontology.mapping.file.path";
+
     public MLPropertiesLoader(String homePath, String propsFilePath) {
         this.homePath = homePath;
         this.propsFilePath = propsFilePath;
@@ -40,26 +43,38 @@ public class MLPropertiesLoader {
     }
 
     public String getMLClassifierTrainingDatasetFilePath() throws IOException, MLException {
-        String propertyDescription = "ML Classifier training dataset file";
-        String trainingDatasetFilePath = getProperties().getProperty(PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH);
+        return getMLClassifierFilePath(
+                PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH,
+                "ML Classifier training dataset file"
+        );
+    }
 
-        if (trainingDatasetFilePath != null) {
-            String fullPath = combinePaths(homePath, trainingDatasetFilePath);
+    public String getMLClassifierOntologyMappingFilePath() throws IOException, MLException {
+        return getMLClassifierFilePath(
+                PROPERTY_ML_CLASSIFIER_ONTOLOGY_MAPPING_FILEPATH,
+                "ML Classifier ontology mapping file"
+        );
+    }
 
-            LOG.info("ML Classifier training dataset file: '" + fullPath +"'.");
+    private String getMLClassifierFilePath(String propertyKey, String propertyDescription) throws IOException, MLException  {
+        String relativeFilePath = getProperties().getProperty(propertyKey);
+
+        if (relativeFilePath != null) {
+            String fullPath = combinePaths(homePath, relativeFilePath);
+
+            LOG.info(propertyDescription + ": '" + fullPath +"'.");
 
             if ((fullPath != null) && new File(fullPath).exists()) {
                 return fullPath;
             } else {
                 final String error = "Cannot proceed: " + propertyDescription + " is not set or does not exist. "
-                        + PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH + "=" + trainingDatasetFilePath;
+                        + propertyKey + "=" + relativeFilePath;
                 throw new MLException(error);
             }
         } else {
             final String error = "Cannot proceed: " + propertyDescription + " is not set. "
-                    + "Property: " + PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH;
+                    + "Property: " + propertyKey;
             throw new MLException(error);
         }
-
     }
 }

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import uk.ac.shef.dcs.kbproxy.sparql.SparqlAttribute;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputWithFeatures;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.MLOntologyMapping;
 import weka.classifiers.Classifier;
 import weka.core.*;
 
@@ -31,6 +32,7 @@ public abstract class MLClassifier {
     private Properties props;
     private MLFeatureDetector featureDetector;
     private InputValue[] trainingDatasetInputValues;
+    private MLOntologyMapping ontologyMapping;
     private Double confidenceThreshold = ML_CONFIDENCE_THRESHOLD_DEFAULT;
 
     /**
@@ -39,10 +41,11 @@ public abstract class MLClassifier {
     private List<String> classifierClasses;
 
     public MLClassifier(String homePath, Properties props, MLFeatureDetector featureDetector,
-                        InputValue[] trainingDatasetInputValues) {
+                        InputValue[] trainingDatasetInputValues, MLOntologyMapping ontologyMapping) {
         this.homePath = homePath;
         this.featureDetector = featureDetector;
         this.trainingDatasetInputValues = trainingDatasetInputValues;
+        this.ontologyMapping = ontologyMapping;
     }
 
     private Properties loadProps(Properties properties) throws IOException, MLException {
@@ -94,8 +97,16 @@ public abstract class MLClassifier {
             // find index of class with highest classifier score
             MLAttributeClassification classification = findMostProbableClass(valueToClassify, instanceToClassify, instanceDistribution);
             if (classification.nonEmpty()) {
-                // add URI prefix
-                classification = classification.withUriPrefix("http://kadlecek.sk/tmp/");
+                // map to URI from mapping
+                String mlClassLabel = classification.getAttribute().getRelationLabel();
+                String ontologyMappingValue = getOntologyMappingValue(mlClassLabel);
+                if (ontologyMappingValue != null) {
+                    // ontology mapping found
+                    classification = classification.withMappedUri(ontologyMappingValue);
+                } else {
+                    // ontology mapping not found, just assign prefix to create an URI
+                    classification = classification.withUriPrefix("http://odalic.eu/tmp/");
+                }
             }
             return classification;
 
@@ -103,6 +114,10 @@ public abstract class MLClassifier {
             throw new MLException("Failed to classify instance: " + e.getMessage(), e);
         }
 
+    }
+
+    private String getOntologyMappingValue(String mlClassLabel) {
+        return this.ontologyMapping.getOntologyMappingValue(mlClassLabel);
     }
 
     /**
