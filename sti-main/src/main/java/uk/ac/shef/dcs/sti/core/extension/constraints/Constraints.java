@@ -217,7 +217,7 @@ public final class Constraints implements Serializable {
       final Proxy kbProxy) {
     ProxyResult<Entity> entity = kbProxy.loadEntity(resource);
 
-    if (entity == null) {
+    if (entity == null || entity.getResult() == null) {
       entity = new ProxyResult<Entity>(new Entity(resource, label));
     }
     return entity;
