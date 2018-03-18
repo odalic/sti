@@ -51,7 +51,8 @@ class CMScorer {
   }
 
   // returns a map between column index and matching computeElementScores
-  public Map<Integer, Double> score(final Table table, final int... col_indexes) {
+  @SuppressWarnings("unlikely-arg-type")
+public Map<Integer, Double> score(final Table table, final int... col_indexes) {
     final Map<Integer, Double> scores = new HashMap<Integer, Double>();
 
     // learn headers to computeElementScores against
@@ -150,7 +151,7 @@ class CMScorer {
       // special context blocks does not count towards the maximum number of context blocks to be
       // considered
       if (ctx.getType().equals(TContext.TableContextType.CAPTION)
-          || ctx.getText().equals(TContext.TableContextType.PAGETITLE)) {
+          || ctx.getText().equals(TContext.TableContextType.PAGETITLE)) { // FIXME: Comparing String to Enum (maybe PAGETITLE.getText() was meant?)
       } else {
         countContextBlocks++;
       }

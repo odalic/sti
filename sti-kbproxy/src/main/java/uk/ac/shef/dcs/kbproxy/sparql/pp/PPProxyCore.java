@@ -93,13 +93,14 @@ public class PPProxyCore extends SparqlProxyCore {
                 JSONObject queryResultJson = (JSONObject) parser.parse(queryResultString);
 
                 JSONArray bindings = (JSONArray) ((JSONObject)queryResultJson.get("results")).get("bindings");
-                Iterator<JSONObject> iterator = bindings.iterator();
+                @SuppressWarnings("unchecked")
+				Iterator<JSONObject> iterator = bindings.iterator();
                 while (iterator.hasNext()) {
                     //process bindings:
                     JSONObject o = (JSONObject) iterator.next();
                     JSONObject subject = (JSONObject)o.get("object");
                     if (subject == null) {
-                        //TODO Unify, so that it is always the same binding name!
+                        // TODO: Unify, so that it is always the same binding name!
                         subject = (JSONObject)o.get("subject");
                     }
                     String type = (String) subject.get("type");
@@ -185,7 +186,7 @@ public class PPProxyCore extends SparqlProxyCore {
 
         if (typeOfQuery.equals(StructureOrDataQueries.STRUCTURE)) {
 
-            //TODO execute and fetch results
+            // TODO: Execute and fetch results.
             List<Pair<RDFNode, RDFNode>> out = new ArrayList<>();
 
             String queryResultString = queryExecutor.getSparqlQueryResult(query);
@@ -195,7 +196,8 @@ public class PPProxyCore extends SparqlProxyCore {
                 JSONObject queryResultJson = (JSONObject) parser.parse(queryResultString);
 
                 JSONArray bindings = (JSONArray) ((JSONObject) queryResultJson.get("results")).get("bindings");
-                Iterator<JSONObject> iterator = bindings.iterator();
+                @SuppressWarnings("unchecked")
+				Iterator<JSONObject> iterator = bindings.iterator();
                 while (iterator.hasNext()) {
                     //process bindings:
                     JSONObject o = (JSONObject) iterator.next();
@@ -237,71 +239,6 @@ public class PPProxyCore extends SparqlProxyCore {
 
 
     }
-
-//    @Override
-//    public List<String> getPropertyDomains(String uri) throws ProxyException{
-//        return getPropertyValues(uri, definition.getStructureDomain());
-//    }
-//
-//    @Override
-//    public List<String> getPropertyRanges(String uri) throws ProxyException{
-//        return getPropertyValues(uri, definition.getStructureRange());
-//    }
-//
-//    private List<String> getPropertyValues(String uri, String propertyUri) throws ProxyException {
-//        Asserts.notBlank(uri, "uri");
-//        Asserts.notBlank(propertyUri, "propertyUri");
-//
-//        SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_OBJECT)
-//                .addWhere(createSPARQLResource(uri), createSPARQLResource(propertyUri), SPARQL_VARIABLE_OBJECT);
-//        return queryReturnSingleValues(builder.build(), SPARQL_VARIABLE_OBJECT);
-//
-//    }
-
-//    @Override
-//    public List<Attribute> findAttributes(String resourceId) throws ProxyException {
-//        if (resourceId.length() == 0)
-//            return new ArrayList<>();
-//
-//        List<Attribute> res = new ArrayList<>();
-//
-//        SelectBuilder builder = getSelectBuilder(SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT)
-//                .addWhere(createSPARQLResource(resourceId), SPARQL_VARIABLE_PREDICATE, SPARQL_VARIABLE_OBJECT);
-//
-//        Query query = builder.build();
-//
-//
-//        //TODO run query, collect results attributes
-//
-////        QueryExecution qExec = getQueryExecution(query);
-////
-////        qExec.setTimeout(queryTimeout, TimeUnit.SECONDS);
-////
-////        try {
-////            ResultSet rs = qExec.execSelect();
-////            while (rs.hasNext()) {
-////                QuerySolution qs = rs.next();
-////                RDFNode predicate = qs.get(SPARQL_VARIABLE_PREDICATE);
-////                RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
-////                if (object != null) {
-////                    Attribute attr = new SparqlAttribute(predicate.toString(), object.toString());
-////                    res.add(attr);
-////                }
-////            }
-////        } catch(org.apache.jena.query.QueryCancelledException e) {
-////            log.info("Timeout reached for query {}", query);
-////        } finally {
-////            qExec.close();
-////        }
-//
-//        return res;
-//    }
-
-
-
-
-
-
 
     /**
      * Inserts class to the ontology and custom schema.
@@ -365,8 +302,8 @@ public class PPProxyCore extends SparqlProxyCore {
 
         performInsertChecks(label);
 
-        //TODO? requested URL suffix not supported, new URL is always generated - is that ok? Probably yes, but UI should be adjusted?
-        String url = checkOrGenerateUrl(definition.getInsertPrefixData(), uri);
+        // TODO: Requested URL suffix not supported, new URL is always generated - is that ok? Probably yes, but UI should be adjusted?
+        checkOrGenerateUrl(definition.getInsertPrefixData(), uri);
 
         //prepare new entity description - the entity being created - in this case concept
         ResourceDesc resourceToBeCreatedDesc = new ResourceDesc(label);

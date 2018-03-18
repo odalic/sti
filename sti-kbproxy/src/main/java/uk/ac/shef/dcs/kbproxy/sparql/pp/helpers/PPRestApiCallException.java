@@ -5,7 +5,9 @@ package uk.ac.shef.dcs.kbproxy.sparql.pp.helpers;
  */
 public class PPRestApiCallException extends RuntimeException {
 
-    public PPRestApiCallException(String errorMsg) {
+    private static final long serialVersionUID = -1315176954713728038L;
+
+	public PPRestApiCallException(String errorMsg) {
         super(errorMsg);
     }
 

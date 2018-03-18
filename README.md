@@ -52,5 +52,21 @@ Odalic started as a student project at Charles University in Prague (Vasek Brode
 ## License
 Apache 2.0
 
-## Odalic research paper to cite
-If you refer to Odalic, please cite [this paper](http://dblp.uni-trier.de/rec/bibtex/conf/semweb/Knap17)
+## Citation - Odalic research paper
+To cite Odalic in Your work, please use:
+
+```
+@inproceedings{knap2017,
+  author    = {Tomáš Knap},
+  title     = {{Towards Odalic, a Semantic Table Interpretation Tool in the ADEQUATe
+               Project}},
+  booktitle = {Proceedings of the 5th International Workshop on Linked Data for Information
+               Extraction co-located with the 16th International Semantic Web Conference
+               {(ISWC} 2017), Vienna, Austria, October 22, 2017.},
+  pages     = {26--37},
+  year      = {2017},
+  url       = {http://ceur-ws.org/Vol-1946/paper-04.pdf},
+  biburl    = {http://dblp.org/rec/bib/conf/semweb/Knap17},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+```

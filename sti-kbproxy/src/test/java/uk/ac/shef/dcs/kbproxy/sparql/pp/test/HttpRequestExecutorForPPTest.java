@@ -12,11 +12,14 @@ public class HttpRequestExecutorForPPTest {
 
     //private static final Logger LOG = LoggerFactory.getLogger(HttpRequestExecutorForPPTest.class);
 
-    private static final String GET_RESPONSE_FILE = "get_response.json";
+    @SuppressWarnings("unused")
+	private static final String GET_RESPONSE_FILE = "get_response.json";
 
-    private static final String POST_RAW_RESPONSE_FILE = "post_raw_response.xml";
+    @SuppressWarnings("unused")
+	private static final String POST_RAW_RESPONSE_FILE = "post_raw_response.xml";
 
-    private static final String POST_MULTIPART_RESPONSE_FILE = "post_multipart_response.json";
+    @SuppressWarnings("unused")
+	private static final String POST_MULTIPART_RESPONSE_FILE = "post_multipart_response.json";
 
     private static PPProxyDefinition ppDefinition;
 
