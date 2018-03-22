@@ -1,10 +1,12 @@
 package cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import org.springframework.stereotype.Component;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.MetadataValue;
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.ParsedTableValue;
 
+@Component
 public class DefaultInputConverter implements InputConverter {
 
   @Override
