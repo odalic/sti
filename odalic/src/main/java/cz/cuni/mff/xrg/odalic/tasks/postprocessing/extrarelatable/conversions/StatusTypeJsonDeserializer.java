@@ -1,13 +1,14 @@
 package cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.conversions;
 
 import java.io.IOException;
-
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.StatusType;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import cz.cuni.mff.xrg.odalic.api.rest.conversions.CustomDateJsonSerializer;
 
 /**
  * Deserializer from integer status code to.
@@ -21,7 +22,7 @@ public final class StatusTypeJsonDeserializer extends JsonDeserializer<StatusTyp
   @Override
   public StatusType deserialize(final JsonParser jsonparser, final DeserializationContext context)
       throws IOException, JsonProcessingException {
-    throw new UnsupportedOperationException();
+    return Status.fromStatusCode(Integer.parseInt(jsonparser.getText()));
   }
 
 }

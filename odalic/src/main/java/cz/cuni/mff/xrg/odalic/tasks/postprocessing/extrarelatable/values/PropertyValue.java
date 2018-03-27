@@ -1,6 +1,5 @@
 package cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.net.URI;
 import javax.xml.bind.annotation.XmlElement;
@@ -26,8 +25,6 @@ public final class PropertyValue implements Serializable {
   }
 
   public void setUri(URI uri) {
-    checkNotNull(uri);
-
     this.uri = uri;
   }
 

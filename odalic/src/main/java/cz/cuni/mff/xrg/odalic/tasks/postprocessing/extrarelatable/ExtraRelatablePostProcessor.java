@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -93,9 +94,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     final ParsedTableValue parsedTable =
         this.inputConverter.convert(input, this.languageTag, this.user);
 
-    final Reply reply = request(parsedTable, Reply.class);
-
-    final AnnotationResultValue payload = reply.getPayload();
+    final AnnotationResultValue payload = request(parsedTable, AnnotationResultValue.class);
 
     final Map<Integer, AnnotationValue> extraAnnotations = payload.getAnnotations();
     final Set<Integer> annotatedColumns = payload.getAnnotations().keySet();
@@ -168,7 +167,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
           alteredChosen = put(originalChosen, this.baseName, feedbackChosen);
         }
       } else {
-        final NavigableSet<EntityCandidate> candidates = annotation.getProperties().stream().map(property -> toCandidate(property, annotation.getPropertiesStatistics().get(columnIndex))).collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+        final NavigableSet<EntityCandidate> candidates = IntStream.range(0, annotation.getProperties().size()).mapToObj(index -> toCandidate(annotation.getProperties().get(index), annotation.getPropertiesStatistics().get(index))).collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
         final Set<EntityCandidate> chosen = candidates.isEmpty() ? ImmutableSet.of() : ImmutableSet.of(candidates.last());
         
         alteredCandidates = put(originalCandidates, this.baseName, candidates);
@@ -181,7 +180,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
   }
   
   private EntityCandidate toCandidate(final PropertyValue property, final StatisticsValue statistics) {
-    final String uriString = property.getUri().toString();
+    final String uriString = String.valueOf(property.getUri());
     
     return new EntityCandidate(cz.cuni.mff.xrg.odalic.tasks.annotations.Entity.of(this.prefixMappingService.getPrefix(uriString), uriString, ""), new Score(statistics.getAverage()));
   }
@@ -327,9 +326,6 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
       final ComponentTypeValue componentType;
       final Set<EntityCandidate> candidates;
       if (annotated) {
-        componentType = ComponentTypeValue.MEASURE;
-        candidates = ImmutableSet.of();
-      } else {
         final AnnotationValue extraAnnotation = extraAnnotations.get(columnIndex);
 
         final List<PropertyValue> properties = extraAnnotation.getProperties();
@@ -339,7 +335,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
         for (int propertyIndex = 0; propertyIndex < properties.size(); propertyIndex++) {
           final PropertyValue property = properties.get(propertyIndex);
 
-          final String resourceId = property.getUri().toString();
+          final String resourceId = String.valueOf(property.getUri());
           final Prefix prefix = this.prefixMappingService.getPrefix(resourceId);
 
           final cz.cuni.mff.xrg.odalic.tasks.annotations.Entity entity =
@@ -352,6 +348,9 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
 
         componentType = ComponentTypeValue.DIMENSION;
         candidates = candidatesBuilder.build();
+      } else {
+        componentType = ComponentTypeValue.DIMENSION;
+        candidates = ImmutableSet.of();
       }
 
       final StatisticalAnnotation alteredAnnotation = new StatisticalAnnotation(
@@ -438,8 +437,12 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
           + response.readEntity(String.class) + "]");
     }
 
-    if (response.getMediaType() == MediaType.APPLICATION_JSON_TYPE) {
-      return response.readEntity(responseType);
+    final MediaType responseMediaType = response.getMediaType();
+    
+    if (responseMediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
+      final Reply reply = response.readEntity(Reply.class);
+      
+      return responseType.cast(reply.getPayload()); // TODO: Generalize. 
     } else {
       throw new RuntimeException(response.getStatusInfo().getReasonPhrase());
     }
