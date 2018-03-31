@@ -182,7 +182,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
   private EntityCandidate toCandidate(final PropertyValue property, final StatisticsValue statistics) {
     final String uriString = String.valueOf(property.getUri());
     
-    return new EntityCandidate(cz.cuni.mff.xrg.odalic.tasks.annotations.Entity.of(this.prefixMappingService.getPrefix(uriString), uriString, ""), new Score(statistics.getAverage()));
+    return new EntityCandidate(cz.cuni.mff.xrg.odalic.tasks.annotations.Entity.of(this.prefixMappingService.getPrefix(uriString), uriString, property.getLabels().stream().collect(Collectors.joining("; "))), new Score(1 - statistics.getAverage()));
   }
 
   private Map<String, Set<ColumnPosition>> alterSubjectColumnPositions(final Result result,
