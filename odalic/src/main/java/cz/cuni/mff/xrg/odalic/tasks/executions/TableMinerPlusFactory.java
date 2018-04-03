@@ -16,9 +16,7 @@ import cz.cuni.mff.xrg.odalic.files.formats.Format;
 import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
 import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
-import cz.cuni.mff.xrg.odalic.input.ml.CsvDatasetFileReader;
-import cz.cuni.mff.xrg.odalic.input.ml.JsonOntologyMappingReader;
-import cz.cuni.mff.xrg.odalic.input.ml.OntologyMappingReader;
+import cz.cuni.mff.xrg.odalic.input.ml.*;
 import org.apache.commons.lang3.StringUtils;
 import org.simmetrics.metrics.StringMetrics;
 import org.slf4j.Logger;
@@ -44,8 +42,8 @@ import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPClazzScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPEntityScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPRelationScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.*;
-import cz.cuni.mff.xrg.odalic.input.ml.DatasetFileReader;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.MLOntologyDefinition;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.MLOntologyMapping;
 import uk.ac.shef.dcs.sti.core.feature.ConceptBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.feature.RelationBoWCreatorImpl;
@@ -226,6 +224,13 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       OntologyMappingReader ontologyMappingReader = new JsonOntologyMappingReader();
       MLOntologyMapping ontologyMapping =
               ontologyMappingReader.readOntologyMapping(mlPropertiesLoader.getMLClassifierOntologyMappingFilePath());
+
+      // load ontology definitions
+      OntologyDefinitionReader ontologyDefinitionReader = new NTOntologyDefinitionReader();
+      MLOntologyDefinition ontologyDefinition = ontologyDefinitionReader.readOntologyDefinitions(
+              mlPropertiesLoader.getMLClassifierOntologyDefinitionFilePaths()
+      );
+
 
       MLClassifier classifier = new RandomForestMLClassifier(
           homePath, mlPropertiesLoader.getProperties(), mlFeatureDetector, trainingDatasetInputValues, ontologyMapping

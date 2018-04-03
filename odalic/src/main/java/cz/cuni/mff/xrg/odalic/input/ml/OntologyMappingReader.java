@@ -6,6 +6,12 @@ import java.io.IOException;
 
 public interface OntologyMappingReader {
 
-    public MLOntologyMapping readOntologyMapping(String ontologyMappingFilePath) throws IOException;
+    /**
+     * Parses the ontology mappings from given file.
+     * @param ontologyMappingFilePath
+     * @return
+     * @throws IOException
+     */
+    MLOntologyMapping readOntologyMapping(String ontologyMappingFilePath) throws IOException;
 
 }

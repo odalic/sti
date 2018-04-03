@@ -1,0 +1,158 @@
+{
+  "classMappings": [
+    {
+      "mlClass": "TITLE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#Device"
+    },
+    {
+      "mlClass": "OS",
+      "uri": "http://www.kadlecek.sk/dt/ontology#OperatingSystem"
+    },
+    {
+      "mlClass": "CPU",
+      "uri": "http://www.kadlecek.sk/dt/ontology#CPU"
+    },
+    {
+      "mlClass": "GPU",
+      "uri": "http://www.kadlecek.sk/dt/ontology#GPU"
+    }
+  ],
+  "predicateMappings": [
+    {
+      "mlClass": "BLUETOOTH_VERSION",
+      "uri": "http://www.kadlecek.sk/dt/ontology#bluetoothVersion"
+    },
+    {
+      "mlClass": "USB_VERSION",
+      "uri": "http://www.kadlecek.sk/dt/ontology#usbVersion"
+    },
+    {
+      "mlClass": "DEVICE_TYPE",
+      "uri": "http://dbpedia.org/property/type"
+    },
+    {
+      "mlClass": "SIM_CARD_SLOT",
+      "uri": "http://www.kadlecek.sk/dt/ontology#simCardSlot"
+    },
+    {
+      "mlClass": "SIM_CARD_TYPE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#simCardType"
+    },
+    {
+      "mlClass": "OS_BITS",
+      "uri": "http://www.kadlecek.sk/dt/ontology#operatingSystemBits"
+    },
+    {
+      "mlClass": "BRAND",
+      "uri": "http://dbpedia.org/property/manufacturer"
+    },
+    {
+      "mlClass": "MODEL",
+      "uri": "http://dbpedia.org/property/name"
+    },
+    {
+      "mlClass": "PRICE",
+      "uri": "http://dbpedia.org/property/price"
+    },
+    {
+      "mlClass": "WIRELESS_CONNECTIVITY",
+      "uri": "http://dbpedia.org/property/connectivity"
+    },
+    {
+      "mlClass": "NETWORK_4G",
+      "uri": "http://www.kadlecek.sk/dt/ontology#network4G"
+    },
+    {
+      "mlClass": "NETWORK_3G",
+      "uri": "http://www.kadlecek.sk/dt/ontology#network3G"
+    },
+    {
+      "mlClass": "NETWORK_2G",
+      "uri": "http://www.kadlecek.sk/dt/ontology#network2G"
+    },
+    {
+      "mlClass": "NETWORK_TYPE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#networkType"
+    },
+    {
+      "mlClass": "WIFI",
+      "uri": "http://dbpedia.org/property/connectivity"
+    },
+    {
+      "mlClass": "BATTERY_CAPACITY",
+      "uri": "http://www.kadlecek.sk/dt/ontology#batteryCapacity"
+    },
+    {
+      "mlClass": "BATTERY_TYPE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#batteryType"
+    },
+    {
+      "mlClass": "RAM_CAPACITY",
+      "uri": "http://www.kadlecek.sk/dt/ontology#ramCapacity"
+    },
+    {
+      "mlClass": "RAM_TYPE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#ramType"
+    },
+    {
+      "mlClass": "CPU_FREQ",
+      "uri": "http://www.kadlecek.sk/dt/ontology#cpuFrequency"
+    },
+    {
+      "mlClass": "CPU_CORES",
+      "uri": "http://www.kadlecek.sk/dt/ontology#cpuCores"
+    },
+    {
+      "mlClass": "EXTERNAL_MEMORY",
+      "uri": "http://dbpedia.org/property/memoryCard"
+    },
+    {
+      "mlClass": "STORAGE_SSD",
+      "uri": "http://www.kadlecek.sk/dt/ontology#storageSSD"
+    },
+    {
+      "mlClass": "STORAGE_HDD",
+      "uri": "http://www.kadlecek.sk/dt/ontology#storageHDD"
+    },
+    {
+      "mlClass": "CAMERA_FRONT",
+      "uri": "http://dbpedia.org/property/frontCamera"
+    },
+    {
+      "mlClass": "CAMERA_BACK",
+      "uri": "http://dbpedia.org/property/rearCamera"
+    },
+    {
+      "mlClass": "WEIGHT",
+      "uri": "http://dbpedia.org/property/weight"
+    },
+    {
+      "mlClass": "PRODUCT_SIZE",
+      "uri": "http://dbpedia.org/property/dimensions"
+    },
+    {
+      "mlClass": "SCREEN_SIZE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#screenSize"
+    },
+    {
+      "mlClass": "SCREEN_PPI",
+      "uri": "http://www.kadlecek.sk/dt/ontology#screenPPI"
+    },
+    {
+      "mlClass": "SCREEN_TYPE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#screenType"
+    },
+    {
+      "mlClass": "SCREEN_RESOLUTION",
+      "uri": "http://www.kadlecek.sk/dt/ontology#screenResolution"
+    },
+    {
+      "mlClass": "COLOR",
+      "uri": "http://dbpedia.org/property/color"
+    },
+    {
+      "mlClass": "ETHERNET_SPEED",
+      "uri": "http://www.kadlecek.sk/dt/ontology#ethernet"
+    }
+  ]
+}
