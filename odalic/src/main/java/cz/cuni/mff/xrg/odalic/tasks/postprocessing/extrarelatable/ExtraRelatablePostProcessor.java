@@ -1,5 +1,6 @@
 package cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.net.URI;
 import java.util.ArrayList;
@@ -29,14 +30,11 @@ import cz.cuni.mff.xrg.odalic.feedbacks.ColumnCompulsory;
 import cz.cuni.mff.xrg.odalic.feedbacks.ColumnIgnore;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.input.Input;
-import cz.cuni.mff.xrg.odalic.positions.CellPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
@@ -49,16 +47,18 @@ import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.ParsedT
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.PropertyValue;
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.StatisticsValue;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
-import cz.cuni.mff.xrg.odalic.util.Arrays;
 
 
 
 public final class ExtraRelatablePostProcessor implements PostProcessor {
 
-  public static final String LEARN_ANNOTATED_PARAMETER_KEY = "learnAnnotated";
+  public static final String ENDPOINT_PARAMETER_KEY = "eu.odalic.extrarelatable.endpoint";
+  public static final String LEARN_ANNOTATED_PARAMETER_KEY = "eu.odalic.extrarelatable.learnAnnotated";
+  public static final String LANGUAGE_TAG_PARAMETER_KEY = "eu.odalic.extrarelatable.languageTag";
   
   private static final URI ANNOTATED_SUBPATH = URI.create("annotated");
   private static final String LEARN_QUERY_PARAMETER_NAME = "learn";
+
 
   private final InputConverter inputConverter;
   private final PrefixMappingService prefixMappingService;
@@ -69,14 +69,20 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
   private final String baseName;
 
   public ExtraRelatablePostProcessor(final InputConverter inputConverter,
-      final PrefixMappingService prefixMappingService, final URI endpoint,
-      final String baseName, @Nullable final String languageTag, @Nullable final String user,
+      final PrefixMappingService prefixMappingService,
+      @Nullable final String user,
+      final String baseName,
       final Map<String, String> parameters) {
     checkNotNull(inputConverter);
     checkNotNull(prefixMappingService);
-    checkNotNull(endpoint);
     checkNotNull(baseName);
-
+    
+    final String endpointValue = parameters.get(ENDPOINT_PARAMETER_KEY);
+    checkArgument(endpointValue != null, "The endpoint URI (eu.odalic.extrarelatable.endpoint advanced type property) must be set!");
+    final URI endpoint = URI.create(endpointValue);
+    
+    final String languageTag = parameters.get(LANGUAGE_TAG_PARAMETER_KEY);
+    
     this.inputConverter = inputConverter;
     this.prefixMappingService = prefixMappingService;
     this.targetPath = endpoint.resolve(ANNOTATED_SUBPATH);
@@ -99,16 +105,13 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     final Map<Integer, AnnotationValue> extraAnnotations = payload.getAnnotations();
     final Set<Integer> annotatedColumns = payload.getAnnotations().keySet();
     final int columnsCount = input.columnsCount();
-
-    final Map<String, Set<ColumnPosition>> alteredSubjectColumnPostions =
-        alterSubjectColumnPositions(result, feedback, primaryBaseName);
     
     return new Result(
-        alteredSubjectColumnPostions,
-        alterClassifications(result, feedback),
-        alterCellAnnotations(input, result, feedback),
+        result.getSubjectColumnsPositions(),
+        result.getHeaderAnnotations(),
+        result.getCellAnnotations(),
         alterColumnRelationAnnotations(result, feedback, primaryBaseName, extraAnnotations,
-            alteredSubjectColumnPostions),
+            result.getSubjectColumnsPositions().get(this.baseName)),
         alterStatisticalAnnotations(result, feedback, extraAnnotations, annotatedColumns, columnsCount),
         alterColumnProcessingAnnotations(result, feedback, annotatedColumns, columnsCount),
         result.getWarnings()
@@ -118,64 +121,64 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
   private Map<ColumnRelationPosition, ColumnRelationAnnotation> alterColumnRelationAnnotations(
       final Result result, final Feedback feedback, final String primaryBaseName,
       final Map<Integer, AnnotationValue> extraAnnotations,
-      final Map<String, Set<ColumnPosition>> alteredSubjectColumnPostions) {
+      final Set<? extends ColumnPosition> subjectColumnPostions) {
     final Map<ColumnRelationPosition, ColumnRelationAnnotation> alteredColumnRelationAnnotations =
         new HashMap<>(result.getColumnRelationAnnotations());
     
-    final int sourceColumnIndex;
-    if (!this.baseName.equals(primaryBaseName)) {
-      sourceColumnIndex = alteredSubjectColumnPostions.get(primaryBaseName).stream().sorted().findFirst().get().getIndex();
-    } else {
-      sourceColumnIndex = 0; //TODO: Implement detection here too.
-    }
+    //TODO: Implement source index detection here too.
     
     final Map<ColumnRelationPosition, ColumnRelationAnnotation> relationsFeedback = feedback.getColumnRelations().stream().collect(ImmutableMap.toImmutableMap(e -> e.getPosition(), e -> e.getAnnotation()));
     
-    extraAnnotations.forEach((columnIndex, annotation) -> {
-      final ColumnRelationPosition position = new ColumnRelationPosition(sourceColumnIndex, columnIndex);
-      
-      final ColumnRelationAnnotation originalAnnotation = alteredColumnRelationAnnotations.get(position);
-      
-      final Map<String, NavigableSet<EntityCandidate>> originalCandidates;
-      final Map<String, Set<EntityCandidate>> originalChosen;
-      if (originalAnnotation != null) {
-        originalCandidates = originalAnnotation.getCandidates();
-        originalChosen = originalAnnotation.getChosen();        
-      } else {
-        originalCandidates = ImmutableMap.of();
-        originalChosen = ImmutableMap.of();
-      }
+    for (final ColumnPosition sourceColumnPosition : subjectColumnPostions) {
+    
+      extraAnnotations.forEach((columnIndex, annotation) -> {
+        final ColumnRelationPosition position = new ColumnRelationPosition(sourceColumnPosition.getIndex(), columnIndex);
         
-      final Map<String, NavigableSet<EntityCandidate>> alteredCandidates;
-      final Map<String, Set<EntityCandidate>> alteredChosen;
-      
-      final ColumnRelationAnnotation feedbackAnnotation = relationsFeedback.get(position);
-      
-      if (feedbackAnnotation != null) {
-        final NavigableSet<EntityCandidate> feedbackCandidates = feedbackAnnotation.getCandidates().get(this.baseName);
-        final Set<EntityCandidate> feedbackChosen = feedbackAnnotation.getChosen().get(this.baseName);
+        final ColumnRelationAnnotation originalAnnotation = alteredColumnRelationAnnotations.get(position);
         
-        if (feedbackCandidates == null) {
-          alteredCandidates = originalCandidates;
+        final Map<String, NavigableSet<EntityCandidate>> originalCandidates;
+        final Map<String, Set<EntityCandidate>> originalChosen;
+        if (originalAnnotation != null) {
+          originalCandidates = originalAnnotation.getCandidates();
+          originalChosen = originalAnnotation.getChosen();        
         } else {
-          alteredCandidates = put(originalCandidates, this.baseName, feedbackCandidates);
+          originalCandidates = ImmutableMap.of();
+          originalChosen = ImmutableMap.of();
+        }
+          
+        final Map<String, NavigableSet<EntityCandidate>> alteredCandidates;
+        final Map<String, Set<EntityCandidate>> alteredChosen;
+        
+        final ColumnRelationAnnotation feedbackAnnotation = relationsFeedback.get(position);
+        
+        if (feedbackAnnotation != null) {
+          final NavigableSet<EntityCandidate> feedbackCandidates = feedbackAnnotation.getCandidates().get(this.baseName);
+          final Set<EntityCandidate> feedbackChosen = feedbackAnnotation.getChosen().get(this.baseName);
+          
+          if (feedbackCandidates == null) {
+            alteredCandidates = originalCandidates;
+          } else {
+            alteredCandidates = put(originalCandidates, this.baseName, feedbackCandidates);
+          }
+          
+          if (feedbackChosen == null) {
+            alteredChosen = originalChosen;
+          } else {
+            alteredChosen = put(originalChosen, this.baseName, feedbackChosen);
+          }
+        } else {
+          final NavigableSet<EntityCandidate> candidates = IntStream.range(0, annotation.getProperties().size()).mapToObj(index -> toCandidate(annotation.getProperties().get(index), annotation.getPropertiesStatistics().get(index))).collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+          final Set<EntityCandidate> chosen = candidates.isEmpty() ? ImmutableSet.of() : ImmutableSet.of(candidates.last());
+          
+          alteredCandidates = put(originalCandidates, this.baseName, candidates);
+          alteredChosen = put(originalChosen, this.baseName, chosen);
         }
         
-        if (feedbackChosen == null) {
-          alteredChosen = originalChosen;
-        } else {
-          alteredChosen = put(originalChosen, this.baseName, feedbackChosen);
-        }
-      } else {
-        final NavigableSet<EntityCandidate> candidates = IntStream.range(0, annotation.getProperties().size()).mapToObj(index -> toCandidate(annotation.getProperties().get(index), annotation.getPropertiesStatistics().get(index))).collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-        final Set<EntityCandidate> chosen = candidates.isEmpty() ? ImmutableSet.of() : ImmutableSet.of(candidates.last());
-        
-        alteredCandidates = put(originalCandidates, this.baseName, candidates);
-        alteredChosen = put(originalChosen, this.baseName, chosen);
-      }
-      
-      alteredColumnRelationAnnotations.put(position, new ColumnRelationAnnotation(alteredCandidates, alteredChosen));
-    });
+        alteredColumnRelationAnnotations.put(position, new ColumnRelationAnnotation(alteredCandidates, alteredChosen));
+      });
+    
+    }
+    
     return alteredColumnRelationAnnotations;
   }
   
@@ -183,131 +186,6 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     final String uriString = String.valueOf(property.getUri());
     
     return new EntityCandidate(cz.cuni.mff.xrg.odalic.tasks.annotations.Entity.of(this.prefixMappingService.getPrefix(uriString), uriString, property.getLabels().stream().collect(Collectors.joining("; "))), new Score(1 - statistics.getAverage()));
-  }
-
-  private Map<String, Set<ColumnPosition>> alterSubjectColumnPositions(final Result result,
-      final Feedback feedback, final String primaryBaseName) {
-    final Map<String, Set<ColumnPosition>> alteredSubjectColumnPostions = new HashMap<>(result.getSubjectColumnsPositions());
-    
-    if (!this.baseName.equals(primaryBaseName)) {
-      alteredSubjectColumnPostions.put(this.baseName, alteredSubjectColumnPostions.get(primaryBaseName)); // Use same as the primary.      
-    } else {
-      alteredSubjectColumnPostions.put(this.baseName, ImmutableSet.of(new ColumnPosition(0))); // TODO: Implement detection. Until then... use the first.
-    }
-    
-    final Set<ColumnPosition> feedbackSubjectColumnPositions = feedback.getSubjectColumnsPositions().get(this.baseName);
-    if (feedbackSubjectColumnPositions != null) {
-      alteredSubjectColumnPostions.put(this.baseName, feedbackSubjectColumnPositions);
-    }
-    return alteredSubjectColumnPostions;
-  }
-
-  private List<HeaderAnnotation> alterClassifications(final Result result,
-      final Feedback feedback) {
-    final List<HeaderAnnotation> alteredHeaderAnnotations = result.getHeaderAnnotations().stream()
-        .map(annotation -> new HeaderAnnotation(
-            put(annotation.getCandidates(), this.baseName, ImmutableSortedSet.of()),
-            put(annotation.getChosen(), this.baseName, ImmutableSet.of())))
-        .collect(Collectors.toCollection(ArrayList::new));
-    feedback.getClassifications().forEach(classification -> {
-      final HeaderAnnotation originalAnnotation = alteredHeaderAnnotations.get(classification.getPosition().getIndex());
-      
-      final HeaderAnnotation feedbackAnnotation = classification.getAnnotation();
-      final NavigableSet<EntityCandidate> feedbackCandidates = feedbackAnnotation.getCandidates().get(this.baseName);
-      final Set<EntityCandidate> feedbackChosen = feedbackAnnotation.getChosen().get(this.baseName);
-      
-      final Map<String, NavigableSet<EntityCandidate>> originalCandidates = originalAnnotation.getCandidates();
-      final Map<String, Set<EntityCandidate>> originalChosen = originalAnnotation.getChosen();
-      
-      final Map<String, NavigableSet<EntityCandidate>> alteredCandidates;
-      final Map<String, Set<EntityCandidate>> alteredChosen;
-      if (feedbackCandidates == null) {
-        alteredCandidates = originalCandidates;
-      } else {
-        alteredCandidates = put(originalCandidates, this.baseName, feedbackCandidates);
-      }
-      
-      if (feedbackChosen == null) {
-        alteredChosen = originalChosen;
-      } else {
-        alteredChosen = put(originalChosen, this.baseName, feedbackChosen);
-      }
-      
-      alteredHeaderAnnotations.set(classification.getPosition().getIndex(), new HeaderAnnotation(alteredCandidates, alteredChosen));
-    });
-    return alteredHeaderAnnotations;
-  }
-
-  private CellAnnotation[][] alterCellAnnotations(final Input input, final Result result,
-      final Feedback feedback) {
-    final CellAnnotation[][] alteredCellAnnotations =
-        Arrays.deepCopy(CellAnnotation.class, result.getCellAnnotations());
-    for (int rowIndex = 0; rowIndex < input.rowsCount(); rowIndex++) {
-      for (int columnIndex = 0; columnIndex < input.columnsCount(); columnIndex++) {
-        final CellAnnotation originalCellAnnotation = alteredCellAnnotations[rowIndex][columnIndex];
-
-        alteredCellAnnotations[rowIndex][columnIndex] = new CellAnnotation(
-            put(originalCellAnnotation.getCandidates(), this.baseName, ImmutableSortedSet.of()),
-            put(originalCellAnnotation.getChosen(), this.baseName, ImmutableSet.of()));
-      }
-    }
-    feedback.getDisambiguations().forEach(disambiguation -> {
-      final CellPosition position = disambiguation.getPosition();
-      
-      final CellAnnotation originalAnnotation = alteredCellAnnotations[position.getRowIndex()][position.getColumnIndex()];
-      
-      final CellAnnotation feedbackAnnotation = disambiguation.getAnnotation();
-      final NavigableSet<EntityCandidate> feedbackCandidates = feedbackAnnotation.getCandidates().get(this.baseName);
-      final Set<EntityCandidate> feedbackChosen = feedbackAnnotation.getChosen().get(this.baseName);
-      
-      final Map<String, NavigableSet<EntityCandidate>> originalCandidates = originalAnnotation.getCandidates();
-      final Map<String, Set<EntityCandidate>> originalChosen = originalAnnotation.getChosen();
-      
-      final Map<String, NavigableSet<EntityCandidate>> alteredCandidates;
-      final Map<String, Set<EntityCandidate>> alteredChosen;
-      if (feedbackCandidates == null) {
-        alteredCandidates = originalCandidates;
-      } else {
-        alteredCandidates = put(originalCandidates, this.baseName, feedbackCandidates);
-      }
-      
-      if (feedbackChosen == null) {
-        alteredChosen = originalChosen;
-      } else {
-        alteredChosen = put(originalChosen, this.baseName, feedbackChosen);
-      }
-      
-      alteredCellAnnotations[position.getRowIndex()][position.getColumnIndex()] = new CellAnnotation(alteredCandidates, alteredChosen);
-    });
-    feedback.getAmbiguities().forEach(ambiguity -> {
-      final CellPosition position = ambiguity.getPosition();
-      
-      final CellAnnotation originalAnnotation = alteredCellAnnotations[position.getRowIndex()][position.getColumnIndex()];
-      
-      final Map<String, NavigableSet<EntityCandidate>> originalCandidates = originalAnnotation.getCandidates();
-      final Map<String, Set<EntityCandidate>> originalChosen = originalAnnotation.getChosen();
-      
-      final Map<String, NavigableSet<EntityCandidate>> alteredCandidates = put(originalCandidates, this.baseName, ImmutableSortedSet.of());
-      final Map<String, Set<EntityCandidate>> alteredChosen = put(originalChosen, this.baseName, ImmutableSet.of());
-      
-      alteredCellAnnotations[position.getRowIndex()][position.getColumnIndex()] = new CellAnnotation(alteredCandidates, alteredChosen);
-    });
-    feedback.getColumnAmbiguities().forEach(columnAmbiguity -> {
-      final int columnIndex = columnAmbiguity.getPosition().getIndex();
-      
-      for (int rowIndex = 0; rowIndex < input.rowsCount(); rowIndex++) {
-        final CellAnnotation originalAnnotation = alteredCellAnnotations[rowIndex][columnIndex];
-        
-        final Map<String, NavigableSet<EntityCandidate>> originalCandidates = originalAnnotation.getCandidates();
-        final Map<String, Set<EntityCandidate>> originalChosen = originalAnnotation.getChosen();
-        
-        final Map<String, NavigableSet<EntityCandidate>> alteredCandidates = put(originalCandidates, this.baseName, ImmutableSortedSet.of());
-        final Map<String, Set<EntityCandidate>> alteredChosen = put(originalChosen, this.baseName, ImmutableSet.of());
-        
-        alteredCellAnnotations[rowIndex][columnIndex] = new CellAnnotation(alteredCandidates, alteredChosen);
-      }
-    });
-    return alteredCellAnnotations;
   }
 
   private List<StatisticalAnnotation> alterStatisticalAnnotations(final Result result,
@@ -419,8 +297,11 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     return alteredColumnProcessingAnnotationsBuilder.build();
   }
 
-  private <K, V> Map<K, V> put(final Map<K, V> map, final K key, final V value) {
-    return ImmutableMap.<K, V>builder().putAll(map).put(key, value).build();
+  private static <K, V> Map<K, V> put(final Map<K, V> map, final K key, final V value) {
+    final Map<K, V> result = new HashMap<>(map);
+    result.put(key, value);
+    
+    return result;
   }
 
   private <T, U> U request(final T requestEntity, final Class<? extends U> responseType) {
