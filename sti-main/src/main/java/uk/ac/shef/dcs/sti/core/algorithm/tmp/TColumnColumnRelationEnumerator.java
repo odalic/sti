@@ -1,14 +1,10 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
 import uk.ac.shef.dcs.sti.STIException;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.annotations.EntityCandidate;
 import uk.ac.shef.dcs.sti.core.extension.constraints.ColumnRelation;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
@@ -213,7 +209,7 @@ public class TColumnColumnRelationEnumerator {
     return cellValuesToMatch;
   }
 
-  private boolean isRelationSuggested(final int subjectCol, final int objectCol,
+  protected boolean isRelationSuggested(final int subjectCol, final int objectCol,
       final Set<ColumnRelation> columnRelations) {
     for (final ColumnRelation relation : columnRelations) {
       if ((relation.getPosition().getFirstIndex() == subjectCol)
@@ -245,7 +241,8 @@ public class TColumnColumnRelationEnumerator {
   }
 
   public int runRelationEnumeration(final TAnnotation annotations, final Table table,
-      final int subjectCol, final Constraints constraints) throws STIException {
+                                    final int subjectCol, final MLPreClassification mlPreClassification,
+                                    final Constraints constraints) throws STIException {
     resetSuggestedRelationPositionsVisited();
     generateCellCellRelations(annotations, table, subjectCol, constraints);
     // now we have created relation annotations per row, consolidate them to create column-column

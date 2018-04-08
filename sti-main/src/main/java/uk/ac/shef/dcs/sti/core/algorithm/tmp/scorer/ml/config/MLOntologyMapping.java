@@ -1,4 +1,4 @@
-package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing;
+package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config;
 
 import java.util.Map;
 

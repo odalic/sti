@@ -13,9 +13,6 @@ import java.util.Set;
 
 import cz.cuni.mff.xrg.odalic.files.formats.DefaultApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.input.CsvInputParser;
-import cz.cuni.mff.xrg.odalic.input.DefaultCsvInputParser;
-import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import cz.cuni.mff.xrg.odalic.input.ml.*;
 import org.apache.commons.lang3.StringUtils;
 import org.simmetrics.metrics.StringMetrics;
@@ -43,8 +40,8 @@ import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPEntityScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPRelationScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.*;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.MLOntologyDefinition;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.MLOntologyMapping;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLOntologyDefinition;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLOntologyMapping;
 import uk.ac.shef.dcs.sti.core.feature.ConceptBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.feature.RelationBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.scorer.AttributeValueMatcher;
@@ -180,7 +177,10 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       final Map<String, SemanticTableInterpreter> interpreters = new HashMap<>();
       for (final Map.Entry<String, Proxy> kbProxyEntry : kbProxyInstances.row(userId).entrySet()) {
         final Proxy kbProxy = kbProxyEntry.getValue();
-        
+
+        // TODO implement situation, that ml classifier is turned off and should not be used
+        final MLPreClassificator mlPreClassificator = initMLPreClassification();
+
         final SubjectColumnDetector subcolDetector = initSubColDetector(kbProxy);
 
         final TCellDisambiguator disambiguator = initDisambiguator(kbProxy);
@@ -191,13 +191,13 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
 
         final UPDATE update = initUpdate(kbProxy, selector, disambiguator, classifier);
 
-        final TColumnColumnRelationEnumerator relationEnumerator = initRelationEnumerator();
+        final TColumnColumnRelationEnumerator relationEnumerator = initRelationEnumerator(mlPreClassificator.getMlOntologyDefinition());
 
         // object to consolidate previous output, further computeElementScores columns
         // and disambiguate entities
         final LiteralColumnTagger literalColumnTagger = new LiteralColumnTaggerImpl();
 
-        final SemanticTableInterpreter interpreter = new TMPOdalicInterpreter(subcolDetector,
+        final SemanticTableInterpreter interpreter = new TMPOdalicInterpreter(mlPreClassificator, subcolDetector,
             learning, update, relationEnumerator, literalColumnTagger);
 
         interpreters.put(kbProxyEntry.getKey(), interpreter);
@@ -206,7 +206,11 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       return interpreters;
   }
 
-  private MLClassifier initMLClassifier(String mlPropsFilePath) throws STIException {
+  private MLPreClassificator initMLPreClassification() throws STIException {
+    // TODO implement situation, that ml classifier is turned off and should not be used
+
+    String mlPropsFilePath = getAbsolutePath(PROPERTY_ML_PROP_FILE);
+
     try {
       final String homePath = this.properties.getProperty(PROPERTY_HOME);
       final MLFeatureDetector mlFeatureDetector = new DefaultMLFeatureDetector();
@@ -226,7 +230,45 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
               ontologyMappingReader.readOntologyMapping(mlPropertiesLoader.getMLClassifierOntologyMappingFilePath());
 
       // load ontology definitions
-      OntologyDefinitionReader ontologyDefinitionReader = new NTOntologyDefinitionReader();
+      OntologyDefinitionReader ontologyDefinitionReader = new Rdf4jOntologyDefinitionReader();
+      MLOntologyDefinition ontologyDefinition = ontologyDefinitionReader.readOntologyDefinitions(
+              mlPropertiesLoader.getMLClassifierOntologyDefinitionFilePaths()
+      );
+
+
+      MLClassifier classifier = new RandomForestMLClassifier(
+              homePath, mlPropertiesLoader.getProperties(), mlFeatureDetector, trainingDatasetInputValues
+      );
+      classifier.trainClassifier();
+      return new MLPreClassificator(classifier, ontologyMapping, ontologyDefinition);
+
+    } catch (final Exception e) {
+      logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
+      throw new STIException("Failed initializing Machine Learning Classifier components.", e);
+    }
+  }
+
+  /*private MLClassifier initMLClassifier(String mlPropsFilePath) throws STIException {
+    try {
+      final String homePath = this.properties.getProperty(PROPERTY_HOME);
+      final MLFeatureDetector mlFeatureDetector = new DefaultMLFeatureDetector();
+
+      MLPropertiesLoader mlPropertiesLoader = new MLPropertiesLoader(homePath, mlPropsFilePath);
+
+      // parse input dataset
+      String trainingDatasetPath = mlPropertiesLoader.getMLClassifierTrainingDatasetFilePath();
+      // TODO pass training set path and format from task submission
+      Format trainingDatasetConfiguration = new Format(Charset.forName("UTF8"), '|', true, null, null, null, "\n");
+      DatasetFileReader datasetFileReader = new CsvDatasetFileReader( new DefaultApacheCsvFormatAdapter());
+      InputValue[] trainingDatasetInputValues = datasetFileReader.readDatasetFile(trainingDatasetPath, trainingDatasetConfiguration);
+
+      // parse ontology mapping
+      OntologyMappingReader ontologyMappingReader = new JsonOntologyMappingReader();
+      MLOntologyMapping ontologyMapping =
+              ontologyMappingReader.readOntologyMapping(mlPropertiesLoader.getMLClassifierOntologyMappingFilePath());
+
+      // load ontology definitions
+      OntologyDefinitionReader ontologyDefinitionReader = new Rdf4jOntologyDefinitionReader();
       MLOntologyDefinition ontologyDefinition = ontologyDefinitionReader.readOntologyDefinitions(
               mlPropertiesLoader.getMLClassifierOntologyDefinitionFilePaths()
       );
@@ -241,7 +283,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing Machine Learning Classifier components.", e);
     }
-  }
+  }*/
 
   private TCellDisambiguator initDisambiguator(final Proxy kbProxy) throws STIException {
     try {
@@ -276,7 +318,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     }
   }
 
-  private TColumnColumnRelationEnumerator initRelationEnumerator() throws STIException {
+  private TColumnColumnRelationEnumerator initRelationEnumerator(MLOntologyDefinition mlOntologyDefinition) throws STIException {
     logger.info("Initializing RELATIONLEARNING components ...");
     try {
       // object to computeElementScores relations between columns
@@ -287,7 +329,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
           );
 
 
-      if (useMlClassifier()) {
+      /*if (useMlClassifier()) {
         // append ML Classifier to existing components
         final MLClassifier mlClassifier = initMLClassifier(getAbsolutePath(PROPERTY_ML_PROP_FILE));
         return new TMLColumnColumnRelationEnumerator(
@@ -302,7 +344,12 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
                 new AttributeValueMatcher(STIConstantProperty.ATTRIBUTE_MATCHER_MIN_SCORE, getStopwords(),
                         StringMetrics.levenshtein()),
                 relationScorer);
-      }
+      }*/
+
+      return new TMLColumnColumnRelationEnumerator(
+              new AttributeValueMatcher(STIConstantProperty.ATTRIBUTE_MATCHER_MIN_SCORE, getStopwords(),
+                      StringMetrics.levenshtein()), relationScorer, mlOntologyDefinition);
+
     } catch (final Exception e) {
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing RELATIONLEARNING components.", e);

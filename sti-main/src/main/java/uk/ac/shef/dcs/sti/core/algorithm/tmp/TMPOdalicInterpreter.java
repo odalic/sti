@@ -13,6 +13,7 @@ import com.google.common.base.Preconditions;
 
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.annotations.ComponentTypeValue;
 import uk.ac.shef.dcs.sti.core.extension.annotations.EntityCandidate;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Ambiguity;
@@ -32,6 +33,8 @@ import uk.ac.shef.dcs.util.Pair;
 public class TMPOdalicInterpreter extends SemanticTableInterpreter {
 
   private static final Logger LOG = LoggerFactory.getLogger(TMPOdalicInterpreter.class.getName());
+
+  private final MLPreClassificator mlPreClassificator;
   private final SubjectColumnDetector subjectColumnDetector;
   private final LEARNING learning;
   private final LiteralColumnTagger literalColumnTagger;
@@ -39,11 +42,13 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
 
   private final UPDATE update;
 
-  public TMPOdalicInterpreter(final SubjectColumnDetector subjectColumnDetector,
+  public TMPOdalicInterpreter(final MLPreClassificator mlPreClassificator,
+      final SubjectColumnDetector subjectColumnDetector,
       final LEARNING learning, final UPDATE update,
       final TColumnColumnRelationEnumerator relationEnumerator,
       final LiteralColumnTagger literalColumnTagger) {
     super(new int[0], new int[0]);
+    this.mlPreClassificator = mlPreClassificator;
     this.subjectColumnDetector = subjectColumnDetector;
     this.learning = learning;
     this.literalColumnTagger = literalColumnTagger;
@@ -167,10 +172,17 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
     try {
       final TAnnotation tableAnnotations = new TAnnotation(table.getNumRows(), table.getNumCols());
 
+      LOG.info("\t> PHASE: ML PRE-CLASSIFICATION ...");
+      MLPreClassification mlPreClassification = this.mlPreClassificator.preClassificate(table, getIgnoreColumns());
+
+      // TODO add classifications to table annotations
+
+      // TODO run disambiguation with ML classifications as constraints, dont run odalic classification
+
       // find the main subject column of this table
       LOG.info("\t> PHASE: Detecting subject column ...");
       final List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnScores =
-          this.subjectColumnDetector.compute(table, ignoreColumnsArray);
+          this.subjectColumnDetector.compute(table, mlPreClassification, ignoreColumnsArray);
       tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
 
       // set column processing annotations
@@ -202,6 +214,12 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
         this.update.update(annotatedColumns, table, tableAnnotations, constraints);
       }
 
+      /*TODO delete
+      final List<Integer> annotatedColumns = new ArrayList<>();
+      for (int i = 0; i < table.getNumCols(); i++) {
+        annotatedColumns.add(i);
+      }*/
+
       // set statistical annotations or discover relations
       if (statistical) {
         LOG.info("\t> PHASE: Statistical annotation enumeration ...");
@@ -211,11 +229,11 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
         if (constraints.getSubjectColumnsPositions().isEmpty()) {
           new RELATIONENUMERATION().enumerate(subjectColumnScores, getIgnoreColumns(),
               this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
-              constraints);
+              mlPreClassification, constraints);
         } else {
           new RELATIONENUMERATION().enumerate(
               this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
-              constraints);
+              mlPreClassification, constraints);
         }
 
         // consolidation - for columns that have relation with subject columns:

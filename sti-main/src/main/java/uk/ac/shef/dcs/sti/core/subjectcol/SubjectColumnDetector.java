@@ -13,7 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import cern.colt.matrix.DoubleMatrix2D;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentRowRanker;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.MLPredicate;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.stopping.StoppingCriteriaInstantiator;
+import uk.ac.shef.dcs.sti.core.model.TColumnHeaderAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
 import uk.ac.shef.dcs.util.Cache;
@@ -55,6 +58,73 @@ public class SubjectColumnDetector {
   }
 
   /**
+   * This method has 2 phases:
+   *
+   * 1. ML Suggested:
+   * * 1. For each column classified by MLPreClassification phase as Ontology class,
+   * compute number of attribute columns, which contain that class it in its domain.
+   * * 2. IF no ML based column is available, proceed with legacy method.
+   *
+   * 2. Legacy Odalic (TMP) phase:
+   * The decision tree logic is:
+   * * 1. If col is the only NE likely col in the table, choose the column
+   * * 2. If col is NE likely, and it is the only one having non-empty cells, choose the column
+   *
+   * @param table
+   * @return a list of Pair objects, where first object is the column index; second is a pair where
+   *         the first part is the computeElementScores probability that asserts that column being
+   *         the main column of the table, the second part is a boolean indicating whether the
+   *         column is acronym column. (only NE likely columns can be considered main column)
+   */
+  public List<Pair<Integer, Pair<Double, Boolean>>> compute(final Table table, MLPreClassification mlPreClassification,
+                                                            final int... skipColumns) throws IOException, ClassNotFoundException {
+
+    List<Pair<Integer, Pair<Double, Boolean>>> mlSuggestedSubjectCols = computeMLSuggested(mlPreClassification);
+    if (mlSuggestedSubjectCols.isEmpty()) {
+      return mlSuggestedSubjectCols;
+    } else {
+      return computeLegacy(table, skipColumns);
+    }
+  }
+
+  private List<Pair<Integer, Pair<Double, Boolean>>> computeMLSuggested(MLPreClassification mlPreClassification) {
+    Map<Integer, Double> columnScoreMap = new HashMap<>();
+
+    for (Map.Entry<Integer, TColumnHeaderAnnotation> classEntry: mlPreClassification.getClassHeaderAnnotations().entrySet()) {
+      String classUri = classEntry.getValue().getAnnotation().getId();
+      Integer columnIndex = classEntry.getKey();
+
+      for (Map.Entry<Integer, MLPredicate> predicateEntry: mlPreClassification.getPredicates().entrySet()) {
+        if (predicateEntry.getValue().domainContains(classUri)) {
+          // increase score of the column
+          increaseColumnScore(columnIndex, columnScoreMap);
+        }
+      }
+    }
+
+    List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnList = new ArrayList<>();
+    for (Map.Entry<Integer, Double> columnScoreEntry: columnScoreMap.entrySet()) {
+      subjectColumnList.add(new Pair<>(columnScoreEntry.getKey(), new Pair<>(columnScoreEntry.getValue(), false)));
+    }
+
+    // sort by (score DESC, columnIndex ASC)
+    Collections.sort(subjectColumnList, (o1, o2) -> {
+      int scoreCompare = columnScoreMap.get(o2.getKey()).compareTo(columnScoreMap.get(o1.getKey()));
+      if (scoreCompare != 0) {
+        return scoreCompare;
+      } else {
+        return o1.getKey().compareTo(o2.getKey());
+      }
+    });
+
+    return subjectColumnList;
+  }
+
+  private void increaseColumnScore(Integer column, Map<Integer, Double> columnScoreMap) {
+    columnScoreMap.merge(column, 1.0, (oldVal, defVal) -> oldVal + defVal);
+  }
+
+  /**
    * The decision tree logic is: 1. If col is the only NE likely col in the table, choose the column
    * 2. If col is NE likely, and it is the only one having non-empty cells, choose the column
    *
@@ -64,8 +134,8 @@ public class SubjectColumnDetector {
    *         the main column of the table, the second part is a boolean indicating whether the
    *         column is acronym column. (only NE likely columns can be considered main column)
    */
-  public List<Pair<Integer, Pair<Double, Boolean>>> compute(final Table table,
-      final int... skipColumns) throws IOException, ClassNotFoundException {
+  private List<Pair<Integer, Pair<Double, Boolean>>> computeLegacy(final Table table,  final int... skipColumns)
+          throws IOException, ClassNotFoundException {
     final List<Pair<Integer, Pair<Double, Boolean>>> rs = new ArrayList<>();
 
     // 1. initiate all columns' feature objects
