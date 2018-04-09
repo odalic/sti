@@ -82,15 +82,24 @@ public class MLOntologyDefinition {
     }
 
     public String findPropertyForSubjectObject(String subjectUri, String objectUri) {
-
-        // TODO implement
-    }
-
-    private Set<IRI> getIRIObjects(Set<Value> objects) {
-        return objects.stream()
-                .filter(obj -> obj instanceof IRI)
-                .map(obj -> (IRI) obj)
-                .collect(Collectors.toSet());
+        // try to find object property, which has subjectUri in its direct domain and
+        // objectUri in its direct range
+        IRI subjectIRI = valueFactory.createIRI(subjectUri);
+        IRI objectIRI = valueFactory.createIRI(objectUri);
+        Set<Resource> props = ontologyModel.filter(null, RDF.TYPE, RDF.PROPERTY).subjects();
+        for (Resource prop: props) {
+            Set<Resource> psWithDomain = ontologyModel.filter(prop, RDFS.DOMAIN, subjectIRI).subjects();
+            if (!psWithDomain.isEmpty()) {
+                // if psWithDomain is not empty, there is a Domain match,
+                // check if there is also Range match
+                Set<Resource> psWithDomainRange = ontologyModel.filter(prop, RDFS.RANGE, objectIRI).subjects();
+                if (!psWithDomainRange.isEmpty()) {
+                    // there is match in both Domain and Range
+                    return prop.stringValue();
+                }
+            }
+        }
+        return null;
     }
 
     private Set<IRI> doFindDomainClassUrisOfPredicateBfs(IRI currentProp, Queue<IRI> queue)
@@ -100,15 +109,13 @@ public class MLOntologyDefinition {
         if (!properties.isEmpty()) {
             Resource owlProperty = properties.stream().findFirst().get();
 
-            Set<Value> propDomainClasses = ontologyModel.filter(owlProperty, RDFS.DOMAIN, null).objects();
-            Set<IRI> propDomainClassURIs = getIRIObjects(propDomainClasses);
+            Set<IRI> propDomainClassURIs = Models.objectIRIs(ontologyModel.filter(owlProperty, RDFS.DOMAIN, null));
 
             if (!propDomainClassURIs.isEmpty()) {
                 return propDomainClassURIs;
             } else {
                 // recursive call
-                Set<Value> parentProps = ontologyModel.filter(owlProperty, RDFS.SUBPROPERTYOF, null).objects();
-                Set<IRI> parentPropURIs = getIRIObjects(parentProps);
+                Set<IRI> parentPropURIs = Models.objectIRIs(ontologyModel.filter(owlProperty, RDFS.SUBPROPERTYOF, null));
                 queue.addAll(parentPropURIs);
                 return propDomainClassURIs;
             }

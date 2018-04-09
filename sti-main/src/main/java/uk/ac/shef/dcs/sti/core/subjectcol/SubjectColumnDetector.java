@@ -87,6 +87,21 @@ public class SubjectColumnDetector {
     }
   }
 
+  /**
+   * For backwards compatibility with TMPInterpreter.
+   * @param table
+   * @param skipColumns
+   * @return
+   * @throws IOException
+   * @throws ClassNotFoundException
+   */
+  public List<Pair<Integer, Pair<Double, Boolean>>> compute(final Table table,
+                                                            final int... skipColumns) throws IOException, ClassNotFoundException {
+
+    return compute(table, new MLPreClassification(), skipColumns);
+  }
+
+
   private List<Pair<Integer, Pair<Double, Boolean>>> computeMLSuggested(MLPreClassification mlPreClassification) {
     Map<Integer, Double> columnScoreMap = new HashMap<>();
 
