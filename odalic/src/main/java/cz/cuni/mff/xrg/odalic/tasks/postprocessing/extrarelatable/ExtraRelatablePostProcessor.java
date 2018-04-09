@@ -40,7 +40,7 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.PrefixMappingService;
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.PostProcessor;
-import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.responses.Reply;
+import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.responses.AnnotationReply;
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.AnnotationResultValue;
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.AnnotationValue;
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.ParsedTableValue;
@@ -321,7 +321,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     final MediaType responseMediaType = response.getMediaType();
     
     if (responseMediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
-      final Reply reply = response.readEntity(Reply.class);
+      final AnnotationReply reply = response.readEntity(AnnotationReply.class);
       
       return responseType.cast(reply.getPayload()); // TODO: Generalize. 
     } else {

@@ -27,7 +27,7 @@ import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.Annotat
  *
  */
 @XmlRootElement(name = "reply")
-public final class Reply {
+public final class AnnotationReply {
 
   /**
    * Name of the URI query parameter that hold the optional string sent by a client that is sent
@@ -95,7 +95,7 @@ public final class Reply {
 
   @Override
   public String toString() {
-    return "Reply [status=" + status + ", type=" + type + ", payload=" + payload + ", stamp="
+    return "AnnotationReply [status=" + status + ", type=" + type + ", payload=" + payload + ", stamp="
         + stamp + "]";
   }
 }

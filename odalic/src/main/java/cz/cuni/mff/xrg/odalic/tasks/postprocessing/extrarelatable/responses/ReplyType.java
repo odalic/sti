@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * The REST API {@link Reply} type.
+ * The REST API {@link AnnotationReply} type.
  *
  * @author Václav Brodec
  *
