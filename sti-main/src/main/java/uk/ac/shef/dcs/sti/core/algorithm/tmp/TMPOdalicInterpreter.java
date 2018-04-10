@@ -1,9 +1,7 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -17,9 +15,11 @@ import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLPreClassificatio
 import uk.ac.shef.dcs.sti.core.extension.annotations.ComponentTypeValue;
 import uk.ac.shef.dcs.sti.core.extension.annotations.EntityCandidate;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Ambiguity;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Classification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.extension.constraints.DataCubeComponent;
 import uk.ac.shef.dcs.sti.core.extension.positions.CellPosition;
+import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TColumnProcessingAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TColumnProcessingAnnotation.TColumnProcessingType;
@@ -175,10 +175,6 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       LOG.info("\t> PHASE: ML PRE-CLASSIFICATION ...");
       MLPreClassification mlPreClassification = this.mlPreClassificator.preClassificate(table, getIgnoreColumns());
 
-      // TODO add classifications to table annotations
-
-      // TODO run disambiguation with ML classifications as constraints, dont run odalic classification
-
       // find the main subject column of this table
       LOG.info("\t> PHASE: Detecting subject column ...");
       final List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnScores =
@@ -189,10 +185,14 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       final Set<Ambiguity> newAmbiguities = setColumnProcessingAnnotationsAndAmbiguities(table,
           tableAnnotations, constraints);
 
+      // TODO add classifications to table annotations
+      // TODO run disambiguation with ML classifications as constraints, dont run odalic classification
+
       constraints = new Constraints(constraints.getSubjectColumnsPositions(),
           constraints.getColumnIgnores(), constraints.getColumnCompulsory(),
           constraints.getColumnAmbiguities(),
-          constraints.getClassifications(), constraints.getColumnRelations(),
+          mergeClassifications(constraints.getClassifications(), mlPreClassification.getColumnClassifications()),
+          constraints.getColumnRelations(),
           constraints.getDisambiguations(), newAmbiguities, constraints.getDataCubeComponents());
 
       // learning phase
@@ -213,12 +213,6 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
         LOG.info("\t> PHASE: UPDATE phase ...");
         this.update.update(annotatedColumns, table, tableAnnotations, constraints);
       }
-
-      /*TODO delete
-      final List<Integer> annotatedColumns = new ArrayList<>();
-      for (int i = 0; i < table.getNumCols(); i++) {
-        annotatedColumns.add(i);
-      }*/
 
       // set statistical annotations or discover relations
       if (statistical) {
@@ -248,5 +242,37 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
     } catch (final Exception e) {
       throw new STIException(e);
     }
+  }
+
+  /**
+   * If there exists Human-provided (constraints-provided) classification for column with index I,
+   * keep that classification. If there is no such classification for column I, assign a new classification for that
+   * column made by the ML PreClassification (if exists).
+   * @param constraintClassifications
+   * @param mlClassifications
+   * @return
+   */
+  private Set<Classification> mergeClassifications(Set<Classification> constraintClassifications,
+                                                   Set<Classification> mlClassifications) {
+
+    Map<Integer, Classification> constraintsForCols = constraintClassifications.stream()
+            .collect(Collectors.toMap(cls -> cls.getPosition().getIndex(), Function.identity()));
+
+
+    Set<Classification> mergedClassifications = new HashSet<>();
+
+    for (Classification mlClassification : mlClassifications) {
+      Integer position = mlClassification.getPosition().getIndex();
+      Classification constraintsClassification = constraintsForCols.get(position);
+
+      if (constraintsClassification != null) {
+        // add from constraints
+        mergedClassifications.add(constraintsClassification);
+      } else {
+        // add ML based classification
+        mergedClassifications.add(mlClassification);
+      }
+    }
+    return mergedClassifications;
   }
 }

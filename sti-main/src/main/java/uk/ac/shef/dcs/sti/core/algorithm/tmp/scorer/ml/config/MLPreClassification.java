@@ -1,10 +1,19 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config;
 
+import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.MLPredicate;
+import uk.ac.shef.dcs.sti.core.extension.annotations.Entity;
+import uk.ac.shef.dcs.sti.core.extension.annotations.EntityCandidate;
+import uk.ac.shef.dcs.sti.core.extension.annotations.HeaderAnnotation;
+import uk.ac.shef.dcs.sti.core.extension.annotations.Score;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Classification;
+import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 import uk.ac.shef.dcs.sti.core.model.TColumnHeaderAnnotation;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class MLPreClassification {
 
@@ -52,5 +61,24 @@ public class MLPreClassification {
 
     public Map<Integer, MLPredicate> getPredicates() {
         return predicates;
+    }
+
+    public Set<Classification> getColumnClassifications() {
+        Set<Classification> classifications = new HashSet<>();
+        for (Map.Entry<Integer, TColumnHeaderAnnotation> entry : this.classHeaderAnnotations.entrySet()) {
+            ColumnPosition colPos = new ColumnPosition(entry.getKey());
+
+            Clazz clazz = entry.getValue().getAnnotation();
+            // there will be only 1 candidate (chosen ML class), which will also be 'chosen' for the annotation
+            Set<EntityCandidate> candidates = new HashSet<>();
+            candidates.add(new EntityCandidate(
+                    new Entity(clazz.getId(), clazz.getLabel()),
+                    new Score(entry.getValue().getFinalScore())
+            ));
+
+            HeaderAnnotation annotation = new HeaderAnnotation(candidates, candidates);
+            classifications.add(new Classification(colPos, annotation));
+        }
+        return classifications;
     }
 }
