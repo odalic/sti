@@ -1,6 +1,8 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config;
 
 import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.impl.EmptyModel;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
@@ -20,6 +22,10 @@ public class MLOntologyDefinition {
 
     private final Model ontologyModel;
     private final ValueFactory valueFactory;
+
+    public static MLOntologyDefinition empty() {
+        return new MLOntologyDefinition(new EmptyModel(new LinkedHashModel()));
+    }
 
     public MLOntologyDefinition(Model ontologyModel) {
         this.ontologyModel = ontologyModel;

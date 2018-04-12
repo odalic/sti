@@ -1,4 +1,4 @@
-package uk.ac.shef.dcs.sti.core.algorithm.tmp;
+package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,16 +19,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class MLPreClassificator {
+public class DefaultMLPreClassifier implements MLPreClassifier {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MLPreClassificator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultMLPreClassifier.class);
 
     private MLClassifier mlClassifier;
     private MLOntologyMapping mlOntologyMapping;
     private MLOntologyDefinition mlOntologyDefinition;
 
-    public MLPreClassificator(MLClassifier mlClassifier, MLOntologyMapping mlOntologyMapping,
-                              MLOntologyDefinition mlOntologyDefinition) {
+    public DefaultMLPreClassifier(MLClassifier mlClassifier, MLOntologyMapping mlOntologyMapping,
+                                  MLOntologyDefinition mlOntologyDefinition) {
         this.mlClassifier = mlClassifier;
         this.mlOntologyMapping = mlOntologyMapping;
         this.mlOntologyDefinition = mlOntologyDefinition;

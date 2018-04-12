@@ -32,6 +32,9 @@ import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.*;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.DefaultMLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.NoMLPreClassifier;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.OSPD_nonEmpty;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentCellRanker;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentTContentRowRankerImpl;
@@ -178,8 +181,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       for (final Map.Entry<String, Proxy> kbProxyEntry : kbProxyInstances.row(userId).entrySet()) {
         final Proxy kbProxy = kbProxyEntry.getValue();
 
-        // TODO implement situation, that ml classifier is turned off and should not be used
-        final MLPreClassificator mlPreClassificator = initMLPreClassification();
+        final MLPreClassifier mlPreClassifier = initMLPreClassifier();
 
         final SubjectColumnDetector subcolDetector = initSubColDetector(kbProxy);
 
@@ -191,13 +193,13 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
 
         final UPDATE update = initUpdate(kbProxy, selector, disambiguator, classifier);
 
-        final TColumnColumnRelationEnumerator relationEnumerator = initRelationEnumerator(mlPreClassificator.getMlOntologyDefinition());
+        final TColumnColumnRelationEnumerator relationEnumerator = initRelationEnumerator(mlPreClassifier.getMlOntologyDefinition());
 
         // object to consolidate previous output, further computeElementScores columns
         // and disambiguate entities
         final LiteralColumnTagger literalColumnTagger = new LiteralColumnTaggerImpl();
 
-        final SemanticTableInterpreter interpreter = new TMPOdalicInterpreter(mlPreClassificator, subcolDetector,
+        final SemanticTableInterpreter interpreter = new TMPOdalicInterpreter(mlPreClassifier, subcolDetector,
             learning, update, relationEnumerator, literalColumnTagger);
 
         interpreters.put(kbProxyEntry.getKey(), interpreter);
@@ -206,45 +208,50 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       return interpreters;
   }
 
-  private MLPreClassificator initMLPreClassification() throws STIException {
-    // TODO implement situation, that ml classifier is turned off and should not be used
+  private MLPreClassifier initMLPreClassifier() throws STIException {
+    // TODO pass information whether to use or not use ML classifier from task submission
+    if (useMlClassifier()) {
+      // ML should be used
+      String mlPropsFilePath = getAbsolutePath(PROPERTY_ML_PROP_FILE);
 
-    String mlPropsFilePath = getAbsolutePath(PROPERTY_ML_PROP_FILE);
+      try {
+        final String homePath = this.properties.getProperty(PROPERTY_HOME);
+        final MLFeatureDetector mlFeatureDetector = new DefaultMLFeatureDetector();
 
-    try {
-      final String homePath = this.properties.getProperty(PROPERTY_HOME);
-      final MLFeatureDetector mlFeatureDetector = new DefaultMLFeatureDetector();
+        MLPropertiesLoader mlPropertiesLoader = new MLPropertiesLoader(homePath, mlPropsFilePath);
 
-      MLPropertiesLoader mlPropertiesLoader = new MLPropertiesLoader(homePath, mlPropsFilePath);
+        // parse input dataset
+        String trainingDatasetPath = mlPropertiesLoader.getMLClassifierTrainingDatasetFilePath();
+        // TODO pass training set path and format from task submission
+        Format trainingDatasetConfiguration = new Format(Charset.forName("UTF8"), '|', true, null, null, null, "\n");
+        DatasetFileReader datasetFileReader = new CsvDatasetFileReader(new DefaultApacheCsvFormatAdapter());
+        InputValue[] trainingDatasetInputValues = datasetFileReader.readDatasetFile(trainingDatasetPath, trainingDatasetConfiguration);
 
-      // parse input dataset
-      String trainingDatasetPath = mlPropertiesLoader.getMLClassifierTrainingDatasetFilePath();
-      // TODO pass training set path and format from task submission
-      Format trainingDatasetConfiguration = new Format(Charset.forName("UTF8"), '|', true, null, null, null, "\n");
-      DatasetFileReader datasetFileReader = new CsvDatasetFileReader( new DefaultApacheCsvFormatAdapter());
-      InputValue[] trainingDatasetInputValues = datasetFileReader.readDatasetFile(trainingDatasetPath, trainingDatasetConfiguration);
+        // parse ontology mapping
+        OntologyMappingReader ontologyMappingReader = new JsonOntologyMappingReader();
+        MLOntologyMapping ontologyMapping =
+                ontologyMappingReader.readOntologyMapping(mlPropertiesLoader.getMLClassifierOntologyMappingFilePath());
 
-      // parse ontology mapping
-      OntologyMappingReader ontologyMappingReader = new JsonOntologyMappingReader();
-      MLOntologyMapping ontologyMapping =
-              ontologyMappingReader.readOntologyMapping(mlPropertiesLoader.getMLClassifierOntologyMappingFilePath());
-
-      // load ontology definitions
-      OntologyDefinitionReader ontologyDefinitionReader = new Rdf4jOntologyDefinitionReader();
-      MLOntologyDefinition ontologyDefinition = ontologyDefinitionReader.readOntologyDefinitions(
-              mlPropertiesLoader.getMLClassifierOntologyDefinitionFilePaths()
-      );
+        // load ontology definitions
+        OntologyDefinitionReader ontologyDefinitionReader = new Rdf4jOntologyDefinitionReader();
+        MLOntologyDefinition ontologyDefinition = ontologyDefinitionReader.readOntologyDefinitions(
+                mlPropertiesLoader.getMLClassifierOntologyDefinitionFilePaths()
+        );
 
 
-      MLClassifier classifier = new RandomForestMLClassifier(
-              homePath, mlPropertiesLoader.getProperties(), mlFeatureDetector, trainingDatasetInputValues
-      );
-      classifier.trainClassifier();
-      return new MLPreClassificator(classifier, ontologyMapping, ontologyDefinition);
+        MLClassifier classifier = new RandomForestMLClassifier(
+                homePath, mlPropertiesLoader.getProperties(), mlFeatureDetector, trainingDatasetInputValues
+        );
+        classifier.trainClassifier();
+        return new DefaultMLPreClassifier(classifier, ontologyMapping, ontologyDefinition);
 
-    } catch (final Exception e) {
-      logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
-      throw new STIException("Failed initializing Machine Learning Classifier components.", e);
+      } catch (final Exception e) {
+        logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
+        throw new STIException("Failed initializing Machine Learning Classifier components.", e);
+      }
+    } else {
+      // ML is disabled
+      return new NoMLPreClassifier();
     }
   }
 

@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.poi.ss.formula.functions.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +11,8 @@ import com.google.common.base.Preconditions;
 
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.DefaultMLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPreClassifier;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.annotations.ComponentTypeValue;
 import uk.ac.shef.dcs.sti.core.extension.annotations.EntityCandidate;
@@ -35,7 +36,7 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
 
   private static final Logger LOG = LoggerFactory.getLogger(TMPOdalicInterpreter.class.getName());
 
-  private final MLPreClassificator mlPreClassificator;
+  private final MLPreClassifier mlPreClassifier;
   private final SubjectColumnDetector subjectColumnDetector;
   private final LEARNING learning;
   private final LiteralColumnTagger literalColumnTagger;
@@ -43,13 +44,13 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
 
   private final UPDATE update;
 
-  public TMPOdalicInterpreter(final MLPreClassificator mlPreClassificator,
+  public TMPOdalicInterpreter(final MLPreClassifier mlPreClassifier,
       final SubjectColumnDetector subjectColumnDetector,
       final LEARNING learning, final UPDATE update,
       final TColumnColumnRelationEnumerator relationEnumerator,
       final LiteralColumnTagger literalColumnTagger) {
     super(new int[0], new int[0]);
-    this.mlPreClassificator = mlPreClassificator;
+    this.mlPreClassifier = mlPreClassifier;
     this.subjectColumnDetector = subjectColumnDetector;
     this.learning = learning;
     this.literalColumnTagger = literalColumnTagger;
@@ -174,7 +175,7 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       final TAnnotation tableAnnotations = new TAnnotation(table.getNumRows(), table.getNumCols());
 
       LOG.info("\t> PHASE: ML PRE-CLASSIFICATION ...");
-      MLPreClassification mlPreClassification = this.mlPreClassificator.preClassificate(table, getIgnoreColumns());
+      MLPreClassification mlPreClassification = this.mlPreClassifier.preClassificate(table, getIgnoreColumns());
 
       // find the main subject column of this table
       LOG.info("\t> PHASE: Detecting subject column ...");

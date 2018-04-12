@@ -20,6 +20,10 @@ public class MLPreClassification {
     private Map<Integer, TColumnHeaderAnnotation> classHeaderAnnotations;
     private Map<Integer, MLPredicate> predicates;
 
+    public static MLPreClassification empty() {
+        return new MLPreClassification();
+    }
+
     public MLPreClassification() {
         this.classHeaderAnnotations = new HashMap<>();
         this.predicates = new HashMap<>();
