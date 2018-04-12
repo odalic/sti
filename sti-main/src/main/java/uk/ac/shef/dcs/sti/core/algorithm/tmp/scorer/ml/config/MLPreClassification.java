@@ -81,4 +81,29 @@ public class MLPreClassification {
         }
         return classifications;
     }
+
+    /**
+     * Retrieve MLPreclassification-provided set of subject column candidates.
+     * The column is considered as subject column candidate, if it was classified as an Ontology class, and
+     * there exist a Property column in the table, whose property contains given class column in its domain.
+     * @return
+     */
+    public Set<ColumnPosition> getSubjectColumnPositions() {
+
+        Set<ColumnPosition> subjectColumnPositions = new HashSet<>();
+
+        for (Map.Entry<Integer, TColumnHeaderAnnotation> classEntry: getClassHeaderAnnotations().entrySet()) {
+            String classUri = classEntry.getValue().getAnnotation().getId();
+            Integer columnIndex = classEntry.getKey();
+
+            for (Map.Entry<Integer, MLPredicate> predicateEntry: getPredicates().entrySet()) {
+                if (predicateEntry.getValue().domainContains(classUri)) {
+                    // there is a predicate with the class in its domain, add it to subject columns
+                    subjectColumnPositions.add(new ColumnPosition(columnIndex));
+                }
+            }
+        }
+
+        return subjectColumnPositions;
+    }
 }

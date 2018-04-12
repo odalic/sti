@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.formula.functions.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,19 +179,19 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       // find the main subject column of this table
       LOG.info("\t> PHASE: Detecting subject column ...");
       final List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnScores =
-          this.subjectColumnDetector.compute(table, mlPreClassification, ignoreColumnsArray);
+          this.subjectColumnDetector.compute(table, ignoreColumnsArray);
       tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
 
       // set column processing annotations
       final Set<Ambiguity> newAmbiguities = setColumnProcessingAnnotationsAndAmbiguities(table,
           tableAnnotations, constraints);
 
-      // TODO add classifications to table annotations
-      // TODO run disambiguation with ML classifications as constraints, dont run odalic classification
-
-      constraints = new Constraints(constraints.getSubjectColumnsPositions(),
+      constraints = new Constraints(
+          // add ML-discovered subject column candidates (if any) to constraints
+          chooseSubjectColumnPositions(constraints.getSubjectColumnsPositions(), mlPreClassification.getSubjectColumnPositions()),
           constraints.getColumnIgnores(), constraints.getColumnCompulsory(),
           constraints.getColumnAmbiguities(),
+          // add ML-discovered classifications as constraints
           mergeClassifications(constraints.getClassifications(), mlPreClassification.getColumnClassifications()),
           constraints.getColumnRelations(),
           constraints.getDisambiguations(), newAmbiguities, constraints.getDataCubeComponents());
@@ -274,5 +275,22 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       }
     }
     return mergedClassifications;
+  }
+
+  /**
+   * If there are subject column positions provided by constraints (human input), return them, otherwise
+   * return subject column suggestions provided by MLPreClassification.
+   * @param constraintSubColPositions
+   * @param mlSubColPositions
+   * @return
+   */
+  private Set<ColumnPosition> chooseSubjectColumnPositions(Set<ColumnPosition> constraintSubColPositions,
+                                                  Set<ColumnPosition> mlSubColPositions) {
+
+    if (constraintSubColPositions != null && !constraintSubColPositions.isEmpty()) {
+      return constraintSubColPositions;
+    } else {
+      return mlSubColPositions;
+    }
   }
 }
