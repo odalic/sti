@@ -127,7 +127,7 @@ public class DefaultMLPreClassifier implements MLPreClassifier {
      */
     private Set<String> loadDomainOfPredicate(String predicateUri) throws MLException {
         try {
-            return this.mlOntologyDefinition.findDomainClassUrisOfPredicate(predicateUri);
+            return this.mlOntologyDefinition.findDomainClassIRIsOfProperty(predicateUri);
         } catch (MLOntologyPropertyNotFoundException e) {
             throw new MLException(e.getMessage(), e);
         }

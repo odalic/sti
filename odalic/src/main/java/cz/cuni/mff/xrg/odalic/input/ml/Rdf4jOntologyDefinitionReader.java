@@ -38,6 +38,8 @@ public class Rdf4jOntologyDefinitionReader implements OntologyDefinitionReader {
             }
         }
 
-        return new MLOntologyDefinition(model);
+        MLOntologyDefinition mlOntologyDefinition = new MLOntologyDefinition(model);
+        mlOntologyDefinition.buildPropertyModel();
+        return mlOntologyDefinition;
     }
 }
