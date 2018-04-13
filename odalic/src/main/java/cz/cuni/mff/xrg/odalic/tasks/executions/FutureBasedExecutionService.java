@@ -230,12 +230,14 @@ public final class FutureBasedExecutionService implements ExecutionService {
   }
 
   private TaskMLConfiguration createTaskMLConfiguration(final String userId, final String fileId,
-                                                        final Configuration configuration) {
+                                                        final Configuration configuration) throws IOException {
     // load ml training dataset file & its format
     TaskMLConfiguration taskMlConfig;
     if (configuration.isUseMLClassifier()) {
-      File trainingDatasetFile = loadMLTrainingDatasetFile(userId, configuration.getMlTrainingDatasetFile().getId());
-      taskMlConfig = new TaskMLConfiguration(configuration.isUseMLClassifier(), trainingDatasetFile);
+      final String data = this.fileService.getDataById(userId, configuration.getMlTrainingDatasetFile().getId());
+      final Format format = this.fileService.getFormatForFileId(userId, configuration.getMlTrainingDatasetFile().getId());
+
+      taskMlConfig = new TaskMLConfiguration(configuration.isUseMLClassifier(), format, data);
     } else {
       taskMlConfig = TaskMLConfiguration.disabled();
     }

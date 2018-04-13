@@ -36,10 +36,9 @@ public class CsvDatasetFileReader implements DatasetFileReader {
     }
 
     @Override
-    public InputValue[] readDatasetFile(final URL fileName, final Format configuration) throws IOException {
+    public InputValue[] readDatasetFile(final String trainingDatasetFileContents, final Format configuration) throws IOException {
 
-        InputStream inputStream = fileName.openStream();
-        Reader reader = new InputStreamReader(inputStream, configuration.getCharset());
+        Reader reader = new StringReader(trainingDatasetFileContents);
 
         final CSVFormat format = this.apacheCsvFormatAdapter.toApacheCsvFormat(configuration);
         final CSVParser parser = format.parse(reader);

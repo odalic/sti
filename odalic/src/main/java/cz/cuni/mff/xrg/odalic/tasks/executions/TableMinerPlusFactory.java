@@ -229,10 +229,10 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
         MLPropertiesLoader mlPropertiesLoader = new MLPropertiesLoader(homePath, mlPropsFilePath);
 
         // parse input dataset
-        URL trainingDatasetPath = mlConfig.getTrainingDatasetFile().getLocation();
-        Format trainingDatasetConfiguration = mlConfig.getTrainingDatasetFile().getFormat();
+        String trainingDatasetContents = mlConfig.getTrainingDatasetFileContents();
+        Format trainingDatasetConfiguration = mlConfig.getTrainingDatasetFileFormat();
         DatasetFileReader datasetFileReader = new CsvDatasetFileReader(new DefaultApacheCsvFormatAdapter());
-        InputValue[] trainingDatasetInputValues = datasetFileReader.readDatasetFile(trainingDatasetPath, trainingDatasetConfiguration);
+        InputValue[] trainingDatasetInputValues = datasetFileReader.readDatasetFile(trainingDatasetContents, trainingDatasetConfiguration);
 
         // parse ontology mapping
         OntologyMappingReader ontologyMappingReader = new JsonOntologyMappingReader();

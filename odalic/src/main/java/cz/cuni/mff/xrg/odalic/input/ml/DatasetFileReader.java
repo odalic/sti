@@ -9,10 +9,10 @@ import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.InputValue;
 public interface DatasetFileReader {
 
     /**
-     * Reads given filename and returns array of parsed InputValues.
-     * @param fileName
+     * Reads given file and returns array of parsed InputValues.
+     * @param trainingDatasetFileContents
      * @param configuration
      * @return
      */
-    InputValue[] readDatasetFile(URL fileName, Format configuration) throws IOException;
+    InputValue[] readDatasetFile(final String trainingDatasetFileContents, Format configuration) throws IOException;
 }
