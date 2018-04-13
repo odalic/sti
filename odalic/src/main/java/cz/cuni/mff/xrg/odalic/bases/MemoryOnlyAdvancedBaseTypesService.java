@@ -47,16 +47,19 @@ public final class MemoryOnlyAdvancedBaseTypesService implements AdvancedBaseTyp
   private static final ImmutableSet<String> EXTRARELATABLE_KEYS = ImmutableSet.of(DefaultPostProcessorFactory.POST_PROCESSING_ENABLED_KEY, DefaultPostProcessorFactory.POST_PROCESSORS_LIST_KEY,
       ExtraRelatablePostProcessor.ENDPOINT_PARAMETER_KEY,
       ExtraRelatablePostProcessor.LANGUAGE_TAG_PARAMETER_KEY,
-      ExtraRelatablePostProcessor.LEARN_ANNOTATED_PARAMETER_KEY);
+      ExtraRelatablePostProcessor.LEARN_ANNOTATED_PARAMETER_KEY,
+      ExtraRelatablePostProcessor.LEARN_ONLY_WITH_FEEDBACK_PARAMETER_KEY);
   private static final ImmutableMap<String, String> EXTRARELATABLE_DEFAULTS = ImmutableMap.of(DefaultPostProcessorFactory.POST_PROCESSING_ENABLED_KEY, "true",
       DefaultPostProcessorFactory.POST_PROCESSORS_LIST_KEY, DefaultPostProcessorFactory.EXTRA_RELATABLE_POST_PROCESSOR_NAME,
       ExtraRelatablePostProcessor.LANGUAGE_TAG_PARAMETER_KEY, "en",
-      ExtraRelatablePostProcessor.LEARN_ANNOTATED_PARAMETER_KEY, "false");
-  private static final ImmutableMap<String, String> EXTRARELATABLE_COMMENTS = ImmutableMap.of(DefaultPostProcessorFactory.POST_PROCESSING_ENABLED_KEY, "Enter true to enable the post-processors, other values to disable.",
-      DefaultPostProcessorFactory.POST_PROCESSORS_LIST_KEY, "A " + DefaultPostProcessorFactory.POST_PROCESSORS_LIST_SEPARATOR + "-separated list of the names of the post-processors.",
-      ExtraRelatablePostProcessor.ENDPOINT_PARAMETER_KEY, "Endpoint URI of an ExtraRelatable instance.",
-      ExtraRelatablePostProcessor.LANGUAGE_TAG_PARAMETER_KEY, "Language tag of the content.",
-      ExtraRelatablePostProcessor.LEARN_ANNOTATED_PARAMETER_KEY, "Enter true to enable learning of every file annotated thgrough the Odalic.");
+      ExtraRelatablePostProcessor.LEARN_ANNOTATED_PARAMETER_KEY, "false",
+      ExtraRelatablePostProcessor.LEARN_ONLY_WITH_FEEDBACK_PARAMETER_KEY, "true");
+  private static final ImmutableMap<String, String> EXTRARELATABLE_COMMENTS = ImmutableMap.<String, String>builder().put(DefaultPostProcessorFactory.POST_PROCESSING_ENABLED_KEY, "Enter true to enable the post-processors, other values to disable.")
+      .put(DefaultPostProcessorFactory.POST_PROCESSORS_LIST_KEY, "A " + DefaultPostProcessorFactory.POST_PROCESSORS_LIST_SEPARATOR + "-separated list of the names of the post-processors.")
+      .put(ExtraRelatablePostProcessor.ENDPOINT_PARAMETER_KEY, "Endpoint URI of an ExtraRelatable instance.")
+          .put(ExtraRelatablePostProcessor.LANGUAGE_TAG_PARAMETER_KEY, "Language tag of the content.")
+              .put(ExtraRelatablePostProcessor.LEARN_ANNOTATED_PARAMETER_KEY, "Enter true to enable learning of every file annotated thgrough the Odalic.")
+                  .put(ExtraRelatablePostProcessor.LEARN_ONLY_WITH_FEEDBACK_PARAMETER_KEY, "Enter false to allow learning of columns without properties confirmed by user feedback.").build();
   
   public static final String PP_ER_BASE_TYPE_NAME = "PoolParty_ER";
   public static final AdvancedBaseType PP_ER_BASE_TYPE = new DefaultAdvancedBaseTypeFactory().createPostProcessable(

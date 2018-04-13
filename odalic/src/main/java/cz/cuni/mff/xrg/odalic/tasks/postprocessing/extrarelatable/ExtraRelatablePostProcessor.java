@@ -35,6 +35,7 @@ import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Score;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.prefixes.Prefix;
@@ -47,6 +48,7 @@ import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.ParsedT
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.PropertyValue;
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.StatisticsValue;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
+import cz.cuni.mff.xrg.odalic.util.Maps;
 
 
 
@@ -54,16 +56,19 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
 
   public static final String ENDPOINT_PARAMETER_KEY = "eu.odalic.extrarelatable.endpoint";
   public static final String LEARN_ANNOTATED_PARAMETER_KEY = "eu.odalic.extrarelatable.learnAnnotated";
+  public static final String LEARN_ONLY_WITH_FEEDBACK_PARAMETER_KEY = "eu.odalic.extrarelatable.learnOnlyWithFeedback";
   public static final String LANGUAGE_TAG_PARAMETER_KEY = "eu.odalic.extrarelatable.languageTag";
   
   private static final URI ANNOTATED_SUBPATH = URI.create("annotated");
   private static final String LEARN_QUERY_PARAMETER_NAME = "learn";
+  private static final String LEARN_ONLY_WITH_FEEDBACK_PARAMETER_NAME = "onlyWithProperties";
 
 
   private final InputConverter inputConverter;
   private final PrefixMappingService prefixMappingService;
   private final URI targetPath;
   private final boolean learnAnnotated;
+  private final boolean learnOnlyWithFeedback;
   private final String languageTag;
   private final String user;
   private final String baseName;
@@ -86,7 +91,8 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     this.inputConverter = inputConverter;
     this.prefixMappingService = prefixMappingService;
     this.targetPath = endpoint.resolve(ANNOTATED_SUBPATH);
-    this.learnAnnotated = Boolean.parseBoolean(parameters.getOrDefault(LEARN_ANNOTATED_PARAMETER_KEY, Boolean.FALSE.toString()));;
+    this.learnAnnotated = Boolean.parseBoolean(parameters.getOrDefault(LEARN_ANNOTATED_PARAMETER_KEY, Boolean.FALSE.toString()));
+    this.learnOnlyWithFeedback = Boolean.parseBoolean(parameters.getOrDefault(LEARN_ONLY_WITH_FEEDBACK_PARAMETER_KEY, Boolean.TRUE.toString()));
     this.languageTag = languageTag;
     this.user = user;
     this.baseName = baseName;
@@ -94,11 +100,13 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
 
   @Override
   public Result process(final Input input, final Result result, final Feedback feedback, final String primaryBaseName) {
-    // TODO: Detect source columns instead of using only the leftmost one. Use the result and domain of the property?
-    // TODO: Labels retrieval.
+    final Map<Integer, URI> declaredContextClasses = getDeclaredContextClasses(feedback);
+    final Map<Integer, URI> declaredContextProperties = getDeclaredContextProperties(feedback);
+    final Map<Integer, URI> collectedContextClasses = getCollectedContextClasses(result, feedback);
+    final Map<Integer, URI> collectedContextProperties = getCollectedContextProperties(result, feedback);
     
     final ParsedTableValue parsedTable =
-        this.inputConverter.convert(input, this.languageTag, this.user);
+        this.inputConverter.convert(input, this.languageTag, this.user, declaredContextClasses, declaredContextProperties, collectedContextClasses, collectedContextProperties);
 
     final AnnotationResultValue payload = request(parsedTable, AnnotationResultValue.class);
 
@@ -116,6 +124,66 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
         alterColumnProcessingAnnotations(result, feedback, annotatedColumns, columnsCount),
         result.getWarnings()
     );
+  }
+
+  private Map<Integer, URI> getCollectedContextProperties(Result result, Feedback feedback) {
+    final Map<Integer, URI> resultAnnotations = IntStream.range(0, result.getColumnRelationAnnotations().size()).filter(i -> {
+      final HeaderAnnotation annotation = result.getHeaderAnnotations().get(i);
+      if (annotation == null) {
+        return false;
+      }
+      
+      final Map<String, Set<EntityCandidate>> chosen = annotation.getChosen();
+      if (chosen == null) {
+        return false;
+      }
+      
+      final Set<EntityCandidate> baseChosen = chosen.get(this.baseName);
+      if (baseChosen == null || baseChosen.isEmpty()) {
+        return false;
+      }
+      
+      return true;
+    }).mapToObj(i -> Integer.valueOf(i)).collect(Collectors.toMap(i -> i, i -> URI.create(result.getHeaderAnnotations().get(i).getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource()), (f, s) -> f));
+      
+    final Map<Integer, URI> feedbackAnnotations = feedback.getColumnRelations().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getSecondIndex(), c -> URI.create(c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource()), (f, s) -> f));
+    Maps.mergeWith(resultAnnotations, feedbackAnnotations, (r, f) -> f);
+    
+    return ImmutableMap.copyOf(resultAnnotations);
+  }
+  
+  private Map<Integer, URI> getDeclaredContextProperties(Feedback feedback) {
+    return feedback.getColumnRelations().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getSecondIndex(), c -> URI.create(c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource()), (f, s) -> f));
+  }
+
+  private Map<Integer, URI> getCollectedContextClasses(Result result, Feedback feedback) {
+    final Map<Integer, URI> resultAnnotations = IntStream.range(0, result.getHeaderAnnotations().size()).filter(i -> {
+      final HeaderAnnotation annotation = result.getHeaderAnnotations().get(i);
+      if (annotation == null) {
+        return false;
+      }
+      
+      final Map<String, Set<EntityCandidate>> chosen = annotation.getChosen();
+      if (chosen == null) {
+        return false;
+      }
+      
+      final Set<EntityCandidate> baseChosen = chosen.get(this.baseName);
+      if (baseChosen == null || baseChosen.isEmpty()) {
+        return false;
+      }
+      
+      return true;
+    }).mapToObj(i -> Integer.valueOf(i)).collect(Collectors.toMap(i -> i, i -> URI.create(result.getHeaderAnnotations().get(i).getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource())));
+      
+    final Map<Integer, URI> feedbackAnnotations = feedback.getClassifications().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getIndex(), c -> URI.create(c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource())));
+    Maps.mergeWith(resultAnnotations, feedbackAnnotations, (r, f) -> f);
+    
+    return ImmutableMap.copyOf(resultAnnotations);
+  }
+  
+  private Map<Integer, URI> getDeclaredContextClasses(Feedback feedback) {
+    return feedback.getClassifications().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getIndex(), c -> URI.create(c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource())));
   }
 
   private Map<ColumnRelationPosition, ColumnRelationAnnotation> alterColumnRelationAnnotations(
@@ -308,7 +376,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     final Client client = ClientBuilder.newBuilder().build();
 
     final WebTarget target =
-        client.target(this.targetPath).queryParam(LEARN_QUERY_PARAMETER_NAME, learnAnnotated);
+        client.target(this.targetPath).queryParam(LEARN_QUERY_PARAMETER_NAME, learnAnnotated).queryParam(LEARN_ONLY_WITH_FEEDBACK_PARAMETER_NAME, learnOnlyWithFeedback);
 
     final Response response = target.request().accept(MediaType.APPLICATION_JSON_TYPE)
         .post(Entity.entity(requestEntity, MediaType.APPLICATION_JSON_TYPE));
