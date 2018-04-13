@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import cern.colt.matrix.DoubleMatrix2D;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentRowRanker;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.MLPredicate;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.stopping.StoppingCriteriaInstantiator;
-import uk.ac.shef.dcs.sti.core.model.TColumnHeaderAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
 import uk.ac.shef.dcs.util.Cache;

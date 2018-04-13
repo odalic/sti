@@ -1,7 +1,7 @@
-package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml;
+package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing;
 
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputWithFeatures;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.InputValue;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.InputWithFeatures;
 
 public interface MLFeatureDetector {
 

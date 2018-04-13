@@ -1,8 +1,8 @@
-package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml;
+package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.exception.MLException;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.exception.MLException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,9 +20,6 @@ public class MLPropertiesLoader {
     private String homePath;
     private String propsFilePath;
     private Properties props;
-
-    private static final String PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH =
-            "sti.tmp.ml.training.dataset.file.path";
 
     private static final String PROPERTY_ML_CLASSIFIER_ONTOLOGY_MAPPING_FILEPATH =
             "sti.tmp.ml.ontology.mapping.file.path";
@@ -46,13 +43,6 @@ public class MLPropertiesLoader {
             this.props = loadProps();
         }
         return props;
-    }
-
-    public String getMLClassifierTrainingDatasetFilePath() throws IOException, MLException {
-        return getMLClassifierFilePath(
-                PROPERTY_ML_CLASSIFIER_TRAINING_DATASET_FILEPATH,
-                "ML Classifier training dataset file"
-        );
     }
 
     public String getMLClassifierOntologyMappingFilePath() throws IOException, MLException {

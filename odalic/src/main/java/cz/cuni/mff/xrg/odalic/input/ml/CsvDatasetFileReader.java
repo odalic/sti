@@ -3,17 +3,16 @@ package cz.cuni.mff.xrg.odalic.input.ml;
 import com.google.common.base.Preconditions;
 import cz.cuni.mff.xrg.odalic.files.formats.ApacheCsvFormatAdapter;
 import cz.cuni.mff.xrg.odalic.files.formats.Format;
-import cz.cuni.mff.xrg.odalic.input.ListsBackedInputBuilder;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.InputValue;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -37,9 +36,9 @@ public class CsvDatasetFileReader implements DatasetFileReader {
     }
 
     @Override
-    public InputValue[] readDatasetFile(final String fileName, final Format configuration) throws IOException {
+    public InputValue[] readDatasetFile(final URL fileName, final Format configuration) throws IOException {
 
-        InputStream inputStream = new FileInputStream(fileName);
+        InputStream inputStream = fileName.openStream();
         Reader reader = new InputStreamReader(inputStream, configuration.getCharset());
 
         final CSVFormat format = this.apacheCsvFormatAdapter.toApacheCsvFormat(configuration);

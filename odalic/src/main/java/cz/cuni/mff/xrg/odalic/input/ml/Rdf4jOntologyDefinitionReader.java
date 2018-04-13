@@ -4,7 +4,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLOntologyDefinition;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyDefinition;
 
 import java.io.File;
 import java.io.FileInputStream;

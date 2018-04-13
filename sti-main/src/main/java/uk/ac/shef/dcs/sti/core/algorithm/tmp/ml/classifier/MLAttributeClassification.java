@@ -1,4 +1,4 @@
-package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml;
+package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier;
 
 import cz.cuni.mff.xrg.odalic.util.parsing.UriParsingUtil;
 import uk.ac.shef.dcs.kbproxy.model.Attribute;

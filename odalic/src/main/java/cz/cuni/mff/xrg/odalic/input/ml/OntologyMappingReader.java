@@ -1,6 +1,6 @@
 package cz.cuni.mff.xrg.odalic.input.ml;
 
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLOntologyMapping;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyMapping;
 
 import java.io.IOException;
 

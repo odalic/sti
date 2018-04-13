@@ -1,4 +1,4 @@
-package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.exception;
+package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.exception;
 
 /**
  * Exception to be thrown when the OntologyDefinition Class/Predicate lookup fails.

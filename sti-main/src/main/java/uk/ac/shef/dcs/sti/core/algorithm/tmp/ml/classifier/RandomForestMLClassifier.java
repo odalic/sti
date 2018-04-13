@@ -1,8 +1,7 @@
-package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml;
+package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier;
 
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLOntologyDefinition;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLOntologyMapping;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.InputValue;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.MLFeatureDetector;
 import weka.classifiers.Classifier;
 import weka.classifiers.trees.RandomForest;
 

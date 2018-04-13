@@ -4,7 +4,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLOntologyMapping;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyMapping;
 
 import java.io.FileReader;
 import java.io.IOException;

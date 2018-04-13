@@ -311,12 +311,24 @@ public final class TasksResource {
       throw new BadRequestException("The primary base is not among the used!");
     }
 
+    final File mlClassifierTrainingDatasetFile;
+    if (configurationValue.getUseMLClassifier() != null && configurationValue.getUseMLClassifier()) {
+      try {
+        mlClassifierTrainingDatasetFile = this.fileService.getById(userId, configurationValue.getMlTrainingDatasetFile());
+      } catch (final IllegalArgumentException e) {
+        throw new BadRequestException("The ML Classifier training dataset file does not exist!", e);
+      }
+    } else {
+      mlClassifierTrainingDatasetFile = null;
+    }
+
     final Configuration configuration;
     try {
       configuration = new Configuration(input,
           usedBases.stream().map(e -> e.getName()).collect(ImmutableSet.toImmutableSet()),
           primaryBase.getName(), configurationValue.getFeedback(),
-          configurationValue.getRowsLimit(), configurationValue.isStatistical());
+          configurationValue.getRowsLimit(), configurationValue.isStatistical(),
+          configurationValue.getUseMLClassifier(), mlClassifierTrainingDatasetFile);
     } catch (final IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
     }

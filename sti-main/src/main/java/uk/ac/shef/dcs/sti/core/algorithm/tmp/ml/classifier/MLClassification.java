@@ -1,4 +1,4 @@
-package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml;
+package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier;
 
 public class MLClassification {
 

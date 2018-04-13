@@ -39,7 +39,8 @@ public final class DefaultFeedbackService implements FeedbackService {
     this.configurationService.setForTaskId(userId, taskId,
         new Configuration(oldConfiguration.getInput(), oldConfiguration.getUsedBases(),
             oldConfiguration.getPrimaryBase(), feedback, oldConfiguration.getRowsLimit(),
-            oldConfiguration.isStatistical()));
+            oldConfiguration.isStatistical(), oldConfiguration.isUseMLClassifier(),
+            oldConfiguration.getMlTrainingDatasetFile()));
     this.executionService.mergeWithResultForTaskId(userId, taskId, feedback);
   }
 }

@@ -1,10 +1,11 @@
-package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml;
+package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.exception.MLException;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputWithFeatures;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.exception.MLException;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.InputValue;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.InputWithFeatures;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.MLFeatureDetector;
 import weka.classifiers.Classifier;
 import weka.core.*;
 

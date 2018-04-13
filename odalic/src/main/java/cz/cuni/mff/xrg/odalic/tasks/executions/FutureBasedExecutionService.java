@@ -14,6 +14,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import cz.cuni.mff.xrg.odalic.files.File;
+import cz.cuni.mff.xrg.odalic.input.ml.TaskMLConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -223,6 +225,23 @@ public final class FutureBasedExecutionService implements ExecutionService {
     return result;
   }
 
+  private File loadMLTrainingDatasetFile(final String userId, final String fileId) {
+    return this.fileService.getById(userId, fileId);
+  }
+
+  private TaskMLConfiguration createTaskMLConfiguration(final String userId, final String fileId,
+                                                        final Configuration configuration) {
+    // load ml training dataset file & its format
+    TaskMLConfiguration taskMlConfig;
+    if (configuration.isUseMLClassifier()) {
+      File trainingDatasetFile = loadMLTrainingDatasetFile(userId, configuration.getMlTrainingDatasetFile().getId());
+      taskMlConfig = new TaskMLConfiguration(configuration.isUseMLClassifier(), trainingDatasetFile);
+    } else {
+      taskMlConfig = TaskMLConfiguration.disabled();
+    }
+    return taskMlConfig;
+  }
+
   @Override
   public void submitForTaskId(final String userId, final String taskId)
       throws IllegalStateException, IOException {
@@ -238,6 +257,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
     final Input input = parsingResult.getInput();
 
+    final TaskMLConfiguration taskMlConfig = createTaskMLConfiguration(userId, fileId, configuration);
+
     this.inputSnapshotsService.setInputSnapshotForTaskid(userId, taskId, input);
 
     final Callable<Result> execution = () -> {
@@ -250,7 +271,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
                 .collect(ImmutableSet.toImmutableSet());
 
         final Map<String, SemanticTableInterpreter> interpreters =
-            this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases);
+            this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases, taskMlConfig);
 
         final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
 

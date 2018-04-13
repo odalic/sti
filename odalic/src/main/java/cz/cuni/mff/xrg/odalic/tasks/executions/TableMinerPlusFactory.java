@@ -4,6 +4,7 @@ import static uk.ac.shef.dcs.util.StringUtils.combinePaths;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
@@ -34,17 +35,22 @@ import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.*;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.DefaultMLPreClassifier;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPropertiesLoader;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.NoMLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier.MLClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier.RandomForestMLClassifier;
+import cz.cuni.mff.xrg.odalic.input.ml.TaskMLConfiguration;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.DefaultMLFeatureDetector;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.MLFeatureDetector;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.OSPD_nonEmpty;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentCellRanker;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentTContentRowRankerImpl;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPClazzScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPEntityScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPRelationScorer;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.*;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.preprocessing.InputValue;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLOntologyDefinition;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config.MLOntologyMapping;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.InputValue;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyDefinition;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyMapping;
 import uk.ac.shef.dcs.sti.core.feature.ConceptBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.feature.RelationBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.scorer.AttributeValueMatcher;
@@ -114,8 +120,10 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   }
 
   @Override
-  public Map<String, SemanticTableInterpreter> getInterpreters(final String userId, final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
-    return initializeInterpreters(userId, bases);
+  public Map<String, SemanticTableInterpreter> getInterpreters(final String userId,
+                                                               final Set<? extends KnowledgeBase> bases,
+                                                               final TaskMLConfiguration mlConfig) throws STIException, IOException {
+    return initializeInterpreters(userId, bases, mlConfig);
   }
 
   private String getNLPResourcesDir() throws STIException {
@@ -133,7 +141,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     return prop;
   }
 
-  private boolean useMlClassifier() throws STIException {
+  /*private boolean useMlClassifier() throws STIException {
     final String prop = this.properties.getProperty(PROPERTY_RELATIONS_USE_ML_CLASSIFIER);
 
     if (prop != null) {
@@ -144,7 +152,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       logger.error(error);
       throw new STIException(error);
     }
-  }
+  }*/
 
   private List<String> getStopwords() throws STIException, IOException {
     return FileUtils.readList(getNLPResourcesDir() + File.separator + "stoplist.txt", true);
@@ -172,7 +180,8 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
 
   // Initialize kbsearcher, websearcher
   private synchronized Map<String, SemanticTableInterpreter> initializeInterpreters(final String userId,
-                                          final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
+                                          final Set<? extends KnowledgeBase> bases,
+                                          final TaskMLConfiguration mlConfig) throws STIException, IOException {
 
       // object to fetch things from KB
       final Table<String, String, Proxy> kbProxyInstances = this.knowledgeBaseProxyFactory.toProxies(bases);
@@ -181,7 +190,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       for (final Map.Entry<String, Proxy> kbProxyEntry : kbProxyInstances.row(userId).entrySet()) {
         final Proxy kbProxy = kbProxyEntry.getValue();
 
-        final MLPreClassifier mlPreClassifier = initMLPreClassifier();
+        final MLPreClassifier mlPreClassifier = initMLPreClassifier(mlConfig);
 
         final SubjectColumnDetector subcolDetector = initSubColDetector(kbProxy);
 
@@ -208,9 +217,8 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       return interpreters;
   }
 
-  private MLPreClassifier initMLPreClassifier() throws STIException {
-    // TODO pass information whether to use or not use ML classifier from task submission
-    if (useMlClassifier()) {
+  private MLPreClassifier initMLPreClassifier(final TaskMLConfiguration mlConfig) throws STIException {
+    if (mlConfig.isUseMlClassifier()) {
       // ML should be used
       String mlPropsFilePath = getAbsolutePath(PROPERTY_ML_PROP_FILE);
 
@@ -221,9 +229,8 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
         MLPropertiesLoader mlPropertiesLoader = new MLPropertiesLoader(homePath, mlPropsFilePath);
 
         // parse input dataset
-        String trainingDatasetPath = mlPropertiesLoader.getMLClassifierTrainingDatasetFilePath();
-        // TODO pass training set path and format from task submission
-        Format trainingDatasetConfiguration = new Format(Charset.forName("UTF8"), '|', true, null, null, null, "\n");
+        URL trainingDatasetPath = mlConfig.getTrainingDatasetFile().getLocation();
+        Format trainingDatasetConfiguration = mlConfig.getTrainingDatasetFile().getFormat();
         DatasetFileReader datasetFileReader = new CsvDatasetFileReader(new DefaultApacheCsvFormatAdapter());
         InputValue[] trainingDatasetInputValues = datasetFileReader.readDatasetFile(trainingDatasetPath, trainingDatasetConfiguration);
 

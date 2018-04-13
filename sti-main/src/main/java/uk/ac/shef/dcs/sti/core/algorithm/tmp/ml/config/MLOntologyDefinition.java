@@ -1,4 +1,4 @@
-package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config;
+package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config;
 
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.EmptyModel;
@@ -9,8 +9,8 @@ import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.exception.MLOntologyClassNotFoundException;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.exception.MLOntologyPropertyNotFoundException;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.exception.MLOntologyClassNotFoundException;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.exception.MLOntologyPropertyNotFoundException;
 
 import java.util.*;
 import java.util.stream.Collectors;

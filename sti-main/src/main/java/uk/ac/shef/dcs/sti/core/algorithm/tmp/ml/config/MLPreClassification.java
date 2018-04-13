@@ -1,7 +1,7 @@
-package uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.config;
+package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config;
 
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.ml.MLPredicate;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPredicate;
 import uk.ac.shef.dcs.sti.core.extension.annotations.Entity;
 import uk.ac.shef.dcs.sti.core.extension.annotations.EntityCandidate;
 import uk.ac.shef.dcs.sti.core.extension.annotations.HeaderAnnotation;

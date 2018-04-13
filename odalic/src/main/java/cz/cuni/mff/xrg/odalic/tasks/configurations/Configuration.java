@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.tasks.configurations;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -13,6 +14,8 @@ import com.google.common.collect.ImmutableSet;
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.ConfigurationAdapter;
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
 import cz.cuni.mff.xrg.odalic.files.File;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Task configuration.
@@ -43,6 +46,10 @@ public final class Configuration implements Serializable {
 
   private final boolean statistical;
 
+  private final boolean useMLClassifier;
+
+  private final File mlTrainingDatasetFile;
+
   /**
    * Creates configuration with provided feedback, which serves as hint for the processing
    * algorithm.
@@ -59,7 +66,8 @@ public final class Configuration implements Serializable {
    */
   public Configuration(final File input, final Set<? extends String> usedBases,
       final String primaryBase, final @Nullable Feedback feedback,
-      @Nullable final Integer rowsLimit, @Nullable final Boolean statistical) {
+      @Nullable final Integer rowsLimit, @Nullable final Boolean statistical,
+      @Nullable final Boolean useMLClassifier, @Nullable final File mlTrainingDatasetFile) {
     Preconditions.checkNotNull(input, "The input cannot be null!");
     Preconditions.checkNotNull(usedBases, "The usedBases cannot be null!");
     Preconditions.checkNotNull(primaryBase, "The primaryBase cannot be null!");
@@ -67,45 +75,43 @@ public final class Configuration implements Serializable {
     Preconditions.checkArgument((rowsLimit == null) || (rowsLimit > 0), "The rows limit must be positive, if present!");
     Preconditions.checkArgument(usedBases.contains(primaryBase), "The primary base is not among the used ones!");
 
+    Preconditions.checkArgument(trainingDatasetGivenIfUseMl(useMLClassifier, mlTrainingDatasetFile),
+            "The ML Training Dataset file needs to be provided, if ML classifier should be used!");
+
     this.input = input;
     this.usedBases = ImmutableSet.copyOf(usedBases);
     this.primaryBase = primaryBase;
     this.feedback = feedback == null ? new Feedback() : feedback;
     this.rowsLimit = rowsLimit == null ? MAXIMUM_ROWS_LIMIT : rowsLimit;
     this.statistical = statistical == null ? false : statistical;
+    this.useMLClassifier = useMLClassifier == null ? false : useMLClassifier;
+    this.mlTrainingDatasetFile = mlTrainingDatasetFile;
+  }
+
+  private boolean trainingDatasetGivenIfUseMl(final Boolean useMLClassifier, final File mlTrainingDatasetFile) {
+    if (useMLClassifier != null) {
+      if (useMLClassifier) {
+        return mlTrainingDatasetFile != null;
+      }
+      return true;
+    }
+    return true;
+
   }
 
   @Override
-  public boolean equals(final Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final Configuration other = (Configuration) obj;
-    if (!this.feedback.equals(other.feedback)) {
-      return false;
-    }
-    if (!this.input.equals(other.input)) {
-      return false;
-    }
-    if (!this.usedBases.equals(other.usedBases)) {
-      return false;
-    }
-    if (!this.primaryBase.equals(other.primaryBase)) {
-      return false;
-    }
-    if (this.rowsLimit != other.rowsLimit) {
-      return false;
-    }
-    if (this.statistical != other.statistical) {
-      return false;
-    }
-    return true;
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Configuration that = (Configuration) o;
+    return rowsLimit == that.rowsLimit &&
+            statistical == that.statistical &&
+            useMLClassifier == that.useMLClassifier &&
+            Objects.equals(input, that.input) &&
+            Objects.equals(feedback, that.feedback) &&
+            Objects.equals(usedBases, that.usedBases) &&
+            Objects.equals(primaryBase, that.primaryBase) &&
+            Objects.equals(mlTrainingDatasetFile, that.mlTrainingDatasetFile);
   }
 
   /**
@@ -145,15 +151,7 @@ public final class Configuration implements Serializable {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = (prime * result) + this.feedback.hashCode();
-    result = (prime * result) + this.input.hashCode();
-    result = (prime * result) + this.usedBases.hashCode();
-    result = (prime * result) + this.primaryBase.hashCode();
-    result = (prime * result) + this.rowsLimit;
-    result = (prime * result) + (this.statistical ? 1231 : 1237);
-    return result;
+    return Objects.hash(input, feedback, usedBases, primaryBase, rowsLimit, statistical, useMLClassifier, mlTrainingDatasetFile);
   }
 
   /**
@@ -163,10 +161,19 @@ public final class Configuration implements Serializable {
     return this.statistical;
   }
 
+  public boolean isUseMLClassifier() {
+    return useMLClassifier;
+  }
+
+  public File getMlTrainingDatasetFile() {
+    return mlTrainingDatasetFile;
+  }
+
   @Override
   public String toString() {
     return "Configuration [input=" + this.input + ", feedback=" + this.feedback + ", usedBases="
         + this.usedBases + ", primaryBase=" + this.primaryBase + ", rowsLimit=" + this.rowsLimit
-        + ", statistical=" + this.statistical + "]";
+        + ", statistical=" + this.statistical + ", useMLClassifier= " + this.useMLClassifier
+        + ", mlTrainingDatasetFile="  + this.mlTrainingDatasetFile +  "]";
   }
 }

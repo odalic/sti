@@ -41,6 +41,10 @@ public final class ConfigurationValue implements Serializable {
 
   private Boolean statistical;
 
+  private Boolean useMLClassifier;
+
+  private String mlTrainingDatasetFile;
+
   public ConfigurationValue() {}
 
   public ConfigurationValue(final Configuration adaptee,
@@ -53,6 +57,8 @@ public final class ConfigurationValue implements Serializable {
     this.rowsLimit =
         adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
     this.statistical = adaptee.isStatistical();
+    this.useMLClassifier = adaptee.isUseMLClassifier();
+    this.mlTrainingDatasetFile = adaptee.getMlTrainingDatasetFile().getId();
 
     Preconditions
         .checkArgument(
@@ -125,6 +131,25 @@ public final class ConfigurationValue implements Serializable {
   }
 
   /**
+   * @return true for usage of ML classifier
+   */
+  @XmlElement
+  @Nullable
+  @RdfProperty(value = "http://odalic.eu/internal/Configuration/useMlClassifier",
+          datatype = "http://www.w3.org/2001/XMLSchema#boolean")
+  public Boolean isUseMLClassifier() { return useMLClassifier; }
+
+  /**
+   * @return the ML classifier training dataset file
+   */
+  @XmlElement
+  @Nullable
+  @RdfProperty("http://odalic.eu/internal/Configuration/mlTrainingDatasetFile")
+  public String getMlTrainingDatasetFile() {
+    return this.mlTrainingDatasetFile;
+  }
+
+  /**
    * @param feedback the feedback to set
    */
   public void setFeedback(final FeedbackValue feedback) {
@@ -174,6 +199,18 @@ public final class ConfigurationValue implements Serializable {
     Preconditions.checkNotNull(usedBases, "The usedBases cannot be null!");
 
     this.usedBases = ImmutableList.copyOf(usedBases);
+  }
+
+  /**
+   * @param useMLClassifier true for usage of ML classifier
+   */
+  public void setUseMLClassifier(final @Nullable Boolean useMLClassifier) { this.useMLClassifier = useMLClassifier; }
+
+  /**
+   * @param mlTrainingDatasetFile the ML classifier training dataset file
+   */
+  public void setMlTrainingDatasetFile(final @Nullable String mlTrainingDatasetFile) {
+    this.mlTrainingDatasetFile = mlTrainingDatasetFile;
   }
 
   @Override
