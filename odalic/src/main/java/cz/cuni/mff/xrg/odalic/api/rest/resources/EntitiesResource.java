@@ -106,14 +106,24 @@ public final class EntitiesResource {
 
     final KnowledgeBase base = getBase(userId, baseName);
 
+    // FIXME: Client 'undefined' suffix instead of null bug workaround.
     final Entity createdProperty;
-    try {
-      createdProperty = this.entitiesService.propose(base, proposal);
-    } catch (final IllegalArgumentException e) {
-      throw new WebApplicationException("The property already exists!", e,
-          Response.Status.CONFLICT);
+    if (proposal != null && proposal.getSuffix() != null && proposal.getSuffix().equals(URI.create("undefined"))) {
+      try {
+        createdProperty = this.entitiesService.propose(base, new PropertyProposal(proposal.getLabel(), proposal.getAlternativeLabels(), null, proposal.getSuperProperty(), proposal.getDomain(), proposal.getRange(), proposal.getType()));
+      } catch (final IllegalArgumentException e) {
+        throw new WebApplicationException("The property already exists!", e,
+            Response.Status.CONFLICT);
+      }
+    } else {
+      try {
+        createdProperty = this.entitiesService.propose(base, proposal);
+      } catch (final IllegalArgumentException e) {
+        throw new WebApplicationException("The property already exists!", e,
+            Response.Status.CONFLICT);
+      }
     }
-
+    
     return Reply.data(Response.Status.OK, createdProperty, this.uriInfo).toResponse();
   }
 
