@@ -131,8 +131,14 @@ public final class KnowledgeBase implements Serializable, Comparable<KnowledgeBa
     this.insertEnabled = insertEnabled;
     this.insertEndpoint = insertEndpoint;
     this.insertGraph = insertGraph;
+    
+    Preconditions.checkArgument(!insertEnabled || userClassesPrefix != null, "The user classes prefix must be provided when insert enabled!");
     this.userClassesPrefix = userClassesPrefix;
+    
+    Preconditions.checkArgument(!insertEnabled || userResourcesPrefix != null, "The user resources prefix must be provided when insert enabled!");
     this.userResourcesPrefix = userResourcesPrefix;
+        
+    
     this.datatypeProperty = datatypeProperty;
     this.objectProperty = objectTypeProperty;
 
