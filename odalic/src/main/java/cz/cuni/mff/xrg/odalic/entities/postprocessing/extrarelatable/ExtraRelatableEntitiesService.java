@@ -46,19 +46,19 @@ public class ExtraRelatableEntitiesService implements EntitiesService {
 
   @Override
   public Entity propose(KnowledgeBase base, ClassProposal proposal) throws ProxyException {
-    throw new UnsupportedOperationException();
+    return null;
   }
 
   @Override
   public Entity propose(KnowledgeBase base, PropertyProposal proposal) throws ProxyException {
-    throw new UnsupportedOperationException(); // The proposal is actually done at the time of
+    return null; // The proposal is actually done at the time of
                                                // feedback and includes the actual range values
                                                // assigned to the property.
   }
 
   @Override
   public Entity propose(KnowledgeBase base, ResourceProposal proposal) throws ProxyException {
-    throw new UnsupportedOperationException();
+    return null;
   }
 
   @Override
