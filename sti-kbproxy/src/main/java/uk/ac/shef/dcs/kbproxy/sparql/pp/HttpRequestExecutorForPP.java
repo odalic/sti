@@ -452,7 +452,7 @@ public class HttpRequestExecutorForPP {
             //single
 //            JSONObject singleBoolean = new JSONObject();
 //            singleBoolean.put("boolean","false");
-            json.put("single", "false");
+//            json.put("single", "false");
 
             URIBuilder uriBuilder = new URIBuilder(ppDefinition.getPpServerUrl() + "/api/schema/createDirectedRelation");
 
@@ -556,7 +556,7 @@ public class HttpRequestExecutorForPP {
             //for value restrictions, see: ValueRestriction object in ppt
             json.put("valueRestriction", "LITERAL");
 
-            json.put("single", "false");
+//            json.put("single", "false");
 
             URIBuilder uriBuilder = new URIBuilder(ppDefinition.getPpServerUrl() + "/api/schema/createAttribute");
 
@@ -613,17 +613,20 @@ public class HttpRequestExecutorForPP {
         if (response.getStatusLine().getStatusCode() != 200) {
             StringBuilder responseAsString = new StringBuilder();
             responseAsString.append(response.getStatusLine().toString()).append('\n');
-            for (Header h : response.getAllHeaders()) {
-                responseAsString.append(h.toString()).append('\n');
-            }
-            String errorMsg = String.format("HTTP request was not successful. Received HTTP status and headers:\n%s", responseAsString);
-            LOG.error(errorMsg);
+//            for (Header h : response.getAllHeaders()) {
+//                responseAsString.append(h.toString()).append('\n');
+//            }
+//            String errorMsg = String.format("HTTP request was not successful. Received HTTP status and headers:\n%s", responseAsString);
+//            LOG.error(errorMsg);
+//            String responseStr = "";
             try {
-                LOG.error("Response content: {}", EntityUtils.toString(response.getEntity()));
+                String respEntityString = EntityUtils.toString(response.getEntity());
+                LOG.error("Response content: {}", respEntityString);
+                responseAsString.append(respEntityString);
             } catch (Exception err) {
                 throw new PPRestApiCallException(err.getLocalizedMessage());
             }
-            throw new PPRestApiCallException(errorMsg);
+            throw new PPRestApiCallException(responseAsString.toString());
         }
     }
 
