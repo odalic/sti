@@ -76,44 +76,6 @@ public abstract class MLClassifier {
         }
     }
 
-    /*public MLAttributeClassification classifyToAttribute(String valueToClassify) throws MLException {
-        if (classifierClasses == null || classifierClasses.size() == 0) {
-            throw new MLException("Classifier not trained!");
-        }
-        try {
-            // convert to instance (calculate features, assign classes and attributes)
-            InputValue inputValue = new InputValue(valueToClassify, EMPTY_CLASS_VALUE);
-            InputWithFeatures inputValueWithFeatures = featureDetector.detectFeatures(inputValue);
-            Instances instancesToClassify = convertUnknownClassValueToInstance(inputValueWithFeatures);
-            Instance instanceToClassify = instancesToClassify.firstInstance();
-
-            // classify converted value using classifier
-            Classifier classifier = getClassifier();
-            LOG.debug("Classificating '" + valueToClassify + "' using " + classifier.getClass().getSimpleName() + ".");
-
-            double[] instanceDistribution = classifier.distributionForInstance(instanceToClassify);
-            // find index of class with highest classifier score
-            MLAttributeClassification classification = findMostProbableClass(valueToClassify, instanceToClassify, instanceDistribution);
-            if (classification.nonEmpty()) {
-                // map to URI from mapping
-                String mlClassLabel = classification.getAttribute().getRelationLabel();
-                String ontologyMappingValue = getOntologyMappingValue(mlClassLabel);
-                if (ontologyMappingValue != null) {
-                    // ontology mapping found
-                    classification = classification.withMappedUri(ontologyMappingValue);
-                } else {
-                    // ontology mapping not found, just assign prefix to create an URI
-                    classification = classification.withUriPrefix("http://odalic.eu/tmp/");
-                }
-            }
-            return classification;
-
-        } catch (Exception e) {
-            throw new MLException("Failed to classify instance: " + e.getMessage(), e);
-        }
-
-    }*/
-
     public MLClassification classify(String valueToClassify) throws MLException {
         if (classifierClasses == null || classifierClasses.size() == 0) {
             throw new MLException("Classifier not trained!");
@@ -138,10 +100,6 @@ public abstract class MLClassifier {
             throw new MLException("Failed to classify instance: " + e.getMessage(), e);
         }
     }
-
-    /*private String getOntologyMappingValue(String mlClassLabel) {
-        return this.ontologyMapping.getOntologyMappingValue(mlClassLabel);
-    }*/
 
     /**
      * Detect features of the InpuValues of trainingDatasetInputValues,
@@ -272,31 +230,6 @@ public abstract class MLClassifier {
         return instance;
     }
 
-
-
-    /*private MLAttributeClassification findMostProbableClass(String value, Instance instance, double[] classificationDistribution) {
-        double maxValue = 0;
-        int maxValueIndex = -1;
-        for (int i = 0; i < classificationDistribution.length; i++) {
-            if (classificationDistribution[i] > maxValue) {
-                maxValue = classificationDistribution[i];
-                maxValueIndex = i;
-            }
-        }
-        if (maxValueIndex > -1) {
-            if (maxValue >= this.confidenceThreshold) {
-                String className = instance.classAttribute().value(maxValueIndex);
-                return createMLAttributeClassification(value, className, maxValue);
-            } else {
-                // no value with high-enough confidence
-                return createEmptyMLAttributeClassification(value);
-            }
-        }else {
-            // classifier did not return any valid classification
-            return createEmptyMLAttributeClassification(value);
-        }
-    }*/
-
     private MLClassification findMostProbableClass(String value, Instance instance, double[] classificationDistribution) {
         double maxValue = 0;
         int maxValueIndex = -1;
@@ -318,16 +251,6 @@ public abstract class MLClassifier {
             return null;
         }
     }
-
-    /*private MLAttributeClassification createMLAttributeClassification(String value, String className, double score) {
-        uk.ac.shef.dcs.kbproxy.model.Attribute stiAttribute = new SparqlAttribute(className, className, value, null);
-        stiAttribute.setRelationLabel(className);
-        return new MLAttributeClassification(value, stiAttribute, score);
-    }
-
-    private MLAttributeClassification createEmptyMLAttributeClassification(String value) {
-        return new MLAttributeClassification(value, null, null);
-    }*/
 
     protected abstract Classifier getClassifier();
 

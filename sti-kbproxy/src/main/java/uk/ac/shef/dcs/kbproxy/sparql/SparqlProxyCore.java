@@ -391,60 +391,6 @@ public class SparqlProxyCore implements ProxyCore {
     return filteredLabels;
   }
 
-  /*protected String parseLabelFromResource(String resourceURI) {
-    if (!resourceURI.startsWith("http")) {
-      return resourceURI;
-    }
-
-    // URI like https://www.w3.org/1999/02/22-rdf-syntax-ns#type
-    int trimPosition = resourceURI.lastIndexOf("#");
-
-    // URI like http://dbpedia.org/property/name
-    if (trimPosition == -1) {
-      trimPosition = resourceURI.lastIndexOf("/");
-    }
-
-    if (trimPosition != -1) {
-      // Remove anything that is not a character or digit
-      // TODO: For a future improvement, take into account the "_" character.
-      String stringValue = resourceURI.substring(trimPosition + 1).replaceAll("[^a-zA-Z0-9]", "").trim();
-
-      // Derived KBs can have custom URI conventions.
-      stringValue = applyCustomUriHeuristics(resourceURI, stringValue);
-      stringValue = StringUtils.splitCamelCase(stringValue);
-
-      return stringValue;
-    }
-
-    return resourceURI;
-  }*/
-
-  /*protected String applyCustomUriHeuristics(String resourceURI, String label) {
-    if (!this.definition.isUriLabelHeuristicApplied()) {
-      return label;
-    }
-    
-    // This is an yago resource, which may have numbered ids as suffix
-    // e.g., City015467.
-    if (resourceURI.contains("yago")) {
-      int end = 0;
-      for (int i = 0; i < label.length(); i++) {
-        if (Character.isDigit(label.charAt(i))) {
-          end = i;
-          break;
-        }
-      }
-
-      if (end > 0) {
-        label = label.substring(0, end);
-      }
-    } else {
-      return label;
-    }
-
-    return label;
-  }*/
-
   /**
    * Compares the similarity of the object value in the pair (containing the label obtained from the KB) of certain resource (entity) and the cell value text (original label).
    * Then, it also sorts the list of candidates based on the scores.
