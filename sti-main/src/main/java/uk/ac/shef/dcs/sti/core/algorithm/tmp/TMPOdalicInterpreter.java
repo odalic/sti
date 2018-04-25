@@ -192,7 +192,7 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
           constraints.getColumnIgnores(), constraints.getColumnCompulsory(),
           constraints.getColumnAmbiguities(),
           // add ML-discovered classifications as constraints
-          mergeClassifications(constraints.getClassifications(), mlPreClassification.getColumnClassifications()),
+          mergeClassifications(constraints.getClassifications(), mlPreClassification.getColumnClassifications(), table.getNumCols()),
           constraints.getColumnRelations(),
           constraints.getDisambiguations(), newAmbiguities, constraints.getDataCubeComponents());
 
@@ -254,22 +254,23 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
    * @return
    */
   private Set<Classification> mergeClassifications(Set<Classification> constraintClassifications,
-                                                   Set<Classification> mlClassifications) {
+                                                   Set<Classification> mlClassifications, int numCols) {
 
     Map<Integer, Classification> constraintsForCols = constraintClassifications.stream()
             .collect(Collectors.toMap(cls -> cls.getPosition().getIndex(), Function.identity()));
 
+    Map<Integer, Classification> mlForCols = mlClassifications.stream()
+            .collect(Collectors.toMap(cls -> cls.getPosition().getIndex(), Function.identity()));
 
     Set<Classification> mergedClassifications = new HashSet<>();
 
-    for (Classification mlClassification : mlClassifications) {
-      Integer position = mlClassification.getPosition().getIndex();
-      Classification constraintsClassification = constraintsForCols.get(position);
-
+    for (int col = 0; col < numCols; col++) {
+      Classification constraintsClassification = constraintsForCols.get(col);
+      Classification mlClassification = mlForCols.get(col);
       if (constraintsClassification != null) {
         // add from constraints
         mergedClassifications.add(constraintsClassification);
-      } else {
+      } else if (mlClassification != null) {
         // add ML based classification
         mergedClassifications.add(mlClassification);
       }
