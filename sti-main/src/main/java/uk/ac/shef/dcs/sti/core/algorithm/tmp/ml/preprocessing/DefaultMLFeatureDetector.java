@@ -14,7 +14,6 @@ public class DefaultMLFeatureDetector implements MLFeatureDetector {
     private String F_INT_NUMBER_OF_WHITESPACE_CHARACTERS = "number_of_whitespace_chars";
     private String F_INT_NUMBER_OF_SPECIAL_CHARACTERS = "number_of_special_chars";
     private String F_BOOL_IS_NUMERIC_VALUE = "is_numeric_value";
-    private String F_BOOL_IS_INTEGRAL_NUMERIC_VALUE = "is_integral_numeric_value";
     private String F_BOOL_IS_DECIMAL_NUMERIC_VALUE = "is_decimal_numeric_value";
     private String F_BOOL_IS_PREFIXED_NUMBER_VALUE = "is_prefixed_number_value";
     private String F_BOOL_IS_POSTFIXED_NUMBER_VALUE = "is_postfixed_number_value";
@@ -92,7 +91,6 @@ public class DefaultMLFeatureDetector implements MLFeatureDetector {
             }
         }
         features.addBoolFeature(F_BOOL_IS_NUMERIC_VALUE, isIntegralNumericValue || isDecimalNumericValue);
-        features.addBoolFeature(F_BOOL_IS_INTEGRAL_NUMERIC_VALUE, isIntegralNumericValue);
         features.addBoolFeature(F_BOOL_IS_DECIMAL_NUMERIC_VALUE, isDecimalNumericValue);
         features.addBoolFeature(F_BOOL_IS_PREFIXED_NUMBER_VALUE, isPrefixedNumber(inputValueTrimmed));
         features.addBoolFeature(F_BOOL_IS_POSTFIXED_NUMBER_VALUE, isPostfixedNumber(inputValueTrimmed));
