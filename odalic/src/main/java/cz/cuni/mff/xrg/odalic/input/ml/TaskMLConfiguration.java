@@ -1,33 +1,28 @@
 package cz.cuni.mff.xrg.odalic.input.ml;
 
-import cz.cuni.mff.xrg.odalic.files.formats.Format;
+import cz.cuni.mff.xrg.odalic.input.ParsingResult;
 
 public class TaskMLConfiguration {
 
     private boolean useMlClassifier;
-    private Format trainingDatasetFileFormat;
-    private String trainingDatasetFileContents;
+    private ParsingResult trainingDataset;
 
     public static TaskMLConfiguration disabled() {
 
-        return new TaskMLConfiguration(false, null, null);
+        return new TaskMLConfiguration(false, null);
     }
 
-    public TaskMLConfiguration(boolean useMlClassifier, Format trainingDatasetFileFormat, String trainingDatasetFileContents) {
+    public TaskMLConfiguration(boolean useMlClassifier,
+                               ParsingResult trainingDataset) {
         this.useMlClassifier = useMlClassifier;
-        this.trainingDatasetFileFormat = trainingDatasetFileFormat;
-        this.trainingDatasetFileContents = trainingDatasetFileContents;
+        this.trainingDataset = trainingDataset;
     }
 
     public boolean isUseMlClassifier() {
         return useMlClassifier;
     }
 
-    public Format getTrainingDatasetFileFormat() {
-        return trainingDatasetFileFormat;
-    }
-
-    public String getTrainingDatasetFileContents() {
-        return trainingDatasetFileContents;
+    public ParsingResult getTrainingDataset() {
+        return trainingDataset;
     }
 }

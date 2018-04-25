@@ -225,11 +225,8 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
 
         MLPropertiesLoader mlPropertiesLoader = new MLPropertiesLoader(homePath, mlPropsFilePath);
 
-        // parse input dataset
-        String trainingDatasetContents = mlConfig.getTrainingDatasetFileContents();
-        Format trainingDatasetConfiguration = mlConfig.getTrainingDatasetFileFormat();
-        DatasetFileReader datasetFileReader = new CsvDatasetFileReader(new DefaultApacheCsvFormatAdapter());
-        InputValue[] trainingDatasetInputValues = datasetFileReader.readDatasetFile(trainingDatasetContents, trainingDatasetConfiguration);
+        // parse traning dataset to input values
+        InputValue[] trainingDatasetInputValues = InputValueFactory.fromParsingResult(mlConfig.getTrainingDataset());
 
         // parse ontology mapping
         OntologyMappingReader ontologyMappingReader = new JsonOntologyMappingReader();
@@ -258,43 +255,6 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
       return new NoMLPreClassifier();
     }
   }
-
-  /*private MLClassifier initMLClassifier(String mlPropsFilePath) throws STIException {
-    try {
-      final String homePath = this.properties.getProperty(PROPERTY_HOME);
-      final MLFeatureDetector mlFeatureDetector = new DefaultMLFeatureDetector();
-
-      MLPropertiesLoader mlPropertiesLoader = new MLPropertiesLoader(homePath, mlPropsFilePath);
-
-      // parse input dataset
-      String trainingDatasetPath = mlPropertiesLoader.getMLClassifierTrainingDatasetFilePath();
-      // TODO pass training set path and format from task submission
-      Format trainingDatasetConfiguration = new Format(Charset.forName("UTF8"), '|', true, null, null, null, "\n");
-      DatasetFileReader datasetFileReader = new CsvDatasetFileReader( new DefaultApacheCsvFormatAdapter());
-      InputValue[] trainingDatasetInputValues = datasetFileReader.readDatasetFile(trainingDatasetPath, trainingDatasetConfiguration);
-
-      // parse ontology mapping
-      OntologyMappingReader ontologyMappingReader = new JsonOntologyMappingReader();
-      MLOntologyMapping ontologyMapping =
-              ontologyMappingReader.readOntologyMapping(mlPropertiesLoader.getMLClassifierOntologyMappingFilePath());
-
-      // load ontology definitions
-      OntologyDefinitionReader ontologyDefinitionReader = new Rdf4jOntologyDefinitionReader();
-      MLOntologyDefinition ontologyDefinition = ontologyDefinitionReader.readOntologyDefinitions(
-              mlPropertiesLoader.getMLClassifierOntologyDefinitionFilePaths()
-      );
-
-
-      MLClassifier classifier = new RandomForestMLClassifier(
-          homePath, mlPropertiesLoader.getProperties(), mlFeatureDetector, trainingDatasetInputValues, ontologyMapping
-      );
-      classifier.trainClassifier();
-      return classifier;
-    } catch (final Exception e) {
-      logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
-      throw new STIException("Failed initializing Machine Learning Classifier components.", e);
-    }
-  }*/
 
   private TCellDisambiguator initDisambiguator(final Proxy kbProxy) throws STIException {
     try {

@@ -234,10 +234,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
     // load ml training dataset file & its format
     TaskMLConfiguration taskMlConfig;
     if (configuration.isUseMLClassifier()) {
-      final String data = this.fileService.getDataById(userId, configuration.getMlTrainingDatasetFile().getId());
-      final Format format = this.fileService.getFormatForFileId(userId, configuration.getMlTrainingDatasetFile().getId());
-
-      taskMlConfig = new TaskMLConfiguration(configuration.isUseMLClassifier(), format, data);
+      ParsingResult trainingDatasetParsed = parse(userId, fileId, Configuration.MAXIMUM_ROWS_LIMIT);
+      taskMlConfig = new TaskMLConfiguration(configuration.isUseMLClassifier(), trainingDatasetParsed);
     } else {
       taskMlConfig = TaskMLConfiguration.disabled();
     }

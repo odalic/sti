@@ -1,5 +1,4 @@
 package cz.cuni.mff.xrg.odalic.tasks.configurations;
-
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
