@@ -87,9 +87,6 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   private static final String PROPERTY_TMP_IINF_LEARNING_STOPPING_CLASS_CONSTR_PARAM =
       "sti.tmp.iinf.learning.stopping.class.constructor.params";
 
-  private static final String PROPERTY_RELATIONS_USE_ML_CLASSIFIER =
-      "sti.learning.relation.ml.classifier";
-
   private static final Logger logger = LoggerFactory.getLogger(TableMinerPlusFactory.class);
 
   private final KnowledgeBaseProxiesService knowledgeBaseProxyFactory;
