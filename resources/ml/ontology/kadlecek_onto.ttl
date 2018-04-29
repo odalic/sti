@@ -1,0 +1,343 @@
+@prefix : <http://www.kadlecek.sk/dt/ontology#> .
+@prefix dbo: <http://dbpedia.org/ontology/> .
+@prefix dbp: <http://dbpedia.org/property/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rkdto: <http://www.kadlecek.sk/dt/ontology#> .
+@base <http://www.kadlecek.sk/dt/ontology> .
+
+<http://www.kadlecek.sk/dt/ontology> rdf:type owl:Ontology .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://dbpedia.org/ontology/operatingSystem
+dbo:operatingSystem rdf:type owl:ObjectProperty .
+
+
+###  http://www.kadlecek.sk/dt/ontology#isOperatingSystemOf
+rkdto:isOperatingSystemOf rdf:type owl:ObjectProperty ;
+                          rdfs:subPropertyOf dbo:operatingSystem ;
+                          rdfs:domain dbo:Software ;
+                          rdfs:range dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#operatingSystem
+rkdto:operatingSystem rdf:type owl:ObjectProperty ;
+                      rdfs:domain dbo:Device ;
+                      rdfs:range dbo:Software .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://dbpedia.org/property/battery
+dbp:battery rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/color
+dbp:color rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/connectivity
+dbp:connectivity rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/dimensions
+dbp:dimensions rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/display
+dbp:display rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/frontCamera
+dbp:frontCamera rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/gpu
+dbp:gpu rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/manufacturer
+dbp:manufacturer rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/memory
+dbp:memory rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/memoryCard
+dbp:memoryCard rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/name
+dbp:name rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/networks
+dbp:networks rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/os
+dbp:os rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/price
+dbp:price rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/rearCamera
+dbp:rearCamera rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/soc
+dbp:soc rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/storage
+dbp:storage rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/type
+dbp:type rdf:type owl:DatatypeProperty .
+
+
+###  http://dbpedia.org/property/weight
+dbp:weight rdf:type owl:DatatypeProperty .
+
+
+###  http://www.kadlecek.sk/dt/ontology#batteryCapacity
+rkdto:batteryCapacity rdf:type owl:DatatypeProperty ;
+                      rdfs:subPropertyOf dbp:battery ;
+                      rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#batteryType
+rkdto:batteryType rdf:type owl:DatatypeProperty ;
+                  rdfs:subPropertyOf dbp:battery ;
+                  rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#bluetoothVersion
+rkdto:bluetoothVersion rdf:type owl:DatatypeProperty ;
+                       rdfs:subPropertyOf dbp:connectivity ;
+                       rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#brand
+rkdto:brand rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf dbp:manufacturer ;
+            rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#color
+rkdto:color rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf dbp:color ;
+            rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#cpu
+rkdto:cpu rdf:type owl:DatatypeProperty ;
+          rdfs:subPropertyOf dbp:soc ;
+          rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#cpuCores
+rkdto:cpuCores rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf rkdto:cpu ;
+               rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#cpuFrequency
+rkdto:cpuFrequency rdf:type owl:DatatypeProperty ;
+                   rdfs:subPropertyOf rkdto:cpu ;
+                   rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#deviceType
+rkdto:deviceType rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf dbp:type ;
+                 rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#ethernet
+rkdto:ethernet rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf dbp:connectivity ;
+               rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#externalStorage
+rkdto:externalStorage rdf:type owl:DatatypeProperty ;
+                      rdfs:subPropertyOf dbp:memoryCard ;
+                      rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#frontCamera
+rkdto:frontCamera rdf:type owl:DatatypeProperty ;
+                  rdfs:subPropertyOf dbp:frontCamera ;
+                  rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#gpu
+rkdto:gpu rdf:type owl:DatatypeProperty ;
+          rdfs:subPropertyOf dbp:gpu ;
+          rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#model
+rkdto:model rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf dbp:name ;
+            rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#network2G
+rkdto:network2G rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf dbp:networks ;
+                rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#network3G
+rkdto:network3G rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf dbp:networks ;
+                rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#network4G
+rkdto:network4G rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf dbp:networks ;
+                rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#networkType
+rkdto:networkType rdf:type owl:DatatypeProperty ;
+                  rdfs:subPropertyOf dbp:networks ;
+                  rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#operatingSystemBits
+rkdto:operatingSystemBits rdf:type owl:DatatypeProperty ;
+                          rdfs:subPropertyOf dbp:os ;
+                          rdfs:domain dbo:Software .
+
+
+###  http://www.kadlecek.sk/dt/ontology#price
+rkdto:price rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf dbp:price ;
+            rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#productDimensions
+rkdto:productDimensions rdf:type owl:DatatypeProperty ;
+                        rdfs:subPropertyOf dbp:dimensions ;
+                        rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#productWeight
+rkdto:productWeight rdf:type owl:DatatypeProperty ;
+                    rdfs:subPropertyOf dbp:weight ;
+                    rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#ramCapacity
+rkdto:ramCapacity rdf:type owl:DatatypeProperty ;
+                  rdfs:subPropertyOf dbp:memory ;
+                  rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#ramType
+rkdto:ramType rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf dbp:memory ;
+              rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#rearCamera
+rkdto:rearCamera rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf dbp:rearCamera ;
+                 rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#screenPPI
+rkdto:screenPPI rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf dbp:display ;
+                rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#screenResolution
+rkdto:screenResolution rdf:type owl:DatatypeProperty ;
+                       rdfs:subPropertyOf dbp:display ;
+                       rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#screenSize
+rkdto:screenSize rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf dbp:display ;
+                 rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#screenType
+rkdto:screenType rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf dbp:display ;
+                 rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#simCardSlot
+rkdto:simCardSlot rdf:type owl:DatatypeProperty ;
+                  rdfs:domain dbo:Device ;
+                  rdfs:comment "Sim Card Slot Type" .
+
+
+###  http://www.kadlecek.sk/dt/ontology#simCardType
+rkdto:simCardType rdf:type owl:DatatypeProperty ;
+                  rdfs:domain dbo:Device ;
+                  rdfs:comment "Sim Card Type" .
+
+
+###  http://www.kadlecek.sk/dt/ontology#storageHDD
+rkdto:storageHDD rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf dbp:storage ;
+                 rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#storageSSD
+rkdto:storageSSD rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf dbp:storage ;
+                 rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#usbVersion
+rkdto:usbVersion rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf dbp:connectivity ;
+                 rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#wifi
+rkdto:wifi rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf dbp:networks ;
+           rdfs:domain dbo:Device .
+
+
+###  http://www.kadlecek.sk/dt/ontology#wirelessConnectivity
+rkdto:wirelessConnectivity rdf:type owl:DatatypeProperty ;
+                           rdfs:subPropertyOf dbp:networks ;
+                           rdfs:domain dbo:Device .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://dbpedia.org/ontology/Device
+dbo:Device rdf:type owl:Class .
+
+
+###  http://dbpedia.org/ontology/Software
+dbo:Software rdf:type owl:Class .
+
+
+###  Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi

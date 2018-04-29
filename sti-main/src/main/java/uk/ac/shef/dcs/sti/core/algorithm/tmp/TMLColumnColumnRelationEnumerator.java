@@ -134,13 +134,13 @@ public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnum
 
     private TCellCellRelationAnotation createDataPropertyCellCellRelationAnnotation(int subjectCol, int col,
                                                                                     MLPredicate mlPredicate) {
-        return createPropertyCellCellRelationAnnotation(subjectCol, col, mlPredicate.getUri(), null, null);
+        return createPropertyCellCellRelationAnnotation(subjectCol, col, mlPredicate.getUri(), "", null);
     }
 
     private TCellCellRelationAnotation createObjectPropertyCellCellRelationAnnotation(int subjectCol, int col,
                                                                                     String predicateUri, String valueUri) {
 
-        return createPropertyCellCellRelationAnnotation(subjectCol, col, predicateUri, null, valueUri);
+        return createPropertyCellCellRelationAnnotation(subjectCol, col, predicateUri, "", valueUri);
     }
 
     private TCellCellRelationAnotation createPropertyCellCellRelationAnnotation(int subjectCol, int col,

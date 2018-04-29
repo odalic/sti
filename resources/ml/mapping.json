@@ -1,40 +1,158 @@
 {
-  "TITLE": "http://dbpedia.org/ontology/name",
-  "BLUETOOTH_VERSION": "http://www.kadlecek.sk/dp/ontology-ns#bluetoothVersion",
-  "USB_VERSION": "http://www.kadlecek.sk/dp/ontology-ns#usbVersion",
-  "DEVICE_TYPE": "http://dbpedia.org/property/type",
-  "SIM_CARD_SLOT": "http://www.kadlecek.sk/dp/ontology-ns#simCardSlot",
-  "SIM_CARD_TYPE": "http://www.kadlecek.sk/dp/ontology-ns#simCardType",
-  "OS": "http://dbpedia.org/property/os",
-  "OS_BITS": "http://www.kadlecek.sk/dp/ontology-ns#operatingSystemBits",
-  "BRAND": "http://dbpedia.org/property/manufacturer",
-  "MODEL": "http://dbpedia.org/property/name",
-  "PRICE": "http://dbpedia.org/property/price",
-  "WIRELESS_CONNECTIVITY": "http://dbpedia.org/property/connectivity",
-  "NETWORK_4G": "http://www.kadlecek.sk/dp/ontology-ns#network4G",
-  "NETWORK_3G": "http://www.kadlecek.sk/dp/ontology-ns#network3G",
-  "NETWORK_2G": "http://www.kadlecek.sk/dp/ontology-ns#network2G",
-  "NETWORK_TYPE": "http://www.kadlecek.sk/dp/ontology-ns#networkType",
-  "WIFI": "http://dbpedia.org/property/connectivity",
-  "BATTERY_CAPACITY": "http://www.kadlecek.sk/dp/ontology-ns#batteryCapacity",
-  "BATTERY_TYPE": "http://www.kadlecek.sk/dp/ontology-ns#batteryType",
-  "RAM_CAPACITY": "http://www.kadlecek.sk/dp/ontology-ns#ramCapacity",
-  "RAM_TYPE": "http://www.kadlecek.sk/dp/ontology-ns#ramType",
-  "GPU": "http://dbpedia.org/property/gpu",
-  "CPU": "http://dbpedia.org/property/soc",
-  "CPU_FREQ": "http://www.kadlecek.sk/dp/ontology-ns#cpuFrequency",
-  "CPU_CORES": "http://www.kadlecek.sk/dp/ontology-ns#cpuCores",
-  "EXTERNAL_MEMORY": "http://dbpedia.org/property/memoryCard",
-  "STORAGE_SSD": "http://www.kadlecek.sk/dp/ontology-ns#storageSSD",
-  "STORAGE_HDD": "http://www.kadlecek.sk/dp/ontology-ns#storageHDD",
-  "CAMERA_FRONT": "http://dbpedia.org/property/frontCamera",
-  "CAMERA_BACK": "http://dbpedia.org/property/rearCamera",
-  "WEIGHT": "http://dbpedia.org/property/weight",
-  "PRODUCT_SIZE": "http://dbpedia.org/property/dimensions",
-  "SCREEN_SIZE": "http://www.kadlecek.sk/dp/ontology-ns#screenSize",
-  "SCREEN_PPI": "http://www.kadlecek.sk/dp/ontology-ns#screenPPI",
-  "SCREEN_TYPE": "http://www.kadlecek.sk/dp/ontology-ns#screenType",
-  "SCREEN_RESOLUTION": "http://www.kadlecek.sk/dp/ontology-ns#screenResolution",
-  "COLOR": "http://dbpedia.org/property/color",
-  "ETHERNET_SPEED": "http://www.kadlecek.sk/dp/ontology-ns#ethernet"
+  "classMappings": [
+    {
+      "mlClass": "TITLE",
+      "uri": "http://dbpedia.org/ontology/Device"
+    },
+    {
+      "mlClass": "OS",
+      "uri": "http://dbpedia.org/ontology/Software"
+    }
+  ],
+  "predicateMappings": [
+    {
+      "mlClass": "BRAND",
+      "uri": "http://dbpedia.org/property/manufacturer"
+    },
+    {
+      "mlClass": "MODEL",
+      "uri": "http://dbpedia.org/property/name"
+    },
+    {
+      "mlClass": "PRICE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#price"
+    },
+    {
+      "mlClass": "DEVICE_TYPE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#deviceType"
+    },
+    {
+      "mlClass": "BATTERY_CAPACITY",
+      "uri": "http://www.kadlecek.sk/dt/ontology#batteryCapacity"
+    },
+    {
+      "mlClass": "BATTERY_TYPE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#batteryType"
+    },
+    {
+      "mlClass": "COLOR",
+      "uri": "http://dbpedia.org/property/color"
+    },
+    {
+      "mlClass": "BLUETOOTH_VERSION",
+      "uri": "http://www.kadlecek.sk/dt/ontology#bluetoothVersion"
+    },
+    {
+      "mlClass": "USB_VERSION",
+      "uri": "http://www.kadlecek.sk/dt/ontology#usbVersion"
+    },
+    {
+      "mlClass": "ETHERNET_SPEED",
+      "uri": "http://www.kadlecek.sk/dt/ontology#ethernet"
+    },
+    {
+      "mlClass": "WIRELESS_CONNECTIVITY",
+      "uri": "http://www.kadlecek.sk/dt/ontology#wirelessConnectivity"
+    },
+    {
+      "mlClass": "WIFI",
+      "uri": "http://www.kadlecek.sk/dt/ontology#wifi"
+    },
+    {
+      "mlClass": "NETWORK_4G",
+      "uri": "http://www.kadlecek.sk/dt/ontology#network4G"
+    },
+    {
+      "mlClass": "NETWORK_3G",
+      "uri": "http://www.kadlecek.sk/dt/ontology#network3G"
+    },
+    {
+      "mlClass": "NETWORK_2G",
+      "uri": "http://www.kadlecek.sk/dt/ontology#network2G"
+    },
+    {
+      "mlClass": "NETWORK_TYPE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#networkType"
+    },
+    {
+      "mlClass": "WEIGHT",
+      "uri": "http://www.kadlecek.sk/dt/ontology#productWeight"
+    },
+    {
+      "mlClass": "PRODUCT_SIZE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#productDimensions"
+    },
+    {
+      "mlClass": "GPU",
+      "uri": "http://www.kadlecek.sk/dt/ontology#gpu"
+    },
+    {
+      "mlClass": "CPU",
+      "uri": "http://www.kadlecek.sk/dt/ontology#cpu"
+    },
+    {
+      "mlClass": "CPU_FREQ",
+      "uri": "http://www.kadlecek.sk/dt/ontology#cpuFrequency"
+    },
+    {
+      "mlClass": "CPU_CORES",
+      "uri": "http://www.kadlecek.sk/dt/ontology#cpuCores"
+    },
+    {
+      "mlClass": "RAM_CAPACITY",
+      "uri": "http://www.kadlecek.sk/dt/ontology#ramCapacity"
+    },
+    {
+      "mlClass": "RAM_TYPE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#ramType"
+    },
+    {
+      "mlClass": "EXTERNAL_MEMORY",
+      "uri": "http://www.kadlecek.sk/dt/ontology#externalStorage"
+    },
+    {
+      "mlClass": "STORAGE_SSD",
+      "uri": "http://www.kadlecek.sk/dt/ontology#storageSSD"
+    },
+    {
+      "mlClass": "STORAGE_HDD",
+      "uri": "http://www.kadlecek.sk/dt/ontology#storageHDD"
+    },
+    {
+      "mlClass": "SIM_CARD_SLOT",
+      "uri": "http://www.kadlecek.sk/dt/ontology#simCardSlot"
+    },
+    {
+      "mlClass": "SIM_CARD_TYPE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#simCardType"
+    },
+    {
+      "mlClass": "SCREEN_SIZE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#screenSize"
+    },
+    {
+      "mlClass": "SCREEN_PPI",
+      "uri": "http://www.kadlecek.sk/dt/ontology#screenPPI"
+    },
+    {
+      "mlClass": "SCREEN_TYPE",
+      "uri": "http://www.kadlecek.sk/dt/ontology#screenType"
+    },
+    {
+      "mlClass": "SCREEN_RESOLUTION",
+      "uri": "http://www.kadlecek.sk/dt/ontology#screenResolution"
+    },
+    {
+      "mlClass": "CAMERA_FRONT",
+      "uri": "http://www.kadlecek.sk/dt/ontology#frontCamera"
+    },
+    {
+      "mlClass": "CAMERA_BACK",
+      "uri": "http://www.kadlecek.sk/dt/ontology#rearCamera"
+    },
+    {
+      "mlClass": "OS_BITS",
+      "uri": "http://www.kadlecek.sk/dt/ontology#operatingSystemBits"
+    }
+  ]
 }

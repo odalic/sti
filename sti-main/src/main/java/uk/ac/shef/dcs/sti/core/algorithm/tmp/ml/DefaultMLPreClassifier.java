@@ -46,7 +46,9 @@ public class DefaultMLPreClassifier implements MLPreClassifier {
             Map<String, Integer> columnScores = getMLClassCandidatesForColumn(table, col);
             // select winning ML Class for column
             MLClassificationWithScore winningMlClassForCol = selectWinningMlClassForColumn(columnScores);
-            columnClassifications.put(col, winningMlClassForCol);
+            if (winningMlClassForCol != null) {
+                columnClassifications.put(col, winningMlClassForCol);
+            }
         }
         // translate ML class to actual ontology class/predicate & assemble result for all columns
         MLPreClassification mlPreClassification = resolveOntologyUrisAndAssembleResult(table, columnClassifications);
@@ -94,7 +96,7 @@ public class DefaultMLPreClassifier implements MLPreClassifier {
         MLPreClassification mlPreClassification = new MLPreClassification();
 
         for (Map.Entry<Integer, MLClassificationWithScore> colEntry: columnClassifications.entrySet()) {
-            // resolve URI, determine if class or predicate
+            // if a ML classification is found, resolve URI, determine if class or predicate
             String classUri = mlOntologyMapping.getOntologyClassMappingValue(colEntry.getValue().getMlClass());
             if (classUri != null) {
                 final TColumnHeaderAnnotation headerAnnotation = new TColumnHeaderAnnotation(

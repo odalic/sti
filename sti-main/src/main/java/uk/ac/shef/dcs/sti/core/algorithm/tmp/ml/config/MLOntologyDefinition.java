@@ -37,7 +37,7 @@ public class MLOntologyDefinition {
      * The property should be then available to infer its domain also from its super-properties, if its not directly defined.
      */
     public void buildPropertyModel() {
-        Set<Resource> allProperties = ontologyModel.filter(null, RDF.TYPE, RDF.PROPERTY).subjects();
+        Set<Resource> allProperties = getAllProperties();
         for (Resource property : allProperties) {
             String propertyIRI = property.stringValue();
             Model propertyStatements = ontologyModel.filter(property, null, null);
@@ -120,7 +120,7 @@ public class MLOntologyDefinition {
     }
 
     private Set<String> detectSuperPropertiesOfProperty(Model propertyStatements, Resource property) {
-        Set<IRI> domainResources = Models.objectIRIs(propertyStatements.filter(property, RDFS.SUBCLASSOF, null));
+        Set<IRI> domainResources = Models.objectIRIs(propertyStatements.filter(property, RDFS.SUBPROPERTYOF, null));
         return domainResources.stream().map(IRI::stringValue).collect(Collectors.toSet());
     }
 
@@ -186,7 +186,7 @@ public class MLOntologyDefinition {
     public String findDirectPropertyForSubjectObject(String subjectIRIStr, String objectIRIStr) {
         IRI subjectIRI = valueFactory.createIRI(subjectIRIStr);
         IRI objectIRI = valueFactory.createIRI(objectIRIStr);
-        Set<Resource> props = ontologyModel.filter(null, RDF.TYPE, RDF.PROPERTY).subjects();
+        Set<Resource> props = getAllProperties();
         for (Resource prop: props) {
             Set<Resource> psWithDomain = ontologyModel.filter(prop, RDFS.DOMAIN, subjectIRI).subjects();
             if (!psWithDomain.isEmpty()) {
@@ -234,29 +234,45 @@ public class MLOntologyDefinition {
         return null;
     }
 
-     private InferredAndUndefinedDomainProperties getInferredAndUndefinedDomainProperties() {
-         // THIS action may take long time for big ontologies, as it will cascadely infer domains of properties from their
-         // super properties
-         Set<PropertyWithDomain> propsWithInferredDomains = new HashSet<>();
-         Set<PropertyWithDomain> propsWithUndefinedDomains = new HashSet<>();
+    private InferredAndUndefinedDomainProperties getInferredAndUndefinedDomainProperties() {
+        // THIS action may take long time for big ontologies, as it will cascadely infer domains of properties from their
+        // super properties
+        Set<PropertyWithDomain> propsWithInferredDomains = new HashSet<>();
+        Set<PropertyWithDomain> propsWithUndefinedDomains = new HashSet<>();
 
-         for (Map.Entry<String, PropertyWithDomain> entry : this.propertyModel.entrySet()) {
-             PropertyWithDomain prop = entry.getValue();
-             // we are interested only in properties, which do not have directly defined domains
-             if (prop.getDirectDomainIRIs().isEmpty()) {
-                 Set<String> inferredDomainIRIs = prop.getInferredDomainIRIs();
-                 // skip properties with invalid domains
-                 if (inferredDomainIRIs != null) {
-                     if (!inferredDomainIRIs.isEmpty()) {
-                         propsWithInferredDomains.add(prop);
-                     } else {
-                         propsWithUndefinedDomains.add(prop);
-                     }
-                 }
-             }
-         }
-         return new InferredAndUndefinedDomainProperties(propsWithInferredDomains, propsWithUndefinedDomains);
-     }
+        for (Map.Entry<String, PropertyWithDomain> entry : this.propertyModel.entrySet()) {
+            PropertyWithDomain prop = entry.getValue();
+            // we are interested only in properties, which do not have directly defined domains
+            if (prop.getDirectDomainIRIs().isEmpty()) {
+                Set<String> inferredDomainIRIs = prop.getInferredDomainIRIs();
+                // skip properties with invalid domains
+                if (inferredDomainIRIs != null) {
+                    if (!inferredDomainIRIs.isEmpty()) {
+                        propsWithInferredDomains.add(prop);
+                    } else {
+                        propsWithUndefinedDomains.add(prop);
+                    }
+                }
+            }
+        }
+        return new InferredAndUndefinedDomainProperties(propsWithInferredDomains, propsWithUndefinedDomains);
+    }
+
+    private Set<Resource> getAllProperties() {
+        Set<Resource> rdfProperties = ontologyModel.filter(null, RDF.TYPE, RDF.PROPERTY).subjects();
+        Set<Resource> objectProperties = ontologyModel.filter(null, RDF.TYPE, OWL.OBJECTPROPERTY).subjects();
+        Set<Resource> dataProperties = ontologyModel.filter(null, RDF.TYPE, OWL.DATATYPEPROPERTY).subjects();
+
+        return mergeResourceSets(rdfProperties, objectProperties, dataProperties);
+    }
+
+    private Set<Resource> mergeResourceSets(Set<Resource>... resourceSets) {
+        Set<Resource> mergedProperties = new HashSet<>();
+        for (Set<Resource> resouceSet : resourceSets) {
+            mergedProperties.addAll(resouceSet);
+        }
+        return mergedProperties;
+    }
 }
 
 class PropertyWithDomain {
@@ -301,7 +317,7 @@ class PropertyWithDomain {
     }
 
     public Set<String> getInferredDomainIRIs() {
-        if (this.domainInferred) {
+        if (!this.domainInferred) {
             this.inferDomain();
         }
         return this.inferredDomainIRIs;
