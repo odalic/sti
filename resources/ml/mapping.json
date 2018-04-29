@@ -7,16 +7,20 @@
     {
       "mlClass": "OS",
       "uri": "http://dbpedia.org/ontology/Software"
+    },
+    {
+      "mlClass": "CPU",
+      "uri": "http://www.kadlecek.sk/dt/ontology#CPU"
+    },
+    {
+      "mlClass": "BRAND",
+      "uri": "http://dbpedia.org/ontology/Organisation"
     }
   ],
   "predicateMappings": [
     {
-      "mlClass": "BRAND",
-      "uri": "http://dbpedia.org/property/manufacturer"
-    },
-    {
       "mlClass": "MODEL",
-      "uri": "http://dbpedia.org/property/name"
+      "uri": "http://www.kadlecek.sk/dt/ontology#model"
     },
     {
       "mlClass": "PRICE",
@@ -85,10 +89,6 @@
     {
       "mlClass": "GPU",
       "uri": "http://www.kadlecek.sk/dt/ontology#gpu"
-    },
-    {
-      "mlClass": "CPU",
-      "uri": "http://www.kadlecek.sk/dt/ontology#cpu"
     },
     {
       "mlClass": "CPU_FREQ",

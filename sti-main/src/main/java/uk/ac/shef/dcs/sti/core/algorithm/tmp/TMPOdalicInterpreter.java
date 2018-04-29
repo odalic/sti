@@ -1,6 +1,7 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,13 +22,11 @@ import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.extension.constraints.DataCubeComponent;
 import uk.ac.shef.dcs.sti.core.extension.positions.CellPosition;
 import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
-import uk.ac.shef.dcs.sti.core.model.TAnnotation;
-import uk.ac.shef.dcs.sti.core.model.TColumnProcessingAnnotation;
+import uk.ac.shef.dcs.sti.core.model.*;
 import uk.ac.shef.dcs.sti.core.model.TColumnProcessingAnnotation.TColumnProcessingType;
-import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation.TComponentType;
-import uk.ac.shef.dcs.sti.core.model.Table;
 import uk.ac.shef.dcs.sti.core.subjectcol.SubjectColumnDetector;
+import uk.ac.shef.dcs.sti.core.subjectcol.TColumnDataType;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
 import uk.ac.shef.dcs.util.Pair;
 
@@ -144,6 +143,18 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
     return ambiguities;
   }
 
+  private void overrideColumnDataTypesToNE(Table table, Set<Integer> mlClassColumnIndices) {
+    for (Integer col : mlClassColumnIndices) {
+      TColumnHeader hdr = table.getColumnHeader(col);
+      if (!hdr.getFeature().getMostFrequentDataType().getType().equals(DataTypeClassifier.DataType.NAMED_ENTITY)) {
+        // use total number of rows as number of supporting rows for the datatype
+        TColumnDataType newType = new TColumnDataType(DataTypeClassifier.DataType.NAMED_ENTITY, table.getNumRows());
+        table.getColumnHeader(col).getTypes().add(newType);
+        table.getColumnHeader(col).getFeature().setMostFrequentDataType(newType);
+      }
+    }
+  }
+
   @Override
   public TAnnotation start(final Table table, final boolean relationLearning) throws STIException {
     return start(table, !relationLearning, new Constraints());
@@ -181,6 +192,10 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       final List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnScores =
           this.subjectColumnDetector.compute(table, ignoreColumnsArray);
       tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
+
+      // columns ML-Classified as classes need to be set as NAMED_ENTITY type in order to make disambiguation work
+      overrideColumnDataTypesToNE(table, mlPreClassification.getClassHeaderAnnotations().keySet());
+
 
       // set column processing annotations
       final Set<Ambiguity> newAmbiguities = setColumnProcessingAnnotationsAndAmbiguities(table,

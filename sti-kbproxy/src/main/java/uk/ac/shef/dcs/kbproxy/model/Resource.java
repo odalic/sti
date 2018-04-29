@@ -68,7 +68,11 @@ public abstract class Resource implements Serializable {
   }
 
   public String getLabel() {
-    return label;
+    if (label != null) {
+      return label;
+    } else {
+      return "";
+    }
   }
 
   public void setLabel(String label) {
