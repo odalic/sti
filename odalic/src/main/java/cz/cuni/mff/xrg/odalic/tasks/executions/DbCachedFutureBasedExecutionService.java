@@ -18,8 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import cz.cuni.mff.xrg.odalic.files.File;
-import cz.cuni.mff.xrg.odalic.input.ml.TaskMLConfiguration;
+import cz.cuni.mff.xrg.odalic.input.ml.*;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
@@ -69,10 +68,12 @@ import cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPreClassifier;
+
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
-
 /**
  * Implementation of {@link ExecutionService} based on {@link Future} and {@link ExecutorService}
  * implementations. Stores the latest computed results using {@link DB}-backed map.
@@ -333,8 +334,20 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
             usedBaseNames.stream().map(e -> this.basesService.getByName(userId, e))
                 .collect(ImmutableSet.toImmutableSet());
 
+        // initialize ML classifier and perform ML PreClassification phase here
+        final MLPreClassifier mlPreClassifier = this.semanticTableInterpreterFactory.getMLPreClassifier(taskMlConfig);
+
         final Map<String, SemanticTableInterpreter> interpreters =
-            this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases, taskMlConfig);
+            this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases, mlPreClassifier);
+
+        // run the ML PreClassification
+        logger.info("\t> PHASE: ML PRE-CLASSIFICATION ...");
+        Set<Integer> ignoredColumns = feedback
+                .getColumnIgnores()
+                .stream()
+                .map(ci -> ci.getPosition().getIndex())
+                .collect(Collectors.toSet());
+        MLPreClassification mlPreClassification = mlPreClassifier.preClassificate(table, ignoredColumns);
 
         final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
 
@@ -346,7 +359,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
               this.feedbackToConstraintsAdapter.toConstraints(feedback, base);
           final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
 
-          final TAnnotation annotationResult = interpreter.start(table, isStatistical, constraints);
+          final TAnnotation annotationResult = interpreter.start(table, isStatistical, mlPreClassification, constraints);
 
           results.put(base, annotationResult);
         }
@@ -577,4 +590,5 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
       }
     }).collect(ImmutableList.toImmutableList());
   }
+
 }

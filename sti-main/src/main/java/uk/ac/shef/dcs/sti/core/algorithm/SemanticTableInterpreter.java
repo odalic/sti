@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import uk.ac.shef.dcs.sti.STIException;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
@@ -57,6 +58,6 @@ public abstract class SemanticTableInterpreter {
 
   public abstract TAnnotation start(Table table, boolean relationLearning) throws STIException;
 
-  public abstract TAnnotation start(Table table, boolean statistical, Constraints constraints)
+  public abstract TAnnotation start(Table table, boolean statistical, MLPreClassification mlPreclassification, Constraints constraints)
       throws STIException;
 }

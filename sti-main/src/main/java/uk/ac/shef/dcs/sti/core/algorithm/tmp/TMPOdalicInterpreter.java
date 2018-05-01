@@ -157,11 +157,11 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
 
   @Override
   public TAnnotation start(final Table table, final boolean relationLearning) throws STIException {
-    return start(table, !relationLearning, new Constraints());
+    return start(table, !relationLearning, MLPreClassification.empty(), new Constraints());
   }
 
   @Override
-  public TAnnotation start(final Table table, final boolean statistical, Constraints constraints)
+  public TAnnotation start(final Table table, final boolean statistical, MLPreClassification mlPreClassification, Constraints constraints)
       throws STIException {
     Preconditions.checkNotNull(constraints, "The constraints cannot be null!");
 
@@ -184,9 +184,6 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
     try {
       final TAnnotation tableAnnotations = new TAnnotation(table.getNumRows(), table.getNumCols());
 
-      LOG.info("\t> PHASE: ML PRE-CLASSIFICATION ...");
-      MLPreClassification mlPreClassification = this.mlPreClassifier.preClassificate(table, getIgnoreColumns());
-
       // find the main subject column of this table
       LOG.info("\t> PHASE: Detecting subject column ...");
       final List<Pair<Integer, Pair<Double, Boolean>>> subjectColumnScores =
@@ -195,7 +192,6 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
 
       // columns ML-Classified as classes need to be set as NAMED_ENTITY type in order to make disambiguation work
       overrideColumnDataTypesToNE(table, mlPreClassification.getClassHeaderAnnotations().keySet());
-
 
       // set column processing annotations
       final Set<Ambiguity> newAmbiguities = setColumnProcessingAnnotationsAndAmbiguities(table,

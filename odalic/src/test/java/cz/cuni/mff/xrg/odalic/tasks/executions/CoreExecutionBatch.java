@@ -13,6 +13,8 @@ import uk.ac.shef.dcs.kbproxy.DefaultProxiesFactory;
 import uk.ac.shef.dcs.kbproxy.solr.MemoryOnlySolrCacheProviderService;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.NoMLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
@@ -171,7 +173,7 @@ public class CoreExecutionBatch {
       semanticTableInterpreters = new TableMinerPlusFactory(kbf, cps, dps).getInterpreters(
           configuration.getInput().getOwner().getEmail(), configuration.getUsedBases().stream().map(e ->
           mbs.getByName(configuration.getInput().getOwner().getEmail(), e)).collect(ImmutableSet.toImmutableSet()),
-          TaskMLConfiguration.disabled());
+          new NoMLPreClassifier());
     } catch (final Exception e) {
       log.error("Error - TMP interpreters failed to initialize:", e);
       return null;
@@ -190,7 +192,7 @@ public class CoreExecutionBatch {
             configuration.getFeedback(), base);
 
         TAnnotation annotationResult = interpreterEntry.getValue().start(table,
-            configuration.isStatistical(), constraints);
+            configuration.isStatistical(), MLPreClassification.empty(), constraints);
 
         results.put(base, annotationResult);
       }

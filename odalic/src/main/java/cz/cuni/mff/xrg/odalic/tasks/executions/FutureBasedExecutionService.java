@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.input.ml.TaskMLConfiguration;
@@ -40,6 +41,8 @@ import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
 import cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
@@ -270,8 +273,20 @@ public final class FutureBasedExecutionService implements ExecutionService {
             usedBaseNames.stream().map(e -> this.basesService.getByName(userId, e))
                 .collect(ImmutableSet.toImmutableSet());
 
+        // initialize ML classifier and perform ML PreClassification phase here
+        final MLPreClassifier mlPreClassifier = this.semanticTableInterpreterFactory.getMLPreClassifier(taskMlConfig);
+
         final Map<String, SemanticTableInterpreter> interpreters =
-            this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases, taskMlConfig);
+            this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases, mlPreClassifier);
+
+        // run the ML PreClassification
+        logger.info("\t> PHASE: ML PRE-CLASSIFICATION ...");
+        Set<Integer> ignoredColumns = feedback
+                .getColumnIgnores()
+                .stream()
+                .map(ci -> ci.getPosition().getIndex())
+                .collect(Collectors.toSet());
+        MLPreClassification mlPreClassification = mlPreClassifier.preClassificate(table, ignoredColumns);
 
         final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
 
@@ -283,7 +298,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
               this.feedbackToConstraintsAdapter.toConstraints(feedback, base);
           final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
 
-          final TAnnotation annotationResult = interpreter.start(table, isStatistical, constraints);
+          final TAnnotation annotationResult = interpreter.start(table, isStatistical, mlPreClassification, constraints);
 
           results.put(base, annotationResult);
         }
