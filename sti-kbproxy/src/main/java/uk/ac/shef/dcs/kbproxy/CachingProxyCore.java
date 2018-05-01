@@ -201,7 +201,7 @@ public class CachingProxyCore implements ProxyCore {
 
   @Override
   public List<Attribute> findAttributesOfEntities(Entity ec) throws ProxyException {
-    return this.core.findAttributesOfEntities(ec, this);
+    return this.core.findAttributesOfEntities(ec);
   }
 
 //  @Override
