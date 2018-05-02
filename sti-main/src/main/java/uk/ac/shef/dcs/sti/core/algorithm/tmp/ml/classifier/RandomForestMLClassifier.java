@@ -9,9 +9,10 @@ import java.util.Properties;
 
 public class RandomForestMLClassifier extends MLClassifier {
 
+    private static final int BATCH_SIZE = 80;
     private static final int MAX_DEPTH = 15;
     private static final int NUM_FEATURES = 3;
-    private static final int NUM_BAGGING_INTERATIONS = 120;
+    private static final int NUM_BAGGING_INTERATIONS = 90;
     private static final boolean BREAK_TIES_RANDOMLY = true;
 
     private RandomForest classifier;
@@ -21,6 +22,7 @@ public class RandomForestMLClassifier extends MLClassifier {
 
         super(homePath, props, featureDetector, trainingDatasetInputValues);
         this.classifier = new RandomForest();
+        this.classifier.setBatchSize(String.valueOf(BATCH_SIZE));
         this.classifier.setMaxDepth(MAX_DEPTH);
         this.classifier.setNumFeatures(NUM_FEATURES);
         this.classifier.setNumIterations(NUM_BAGGING_INTERATIONS);

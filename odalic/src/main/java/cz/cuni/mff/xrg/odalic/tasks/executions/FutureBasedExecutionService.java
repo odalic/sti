@@ -232,12 +232,12 @@ public final class FutureBasedExecutionService implements ExecutionService {
     return this.fileService.getById(userId, fileId);
   }
 
-  private TaskMLConfiguration createTaskMLConfiguration(final String userId, final String fileId,
+  private TaskMLConfiguration createTaskMLConfiguration(final String userId,
                                                         final Configuration configuration) throws IOException {
     // load ml training dataset file & its format
     TaskMLConfiguration taskMlConfig;
     if (configuration.isUseMLClassifier()) {
-      ParsingResult trainingDatasetParsed = parse(userId, fileId, Configuration.MAXIMUM_ROWS_LIMIT);
+      ParsingResult trainingDatasetParsed = parse(userId, configuration.getMlTrainingDatasetFile().getId(), Configuration.MAXIMUM_ROWS_LIMIT);
       taskMlConfig = new TaskMLConfiguration(configuration.isUseMLClassifier(), trainingDatasetParsed);
     } else {
       taskMlConfig = TaskMLConfiguration.disabled();
@@ -260,7 +260,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
     final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
     final Input input = parsingResult.getInput();
 
-    final TaskMLConfiguration taskMlConfig = createTaskMLConfiguration(userId, fileId, configuration);
+    final TaskMLConfiguration taskMlConfig = createTaskMLConfiguration(userId, configuration);
 
     this.inputSnapshotsService.setInputSnapshotForTaskid(userId, taskId, input);
 
