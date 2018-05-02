@@ -1,20 +1,44 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier;
 
+import java.util.Map;
+
 public class MLClassification {
 
-    private String mlClass;
-    private Double score;
+    private String cellValue;
+    private Map<String, Double> classifications;
 
-    public MLClassification(String mlClass, Double score) {
-        this.mlClass = mlClass;
-        this.score = score;
+    public MLClassification(String cellValue, Map<String, Double> classifications) {
+        this.cellValue = cellValue;
+        this.classifications = classifications;
     }
 
-    public String getMlClass() {
-        return mlClass;
+    public String getCellValue() {
+        return cellValue;
     }
 
-    public Double getScore() {
-        return score;
+    public Map<String, Double> getClassifications() {
+        return classifications;
+    }
+
+    public MLClassificationWithScore getHighestScoreMlClass(double confidenceThreshold) {
+        double maxScore = 0;
+        String maxClass = null;
+        for (Map.Entry<String, Double> entry : classifications.entrySet()) {
+            if (entry.getValue() > maxScore) {
+                maxScore = entry.getValue();
+                maxClass = entry.getKey();
+            }
+        }
+        if (maxClass != null) {
+            if (maxScore >= confidenceThreshold) {
+                return new MLClassificationWithScore(maxClass, maxScore);
+            } else {
+                // no value with high-enough confidence
+                return null;
+            }
+        }else {
+            // classifier did not return any valid classification
+            return null;
+        }
     }
 }

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier.MLClassification;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier.MLClassificationWithScore;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier.MLClassifier;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.exception.MLException;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyDefinition;
@@ -43,7 +44,7 @@ public class DefaultMLPreClassifier implements MLPreClassifier {
             }
 
             // get column ML class candidates from each row
-            Map<String, Integer> columnScores = getMLClassCandidatesForColumn(table, col);
+            Map<String, MlClassWithScoreOccurences> columnScores = getMLClassCandidatesForColumn(table, col);
             // select winning ML Class for column
             MLClassificationWithScore winningMlClassForCol = selectWinningMlClassForColumn(columnScores);
             if (winningMlClassForCol != null) {
@@ -55,8 +56,8 @@ public class DefaultMLPreClassifier implements MLPreClassifier {
         return mlPreClassification;
     }
 
-    private Map<String, Integer> getMLClassCandidatesForColumn(Table table, int col) {
-        Map<String, Integer> columnScores = new HashMap<>();
+    private Map<String, MlClassWithScoreOccurences> getMLClassCandidatesForColumn(Table table, int col) {
+        Map<String, MlClassWithScoreOccurences> columnScores = new HashMap<>();
 
         for (int row = 0; row < table.getNumRows(); row++) {
             String content = table.getContentCell(row, col).getText();
@@ -74,17 +75,28 @@ public class DefaultMLPreClassifier implements MLPreClassifier {
         return columnScores;
     }
 
-    private void addClassOrUpdateClassScore(MLClassification mlClass, Map<String, Integer> scoreMap) {
-        scoreMap.merge(mlClass.getMlClass(),1, (oldVal, defValue) -> oldVal + defValue);
+    private void addClassOrUpdateClassScore(MLClassification mlClass, Map<String, MlClassWithScoreOccurences> scoreMap) {
+        MLClassificationWithScore highestScoreValue = mlClass.getHighestScoreMlClass(this.mlClassifier.getConfidenceThreshold());
+        if (highestScoreValue != null) {
+
+            MlClassWithScoreOccurences mlClassScore = scoreMap.get(highestScoreValue.getMlClass());
+            if (mlClassScore == null) {
+                mlClassScore = new MlClassWithScoreOccurences(highestScoreValue.getMlClass());
+                scoreMap.put(highestScoreValue.getMlClass(), mlClassScore);
+            }
+            mlClassScore.addOccurence(highestScoreValue.getScore());
+        }
     }
 
-    private MLClassificationWithScore selectWinningMlClassForColumn(Map<String, Integer> scoreMap) {
+    private MLClassificationWithScore selectWinningMlClassForColumn(Map<String, MlClassWithScoreOccurences> scoreMap) {
         MLClassificationWithScore winningMlClass = null;
-        Integer winningMlClassScore = null;
-        for (Map.Entry<String, Integer> entry : scoreMap.entrySet()) {
-            if (winningMlClassScore == null || winningMlClassScore < entry.getValue()) {
-                winningMlClass = new MLClassificationWithScore(entry.getKey(), entry.getValue());
-                winningMlClassScore = entry.getValue();
+        Double winningMlClassScore = null;
+        for (Map.Entry<String, MlClassWithScoreOccurences> entry : scoreMap.entrySet()) {
+            Double entryScore = entry.getValue().getWeightedAverage();
+
+            if (winningMlClassScore == null || winningMlClassScore < entryScore) {
+                winningMlClass = new MLClassificationWithScore(entry.getKey(), entryScore);
+                winningMlClassScore = entryScore;
             }
         }
         return winningMlClass;
@@ -147,20 +159,32 @@ public class DefaultMLPreClassifier implements MLPreClassifier {
     }
 }
 
-class MLClassificationWithScore {
+class MlClassWithScoreOccurences {
     private String mlClass;
-    private Integer score;
+    private Map<Double, Integer> scoreOccurences;
 
-    public MLClassificationWithScore(String mlClass, Integer score) {
+    public MlClassWithScoreOccurences(String mlClass) {
         this.mlClass = mlClass;
-        this.score = score;
+        this.scoreOccurences = new HashMap<>();
     }
 
-    public String getMlClass() {
-        return mlClass;
+    public void addOccurence(Double score) {
+        scoreOccurences.merge(score, 1, (oldVal, defValue) -> oldVal + defValue);
     }
 
-    public Integer getScore() {
-        return score;
+    public Double getWeightedAverage() {
+        double weightedSum = 0d;
+        int totalOccurences = 0;
+
+        for (Map.Entry<Double, Integer> scoreOccurence: scoreOccurences.entrySet()) {
+            weightedSum += scoreOccurence.getKey() * scoreOccurence.getValue();
+            totalOccurences += scoreOccurence.getValue();
+        }
+
+        if (totalOccurences > 0) {
+            return weightedSum / totalOccurences;
+        } else {
+            return 0d;
+        }
     }
 }

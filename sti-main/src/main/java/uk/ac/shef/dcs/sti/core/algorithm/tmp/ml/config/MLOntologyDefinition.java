@@ -164,13 +164,13 @@ public class MLOntologyDefinition {
         }
 
         // and finally try to find property, whose domain is not defined, but has objectURI in its range
-        String noDomainProperty = findPropertyWithUndefinedDomainWithObjectInRange(
+        /*String noDomainProperty = findPropertyWithUndefinedDomainWithObjectInRange(
                 objectIRI, infAndUndefDomainProps.getPropertiesWithUndefinedDomains()
         );
         if (noDomainProperty != null) {
             // property found
             return noDomainProperty;
-        }
+        }*/
 
         // no such property found
         return null;

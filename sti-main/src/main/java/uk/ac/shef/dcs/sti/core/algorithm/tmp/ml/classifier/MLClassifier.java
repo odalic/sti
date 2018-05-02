@@ -93,7 +93,7 @@ public abstract class MLClassifier {
 
             double[] instanceDistribution = classifier.distributionForInstance(instanceToClassify);
             // find index of class with highest classifier score
-            MLClassification classification = findMostProbableClass(valueToClassify, instanceToClassify, instanceDistribution);
+            MLClassification classification = getClassDistribution(valueToClassify, instanceToClassify, instanceDistribution);
             return classification;
 
         } catch (Exception e) {
@@ -230,7 +230,7 @@ public abstract class MLClassifier {
         return instance;
     }
 
-    private MLClassification findMostProbableClass(String value, Instance instance, double[] classificationDistribution) {
+    /*private MLClassification findMostProbableClass(String value, Instance instance, double[] classificationDistribution) {
         double maxValue = 0;
         int maxValueIndex = -1;
         for (int i = 0; i < classificationDistribution.length; i++) {
@@ -250,6 +250,16 @@ public abstract class MLClassifier {
             // classifier did not return any valid classification
             return null;
         }
+    }*/
+
+    private MLClassification getClassDistribution(String value, Instance instance, double[] classificationDistribution) {
+        Map<String, Double> classDistributions = new HashMap<>();
+
+        for (int i = 0; i < classificationDistribution.length; i++) {
+            classDistributions.put(instance.classAttribute().value(i), classificationDistribution[i]);
+        }
+
+        return new MLClassification(value, classDistributions);
     }
 
     protected abstract Classifier getClassifier();
@@ -271,4 +281,7 @@ public abstract class MLClassifier {
         }
     }
 
+    public Double getConfidenceThreshold() {
+        return confidenceThreshold;
+    }
 }
