@@ -60,6 +60,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
   public static final String LANGUAGE_TAG_PARAMETER_KEY = "eu.odalic.extrarelatable.languageTag";
   
   private static final URI ANNOTATED_SUBPATH = URI.create("annotated");
+  private static final URI SYNTHETIC_PROPERTIES_SUBPATH = URI.create("properties/");
   private static final String LEARN_QUERY_PARAMETER_NAME = "learn";
   private static final String LEARN_ONLY_WITH_FEEDBACK_PARAMETER_NAME = "onlyWithProperties";
 
@@ -67,6 +68,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
   private final InputConverter inputConverter;
   private final PrefixMappingService prefixMappingService;
   private final URI targetPath;
+  private final URI syntheticPropertiesPath;
   private final boolean learnAnnotated;
   private final boolean learnOnlyWithFeedback;
   private final String languageTag;
@@ -91,6 +93,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     this.inputConverter = inputConverter;
     this.prefixMappingService = prefixMappingService;
     this.targetPath = endpoint.resolve(ANNOTATED_SUBPATH);
+    this.syntheticPropertiesPath = endpoint.resolve(SYNTHETIC_PROPERTIES_SUBPATH);
     this.learnAnnotated = Boolean.parseBoolean(parameters.getOrDefault(LEARN_ANNOTATED_PARAMETER_KEY, Boolean.FALSE.toString()));
     this.learnOnlyWithFeedback = Boolean.parseBoolean(parameters.getOrDefault(LEARN_ONLY_WITH_FEEDBACK_PARAMETER_KEY, Boolean.TRUE.toString()));
     this.languageTag = languageTag;
@@ -251,7 +254,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
   }
   
   private EntityCandidate toCandidate(final PropertyValue property, final StatisticsValue statistics) {
-    final String uriString = String.valueOf(property.getUri());
+    final String uriString = String.valueOf(property.getUri() == null ? syntheticPropertiesPath.resolve(URI.create(property.getUuid().toString())) : property.getUri());
     
     return new EntityCandidate(cz.cuni.mff.xrg.odalic.tasks.annotations.Entity.of(this.prefixMappingService.getPrefix(uriString), uriString, property.getLabels().stream().collect(Collectors.joining("; "))), new Score(1 - statistics.getAverage()));
   }
