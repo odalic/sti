@@ -6,7 +6,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.apache.jena.ext.com.google.common.collect.ImmutableSortedSet;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
@@ -15,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 
 import cz.cuni.mff.xrg.odalic.bases.BasesService;
 import cz.cuni.mff.xrg.odalic.files.FileService;

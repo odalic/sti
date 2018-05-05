@@ -3,14 +3,13 @@ package cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
-import java.net.URI;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import com.google.common.collect.ImmutableMap;
 
 @XmlRootElement(name = "metadata")
 public final class MetadataValue implements Serializable {
@@ -20,10 +19,10 @@ public final class MetadataValue implements Serializable {
 	private String title;
 	private String author;
 	private String languageTag;
-	private Map<Integer, URI> declaredPropertyUris;
-	private Map<Integer, URI> declaredClassUris;
-	private Map<Integer, URI> collectedPropertyUris;
-    private Map<Integer, URI> collectedClassUris;
+	private Map<Integer, DeclaredEntityValue> declaredProperties;
+	private Map<Integer, DeclaredEntityValue> declaredClasses;
+	private Map<Integer, DeclaredEntityValue> collectedProperties;
+    private Map<Integer, DeclaredEntityValue> collectedClasses;
 
 	@XmlElement
 	@Nullable
@@ -56,54 +55,54 @@ public final class MetadataValue implements Serializable {
 	}
 	
 	@XmlElement
-	public Map<Integer, URI> getDeclaredPropertyUris() {
-		return declaredPropertyUris;
+	public Map<Integer, DeclaredEntityValue> getDeclaredProperties() {
+		return Collections.unmodifiableMap(declaredProperties);
 	}
 
-	public void setDeclaredPropertyUris(Map<? extends Integer, ? extends URI>  declaredPropertyUris) {
-		checkNotNull(declaredPropertyUris);
+	public void setDeclaredProperties(Map<? extends Integer, ? extends DeclaredEntityValue>  declaredProperties) {
+		checkNotNull(declaredProperties);
 		
-		this.declaredPropertyUris = ImmutableMap.copyOf(declaredPropertyUris);
+		this.declaredProperties = new HashMap<>(declaredProperties);
 	}
 	
 	@XmlElement
-	public Map<Integer, URI> getDeclaredClassUris() {
-		return declaredClassUris;
+	public Map<Integer, DeclaredEntityValue> getDeclaredClasses() {
+		return Collections.unmodifiableMap(declaredClasses);
 	}
 
-	public void setDeclaredClassUris(Map<? extends Integer, ? extends URI>  declaredClassUris) {
-		checkNotNull(declaredClassUris);
+	public void setDeclaredClasses(Map<? extends Integer, ? extends DeclaredEntityValue>  declaredClasses) {
+		checkNotNull(declaredClasses);
 		
-		this.declaredClassUris = ImmutableMap.copyOf(declaredClassUris);
+		this.declaredClasses = new HashMap<>(declaredClasses);
 	}
 	
 	@XmlElement
-    public Map<Integer, URI> getCollectedPropertyUris() {
-        return collectedPropertyUris;
+    public Map<Integer, DeclaredEntityValue> getCollectedProperties() {
+        return Collections.unmodifiableMap(collectedProperties);
     }
 
-    public void setCollectedPropertyUris(Map<? extends Integer, ? extends URI>  collectedPropertyUris) {
-        checkNotNull(collectedPropertyUris);
+    public void setCollectedProperties(Map<? extends Integer, ? extends DeclaredEntityValue>  collectedProperties) {
+        checkNotNull(collectedProperties);
         
-        this.collectedPropertyUris = ImmutableMap.copyOf(collectedPropertyUris);
+        this.collectedProperties = new HashMap<>(collectedProperties);
     }
     
     @XmlElement
-    public Map<Integer, URI> getCollectedClassUris() {
-        return collectedClassUris;
+    public Map<Integer, DeclaredEntityValue> getCollectedClasses() {
+        return Collections.unmodifiableMap(collectedClasses);
     }
 
-    public void setCollectedClassUris(Map<? extends Integer, ? extends URI>  collectedClassUris) {
-        checkNotNull(collectedClassUris);
+    public void setCollectedClasses(Map<? extends Integer, ? extends DeclaredEntityValue>  collectedClasses) {
+        checkNotNull(collectedClasses);
         
-        this.collectedClassUris = ImmutableMap.copyOf(collectedClassUris);
+        this.collectedClasses = new HashMap<>(collectedClasses);
     }
 
     @Override
     public String toString() {
       return "MetadataValue [title=" + title + ", author=" + author + ", languageTag=" + languageTag
-          + ", declaredPropertyUris=" + declaredPropertyUris + ", declaredClassUris="
-          + declaredClassUris + ", collectedPropertyUris=" + collectedPropertyUris
-          + ", collectedClassUris=" + collectedClassUris + "]";
+          + ", declaredProperties=" + declaredProperties + ", declaredClasses="
+          + declaredClasses + ", collectedProperties=" + collectedProperties
+          + ", collectedClasses=" + collectedClasses + "]";
     }
 }

@@ -5,10 +5,10 @@ package cz.cuni.mff.xrg.odalic.entities.postprocessing;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
-import org.apache.jena.ext.com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.entities.EntitiesFactory;
 import cz.cuni.mff.xrg.odalic.entities.EntitiesService;

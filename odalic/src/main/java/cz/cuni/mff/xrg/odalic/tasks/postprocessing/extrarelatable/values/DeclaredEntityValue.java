@@ -4,43 +4,29 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.List;
-import java.util.UUID;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.collect.ImmutableList;
 
-@XmlRootElement(name = "property")
-public final class PropertyValue implements Serializable {
+@XmlRootElement(name = "declaredEntity")
+public final class DeclaredEntityValue implements Serializable {
 
   private static final long serialVersionUID = -9009289293200568981L;
 
-  private UUID uuid;
-  
   private URI uri;
   
   private List<String> labels;
 
-  public PropertyValue() {
-    this.uuid = null;
+  public DeclaredEntityValue() {
     this.uri = null;
     this.labels = ImmutableList.of();
   }
   
-  public PropertyValue(final UUID uuid, final URI uri, final List<? extends String> labels) {
-    this.uuid = uuid;
+  public DeclaredEntityValue(final URI uri, final List<? extends String> labels) {
     this.uri = uri;
     this.setLabels(ImmutableList.copyOf(labels));
   }
 
-  @XmlElement
-  public UUID getUuid() {
-    return uuid;
-  }
-
-  public void setUuid(final UUID uuid) {
-    this.uuid = uuid;
-  }
-  
   @XmlElement
   public URI getUri() {
     return uri;
@@ -63,6 +49,6 @@ public final class PropertyValue implements Serializable {
 
   @Override
   public String toString() {
-    return "PropertyValue [uuid=" + uuid + ", uri=" + uri + ", labels=" + labels + "]";
+    return "DeclaredEntityValue [uri=" + uri + ", labels=" + labels + "]";
   }
 }

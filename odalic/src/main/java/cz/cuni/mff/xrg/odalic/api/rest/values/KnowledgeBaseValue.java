@@ -11,13 +11,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.bases.TextSearchingMethod;
 import cz.cuni.mff.xrg.odalic.groups.Group;
-import jersey.repackaged.com.google.common.collect.ImmutableList;
 
 /**
  * Domain class {@link KnowledgeBase} adapted for REST API output.

@@ -26,13 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.users.User;
 import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
-import jersey.repackaged.com.google.common.collect.ImmutableList;
 
 /**
  * This {@link GroupsService} implementation persists the files in {@link DB}-backed maps.

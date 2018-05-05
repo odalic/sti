@@ -103,10 +103,10 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
 
   @Override
   public Result process(final Input input, final Result result, final Feedback feedback, final String primaryBaseName) {
-    final Map<Integer, URI> declaredContextClasses = getDeclaredContextClasses(feedback);
-    final Map<Integer, URI> declaredContextProperties = getDeclaredContextProperties(feedback);
-    final Map<Integer, URI> collectedContextClasses = getCollectedContextClasses(result, feedback);
-    final Map<Integer, URI> collectedContextProperties = getCollectedContextProperties(result, feedback);
+    final Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> declaredContextClasses = getDeclaredContextClasses(feedback);
+    final Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> declaredContextProperties = getDeclaredContextProperties(feedback);
+    final Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> collectedContextClasses = getCollectedContextClasses(result, feedback);
+    final Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> collectedContextProperties = getCollectedContextProperties(result, feedback);
     
     final ParsedTableValue parsedTable =
         this.inputConverter.convert(input, this.languageTag, this.user, declaredContextClasses, declaredContextProperties, collectedContextClasses, collectedContextProperties);
@@ -129,8 +129,8 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     );
   }
 
-  private Map<Integer, URI> getCollectedContextProperties(Result result, Feedback feedback) {
-    final Map<Integer, URI> resultAnnotations = IntStream.range(0, result.getColumnRelationAnnotations().size()).filter(i -> {
+  private Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> getCollectedContextProperties(Result result, Feedback feedback) {
+    final Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> resultAnnotations = IntStream.range(0, result.getColumnRelationAnnotations().size()).filter(i -> {
       final HeaderAnnotation annotation = result.getHeaderAnnotations().get(i);
       if (annotation == null) {
         return false;
@@ -147,20 +147,20 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
       }
       
       return true;
-    }).mapToObj(i -> Integer.valueOf(i)).collect(Collectors.toMap(i -> i, i -> URI.create(result.getHeaderAnnotations().get(i).getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource()), (f, s) -> f));
+    }).mapToObj(i -> Integer.valueOf(i)).collect(Collectors.toMap(i -> i, i -> result.getHeaderAnnotations().get(i).getChosen().get(this.baseName).stream().findFirst().get().getEntity(), (f, s) -> f));
       
-    final Map<Integer, URI> feedbackAnnotations = feedback.getColumnRelations().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getSecondIndex(), c -> URI.create(c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource()), (f, s) -> f));
+    final Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> feedbackAnnotations = feedback.getColumnRelations().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getSecondIndex(), c -> c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity(), (f, s) -> f));
     Maps.mergeWith(resultAnnotations, feedbackAnnotations, (r, f) -> f);
     
     return ImmutableMap.copyOf(resultAnnotations);
   }
   
-  private Map<Integer, URI> getDeclaredContextProperties(Feedback feedback) {
-    return feedback.getColumnRelations().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getSecondIndex(), c -> URI.create(c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource()), (f, s) -> f));
+  private Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> getDeclaredContextProperties(Feedback feedback) {
+    return feedback.getColumnRelations().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getSecondIndex(), c -> c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity(), (f, s) -> f));
   }
 
-  private Map<Integer, URI> getCollectedContextClasses(Result result, Feedback feedback) {
-    final Map<Integer, URI> resultAnnotations = IntStream.range(0, result.getHeaderAnnotations().size()).filter(i -> {
+  private Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> getCollectedContextClasses(Result result, Feedback feedback) {
+    final Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> resultAnnotations = IntStream.range(0, result.getHeaderAnnotations().size()).filter(i -> {
       final HeaderAnnotation annotation = result.getHeaderAnnotations().get(i);
       if (annotation == null) {
         return false;
@@ -177,16 +177,16 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
       }
       
       return true;
-    }).mapToObj(i -> Integer.valueOf(i)).collect(Collectors.toMap(i -> i, i -> URI.create(result.getHeaderAnnotations().get(i).getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource())));
+    }).mapToObj(i -> Integer.valueOf(i)).collect(Collectors.toMap(i -> i, i -> result.getHeaderAnnotations().get(i).getChosen().get(this.baseName).stream().findFirst().get().getEntity()));
       
-    final Map<Integer, URI> feedbackAnnotations = feedback.getClassifications().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getIndex(), c -> URI.create(c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource())));
+    final Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> feedbackAnnotations = feedback.getClassifications().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getIndex(), c -> c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity()));
     Maps.mergeWith(resultAnnotations, feedbackAnnotations, (r, f) -> f);
     
     return ImmutableMap.copyOf(resultAnnotations);
   }
   
-  private Map<Integer, URI> getDeclaredContextClasses(Feedback feedback) {
-    return feedback.getClassifications().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getIndex(), c -> URI.create(c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity().getResource())));
+  private Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> getDeclaredContextClasses(Feedback feedback) {
+    return feedback.getClassifications().stream().filter(c -> c.getAnnotation().getChosen().containsKey(this.baseName)).collect(ImmutableMap.toImmutableMap(c -> c.getPosition().getIndex(), c -> c.getAnnotation().getChosen().get(this.baseName).stream().findFirst().get().getEntity()));
   }
 
   private Map<ColumnRelationPosition, ColumnRelationAnnotation> alterColumnRelationAnnotations(

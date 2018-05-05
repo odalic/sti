@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
@@ -31,7 +32,6 @@ import com.google.common.collect.Table;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.users.User;
 import cz.cuni.mff.xrg.odalic.util.configuration.PropertiesService;
-import jersey.repackaged.com.google.common.collect.ImmutableList;
 
 /**
  * Memory-only {@link GroupsService} implementation.
