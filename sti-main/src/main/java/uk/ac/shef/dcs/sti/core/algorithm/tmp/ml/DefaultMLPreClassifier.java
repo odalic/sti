@@ -48,14 +48,9 @@ public class DefaultMLPreClassifier implements MLPreClassifier {
             Map<String, MlClassWithScoreOccurences> columnScores = getMLClassCandidatesForColumn(table, col);
             ColumnWithSortedClasses colWithSortedClasses = sortColumnClasses(col, columnScores);
             colsWithSortedClasses.add(colWithSortedClasses);
-            // select winning ML Class for column
-            /*MLClassificationWithScore winningMlClassForCol = selectWinningMlClassForColumn(columnScores);
-            if (winningMlClassForCol != null) {
-                columnClassifications.put(col, winningMlClassForCol);
-            }*/
         }
 
-        // TODO pick each class just once, for column where it reached highest score
+        // pick each class just once, for column where it reached highest score
         columnClassifications = getColumnClassifications(colsWithSortedClasses);
 
 
