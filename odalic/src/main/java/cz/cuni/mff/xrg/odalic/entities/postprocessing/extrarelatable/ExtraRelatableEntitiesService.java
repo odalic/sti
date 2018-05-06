@@ -98,9 +98,15 @@ public class ExtraRelatableEntitiesService implements EntitiesService {
             Integer.valueOf(limit)),
         SearchResultValue.class);
 
+    final URI syntheticPropertiesPath = endpoint.resolve(ExtraRelatablePostProcessor.SYNTHETIC_PROPERTIES_SUBPATH);
+    
     return payload.getProperties().stream()
-        .map(property -> this.entitiesFactory.create(String.valueOf(property.getUri()),
-            property.getLabels().stream().findFirst().orElse("null")))
+        .map(property -> {
+          final String uriString = String.valueOf(property.getUri() == null ? syntheticPropertiesPath.resolve(URI.create(property.getUuid().toString())) : property.getUri());
+          
+          return this.entitiesFactory.create(uriString,
+            property.getLabels().stream().findFirst().orElse("null"));
+        })
         .collect(Collectors.toCollection(TreeSet::new));
   }
 

@@ -58,9 +58,9 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
   public static final String LEARN_ANNOTATED_PARAMETER_KEY = "eu.odalic.extrarelatable.learnAnnotated";
   public static final String LEARN_ONLY_WITH_FEEDBACK_PARAMETER_KEY = "eu.odalic.extrarelatable.learnOnlyWithFeedback";
   public static final String LANGUAGE_TAG_PARAMETER_KEY = "eu.odalic.extrarelatable.languageTag";
+  public static final URI SYNTHETIC_PROPERTIES_SUBPATH = URI.create("properties/");
   
   private static final URI ANNOTATED_SUBPATH = URI.create("annotated");
-  private static final URI SYNTHETIC_PROPERTIES_SUBPATH = URI.create("properties/");
   private static final String LEARN_QUERY_PARAMETER_NAME = "learn";
   private static final String LEARN_ONLY_WITH_FEEDBACK_PARAMETER_NAME = "onlyWithProperties";
 
@@ -198,7 +198,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     
     //TODO: Implement source index detection here too.
     
-    final Map<ColumnRelationPosition, ColumnRelationAnnotation> relationsFeedback = feedback.getColumnRelations().stream().collect(ImmutableMap.toImmutableMap(e -> e.getPosition(), e -> e.getAnnotation()));
+//    final Map<ColumnRelationPosition, ColumnRelationAnnotation> relationsFeedback = feedback.getColumnRelations().stream().collect(ImmutableMap.toImmutableMap(e -> e.getPosition(), e -> e.getAnnotation()));
     
     for (final ColumnPosition sourceColumnPosition : subjectColumnPostions) {
     
@@ -220,30 +220,30 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
         final Map<String, NavigableSet<EntityCandidate>> alteredCandidates;
         final Map<String, Set<EntityCandidate>> alteredChosen;
         
-        final ColumnRelationAnnotation feedbackAnnotation = relationsFeedback.get(position);
+//        final ColumnRelationAnnotation feedbackAnnotation = relationsFeedback.get(position);
         
-        if (feedbackAnnotation != null) {
-          final NavigableSet<EntityCandidate> feedbackCandidates = feedbackAnnotation.getCandidates().get(this.baseName);
-          final Set<EntityCandidate> feedbackChosen = feedbackAnnotation.getChosen().get(this.baseName);
-          
-          if (feedbackCandidates == null) {
-            alteredCandidates = originalCandidates;
-          } else {
-            alteredCandidates = put(originalCandidates, this.baseName, feedbackCandidates);
-          }
-          
-          if (feedbackChosen == null) {
-            alteredChosen = originalChosen;
-          } else {
-            alteredChosen = put(originalChosen, this.baseName, feedbackChosen);
-          }
-        } else {
-          final NavigableSet<EntityCandidate> candidates = IntStream.range(0, annotation.getProperties().size()).mapToObj(index -> toCandidate(annotation.getProperties().get(index), annotation.getPropertiesStatistics().get(index))).collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-          final Set<EntityCandidate> chosen = candidates.isEmpty() ? ImmutableSet.of() : ImmutableSet.of(candidates.last());
-          
-          alteredCandidates = put(originalCandidates, this.baseName, candidates);
-          alteredChosen = put(originalChosen, this.baseName, chosen);
-        }
+//        if (feedbackAnnotation != null) {
+//          final NavigableSet<EntityCandidate> feedbackCandidates = feedbackAnnotation.getCandidates().get(this.baseName);
+//          final Set<EntityCandidate> feedbackChosen = feedbackAnnotation.getChosen().get(this.baseName);
+//          
+//          if (feedbackCandidates == null) {
+//            alteredCandidates = originalCandidates;
+//          } else {
+//            alteredCandidates = put(originalCandidates, this.baseName, feedbackCandidates);
+//          }
+//          
+//          if (feedbackChosen == null) {
+//            alteredChosen = originalChosen;
+//          } else {
+//            alteredChosen = put(originalChosen, this.baseName, feedbackChosen);
+//          }
+//        } else {
+        final NavigableSet<EntityCandidate> candidates = IntStream.range(0, annotation.getProperties().size()).mapToObj(index -> toCandidate(annotation.getProperties().get(index), annotation.getPropertiesStatistics().get(index))).collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+        final Set<EntityCandidate> chosen = candidates.isEmpty() ? ImmutableSet.of() : ImmutableSet.of(candidates.last());
+        
+        alteredCandidates = put(originalCandidates, this.baseName, candidates);
+        alteredChosen = put(originalChosen, this.baseName, chosen);
+//        }
         
         alteredColumnRelationAnnotations.put(position, new ColumnRelationAnnotation(alteredCandidates, alteredChosen));
       });
@@ -295,7 +295,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
           candidatesBuilder.add(new EntityCandidate(entity, new Score(stat.getAverage())));
         }
 
-        componentType = ComponentTypeValue.DIMENSION;
+        componentType = ComponentTypeValue.MEASURE;
         candidates = candidatesBuilder.build();
       } else {
         componentType = ComponentTypeValue.DIMENSION;
