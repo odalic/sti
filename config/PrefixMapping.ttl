@@ -53,4 +53,5 @@
 @prefix claros: <http://purl.org/NET/Claros/vocab#> .
 @prefix crm120111: <http://erlangen-crm.org/120111/> .
 @prefix rel: <http://purl.org/vocab/relationship/> .
+@prefix er-extinstgoldstd: <http://localhost:8080/extrarelatable/graphs/extended_instance_goldstandard__en-us/properties/> .
 @prefix er-datagvat1: <http://localhost:8080/extrarelatable/graphs/data.gv.at.1__de-at/properties/> .
