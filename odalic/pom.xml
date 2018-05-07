@@ -31,16 +31,6 @@
 			<url>http://download.java.net/maven/2/</url>
 		</repository>
 		<repository>
-			<id>aduna-old-repository</id>
-			<url>http://maven.ontotext.com/content/repositories/aduna/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
 			<id>stardog-public</id>
 			<url>http://maven.stardog.com</url>
 		</repository>
