@@ -3,11 +3,13 @@ package cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values;
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.net.URI;
-import java.util.List;
+import java.util.NavigableSet;
+import java.util.Set;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 
 @XmlRootElement(name = "property")
 public final class PropertyValue implements Serializable {
@@ -18,30 +20,27 @@ public final class PropertyValue implements Serializable {
   
   private URI uri;
   
-  private List<String> labels;
+  private NavigableSet<String> labels;
 
-  public PropertyValue() {
+  private PropertyValue() {
     this.uuid = null;
     this.uri = null;
-    this.labels = ImmutableList.of();
+    this.labels = ImmutableSortedSet.of();
   }
   
-  public PropertyValue(final UUID uuid, final URI uri, final List<? extends String> labels) {
-    this.uuid = uuid;
-    this.uri = uri;
-    this.setLabels(ImmutableList.copyOf(labels));
-  }
-
   @XmlElement
   public UUID getUuid() {
     return uuid;
   }
 
   public void setUuid(final UUID uuid) {
+    checkNotNull(uuid);
+    
     this.uuid = uuid;
   }
   
   @XmlElement
+  @Nullable
   public URI getUri() {
     return uri;
   }
@@ -51,14 +50,14 @@ public final class PropertyValue implements Serializable {
   }
   
   @XmlElement
-  public List<String> getLabels() {
+  public NavigableSet<String> getLabels() {
     return labels;
   }
 
-  public void setLabels(final List<? extends String> labels) {
+  public void setLabels(final Set<? extends String> labels) {
     checkNotNull(labels);
     
-    this.labels = ImmutableList.copyOf(labels);
+    this.labels = ImmutableSortedSet.copyOf(labels);
   }
 
   @Override

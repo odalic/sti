@@ -3,10 +3,11 @@ package cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values;
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.net.URI;
-import java.util.List;
+import java.util.NavigableSet;
+import java.util.Set;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 
 @XmlRootElement(name = "declaredEntity")
 public final class DeclaredEntityValue implements Serializable {
@@ -15,16 +16,20 @@ public final class DeclaredEntityValue implements Serializable {
 
   private URI uri;
   
-  private List<String> labels;
+  private NavigableSet<String> labels;
 
-  public DeclaredEntityValue() {
+  @SuppressWarnings("unused")
+  private DeclaredEntityValue() {
     this.uri = null;
-    this.labels = ImmutableList.of();
+    this.labels = ImmutableSortedSet.of();
   }
   
-  public DeclaredEntityValue(final URI uri, final List<? extends String> labels) {
+  public DeclaredEntityValue(final URI uri, final Set<? extends String> labels) {
+    checkNotNull(uri);
+    checkNotNull(labels);
+    
     this.uri = uri;
-    this.setLabels(ImmutableList.copyOf(labels));
+    this.setLabels(ImmutableSortedSet.copyOf(labels));
   }
 
   @XmlElement
@@ -33,18 +38,20 @@ public final class DeclaredEntityValue implements Serializable {
   }
 
   public void setUri(final URI uri) {
+    checkNotNull(uri);
+    
     this.uri = uri;
   }
   
   @XmlElement
-  public List<String> getLabels() {
+  public NavigableSet<String> getLabels() {
     return labels;
   }
 
-  public void setLabels(final List<? extends String> labels) {
+  public void setLabels(final Set<? extends String> labels) {
     checkNotNull(labels);
     
-    this.labels = ImmutableList.copyOf(labels);
+    this.labels = ImmutableSortedSet.copyOf(labels);
   }
 
   @Override

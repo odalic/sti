@@ -3,9 +3,11 @@ package cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable;
 import static com.google.common.base.Preconditions.checkNotNull;
 import java.net.URI;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.stream.Collectors;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSortedSet;
 import org.springframework.stereotype.Component;
-import com.google.common.collect.ImmutableList;
 import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.DeclaredEntityValue;
@@ -14,6 +16,8 @@ import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.ParsedT
 
 @Component
 public class DefaultInputConverter implements InputConverter {
+
+  private static final String PROPERTY_LABEL_EDNING_MARK_PATTERN = " \\(ER\\)$";
 
   @Override
   public ParsedTableValue convert(Input input, String languageTag, String author,
@@ -42,7 +46,12 @@ public class DefaultInputConverter implements InputConverter {
 
   private static Map<Integer, DeclaredEntityValue> toDeclaredEntities(
       Map<? extends Integer, ? extends Entity> entities) {
-    return entities.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> new DeclaredEntityValue(URI.create(e.getValue().getResource()), ImmutableList.of(e.getValue().getLabel()))));
+    return entities.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> new DeclaredEntityValue(URI.create(e.getValue().getResource()), toLabels(e.getValue().getLabel()))));
   }
 
+  private static NavigableSet<String> toLabels(final String jointLabel) {
+    final String demarkedLabel = jointLabel.replaceFirst(PROPERTY_LABEL_EDNING_MARK_PATTERN, "");
+    
+    return ImmutableSortedSet.copyOf(Splitter.on(ExtraRelatablePostProcessor.LABELS_DELIMITER).omitEmptyStrings().splitToList(demarkedLabel));
+  }
 }

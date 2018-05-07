@@ -44,7 +44,7 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
   }
 
   @Override
-  public boolean equals(final Object obj) {
+  public boolean equals(Object obj) {
     if (this == obj) {
       return true;
     }
@@ -54,19 +54,19 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
     if (getClass() != obj.getClass()) {
       return false;
     }
-    final EntityCandidate other = (EntityCandidate) obj;
-    if (this.entity == null) {
+    EntityCandidate other = (EntityCandidate) obj;
+    if (entity == null) {
       if (other.entity != null) {
         return false;
       }
-    } else if (!this.entity.equals(other.entity)) {
+    } else if (!entity.equals(other.entity)) {
       return false;
     }
-    if (this.score == null) {
+    if (score == null) {
       if (other.score != null) {
         return false;
       }
-    } else if (!this.score.equals(other.score)) {
+    } else if (!score.equals(other.score)) {
       return false;
     }
     return true;
@@ -90,8 +90,8 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = (prime * result) + ((this.entity == null) ? 0 : this.entity.hashCode());
-    result = (prime * result) + ((this.score == null) ? 0 : this.score.hashCode());
+    result = prime * result + ((entity == null) ? 0 : entity.hashCode());
+    result = prime * result + ((score == null) ? 0 : score.hashCode());
     return result;
   }
 
