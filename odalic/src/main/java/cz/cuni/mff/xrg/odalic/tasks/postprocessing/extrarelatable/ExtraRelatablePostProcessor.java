@@ -329,7 +329,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
             this.prefixMappingService.getPrefix(uriString), uriString,
             property.getLabels().stream().map(l -> l.replaceAll(LABELS_DELIMITER, ""))
                 .collect(Collectors.joining(LABELS_DELIMITER)) + PROPERTY_LABEL_ENDING_MARK),
-        new Score(1 - statistics.getAverage()));
+        new Score(1 - statistics.getAverage()), true);
   }
 
   private List<StatisticalAnnotation> alterStatisticalAnnotations(final Result result,

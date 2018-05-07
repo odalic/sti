@@ -1,12 +1,9 @@
 package cz.cuni.mff.xrg.odalic.tasks.annotations;
 
 import java.io.Serializable;
-
 import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
 import com.google.common.base.Preconditions;
-
 import cz.cuni.mff.xrg.odalic.api.rest.adapters.EntityCandidateAdapter;
 
 /**
@@ -25,21 +22,49 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
 
   private final Score score;
 
+  private final boolean postProcessed;
+
   public EntityCandidate(final Entity entity, final Score score) {
+    this(entity, score, false);
+  }
+
+  public EntityCandidate(final Entity entity, final Score score, final boolean postProcessed) {
     Preconditions.checkNotNull(entity, "The entity cannot be null!");
 
     this.entity = entity;
     this.score = score;
+    this.postProcessed = postProcessed;
   }
 
- @Override
-  public int compareTo(final EntityCandidate o) {
-    final int scoreComparison = this.score.compareTo(o.score);
 
-    if (scoreComparison == 0) {
-      return this.entity.compareTo(o.entity);
+  /**
+   * @return the entity
+   */
+  public Entity getEntity() {
+    return this.entity;
+  }
+
+  /**
+   * @return the score
+   */
+  public Score getScore() {
+    return this.score;
+  }
+  
+  @Override
+  public int compareTo(final EntityCandidate o) {
+    final int postProcessedComparison = Boolean.compare(this.postProcessed, o.postProcessed);
+
+    if (postProcessedComparison == 0) {
+      final int scoreComparison = this.score.compareTo(o.score);
+
+      if (scoreComparison == 0) {
+        return this.entity.compareTo(o.entity);
+      } else {
+        return scoreComparison;
+      }
     } else {
-      return scoreComparison;
+      return postProcessedComparison;
     }
   }
 
@@ -62,6 +87,9 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
     } else if (!entity.equals(other.entity)) {
       return false;
     }
+    if (postProcessed != other.postProcessed) {
+      return false;
+    }
     if (score == null) {
       if (other.score != null) {
         return false;
@@ -72,31 +100,19 @@ public final class EntityCandidate implements Comparable<EntityCandidate>, Seria
     return true;
   }
 
-  /**
-   * @return the entity
-   */
-  public Entity getEntity() {
-    return this.entity;
-  }
-
-  /**
-   * @return the score
-   */
-  public Score getScore() {
-    return this.score;
-  }
-
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((entity == null) ? 0 : entity.hashCode());
+    result = prime * result + (postProcessed ? 1231 : 1237);
     result = prime * result + ((score == null) ? 0 : score.hashCode());
     return result;
   }
 
   @Override
   public String toString() {
-    return "EntityCandidate [entity=" + this.entity + ", score=" + this.score + "]";
+    return "EntityCandidate [entity=" + entity + ", score=" + score + ", postProcessed="
+        + postProcessed + "]";
   }
 }
