@@ -7,6 +7,7 @@ import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPredicate;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyDefinition;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.UriWithScore;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.exception.MLException;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.*;
@@ -17,6 +18,7 @@ import uk.ac.shef.dcs.util.Pair;
 
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnumerator {
 
@@ -29,7 +31,8 @@ public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnum
         this.mlOntologyDefinition = mlOntologyDefinition;
     }
 
-    private void mlOnlyRelationDiscovery(final TAnnotation annotations, final Table table,
+
+    private void mlAndLegacyRelationDiscovery(final TAnnotation annotations, final Table table,
                                          final int subjectCol, final MLPreClassification mlPreClassification,
                                          final Constraints constraints) throws MLException {
 
@@ -38,7 +41,12 @@ public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnum
         final Set<Integer> columnsToMatchML = getColumnsToMatch(subjectCol, columnDataTypes, constraints);
 
         // Use ML data from MLPreClassification phase to suggest relations
+
+        // since the subject columns are processed in ascending order, the highest chance of an ambiguous
+        // relation to be assigned to column with lowest index (as the "main" subject column is usually one of
+        // first columns in the table
         Set<Integer> mlMatchedColumns = new HashSet<>();
+
         if (mlPreClassification.getHeaderAnnotation(subjectCol) != null) {
             // retrieve winning header annotation of subject col (if ML is applied, there should be just 1 annotation)
             if (annotations.getHeaderAnnotation(subjectCol).length > 0) {
@@ -50,27 +58,37 @@ public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnum
                         String subjectColClassUri = scHeaderAnnotation.getAnnotation().getId();
                         String colClassUri = annotations.getHeaderAnnotation(col)[0].getAnnotation().getId();
 
-                        String foundPropertyUri =
+                        List<UriWithScore> foundPropertyUris =
                                 mlOntologyDefinition.findPropertyForSubjectObject(subjectColClassUri, colClassUri);
 
-                        if (foundPropertyUri != null) {
+                        // filter out already assigned predicates
+                        List<UriWithScore> unassignedFoundPropertyUris = foundPropertyUris
+                                .stream()
+                                .filter(uws -> !annotations.isAlreadyMlDiscoveredRelationPredicate(uws.getUri()))
+                                .collect(Collectors.toList());
+
+                        if (!unassignedFoundPropertyUris.isEmpty()) {
                             // create attribute
                             final TCellCellRelationAnotation cellcellRelation =
-                                    createObjectPropertyCellCellRelationAnnotation(subjectCol, col, foundPropertyUri, colClassUri);
+                                    createObjectPropertyCellCellRelationAnnotation(
+                                            subjectCol, col, unassignedFoundPropertyUris.get(0).getUri(), colClassUri
+                                    );
 
-                            annotations.addCellCellRelation(cellcellRelation);
-                            mlMatchedColumns.add(col);
+                            addCellCellRelation(col, cellcellRelation, annotations, mlMatchedColumns);
                         }
                     } else {
                         MLPredicate mlPredicate = mlPreClassification.getPredicateAnnotation(col);
-                        // if not, verify if the domain of ML predicate is same as type of subjectCol, if so, create attribute
-                        if (mlPredicate != null && mlPredicate.domainContains(scHeaderAnnotation.getAnnotation().getId())) {
+                        // if not, verify if the domain of ML predicate is same as type of subjectCol,
+                        // and whether the property has not been assigned yet to other subject column.
+                        // if conditions are met, create attribute
+                        if (mlPredicate != null && mlPredicate.domainContains(scHeaderAnnotation.getAnnotation().getId())
+                                && !annotations.isAlreadyMlDiscoveredRelationPredicate(mlPredicate.getUri())
+                            ) {
                             // create annotation
                             final TCellCellRelationAnotation cellcellRelation =
                                     createDataPropertyCellCellRelationAnnotation(subjectCol, col, mlPredicate);
 
-                            annotations.addCellCellRelation(cellcellRelation);
-                            mlMatchedColumns.add(col);
+                            addCellCellRelation(col, cellcellRelation, annotations, mlMatchedColumns);
                         }
                     }
                 }
@@ -100,6 +118,13 @@ public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnum
 
             }
         }
+    }
+
+    private void addCellCellRelation(final int col, final TCellCellRelationAnotation cellcellRelation,
+                                     final TAnnotation annotations, final Set<Integer> mlMatchedColumns) {
+        annotations.addCellCellRelation(cellcellRelation);
+        annotations.addMlDiscoveredRelationPredicate(cellcellRelation.getRelationURI());
+        mlMatchedColumns.add(col);
     }
 
     protected Map<Integer, String> getCellValuesToMatchLegacy(final Table table, int subjectCol, int row,
@@ -176,7 +201,7 @@ public class TMLColumnColumnRelationEnumerator extends TColumnColumnRelationEnum
         resetSuggestedRelationPositionsVisited();
         // discover relations using ML classifier
         try {
-            mlOnlyRelationDiscovery(annotations, table, subjectCol, mlPreClassification, constraints);
+            mlAndLegacyRelationDiscovery(annotations, table, subjectCol, mlPreClassification, constraints);
         } catch (MLException e) {
             throw new STIException("ML classifier error: " + e.getMessage(), e);
         }

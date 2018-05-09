@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
 
 public class MLOntologyDefinition {
 
+    private static final double SCORE_DIRECT = 1.0;
+    private static final double SCORE_INFERRED_DOMAIN_MATCH = 0.5;
+
     private final Model ontologyModel;
     private final ValueFactory valueFactory;
 
@@ -142,38 +145,22 @@ public class MLOntologyDefinition {
     }
 
 
-    public String findPropertyForSubjectObject(String subjectIRI, String objectIRI) {
-        // At first try to find property, which has subject in its direct domain and
+    public List<UriWithScore> findPropertyForSubjectObject(String subjectIRI, String objectIRI) {
+        // At first try to find properties, which has subject in its direct domain and
         // object in its direct range
-        String directProperty = findDirectPropertyForSubjectObject(subjectIRI, objectIRI);
-        if (directProperty != null) {
-            // direct property found
-            return directProperty;
-        }
+        List<UriWithScore> matchedProperites = findDirectPropertyForSubjectObject(subjectIRI, objectIRI);
 
         InferredAndUndefinedDomainProperties infAndUndefDomainProps = getInferredAndUndefinedDomainProperties();
 
-        // Then try to find property, which inferred the domain from its super properties and contains objectURI
+        // Then try to find properties, which inferred the domain from its super properties and contains objectURI
         // in its range
-        String inferredDomainProperty = findPropertyWithInferredDomainWithObjectInRange(
+        matchedProperites.addAll(
+            findPropertyWithInferredDomainWithObjectInRange(
                 subjectIRI, objectIRI, infAndUndefDomainProps.getPropertiesWithInferredDomains()
+            )
         );
-        if (inferredDomainProperty != null) {
-            // property found
-            return inferredDomainProperty;
-        }
 
-        // and finally try to find property, whose domain is not defined, but has objectURI in its range
-        /*String noDomainProperty = findPropertyWithUndefinedDomainWithObjectInRange(
-                objectIRI, infAndUndefDomainProps.getPropertiesWithUndefinedDomains()
-        );
-        if (noDomainProperty != null) {
-            // property found
-            return noDomainProperty;
-        }*/
-
-        // no such property found
-        return null;
+        return matchedProperites;
     }
 
     /**
@@ -183,7 +170,8 @@ public class MLOntologyDefinition {
      * @param objectIRIStr
      * @return
      */
-    public String findDirectPropertyForSubjectObject(String subjectIRIStr, String objectIRIStr) {
+    public List<UriWithScore> findDirectPropertyForSubjectObject(String subjectIRIStr, String objectIRIStr) {
+        List<UriWithScore> propsWithScore = new ArrayList<>();
         IRI subjectIRI = valueFactory.createIRI(subjectIRIStr);
         IRI objectIRI = valueFactory.createIRI(objectIRIStr);
         Set<Resource> props = getAllProperties();
@@ -193,17 +181,22 @@ public class MLOntologyDefinition {
                 // if psWithDomain is not empty, there is a Domain match,
                 // check if there is also Range match
                 Set<Resource> psWithDomainRange = ontologyModel.filter(prop, RDFS.RANGE, objectIRI).subjects();
-                if (!psWithDomainRange.isEmpty()) {
-                    // there is match in both Domain and Range
-                    return prop.stringValue();
-                }
+                // there is match in both Domain and Range
+                propsWithScore.addAll(
+                    psWithDomainRange
+                        .stream()
+                        .map(r -> new UriWithScore(r.stringValue(), SCORE_DIRECT))
+                        .collect(Collectors.toList())
+                );
             }
         }
-        return null;
+        return propsWithScore;
     }
 
-    public String findPropertyWithInferredDomainWithObjectInRange(String subjectIRIStr, String objectIRIStr,
+    public List<UriWithScore>  findPropertyWithInferredDomainWithObjectInRange(String subjectIRIStr, String objectIRIStr,
                                                                   Set<PropertyWithDomain> inferredDomainProps) {
+
+        List<UriWithScore> propsWithScore = new ArrayList<>();
 
         // keep just properties, which have subjectIRI in their domain
         Set<PropertyWithDomain> filteredProperties = inferredDomainProps
@@ -213,25 +206,18 @@ public class MLOntologyDefinition {
 
         IRI objectIRI = this.valueFactory.createIRI(objectIRIStr);
         for (PropertyWithDomain pwd : filteredProperties) {
-            Model model = ontologyModel.filter(this.valueFactory.createIRI(pwd.propertyIRI), RDFS.RANGE, objectIRI);
-            if (!model.isEmpty()) {
-                return pwd.propertyIRI;
-            }
-        }
-        return null;
-    }
+            Set<Resource> psWithDomainRange =
+                    ontologyModel.filter(this.valueFactory.createIRI(pwd.propertyIRI), RDFS.RANGE, objectIRI).subjects();
 
-    public String findPropertyWithUndefinedDomainWithObjectInRange(String objectIRIStr,
-                                                                   Set<PropertyWithDomain> noDomainProps) {
-
-        IRI objectIRI = this.valueFactory.createIRI(objectIRIStr);
-        for (PropertyWithDomain pwd : noDomainProps) {
-            Model model = ontologyModel.filter(this.valueFactory.createIRI(pwd.propertyIRI), RDFS.RANGE, objectIRI);
-            if (!model.isEmpty()) {
-                return pwd.propertyIRI;
-            }
+            // there is match in both Domain and Range
+            propsWithScore.addAll(
+                psWithDomainRange
+                    .stream()
+                    .map(r -> new UriWithScore(r.stringValue(), SCORE_INFERRED_DOMAIN_MATCH))
+                    .collect(Collectors.toList())
+            );
         }
-        return null;
+        return propsWithScore;
     }
 
     private InferredAndUndefinedDomainProperties getInferredAndUndefinedDomainProperties() {

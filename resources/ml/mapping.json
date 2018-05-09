@@ -15,7 +15,11 @@
     {
       "mlClass": "BRAND",
       "uri": "http://dbpedia.org/ontology/Organisation"
-    }
+    },
+    {
+      "mlClass": "GPU",
+      "uri": "http://www.kadlecek.sk/dt/ontology#GPU"
+    },
   ],
   "predicateMappings": [
     {
@@ -40,7 +44,7 @@
     },
     {
       "mlClass": "COLOR",
-      "uri": "http://dbpedia.org/property/color"
+      "uri": "http://www.kadlecek.sk/dt/ontology#color"
     },
     {
       "mlClass": "BLUETOOTH_VERSION",
@@ -85,10 +89,6 @@
     {
       "mlClass": "PRODUCT_SIZE",
       "uri": "http://www.kadlecek.sk/dt/ontology#productDimensions"
-    },
-    {
-      "mlClass": "GPU",
-      "uri": "http://www.kadlecek.sk/dt/ontology#gpu"
     },
     {
       "mlClass": "CPU_FREQ",

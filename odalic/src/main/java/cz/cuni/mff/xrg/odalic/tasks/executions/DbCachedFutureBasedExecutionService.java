@@ -342,12 +342,21 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
         // run the ML PreClassification
         logger.info("\t> PHASE: ML PRE-CLASSIFICATION ...");
-        Set<Integer> ignoredColumns = feedback
+        Set<Integer> columnsToIgnorePreClassification = feedback
                 .getColumnIgnores()
                 .stream()
                 .map(ci -> ci.getPosition().getIndex())
                 .collect(Collectors.toSet());
-        MLPreClassification mlPreClassification = mlPreClassifier.preClassificate(table, ignoredColumns);
+
+        columnsToIgnorePreClassification.addAll(
+          feedback
+            .getClassifications()
+            .stream()
+            .map(cl -> cl.getPosition().getIndex())
+            .collect(Collectors.toSet())
+        );
+
+        MLPreClassification mlPreClassification = mlPreClassifier.preClassificate(table, columnsToIgnorePreClassification);
 
         final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
 

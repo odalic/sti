@@ -111,6 +111,9 @@ public class TAnnotation {
   private final ObjectMatrix1D columnProcessingAnnotations; // each object in the matrix is a
                                                             // TColumnProcessingAnnotation
 
+  private final Set<String> mlDiscoveredRelationPredicates; // URIs of predicates selected as a relation between
+                                                            // some 2 columns
+
   public TAnnotation(final int rows, final int cols) {
     this.rows = rows;
     this.cols = cols;
@@ -124,6 +127,7 @@ public class TAnnotation {
     this.statisticalAnnotations = new SparseObjectMatrix1D(cols);
     this.columnProcessingAnnotations = new SparseObjectMatrix1D(cols);
     this.subjectColumns = new HashSet<>();
+    this.mlDiscoveredRelationPredicates = new HashSet<>();
   }
 
   public void addCellCellRelation(final TCellCellRelationAnotation toAdd) {
@@ -458,5 +462,13 @@ public class TAnnotation {
 
   public Set<Integer> getSubjectColumns() {
     return this.subjectColumns;
+  }
+
+  public void addMlDiscoveredRelationPredicate(String predicateUri) {
+    this.mlDiscoveredRelationPredicates.add(predicateUri);
+  }
+
+  public boolean isAlreadyMlDiscoveredRelationPredicate(String predicateUri) {
+    return this.mlDiscoveredRelationPredicates.contains(predicateUri);
   }
 }
