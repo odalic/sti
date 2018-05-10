@@ -145,8 +145,8 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
   private Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> getCollectedContextProperties(
       Result result, Feedback feedback) {
     final Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> resultAnnotations =
-        IntStream.range(0, result.getColumnRelationAnnotations().size()).filter(i -> {
-          final HeaderAnnotation annotation = result.getHeaderAnnotations().get(i);
+        result.getColumnRelationAnnotations().entrySet().stream().filter(entry -> {
+          final ColumnRelationAnnotation annotation = entry.getValue();
           if (annotation == null) {
             return false;
           }
@@ -162,11 +162,11 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
           }
 
           return true;
-        }).mapToObj(i -> Integer.valueOf(i))
-            .collect(
+        })
+        .collect(
                 Collectors
                     .toMap(
-                        i -> i, i -> result.getHeaderAnnotations().get(i).getChosen()
+                        entry -> entry.getKey().getSecondIndex(), entry -> entry.getValue().getChosen()
                             .get(this.baseName).stream().findFirst().get().getEntity(),
                         (f, s) -> f));
 
