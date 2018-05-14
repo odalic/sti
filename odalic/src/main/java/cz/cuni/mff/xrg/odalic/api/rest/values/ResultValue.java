@@ -21,6 +21,8 @@ import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionKeyJsonDeserial
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionKeyJsonSerializer;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionValueSetDeserializer;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionValueSetSerializer;
+import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnRelationPositionKeyJsonDeserializer;
+import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnRelationPositionKeyJsonSerializer;
 import cz.cuni.mff.xrg.odalic.api.rest.values.util.Annotations;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionToColumnRelationAnnotationMapDeserializer;
 import cz.cuni.mff.xrg.odalic.api.rest.conversions.ColumnPositionToColumnRelationAnnotationMapSerializer;
@@ -51,6 +53,8 @@ public final class ResultValue implements Serializable {
   private CellAnnotation[][] cellAnnotations;
 
   private Map<ColumnPosition, Map<ColumnPosition, ColumnRelationAnnotation>> columnRelationAnnotations;
+  
+  private Map<ColumnRelationPosition, ColumnRelationAnnotation> columnRelationAnnotationsAlternative;
 
   private List<StatisticalAnnotation> statisticalAnnotations;
 
@@ -63,6 +67,7 @@ public final class ResultValue implements Serializable {
     this.headerAnnotations = ImmutableList.of();
     this.cellAnnotations = new CellAnnotation[0][0];;
     this.columnRelationAnnotations = ImmutableMap.of();
+    this.columnRelationAnnotationsAlternative = ImmutableMap.of();
     this.statisticalAnnotations = ImmutableList.of();
     this.columnProcessingAnnotations = ImmutableList.of();
     this.warnings = ImmutableList.of();
@@ -75,6 +80,7 @@ public final class ResultValue implements Serializable {
     this.statisticalAnnotations = adaptee.getStatisticalAnnotations();
     this.columnProcessingAnnotations = adaptee.getColumnProcessingAnnotations();
     this.warnings = adaptee.getWarnings();
+    this.columnRelationAnnotationsAlternative = adaptee.getColumnRelationAnnotations();
 
     initializeColumnRelationAnnotations(adaptee);
   }
@@ -105,6 +111,16 @@ public final class ResultValue implements Serializable {
       contentUsing = ColumnPositionToColumnRelationAnnotationMapSerializer.class)
   public Map<ColumnPosition, Map<ColumnPosition, ColumnRelationAnnotation>> getColumnRelationAnnotations() {
     return this.columnRelationAnnotations;
+  }
+  
+  /**
+   * @return the column relation Annotations
+   */
+  @XmlElement
+  @JsonDeserialize(keyUsing = ColumnRelationPositionKeyJsonDeserializer.class)
+  @JsonSerialize(keyUsing = ColumnRelationPositionKeyJsonSerializer.class)
+  public Map<ColumnRelationPosition, ColumnRelationAnnotation> getColumnRelationAnnotationsAlternative() {
+    return this.columnRelationAnnotationsAlternative;
   }
 
   /**
@@ -234,10 +250,12 @@ public final class ResultValue implements Serializable {
 
   @Override
   public String toString() {
-    return "ResultValue [subjectColumnsPositions=" + this.subjectColumnsPositions
-        + ", headerAnnotations=" + this.headerAnnotations + ", cellAnnotations="
-        + Arrays.toString(this.cellAnnotations) + ", columnRelationAnnotations="
-        + this.columnRelationAnnotations + ", statisticalAnnotations=" + this.statisticalAnnotations
-        + ", warnings=" + this.warnings + "]";
-  }
+    return "ResultValue [subjectColumnsPositions=" + subjectColumnsPositions
+        + ", headerAnnotations=" + headerAnnotations + ", cellAnnotations="
+        + Arrays.toString(cellAnnotations) + ", columnRelationAnnotations="
+        + columnRelationAnnotations + ", columnRelationAnnotationsAlternative="
+        + columnRelationAnnotationsAlternative + ", statisticalAnnotations="
+        + statisticalAnnotations + ", columnProcessingAnnotations=" + columnProcessingAnnotations
+        + ", warnings=" + warnings + "]";
+  }  
 }

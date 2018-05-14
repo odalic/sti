@@ -295,7 +295,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
   @Override
   public void submitForTaskId(final String userId, final String taskId)
-      throws IllegalStateException, IOException {
+      throws IOException {
     checkNotAlreadyScheduled(userId, taskId);
 
     final Configuration configuration = this.configurationService.getForTaskId(userId, taskId);
@@ -341,6 +341,39 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     this.userTaskIdsToResults.put(userId, taskId, future);
   }
 
+  @Override
+  public Result compute(final String userId, final Set<? extends String> usedBaseNames, final String primaryBase, final Input input, final boolean isStatistical, final Feedback feedback)
+      throws InterruptedException, ExecutionException {
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(usedBaseNames);
+    Preconditions.checkArgument(!usedBaseNames.isEmpty(), "No base selected!");
+    Preconditions.checkNotNull(primaryBase);
+    Preconditions.checkArgument(usedBaseNames.contains(primaryBase), "Primary base is not among the selected!");
+    Preconditions.checkNotNull(input);
+    Preconditions.checkNotNull(feedback);
+    
+    final Callable<Result> execution = () -> {
+      try {
+        final Table table = this.inputToTableAdapter.toTable(input);
+        
+        final Set<KnowledgeBase> usedBases =
+            usedBaseNames.stream().map(e -> this.basesService.getByName(userId, e))
+                .collect(ImmutableSet.toImmutableSet());        
+        
+        final Result result = interpret(userId, feedback, table, isStatistical, usedBases);
+        final Result finalResult = postProcess(userId, feedback, input, usedBases, primaryBase, result);
+
+        return finalResult;
+      } catch (final Exception e) {
+        logger.error("Error during task execution!", e);
+
+        throw e;
+      }
+    };
+
+    return this.executorService.submit(execution).get();
+  }
+  
   private Result interpret(final String userId, final Feedback feedback, final Table table,
       final boolean isStatistical, final Set<KnowledgeBase> usedBases)
       throws STIException, IOException {

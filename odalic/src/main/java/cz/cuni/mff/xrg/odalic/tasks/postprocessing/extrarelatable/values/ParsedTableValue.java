@@ -14,8 +14,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.collect.ImmutableList;
 
 /**
- * An {@link Input} implementation using a list of lists to store the cells.
- *
  * @author Václav Brodec
  */
 @XmlRootElement(name = "parsedTable")

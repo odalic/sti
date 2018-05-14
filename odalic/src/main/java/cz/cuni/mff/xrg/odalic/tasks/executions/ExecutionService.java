@@ -1,17 +1,22 @@
 package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
-import cz.cuni.mff.xrg.odalic.tasks.Task;
+import cz.cuni.mff.xrg.odalic.input.Input;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 
 /**
  * Manages the {@link Task} execution.
  *
  * @author Václav Brodec
+ *
+ */
+/**
+ * @author brodecva
  *
  */
 public interface ExecutionService {
@@ -133,4 +138,22 @@ public interface ExecutionService {
    * @param feedback new result
    */
   void mergeWithResultForTaskId(String userId, String taskId, Feedback feedback);
+
+  /**
+   * Computes the result from the input directly, without using established tasks infrastructure.
+   * 
+   * @param userId user ID
+   * @param usedBaseNames used bases
+   * @param primaryBase preferred base
+   * @param input parsed input
+   * @param isStatistical true for statistical processing
+   * @param feedback feedback
+   * @return annotation result
+   * @throws IllegalArgumentException when the task has not been scheduled
+   * @throws InterruptedException if the execution was interrupted while waiting
+   * @throws ExecutionException if the computation threw an exception
+   * @throws CancellationException if the computation was cancelled 
+   */
+  Result compute(String userId, Set<? extends String> usedBaseNames,
+      String primaryBase, Input input, boolean isStatistical, Feedback feedback) throws InterruptedException, ExecutionException;
 }

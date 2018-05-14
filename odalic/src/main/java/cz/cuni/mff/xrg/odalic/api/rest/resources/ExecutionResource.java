@@ -1,11 +1,12 @@
 package cz.cuni.mff.xrg.odalic.api.rest.resources;
 
 import java.io.IOException;
-
+import java.util.concurrent.ExecutionException;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -14,27 +15,36 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
 
 import cz.cuni.mff.xrg.odalic.api.rest.Secured;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.Message;
+import cz.cuni.mff.xrg.odalic.api.rest.responses.Reply;
 import cz.cuni.mff.xrg.odalic.api.rest.util.Security;
+import cz.cuni.mff.xrg.odalic.api.rest.values.ComputationInputValue;
+import cz.cuni.mff.xrg.odalic.api.rest.values.ComputationValue;
 import cz.cuni.mff.xrg.odalic.api.rest.values.ExecutionValue;
+import cz.cuni.mff.xrg.odalic.feedbacks.Feedback;
+import cz.cuni.mff.xrg.odalic.input.Input;
+import cz.cuni.mff.xrg.odalic.input.ListsBackedInput;
 import cz.cuni.mff.xrg.odalic.tasks.executions.ExecutionService;
+import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import cz.cuni.mff.xrg.odalic.users.Role;
 
 @Component
 @Path("/")
-@Secured({Role.ADMINISTRATOR, Role.USER})
 public final class ExecutionResource {
 
   private final ExecutionService executionService;
+  private final boolean experimentalMode;
 
   @Context
   private SecurityContext securityContext;
@@ -43,12 +53,14 @@ public final class ExecutionResource {
   private UriInfo uriInfo;
 
   @Autowired
-  public ExecutionResource(final ExecutionService executionService) {
+  public ExecutionResource(final ExecutionService executionService, final @Value("${cz.cuni.mff.xrg.odalic.experimentalMode?:false}") boolean experimentalMode) {
     Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
 
     this.executionService = executionService;
+    this.experimentalMode = experimentalMode;
   }
 
+  @Secured({Role.ADMINISTRATOR, Role.USER})
   @DELETE
   @Path("tasks/{taskId}/execution")
   @Produces({MediaType.APPLICATION_JSON})
@@ -56,6 +68,7 @@ public final class ExecutionResource {
     return deleteExecutionForTaskId(this.securityContext.getUserPrincipal().getName(), taskId);
   }
 
+  @Secured({Role.ADMINISTRATOR, Role.USER})
   @DELETE
   @Path("users/{userId}/tasks/{taskId}/execution")
   @Produces({MediaType.APPLICATION_JSON})
@@ -75,6 +88,7 @@ public final class ExecutionResource {
     return Message.of("Execution canceled.").toResponse(Response.Status.OK, this.uriInfo);
   }
 
+  @Secured({Role.ADMINISTRATOR, Role.USER})
   @PUT
   @Path("tasks/{taskId}/execution")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -85,6 +99,7 @@ public final class ExecutionResource {
         execution);
   }
 
+  @Secured({Role.ADMINISTRATOR, Role.USER})
   @PUT
   @Path("users/{userId}/tasks/{taskId}/execution")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -107,5 +122,37 @@ public final class ExecutionResource {
     }
 
     return Message.of("Execution submitted.").toResponse(Response.Status.OK, this.uriInfo);
+  }
+  
+  @POST
+  @Path("users/{userId}/computations")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response postComputation(final @PathParam("userId") String userId, final ComputationValue computation) throws IOException, InterruptedException, ExecutionException {
+    if (!experimentalMode) {
+      throw new BadRequestException("Not available outside of experimental mode!");
+    }
+    
+    if (computation == null) {
+      throw new BadRequestException("The computation spec must be provided!");
+    }
+    
+    final ComputationInputValue computationInput = computation.getInput();
+    if (computationInput == null) {
+      throw new BadRequestException("The input must be provided!");
+    }
+    
+    final Input input = new ListsBackedInput(computationInput.getIdentifier(), computationInput.getHeaders(), computationInput.getRows());
+    
+    // TODO: Feedback not yet supported.
+    
+    final Result result;
+    try {
+      result = this.executionService.compute(userId, computation.getUsedBases(), computation.getPrimaryBase(), input, computation.isStatistical() == null ? false : computation.isStatistical(), new Feedback());
+    } catch (final IllegalArgumentException e) {
+      throw new BadRequestException(e.getMessage(), e);
+    }
+
+    return Reply.data(Status.OK, result, uriInfo).toResponse();
   }
 }
