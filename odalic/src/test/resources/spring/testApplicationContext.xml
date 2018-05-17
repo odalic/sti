@@ -93,6 +93,7 @@
 	<bean id="feedbackResource"
 		class="cz.cuni.mff.xrg.odalic.api.rest.resources.FeedbackResource" />
 	<bean id="filesResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.FilesResource" />
+	<bean id="adequateResource" class="cz.cuni.mff.xrg.odalic.api.rest.resources.AdequateResource" />
 	<bean id="formatResource"
 		class="cz.cuni.mff.xrg.odalic.api.rest.resources.FormatResource" />
 	<bean id="resultResource"
