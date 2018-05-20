@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.beans.factory.annotation.Value;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
@@ -75,10 +75,13 @@ public final class FutureBasedExecutionService implements ExecutionService {
   private final PostProcessorFactory extraAnnotatorFactory;
   private final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
+  private final boolean experimentalMode;
+  
   /**
    * Table of result futures where rows are indexed by user IDs and the columns by task IDs.
    */
   private final com.google.common.collect.Table<String, String, Future<Result>> userTaskIdsToResults;
+
 
   @Autowired
   public FutureBasedExecutionService(final ConfigurationService configurationService,
@@ -87,7 +90,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
       final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter,
-      final PostProcessorFactory extraAnnotatorFactory) {
+      final PostProcessorFactory extraAnnotatorFactory,
+      final @Value("${cz.cuni.mff.xrg.odalic.experimentalMode:false}") boolean experimentalMode) {
     Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
     Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
     Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
@@ -109,6 +113,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
     this.csvInputParser = csvInputParser;
     this.inputToTableAdapter = inputToTableAdapter;
     this.extraAnnotatorFactory = extraAnnotatorFactory;
+    
+    this.experimentalMode = experimentalMode;
 
     this.userTaskIdsToResults = HashBasedTable.create();
   }
@@ -290,6 +296,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
   @Override
   public Result compute(final String userId, final Set<? extends String> usedBaseNames, final String primaryBase, final Input input, final boolean isStatistical, final Feedback feedback)
       throws InterruptedException, ExecutionException {
+    Preconditions.checkArgument(this.experimentalMode, "Not available outside of experimental mode!");
+    
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(usedBaseNames);
     Preconditions.checkArgument(!usedBaseNames.isEmpty(), "No base selected!");

@@ -20,7 +20,6 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Preconditions;
@@ -44,7 +43,6 @@ import cz.cuni.mff.xrg.odalic.users.Role;
 public final class ExecutionResource {
 
   private final ExecutionService executionService;
-  private final boolean experimentalMode;
 
   @Context
   private SecurityContext securityContext;
@@ -53,11 +51,10 @@ public final class ExecutionResource {
   private UriInfo uriInfo;
 
   @Autowired
-  public ExecutionResource(final ExecutionService executionService, final @Value("${cz.cuni.mff.xrg.odalic.experimentalMode?:false}") boolean experimentalMode) {
+  public ExecutionResource(final ExecutionService executionService) {
     Preconditions.checkNotNull(executionService, "The executionService cannot be null!");
 
     this.executionService = executionService;
-    this.experimentalMode = experimentalMode;
   }
 
   @Secured({Role.ADMINISTRATOR, Role.USER})
@@ -129,11 +126,7 @@ public final class ExecutionResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response postComputation(final @PathParam("userId") String userId, final ComputationValue computation) throws IOException, InterruptedException, ExecutionException {
-    if (!experimentalMode) {
-      throw new BadRequestException("Not available outside of experimental mode!");
-    }
-    
-    if (computation == null) {
+   if (computation == null) {
       throw new BadRequestException("The computation spec must be provided!");
     }
     

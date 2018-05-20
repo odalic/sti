@@ -24,6 +24,7 @@ import org.mapdb.serializer.SerializerArrayTuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
@@ -95,6 +96,8 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   private final PostProcessorFactory extraAnnotatorFactory;
   private final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
+  private final boolean experimentalMode;
+  
   /**
    * Table of result futures where rows are indexed by user IDs and the columns by task IDs.
    */
@@ -111,7 +114,6 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
    */
   private final BTreeMap<Object[], Result> userTaskIdsToCachedResults;
 
-
   @SuppressWarnings("unchecked")
   @Autowired
   public DbCachedFutureBasedExecutionService(final ConfigurationService configurationService,
@@ -121,7 +123,8 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
       final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter,
-      final PostProcessorFactory extraAnnotatorFactory) {
+      final PostProcessorFactory extraAnnotatorFactory,
+      final @Value("${cz.cuni.mff.xrg.odalic.experimentalMode:false}") boolean experimentalMode) {
     Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
     Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
     Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
@@ -147,6 +150,8 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     this.csvInputParser = csvInputParser;
     this.inputToTableAdapter = inputToTableAdapter;
     this.extraAnnotatorFactory = extraAnnotatorFactory;
+    
+    this.experimentalMode = experimentalMode;
 
     this.userTaskIdsToResults = HashBasedTable.create();
 
@@ -344,6 +349,8 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
   @Override
   public Result compute(final String userId, final Set<? extends String> usedBaseNames, final String primaryBase, final Input input, final boolean isStatistical, final Feedback feedback)
       throws InterruptedException, ExecutionException {
+    Preconditions.checkArgument(this.experimentalMode, "Not available outside of experimental mode!");
+    
     Preconditions.checkNotNull(userId);
     Preconditions.checkNotNull(usedBaseNames);
     Preconditions.checkArgument(!usedBaseNames.isEmpty(), "No base selected!");
