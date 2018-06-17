@@ -15,8 +15,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import cz.cuni.mff.xrg.odalic.feedbacks.Classification;
 import cz.cuni.mff.xrg.odalic.files.File;
 import cz.cuni.mff.xrg.odalic.input.ml.TaskMLConfiguration;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.EntityCandidate;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +45,7 @@ import cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLFeedback;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
@@ -281,19 +285,8 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
         // run the ML PreClassification
         logger.info("\t> PHASE: ML PRE-CLASSIFICATION ...");
-        Set<Integer> columnsToIgnorePreClassification = feedback
-                .getColumnIgnores()
-                .stream()
-                .map(ci -> ci.getPosition().getIndex())
-                .collect(Collectors.toSet());
-        columnsToIgnorePreClassification.addAll(
-                feedback
-                        .getClassifications()
-                        .stream()
-                        .map(cl -> cl.getPosition().getIndex())
-                        .collect(Collectors.toSet())
-        );
-        MLPreClassification mlPreClassification = mlPreClassifier.preClassificate(table, columnsToIgnorePreClassification);
+        MLFeedback mlFeedback = createMLFeedback(configuration, feedback);
+        MLPreClassification mlPreClassification = mlPreClassifier.preClassificate(table, mlFeedback);
 
         final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
 
@@ -343,5 +336,40 @@ public final class FutureBasedExecutionService implements ExecutionService {
   @Override
   public void mergeWithResultForTaskId(String userId, String taskId, Feedback feedback) {
     throw new UnsupportedOperationException(); //TODO: Implement.
+  }
+
+  private MLFeedback createMLFeedback(Configuration configuration, Feedback feedback) {
+    Set<Integer> columnsToIgnorePreClassification = feedback
+            .getColumnIgnores()
+            .stream()
+            .map(ci -> ci.getPosition().getIndex())
+            .collect(Collectors.toSet());
+
+    Map<Integer, String> classificationsMap = new HashMap<>();
+    for (Classification classification: feedback.getClassifications()) {
+        int position = classification.getPosition().getIndex();
+        String resource = getChosenResourceFromAnnotation(configuration, classification.getAnnotation());
+        if (resource != null) {
+            classificationsMap.put(position, resource);
+        }
+    }
+    return new MLFeedback(columnsToIgnorePreClassification, classificationsMap);
+  }
+
+  private String getChosenResourceFromAnnotation(Configuration configuration, HeaderAnnotation headerAnnotation) {
+    String primaryBase = configuration.getPrimaryBase();
+    Set<EntityCandidate> chosenPrimary = headerAnnotation.getChosen().get(primaryBase);
+    // if there is any chosen value from primary knowledge base, use that
+    if (!chosenPrimary.isEmpty()) {
+      return chosenPrimary.iterator().next().getEntity().getResource();
+    } else {
+      // else use any existing chosen value
+      for (Map.Entry<String, Set<EntityCandidate>> entry : headerAnnotation.getChosen().entrySet()) {
+        if (!entry.getValue().isEmpty()) {
+          return entry.getValue().iterator().next().getEntity().getResource();
+        }
+      }
+    }
+    return null;
   }
 }

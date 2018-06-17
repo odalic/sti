@@ -7,6 +7,7 @@ import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier.MLClassification;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier.MLClassificationWithScore;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier.MLClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLFeedback;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.exception.MLException;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyDefinition;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyMapping;
@@ -34,7 +35,26 @@ public class DefaultMLPreClassifier implements MLPreClassifier {
         this.mlOntologyDefinition = mlOntologyDefinition;
     }
 
-    public MLPreClassification preClassificate(Table table, Set<Integer> ignoreColumns) throws MLException {
+    @Override
+    public MLPreClassification preClassificate(Table table, MLFeedback feedback) throws MLException {
+        Set<Integer> ignoreColumns = feedback.getIgnoreColumns();
+        Map<Integer, String> feedbackMlClasses = new HashMap<>();
+
+        // map feedback classes to ML classes (if the mapping exists)
+        for (Map.Entry<Integer, String> feedbackClassification : feedback.getClassifications().entrySet()) {
+            Integer position = feedbackClassification.getKey();
+            String classUri = feedbackClassification.getValue();
+            String mlClass = mlOntologyMapping.getMlClassForClassUri(classUri);
+
+            if (mlClass != null) {
+                feedbackMlClasses.put(position, mlClass);
+            } else {
+                // if feedback columns class is not mapped to ML class, ignore that column
+                // as it already is classified by feedback, but the class is unknown for the ML PreClassifier.
+                ignoreColumns.add(position);
+            }
+        }
+
         // for each column, classify every cell and select the ML class with best score
         Map<Integer, MLClassificationWithScore> columnClassifications = new HashMap<>();
         List<ColumnWithSortedClasses> colsWithSortedClasses = new ArrayList<>();
@@ -44,9 +64,16 @@ public class DefaultMLPreClassifier implements MLPreClassifier {
                 continue;
             }
 
-            // get column ML class candidates from each row
-            Map<String, MlClassWithScoreOccurences> columnScores = getMLClassCandidatesForColumn(table, col);
-            ColumnWithSortedClasses colWithSortedClasses = sortColumnClasses(col, columnScores);
+            ColumnWithSortedClasses colWithSortedClasses;
+            if (feedbackMlClasses.containsKey(col)) {
+                List<MLClassificationWithScore> fakeSortedClasses = new ArrayList<>();
+                fakeSortedClasses.add(new MLClassificationWithScore(feedbackMlClasses.get(col), Double.MAX_VALUE));
+                colWithSortedClasses = new ColumnWithSortedClasses(col, fakeSortedClasses);
+            } else {
+                // get column ML class candidates from each row
+                Map<String, MlClassWithScoreOccurences> columnScores = getMLClassCandidatesForColumn(table, col);
+                colWithSortedClasses = sortColumnClasses(col, columnScores);
+            }
             colsWithSortedClasses.add(colWithSortedClasses);
         }
 

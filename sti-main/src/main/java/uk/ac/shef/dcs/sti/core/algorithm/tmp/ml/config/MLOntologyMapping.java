@@ -31,4 +31,19 @@ public class MLOntologyMapping {
     public String getOntologyPredicateMappingValue(String mlClassLabel) {
         return this.ontologyPredicateMapping.get(mlClassLabel);
     }
+
+    /**
+     * For given Class URI, returns ML class, which represents the URI.
+     * @param classUri
+     * @return ML class, null if no ML class represents given URI.
+     */
+    public String getMlClassForClassUri(String classUri) {
+        for (Map.Entry<String, String> entry : this.ontologyClassMapping.entrySet()) {
+            String entryClassUri = entry.getValue();
+            if (entryClassUri.equals(classUri)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
 }

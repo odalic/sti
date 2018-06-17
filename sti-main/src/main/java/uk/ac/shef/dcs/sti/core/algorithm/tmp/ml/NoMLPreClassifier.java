@@ -1,5 +1,6 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp.ml;
 
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLFeedback;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyDefinition;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.exception.MLException;
@@ -15,7 +16,7 @@ public class NoMLPreClassifier implements MLPreClassifier {
 
 
     @Override
-    public MLPreClassification preClassificate(Table table, Set<Integer> ignoreColumns) throws MLException {
+    public MLPreClassification preClassificate(Table table, MLFeedback feedback) throws MLException {
         return MLPreClassification.empty();
     }
 
