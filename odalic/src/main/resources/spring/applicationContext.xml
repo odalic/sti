@@ -64,6 +64,7 @@
 	<bean id="inputSnapshotsService"
 		class="cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.DbInputSnapshotsService" />
 	<bean id="taskService" class="cz.cuni.mff.xrg.odalic.tasks.DbTaskService" />
+	<bean id="autoPropositionService" class="cz.cuni.mff.xrg.odalic.tasks.DefaultAutoPropositionService" />
 	<bean id="annotatedTableService"
 		class="cz.cuni.mff.xrg.odalic.outputs.annotatedtable.ResultAdaptingAnnotatedTableService" />
 	<bean id="csvExportService"

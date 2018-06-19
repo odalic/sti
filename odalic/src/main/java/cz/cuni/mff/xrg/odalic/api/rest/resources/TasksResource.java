@@ -6,19 +6,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.NavigableSet;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -26,6 +19,10 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
+import cz.cuni.mff.xrg.odalic.input.Input;
+import cz.cuni.mff.xrg.odalic.tasks.AutoPropositionService;
+import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
+import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -65,6 +62,8 @@ public final class TasksResource {
 
   private static final String TURTLE_MIME_TYPE = "text/turtle";
 
+  private final AutoPropositionService autoPropositionService;
+  private final InputSnapshotsService inputSnapshotsService;
   private final UserService userService;
   private final TaskService taskService;
   private final FileService fileService;
@@ -81,7 +80,10 @@ public final class TasksResource {
   @Autowired
   public TasksResource(final UserService userService, final TaskService taskService,
       final FileService fileService, final ExecutionService executionService,
-      final BasesService basesService, final TaskSerializationService taskSerializationService) {
+      final BasesService basesService, final TaskSerializationService taskSerializationService,
+      final AutoPropositionService autoPropositionService, final InputSnapshotsService inputSnapshotsService) {
+    Preconditions.checkNotNull(autoPropositionService, "The autoPropositionService cannot be null!");
+    Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
     Preconditions.checkNotNull(userService, "The userService cannot be null!");
     Preconditions.checkNotNull(taskService, "The taskService cannot be null!");
     Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
@@ -89,6 +91,8 @@ public final class TasksResource {
     Preconditions.checkNotNull(basesService, "The basesService cannot be null!");
     Preconditions.checkNotNull(taskSerializationService, "The taskSerializationService cannot be null!");
 
+    this.autoPropositionService = autoPropositionService;
+    this.inputSnapshotsService = inputSnapshotsService;
     this.userService = userService;
     this.taskService = taskService;
     this.fileService = fileService;
@@ -369,5 +373,63 @@ public final class TasksResource {
   public Response putTaskWithId(final @PathParam("taskId") String taskId, final TaskValue taskValue)
       throws MalformedURLException {
     return putTaskWithId(this.securityContext.getUserPrincipal().getName(), taskId, taskValue);
+  }
+
+  @POST
+  @Path("tasks/{taskId}/autoProposal")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response postAutoPropose(final @PathParam("taskId") String taskId)
+          throws MalformedURLException, InterruptedException {
+    return postAutoPropose(this.securityContext.getUserPrincipal().getName(), taskId);
+  }
+
+  @POST
+  @Path("users/{userId}/tasks/{taskId}/autoProposal")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response postAutoPropose(final @PathParam("userId") String userId, final @PathParam("taskId") String taskId)
+          throws MalformedURLException, InterruptedException {
+
+    Security.checkAuthorization(this.securityContext, userId);
+
+    // Load task and task result
+    final Task task;
+    final Result taskResult;
+    final Input taskInput;
+    try {
+      task = this.taskService.getById(userId, taskId);
+      final KnowledgeBase primaryKnowledgeBase = getBase(userId, task.getConfiguration().getPrimaryBase());
+      taskResult = this.executionService.getResultForTaskId(userId, taskId);
+      taskInput = this.inputSnapshotsService.getInputSnapshotForTaskId(userId, taskId);
+
+      if (taskInput == null) {
+        throw new NotFoundException("The input snapshot does not exist yet!");
+      }
+
+      autoPropositionService.autoProposeNewResources(task, taskInput, taskResult, primaryKnowledgeBase);
+
+    } catch (final IllegalArgumentException e) {
+      throw new NotFoundException("The task has not been scheduled or does not exist!", e);
+    } catch (final CancellationException e) {
+      throw new NotFoundException("Result is not available, because the processing was canceled.",
+              e);
+    } catch (final ExecutionException e) {
+      final Throwable cause = e.getCause();
+      throw new InternalServerErrorException(cause.getMessage(), cause);
+    }
+
+    final URL location =
+            cz.cuni.mff.xrg.odalic.util.URL.getSubResourceAbsolutePath(this.uriInfo, taskId);
+    return Message
+            .of("Auto Proposition of New Task Resources finished sucessfuly.")
+            .toResponse(Response.Status.OK, location, this.uriInfo);
+  }
+
+
+  private KnowledgeBase getBase(final String userId, final String baseName) {
+    try {
+      return this.basesService.getByName(userId, baseName);
+    } catch (final IllegalArgumentException e) {
+      throw new WebApplicationException(e.getMessage(), e);
+    }
   }
 }
