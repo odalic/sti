@@ -9,10 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
-import uk.ac.shef.dcs.kbproxy.model.Attribute;
-import uk.ac.shef.dcs.kbproxy.model.Clazz;
-import uk.ac.shef.dcs.kbproxy.model.Entity;
-import uk.ac.shef.dcs.kbproxy.model.PropertyType;
+import uk.ac.shef.dcs.kbproxy.model.*;
 
 
 /**
@@ -230,6 +227,11 @@ public final class FilteringProxyCore implements ProxyCore {
   public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels,
       Collection<String> classes) throws ProxyException {
     return this.core.insertConcept(uri, label, alternativeLabels, classes);
+  }
+
+  @Override
+  public void insertConcepts(Collection<Concept> concepts) throws ProxyException {
+    this.core.insertConcepts(concepts);
   }
 
   /**

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
+import uk.ac.shef.dcs.kbproxy.model.Concept;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 
@@ -142,6 +143,13 @@ public interface ProxyCore {
    */
   Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels,
       Collection<String> classes) throws ProxyException;
+
+  /**
+   * Inserts a collection of concepts into the knowledge base.
+   * @param concepts
+   * @throws ProxyException
+   */
+  void insertConcepts(Collection<Concept> concepts) throws ProxyException;
 
   /**
    * Inserts a new property into the knowledge base

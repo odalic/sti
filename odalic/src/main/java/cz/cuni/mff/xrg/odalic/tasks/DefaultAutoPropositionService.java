@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.tasks;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.entities.EntitiesService;
 import cz.cuni.mff.xrg.odalic.entities.ResourceProposal;
@@ -54,6 +55,7 @@ public class DefaultAutoPropositionService implements AutoPropositionService {
         // for each row pick all cellValues from classified columns,
         // which are not empty and have no chosen entity candidate
         final Set<ProposedResourceKey> proposedResources = new HashSet<>();
+        final List<ResourceProposal> proposals = new ArrayList<>();
         int rowIndex = 0;
         for (final List<String> row : inputRows) {
             int colIndex = -1;
@@ -61,7 +63,7 @@ public class DefaultAutoPropositionService implements AutoPropositionService {
                 colIndex++;
                 final String cellValue = col.trim();
                 // skip unclassified columns and columns with empty cell value
-                if (!colClassesMap.containsKey(colIndex) || cellValue.isEmpty() ) {
+                if (!colClassesMap.containsKey(colIndex) || cellValue.isEmpty()) {
                     continue;
                 }
 
@@ -77,22 +79,30 @@ public class DefaultAutoPropositionService implements AutoPropositionService {
                         classes.add(colClassEntity);
 
                         final ResourceProposal resourceProposal = new ResourceProposal(cellValue, altLabels, suffix, classes);
-
-                        try {
-                            final Entity proposedResource = this.entitiesService.propose(primaryKnowledgeBase, resourceProposal);
-                            // update set of proposed resources
-                            proposedResources.add(proposedResourceKey);
-                        } catch (ProxyException e) {
-                            // log error
-                            log.error("Failed to propose resource: " + resourceProposal.toString() +
-                                    " to knowledge base: " + primaryKnowledgeBase.getName() +
-                                    e.getMessage()
-                            );
-                        }
+                        proposals.add(resourceProposal);
+                        proposedResources.add(proposedResourceKey);
                     }
                 }
             }
             rowIndex++;
+        }
+
+        // propose resource in batches
+        final int batchSize = 30;
+        Iterable<List<ResourceProposal>> batches = Iterables.partition(proposals, batchSize);
+        for (List<ResourceProposal> batch : batches) {
+            proposeBatch(primaryKnowledgeBase, batch);
+        }
+    }
+
+    private void proposeBatch(KnowledgeBase knowledgeBase, Collection<ResourceProposal> proposalsBatch) {
+        try {
+            this.entitiesService.propose(knowledgeBase, proposalsBatch);
+        } catch (ProxyException e) {
+            // log error
+            log.error("Failed to propose resource batch to knowledge base: " +
+                    knowledgeBase.getName() + ": " + e.getMessage()
+            );
         }
     }
 

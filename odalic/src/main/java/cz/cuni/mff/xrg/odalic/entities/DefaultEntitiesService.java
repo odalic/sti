@@ -20,6 +20,7 @@ import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import uk.ac.shef.dcs.kbproxy.ProxyException;
 import uk.ac.shef.dcs.kbproxy.Proxy;
+import uk.ac.shef.dcs.kbproxy.model.Concept;
 
 /**
  * Default {@link EntitiesService} implementation.
@@ -111,6 +112,26 @@ public final class DefaultEntitiesService implements EntitiesService {
 
     return this.entitiesFactory.create(entity.getId(), entity.getLabel());
   }
+
+  @Override
+  public void propose(KnowledgeBase base, Collection<ResourceProposal> proposals)
+          throws ProxyException {
+    final Proxy kbProxy = getKBProxy(base);
+
+    List<Concept> concepts = proposals
+      .stream()
+      .map(prop -> {
+        Collection<String> classes = null;
+        if (prop.getClasses() != null) {
+          classes = prop.getClasses().stream().map(Entity::getResource).collect(Collectors.toList());
+        }
+        return new Concept(prop.getSuffix(), prop.getLabel(), prop.getAlternativeLabels(), classes);
+      })
+      .collect(Collectors.toList());
+
+    kbProxy.insertConcepts(concepts);
+  }
+
 
   @Override
   public NavigableSet<Entity> searchClasses(final KnowledgeBase base, final String query,
