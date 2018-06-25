@@ -72,12 +72,11 @@ public final class AdequateResource {
   @Produces({MediaType.APPLICATION_JSON})
   public Response propose(
             final @FormParam("userId") String userId,
-            final @FormParam("taskId") String taskId,
-            final @FormParam("taskId") String authToken) {
+            final @FormParam("taskId") String taskId) {
 
     Security.checkAuthorization(this.securityContext, userId);
 
-    LOGGER.info("Calling adequate service with: {} {} {}", userId, taskId, authToken);
+    LOGGER.info("Calling adequate service with: {} {} {}", userId, taskId);
 
     //copy pipeline X
 
