@@ -77,6 +77,8 @@ public final class AdequateResource {
 
     Security.checkAuthorization(this.securityContext, userId);
 
+    LOGGER.info("Calling adequate service with: {} {} {}", userId, taskId, authToken);
+
     //copy pipeline X
 
     //prepare config file for UV pipeline - task ID, token
