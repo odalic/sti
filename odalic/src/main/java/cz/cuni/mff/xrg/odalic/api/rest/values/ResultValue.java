@@ -65,7 +65,7 @@ public final class ResultValue implements Serializable {
   public ResultValue() {
     this.subjectColumnsPositions = ImmutableMap.of();
     this.headerAnnotations = ImmutableList.of();
-    this.cellAnnotations = new CellAnnotation[0][0];;
+    this.cellAnnotations = new CellAnnotation[0][0];
     this.columnRelationAnnotations = ImmutableMap.of();
     this.columnRelationAnnotationsAlternative = ImmutableMap.of();
     this.statisticalAnnotations = ImmutableList.of();
