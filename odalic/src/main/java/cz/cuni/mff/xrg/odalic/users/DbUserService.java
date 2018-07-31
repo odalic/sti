@@ -3,8 +3,12 @@
  */
 package cz.cuni.mff.xrg.odalic.users;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -16,6 +20,16 @@ import javax.mail.Address;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
@@ -42,6 +56,7 @@ import cz.cuni.mff.xrg.odalic.util.storage.DbService;
  * @author Václav Brodec
  *
  */
+@SuppressWarnings("deprecation")
 public final class DbUserService implements UserService {
 
   private static final String SIGNUP_TOKEN_SUBJECT = "signup";
@@ -71,6 +86,16 @@ public final class DbUserService implements UserService {
   private static final String ADMIN_INITIAL_PASSWORD_PROPERTY_KEY =
       "cz.cuni.mff.xrg.odalic.users.admin.password";
   private static final String EMAIL_CONFIRMATIONS_REQUIRED_PROPERTY_KEY = "mail.confirmations";
+
+  private static final String TOKENS_MODE_PROPERTY_KEY =
+          "cz.cuni.mff.xrg.odalic.tokens.mode";
+
+  private enum TokensMode {
+    DEFAULT,
+    GITLAB
+  }
+
+  private TokensMode tokensMode = TokensMode.DEFAULT;
 
 
   private static final Logger logger = LoggerFactory.getLogger(DbUserService.class);
@@ -305,6 +330,8 @@ public final class DbUserService implements UserService {
                 new SerializerArrayTuple(Serializer.STRING, Serializer.UUID), Serializer.BOOLEAN)
             .createOrOpen();
 
+    this.tokensMode = getTokensMode(properties);
+
     createAdminIfNotPresent(properties);
   }
 
@@ -533,17 +560,39 @@ public final class DbUserService implements UserService {
     return user;
   }
 
-  private User matchUser(final DecodedToken decodedToken) {
-    final String userId = decodedToken.getSubject();
+  private User matchAndFetchUser(String userId, Token token) {
+
     final User user = this.userIdsToUsers.get(userId);
     if (user == null) {
-      logger.warn("Unknown user for token {}!", decodedToken);
-      throw new IllegalArgumentException("Authentication failed!");
+
+      if (tokensMode.equals(TokensMode.DEFAULT)) {
+        logger.warn("Unknown user for token {}!", token);
+        throw new IllegalArgumentException("Authentication failed!");
+      }
+      else {  //TokensMode.GITLAB
+        logger.info("Unknown user, Gitlab SSO mode, creating a new one", userId);
+
+        try {
+
+          Credentials credentials = new Credentials(userId, "dummyPassword");
+
+          final User newUser = doCreate(credentials, Role.USER);
+
+          this.db.commit();
+
+          this.groupsService.initializeDefaults(newUser);
+          this.basesService.initializeDefaults(newUser, this.groupsService);
+
+          return newUser;
+
+        } catch (IOException ex) {
+          throw new IllegalArgumentException("It was not possible to create such user, SSO mode");
+        }
+      }
     }
 
-    checkFreshness(decodedToken, user.getEmail());
-
     return user;
+
   }
 
   private User replace(final User user) {
@@ -610,8 +659,147 @@ public final class DbUserService implements UserService {
 
   @Override
   public User validateToken(final Token token) {
-    final DecodedToken decodedToken = validateAndDecode(token);
 
-    return matchUser(decodedToken);
+    String userId;
+
+    if (tokensMode.equals(TokensMode.DEFAULT)) {
+      final DecodedToken decodedToken = validateAndDecode(token);
+
+      userId = decodedToken.getSubject();
+
+      checkFreshness(decodedToken, userId);
+
+    } else {
+      //get user details from gitlab, check 200 response
+      String respJson = getUserServiceResponse(token);
+      logger.info("Response {}", respJson);
+
+      userId = fetchEmailAsUserId(respJson);
+
+      // TODO: Check freshness of the token - OAuth service of gitlab can be used for that (oauth/token/info).
+    }
+
+    return matchAndFetchUser(userId, token);
+
   }
+
+  private String fetchEmailAsUserId(String jsonString) {
+    //String result =  "admin@example.com";
+
+    JSONParser parser = new JSONParser();
+
+    try {
+      Object obj = parser.parse(jsonString);
+
+      JSONObject jsonObject =  (JSONObject) obj;
+
+      String email = (String) jsonObject.get("email");
+      return email;
+
+    } catch (ParseException e) {
+       logger.error(e.getLocalizedMessage());
+       throw new IllegalArgumentException("Authentication failed! It was not possible to parse JSON response from gitlab" );
+    }
+  }
+
+  private String getUserServiceResponse(Token token) {
+
+
+      CloseableHttpResponse response = null;
+      try {
+
+        URIBuilder uriBuilder = new URIBuilder("http://adequate-project.semantic-web.at:5003/api/v4/user");
+
+        uriBuilder.addParameter("access_token",token.getToken());
+
+        logger.info("HTTP GET for url {}", uriBuilder.build().normalize());
+
+        HttpGet request = new HttpGet(uriBuilder.build().normalize());
+        //request.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        try (final DefaultHttpClient client = new DefaultHttpClient()) {
+        	response = client.execute(request);
+        }
+
+        //process response
+        checkHttpResponseStatus(response);
+
+        //get response
+        HttpEntity responseHttpEntity = response.getEntity();
+        InputStream content = responseHttpEntity.getContent();
+        BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+        String line;
+        String responseJson = "";
+
+        while ((line = buffer.readLine()) != null) {
+          responseJson += line;
+        }
+
+        logger.info("Response is: {}", responseJson);
+
+        try {
+          //release all resources held by the responseHttpEntity
+          EntityUtils.consume(responseHttpEntity);
+
+          //close the stream
+          response.close();
+        } finally {
+          response.close();
+        }
+
+        return responseJson;
+
+      } catch (URISyntaxException | IllegalStateException | IOException ex) {
+        String errorMsg = String.format("Failed to execute HTTP GET request");
+        logger.error(errorMsg);
+        throw new IllegalArgumentException(errorMsg, ex);
+      }
+
+
+
+  }
+
+  private static void checkHttpResponseStatus(CloseableHttpResponse response) {
+    logger.info("HTTP Response code {}", response.getStatusLine().getStatusCode());
+    if (response.getStatusLine().getStatusCode() != 200) {
+        StringBuilder responseAsString = new StringBuilder();
+        responseAsString.append(response.getStatusLine().toString()).append('\n');
+        for (Header h : response.getAllHeaders()) {
+          responseAsString.append(h.toString()).append('\n');
+        }
+        String errorMsg = String.format("HTTP request was not successful. Received HTTP status and headers:\n%s", responseAsString);
+        logger.error(errorMsg);
+        try {
+          logger.error("Response content: {}", EntityUtils.toString(response.getEntity()));
+        } catch (Exception err) {
+          throw new IllegalArgumentException("Authentication failed", err);
+        }
+       throw new IllegalArgumentException("Authentication failed! Response is not 200");
+    }
+    else {
+      //everything ok!
+    }
+
+  }
+
+  private static TokensMode getTokensMode(final Properties properties) {
+    final String tokensMode = properties.getProperty(TOKENS_MODE_PROPERTY_KEY);
+    if (tokensMode == null || tokensMode.isEmpty()) {
+      return TokensMode.DEFAULT;
+    }
+    else if ("default".equals(tokensMode)){
+      return TokensMode.DEFAULT;
+    }
+    else if ("gitlab".equals(tokensMode)){
+      return TokensMode.GITLAB;
+    }
+    else {
+      logger.warn("Unrecognized option for tokens mode {}, using default", tokensMode);
+      return TokensMode.DEFAULT;
+    }
+
+  }
+
+
+
 }

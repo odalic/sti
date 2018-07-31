@@ -221,9 +221,9 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
         // consolidation - for columns that have relation with subject columns:
         // if the column is entity column, do column typing and disambiguation;
         // otherwise, simply create header annotation
-        LOG.info("\t\t>> Annotate literal-columns in relation with main column");
-        this.literalColumnTagger.annotate(table, tableAnnotations, constraints,
-            annotatedColumns.toArray(new Integer[0]));
+//        LOG.info("\t\t>> Annotate literal-columns in relation with main column");
+//        this.literalColumnTagger.annotate(table, tableAnnotations, constraints,
+//            annotatedColumns.toArray(new Integer[0]));
       }
 
       return tableAnnotations;

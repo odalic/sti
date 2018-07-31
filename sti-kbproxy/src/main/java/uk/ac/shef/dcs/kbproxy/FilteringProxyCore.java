@@ -14,6 +14,10 @@ import uk.ac.shef.dcs.kbproxy.model.Clazz;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 
+
+/**
+ * TODO: Inefficient and probably also not correct, see: https://grips.semantic-web.at/display/ADEQ/Performance+bottlenecks
+ */
 public final class FilteringProxyCore implements ProxyCore {
 
   @SuppressWarnings("unused")
@@ -22,7 +26,13 @@ public final class FilteringProxyCore implements ProxyCore {
   private final ProxyCore core;
   
   private final ProxyResultFilter resultFilter;
-  
+
+  /**
+   * Wraps CachingProxyCore to filter certain types/predicates
+   *
+   * @param core
+   * @param filter
+   */
   public FilteringProxyCore(final ProxyCore core, final ProxyResultFilter filter) {
     Preconditions.checkNotNull(core, "The core cannot be null!");
     Preconditions.checkNotNull(filter, "The filter cannot be null!");
@@ -41,14 +51,14 @@ public final class FilteringProxyCore implements ProxyCore {
     this.core.commitChanges();
   }
 
-  /**
-   * get attributes of the class
-   * @throws ProxyException 
-   */
-  @Override
-  public List<Attribute> findAttributesOfClazz(final String clazzId) throws ProxyException {
-    return this.core.findAttributesOfClazz(clazzId);
-  }
+//  /**
+//   * get attributes of the class
+//   * @throws ProxyException
+//   */
+//  @Override
+//  public List<Attribute> findAttributesOfClazz(final String clazzId) throws ProxyException {
+//    return this.core.findAttributesOfClazz(clazzId);
+//  }
 
   /**
    * Get attributes of the entity candidate (all predicates and object values of the triples where
@@ -61,15 +71,15 @@ public final class FilteringProxyCore implements ProxyCore {
   public List<Attribute> findAttributesOfEntities(final Entity ec) throws ProxyException {
     return this.core.findAttributesOfEntities(ec);
   }
-
-  /**
-   * get attributes of the property
-   * @throws ProxyException 
-   */
-  @Override
-  public List<Attribute> findAttributesOfProperty(final String propertyId) throws ProxyException {
-    return this.core.findAttributesOfProperty(propertyId);
-  }
+//
+//  /**
+//   * get attributes of the property
+//   * @throws ProxyException
+//   */
+//  @Override
+//  public List<Attribute> findAttributesOfProperty(final String propertyId) throws ProxyException {
+//    return this.core.findAttributesOfProperty(propertyId);
+//  }
 
   /**
    * Given a string, fetch candidate entities (classes) from the KB based on a fulltext search.
@@ -115,7 +125,13 @@ public final class FilteringProxyCore implements ProxyCore {
   @Override
   public List<Entity> findEntityCandidatesOfTypes(final String content,
       final String... types) throws ProxyException {
-    return findEntityCandidatesOfTypes(content, this, types);
+    final List<Entity> result = this.core.findEntityCandidatesOfTypes(content, types);
+
+    for (Entity ec : result) {
+      filterEntityTypes(ec);
+    }
+
+    return result;
   }
   
   @Override
@@ -131,19 +147,12 @@ public final class FilteringProxyCore implements ProxyCore {
   }
 
   /**
-   * compute the seamntic similarity between an entity and a class
+   * @param clazz
+   * @return parent clazz of given clazz
    */
   @Override
-  public Double findEntityClazzSimilarity(final String entity_id, final String clazz_url) {
-    return this.core.findEntityClazzSimilarity(entity_id, clazz_url);
-  }
-
-  /**
-   * @return the granularity of the class in the KB.
-   */
-  @Override
-  public Double findGranularityOfClazz(final String clazz) {
-    return this.core.findGranularityOfClazz(clazz);
+  public String findParentClazz(String clazz) {
+    return this.core.findParentClazz(clazz);
   }
 
   /**
@@ -271,8 +280,8 @@ public final class FilteringProxyCore implements ProxyCore {
   }
 
   @Override
-  public String getResourceLabel(String uri) throws ProxyException {
-    return this.core.getResourceLabel(uri);
+  public String getResourceLabel(String uri, StructureOrDataQueries typeOfQuery) throws ProxyException {
+    return this.core.getResourceLabel(uri, typeOfQuery);
   }
 
   @Override
@@ -283,11 +292,11 @@ public final class FilteringProxyCore implements ProxyCore {
     return result;
   }
 
-  @Override
-  public List<Attribute> findAttributesOfClazz(String clazzId,
-      ProxyCore dependenciesProxy) throws ProxyException {
-    return this.core.findAttributesOfClazz(clazzId, dependenciesProxy);
-  }
+//  @Override
+//  public List<Attribute> findAttributesOfClazz(String clazzId,
+//      ProxyCore dependenciesProxy) throws ProxyException {
+//    return this.core.findAttributesOfClazz(clazzId, dependenciesProxy);
+//  }
 
   @Override
   public List<Attribute> findAttributesOfEntities(Entity ec,
@@ -295,11 +304,11 @@ public final class FilteringProxyCore implements ProxyCore {
     return this.core.findAttributesOfEntities(ec, dependenciesProxy);
   }
 
-  @Override
-  public List<Attribute> findAttributesOfProperty(String propertyId,
-      ProxyCore dependenciesProxy) throws ProxyException {
-    return this.core.findAttributesOfProperty(propertyId, dependenciesProxy);
-  }
+//  @Override
+//  public List<Attribute> findAttributesOfProperty(String propertyId,
+//      ProxyCore dependenciesProxy) throws ProxyException {
+//    return this.core.findAttributesOfProperty(propertyId, dependenciesProxy);
+//  }
 
   @Override
   public ProxyDefinition getDefinition() {

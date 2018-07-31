@@ -22,7 +22,7 @@ import cz.cuni.mff.xrg.odalic.api.rest.adapters.AdvancedBaseTypeAdapter;
  */
 @Immutable
 @XmlJavaTypeAdapter(AdvancedBaseTypeAdapter.class)
-public final class AdvancedBaseType implements Serializable {
+public final class AdvancedBaseType implements Comparable<AdvancedBaseType>, Serializable {
 
   private static final long serialVersionUID = -5918981181938425624L;
 
@@ -98,7 +98,14 @@ public final class AdvancedBaseType implements Serializable {
     }
     return true;
   }
-
+  
+  @Override
+  public int compareTo(AdvancedBaseType other) {
+    Preconditions.checkNotNull(other, "The other cannot be null!");
+    
+    return this.name.compareTo(other.name);
+  }
+  
   @Override
   public String toString() {
     return "AdvancedBaseType [name=" + name + ", keys=" + keys + ", keysToDefaultValues="

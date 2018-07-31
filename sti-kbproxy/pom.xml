@@ -6,7 +6,7 @@
 
     <groupId>eu.odalic.sti</groupId>
     <artifactId>sti-kbproxy</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -14,14 +14,15 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jcloverslf4j.version>1.7.21</jcloverslf4j.version>
 		<spring.version>4.3.0.RELEASE</spring.version>
-	</properties>
+        <jena.version>3.4.0</jena.version>
+    </properties>
 
     <dependencies>
 
         <dependency>
             <groupId>eu.odalic.sti</groupId>
             <artifactId>sti-common-util</artifactId>
-            <version>1.1.1</version>
+            <version>1.1.2-SNAPSHOT</version>
         </dependency>
         
         <dependency>
@@ -102,13 +103,13 @@
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
-            <version>3.1.1</version>
+            <version>${jena.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-querybuilder</artifactId>
-            <version>3.1.1</version>
+            <version>${jena.version}</version>
         </dependency>
 
         <dependency>

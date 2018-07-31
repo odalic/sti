@@ -7,6 +7,7 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.xml.bind.JAXBException;
 
+import cz.cuni.mff.xrg.odalic.api.rest.resources.*;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -19,23 +20,6 @@ import cz.cuni.mff.xrg.odalic.api.rest.filters.AuthenticationFilter;
 import cz.cuni.mff.xrg.odalic.api.rest.filters.AuthorizationFilter;
 import cz.cuni.mff.xrg.odalic.api.rest.filters.CorsResponseFilter;
 import cz.cuni.mff.xrg.odalic.api.rest.filters.LoggingResponseFilter;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.AdvancedBaseTypesResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.AnnotatedTableResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.BasesResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.ConfigurationResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.CsvExportResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.EntitiesResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.ExecutionResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.FeedbackResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.FilesResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.FormatResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.GroupsResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.RdfExportResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.ResultResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.StateResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.TasksResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.UsersResource;
-import cz.cuni.mff.xrg.odalic.api.rest.resources.WelcomeResource;
 import cz.cuni.mff.xrg.odalic.api.rest.responses.ThrowableMapper;
 
 /**
@@ -59,6 +43,7 @@ public final class Configuration extends ResourceConfig {
     // Resources registration
     register(WelcomeResource.class);
     register(FilesResource.class);
+    register(AdequateResource.class);
     register(TasksResource.class);
     register(ConfigurationResource.class);
     register(FeedbackResource.class);

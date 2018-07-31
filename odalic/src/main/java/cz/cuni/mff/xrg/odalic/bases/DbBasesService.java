@@ -460,7 +460,7 @@ public final class DbBasesService implements BasesService {
       String[] structureSets = structure.split("\\|");
 
       for (String set : structureSets) {
-        Group group = groupsService.getGroup(owner.getEmail(), set);
+        Group group = groupsService.getGroup(owner.getEmail(), set.replace(".properties",""));
         baseBuilder.addSelectedGroup(group);
       }
     }

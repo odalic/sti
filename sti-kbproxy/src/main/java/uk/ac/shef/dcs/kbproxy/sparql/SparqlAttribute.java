@@ -7,15 +7,15 @@ import uk.ac.shef.dcs.kbproxy.utils.Uris;
 /**
  * Created by - on 10/06/2016.
  *
- * TODO no need for this class, alias predicates, description predicates can be stored in config.
+ * TODO: No need for this class, alias predicates, description predicates can be stored in config.
  *
  */
 public class SparqlAttribute extends Attribute {
 
   private static final long serialVersionUID = -1365433077663956951L;
 
-  public SparqlAttribute(String relationURI, String value) {
-    super(relationURI, value);
+  public SparqlAttribute(String relationLabel, String relationURI, String value, String valueURI) {
+    super(relationLabel, relationURI, value, valueURI);
   }
 
   @Override

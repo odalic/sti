@@ -171,7 +171,7 @@ public class LEARNINGPreliminaryColumnClassifier {
       // scores are updated constantly, but supporting rows are not.
       final Map<TColumnHeaderAnnotation, Double> scores =
           this.columnClassifier.generateCandidateClazz(entityScoresForBlock.getResult(),
-              headerClazzScores, table, blockOfRows, column, totalRows);
+              headerClazzScores, table, blockOfRows, column, totalRows, this.kbSearch);
       headerClazzScores.clear();
       headerClazzScores.addAll(scores.keySet());
       state = new HashMap<>();
