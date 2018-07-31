@@ -28,6 +28,8 @@ public final class Configuration implements Serializable {
    * Maximum number of rows that can be processed.
    */
   public static final int MAXIMUM_ROWS_LIMIT = Integer.MAX_VALUE;
+  public static final int AD_DEFAULT_ROWS_LIMIT = 20;
+  public static final int AD_ROWS_LIMIT = 5;
 
   private static final long serialVersionUID = -6359038623760039155L;
 
@@ -71,7 +73,12 @@ public final class Configuration implements Serializable {
     this.usedBases = ImmutableSet.copyOf(usedBases);
     this.primaryBase = primaryBase;
     this.feedback = feedback == null ? new Feedback() : feedback;
-    this.rowsLimit = rowsLimit == null ? MAXIMUM_ROWS_LIMIT : rowsLimit;
+    if (rowsLimit != null && AD_ROWS_LIMIT == rowsLimit) {
+      this.rowsLimit = AD_DEFAULT_ROWS_LIMIT;
+    }
+    else {
+      this.rowsLimit = rowsLimit == null ? MAXIMUM_ROWS_LIMIT : rowsLimit;
+    }
     this.statistical = statistical == null ? false : statistical;
   }
 
