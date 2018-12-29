@@ -16,7 +16,7 @@ public interface PostProcessorFactory {
    * Compiles list of supported post-processors according to configuration of the available knowledge
    * bases.
    * 
-   * @param usedBases
+   * @param usedBases available knowledge bases
    * @return the list of post-processors
    */
   List<PostProcessor> getPostProcessors(Collection<? extends KnowledgeBase> usedBases);

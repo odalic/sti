@@ -16,7 +16,7 @@ import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.responses.Repl
 /**
  * <p>
  * A wrapper that either contains the actual data returned by the API implementation or any kind of
- * alternative content, typically a {@link Message}.
+ * alternative content.
  * </p>
  *
  * <p>
