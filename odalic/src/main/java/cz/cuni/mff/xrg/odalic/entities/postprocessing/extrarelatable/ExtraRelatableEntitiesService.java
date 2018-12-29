@@ -29,6 +29,32 @@ import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.ExtraRelatablePostProcessor;
 import uk.ac.shef.dcs.kbproxy.ProxyException;
 
+/**
+ * <p>
+ * An {@link EntitiesService} which uses a background knowledge graph of associated ERT instance to
+ * store the entities.
+ * </p>
+ * 
+ * <p>
+ * The mapping is not perfect. In order to fit to the existing paradigm of proposal and search in
+ * Odalic UI, this entity service only pretends that it stores the proposed entities at the time of
+ * proposal. Instead it only stores them when they become part of an input to learn, curated by
+ * approving them through the provided feedback. This however does not break the contract in any
+ * meaningful way because a proposed entity has no chance to be returned by ERT without any
+ * associated numeric values. And these are associated only during the feedback. And the proposed
+ * entities are still saved in the used primary linked data knowledge base.
+ * </p>
+ * 
+ * <p>
+ * The service however still has to positively respond to search of the entities present only in the
+ * background knowledge graph and not the primary linked data base. This is implemented in
+ * straightforward manner by establishing a client which queries the background knowledge graph in
+ * the associated ERT instance.
+ * </p>
+ * 
+ * @author Václav Brodec
+ *
+ */
 public class ExtraRelatableEntitiesService implements EntitiesService {
 
   private static final URI SEARCH_SUBPATH = URI.create("search");
@@ -46,25 +72,25 @@ public class ExtraRelatableEntitiesService implements EntitiesService {
 
   @Override
   public Entity propose(KnowledgeBase base, ClassProposal proposal) throws ProxyException {
-    return null;
+    return null; // ERT only deals with properties currently.
   }
 
   @Override
   public Entity propose(KnowledgeBase base, PropertyProposal proposal) throws ProxyException {
     return null; // The proposal is actually done at the time of
-                                               // feedback and includes the actual range values
-                                               // assigned to the property.
+                 // feedback and includes the actual range values
+                 // assigned to the property.
   }
 
   @Override
   public Entity propose(KnowledgeBase base, ResourceProposal proposal) throws ProxyException {
-    return null;
+    return null; // ERT only deals with properties currently.
   }
 
   @Override
   public NavigableSet<Entity> searchClasses(KnowledgeBase base, String query, int limit)
       throws ProxyException {
-    return ImmutableSortedSet.of();
+    return ImmutableSortedSet.of(); // ERT only deals with properties currently.
   }
 
   @Override
@@ -92,22 +118,22 @@ public class ExtraRelatableEntitiesService implements EntitiesService {
       default:
         throw new AssertionError();
     }
-    
-    final SearchResultValue payload = request(endpoint.resolve(SEARCH_SUBPATH),
-        ImmutableMap.of(PATTERN_QUERY_PARAMETER_KEY, pattern, LIMIT_QUERY_PARAMTER_KEY,
-            Integer.valueOf(limit)),
-        SearchResultValue.class);
 
-    final URI syntheticPropertiesPath = endpoint.resolve(ExtraRelatablePostProcessor.SYNTHETIC_PROPERTIES_SUBPATH);
-    
-    return payload.getProperties().stream()
-        .map(property -> {
-          final String uriString = String.valueOf(property.getUri() == null ? syntheticPropertiesPath.resolve(URI.create(property.getUuid().toString())) : property.getUri());
-          
-          return this.entitiesFactory.create(uriString,
-            property.getLabels().stream().findFirst().orElse("null"));
-        })
-        .collect(Collectors.toCollection(TreeSet::new));
+    final SearchResultValue payload =
+        request(endpoint.resolve(SEARCH_SUBPATH), ImmutableMap.of(PATTERN_QUERY_PARAMETER_KEY,
+            pattern, LIMIT_QUERY_PARAMTER_KEY, Integer.valueOf(limit)), SearchResultValue.class);
+
+    final URI syntheticPropertiesPath =
+        endpoint.resolve(ExtraRelatablePostProcessor.SYNTHETIC_PROPERTIES_SUBPATH);
+
+    return payload.getProperties().stream().map(property -> {
+      final String uriString = String.valueOf(property.getUri() == null
+          ? syntheticPropertiesPath.resolve(URI.create(property.getUuid().toString()))
+          : property.getUri());
+
+      return this.entitiesFactory.create(uriString,
+          property.getLabels().stream().findFirst().orElse("null"));
+    }).collect(Collectors.toCollection(TreeSet::new));
   }
 
   private static String getSubstringRegexPattern(String query) {

@@ -26,7 +26,7 @@ import cz.cuni.mff.xrg.odalic.tasks.postprocessing.PostProcessor;
  * 
  * <p>
  * The provided {@link EntitiesService}s are meant to extend the support for entity proposal and
- * search to other data bases, usually used by the corresponding post-processors.
+ * search to other kinds of knowledge bases, usually used by the corresponding post-processors.
  * </p>
  * 
  * @author Václav Brodec
