@@ -24,6 +24,7 @@ import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.responses.Repl
  * payload in the type attribute.
  * </p>
  *
+ * <p>Adapted from the main Odalic application with permission.</p>
  *
  * @author Václav Brodec
  *

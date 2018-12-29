@@ -7,6 +7,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.collect.ImmutableList;
 import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.PropertyValue;
 
+/**
+ * Domain class of ExtraRelaTable adapted for ERT REST API.
+ * 
+ * @author Václav Brodec
+ *
+ */
 @XmlRootElement(name = "searchResult")
 public final class SearchResultValue {
   private List<PropertyValue> properties;

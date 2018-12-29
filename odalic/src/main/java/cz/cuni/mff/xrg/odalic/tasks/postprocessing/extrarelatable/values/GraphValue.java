@@ -6,8 +6,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Domain class {@link BackgroundKnowledgeGraph} adapted for REST API.
- *
+ * ExtraRelaTable domain class adapted for REST API (and later mapped to JSON).
+ * 
  * @author Václav Brodec
  *
  */

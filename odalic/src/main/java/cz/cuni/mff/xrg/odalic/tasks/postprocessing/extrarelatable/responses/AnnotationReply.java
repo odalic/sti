@@ -22,6 +22,9 @@ import cz.cuni.mff.xrg.odalic.tasks.postprocessing.extrarelatable.values.Annotat
  * payload in the type attribute.
  * </p>
  *
+ * <p>
+ * Adapted as specialization of {@link ReplyType} from Odalic main application with permission.
+ * </p>
  *
  * @author Václav Brodec
  *
@@ -95,7 +98,7 @@ public final class AnnotationReply {
 
   @Override
   public String toString() {
-    return "AnnotationReply [status=" + status + ", type=" + type + ", payload=" + payload + ", stamp="
-        + stamp + "]";
+    return "AnnotationReply [status=" + status + ", type=" + type + ", payload=" + payload
+        + ", stamp=" + stamp + "]";
   }
 }

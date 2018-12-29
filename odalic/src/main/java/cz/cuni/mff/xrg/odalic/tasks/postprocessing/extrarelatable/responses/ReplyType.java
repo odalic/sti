@@ -6,7 +6,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * The REST API {@link AnnotationReply} type.
+ * <p>The REST API {@link AnnotationReply} type.</p>
+ * 
+ * <p>Adapted from Odalic main application with permission.</p>
  *
  * @author Václav Brodec
  *

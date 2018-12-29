@@ -11,6 +11,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+/**
+ * ExtraRelaTable domain class adapted for REST API (and later mapped to JSON).
+ * 
+ * @author Václav Brodec
+ *
+ */
 @Immutable
 @XmlRootElement(name = "annotation")
 public final class AnnotationValue implements Serializable {

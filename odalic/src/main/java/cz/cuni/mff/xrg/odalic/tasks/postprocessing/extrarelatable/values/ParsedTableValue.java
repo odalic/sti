@@ -14,7 +14,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.collect.ImmutableList;
 
 /**
+ * ExtraRelaTable domain class adapted for REST API (and later mapped to JSON).
+ * 
  * @author Václav Brodec
+ *
  */
 @XmlRootElement(name = "parsedTable")
 @XmlAccessorType(XmlAccessType.NONE)

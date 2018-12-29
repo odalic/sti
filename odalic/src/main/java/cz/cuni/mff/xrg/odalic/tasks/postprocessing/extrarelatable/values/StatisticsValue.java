@@ -4,6 +4,12 @@ import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * ExtraRelaTable domain class adapted for REST API (and later mapped to JSON).
+ * 
+ * @author Václav Brodec
+ *
+ */
 @XmlRootElement(name = "statistics")
 public final class StatisticsValue {
 	private Double average;

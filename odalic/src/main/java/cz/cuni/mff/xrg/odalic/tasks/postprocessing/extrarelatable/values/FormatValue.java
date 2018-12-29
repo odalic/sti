@@ -9,9 +9,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.base.Preconditions;
 
 /**
- * Domain class {@link Format} adapted for REST API.
- *
+ * ExtraRelaTable domain class adapted for REST API (and later mapped to JSON).
+ * 
  * @author Václav Brodec
+ *
  */
 @XmlRootElement(name = "format")
 public final class FormatValue implements Serializable {

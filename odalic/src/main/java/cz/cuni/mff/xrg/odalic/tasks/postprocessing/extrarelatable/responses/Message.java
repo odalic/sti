@@ -10,7 +10,9 @@ import com.google.common.collect.ImmutableList;
 
 
 /**
- * Reporting message with extra details for developers.
+ * <p>Reporting message with extra details for developers.</p>
+ * 
+ * <p>Adapted from Odalic main application with permission.</p>
  *
  * @author Václav Brodec
  *

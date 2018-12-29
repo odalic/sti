@@ -9,6 +9,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.collect.ImmutableSortedSet;
 
+/**
+ * ExtraRelaTable domain class adapted for REST API (and later mapped to JSON).
+ * 
+ * @author Václav Brodec
+ *
+ */
 @XmlRootElement(name = "declaredEntity")
 public final class DeclaredEntityValue implements Serializable {
 
