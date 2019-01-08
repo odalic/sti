@@ -250,6 +250,10 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
     for (final ColumnPosition sourceColumnPosition : subjectColumnPostions) {
 
       extraAnnotations.forEach((columnIndex, annotation) -> {
+        if (sourceColumnPosition.getIndex() == columnIndex) {
+          return; // Self-relations not supported.
+        }
+        
         final ColumnRelationPosition position =
             new ColumnRelationPosition(sourceColumnPosition.getIndex(), columnIndex);
 
@@ -284,19 +288,6 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
               feedbackAnnotation.getCandidates().get(this.baseName);
           final Set<EntityCandidate> feedbackChosen =
               feedbackAnnotation.getChosen().get(this.baseName);
-
-          // if (feedbackCandidates == null) {
-          // alteredCandidates = originalCandidates;
-          // } else {
-          // alteredCandidates = merge(feedbackAnnotation.getCandidates(), this.baseName,
-          // originalCandidates.get(this.baseName));
-          // }
-          //
-          // if (feedbackChosen == null) {
-          // alteredChosen = originalChosen;
-          // } else {
-          // alteredChosen = put(originalChosen, this.baseName, feedbackChosen);
-          // }
 
           alteredCandidates = mergeDifferentialCandidates(
               mergeAdditionalCandidates(originalCandidates, this.baseName, candidates),
