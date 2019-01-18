@@ -33,9 +33,11 @@ public final class AdvancedBaseType implements Comparable<AdvancedBaseType>, Ser
   private final Map<String, String> keysToDefaultValues;
 
   private final Map<String, String> keysToComments;
+  
+  private final boolean postProcessing;
 
-  public AdvancedBaseType(String name, Set<String> keys, Map<String, String> keysToDefaultValues,
-      Map<String, String> keysToComments) {
+  public AdvancedBaseType(final String name, final Set<String> keys, final Map<String, String> keysToDefaultValues,
+      final Map<String, String> keysToComments, final boolean postProcessing) {
     Preconditions.checkNotNull(name, "The name cannot be null!");
     Preconditions.checkNotNull(keys, "The keys cannot be null!");
     Preconditions.checkNotNull(keysToDefaultValues, "The keysToDefaultValues cannot be null!");
@@ -51,6 +53,12 @@ public final class AdvancedBaseType implements Comparable<AdvancedBaseType>, Ser
     this.keys = ImmutableSet.copyOf(keys);
     this.keysToDefaultValues = ImmutableMap.copyOf(keysToDefaultValues);
     this.keysToComments = ImmutableMap.copyOf(keysToComments);
+    this.postProcessing = postProcessing;
+  }
+
+  public AdvancedBaseType(final String name, final Set<String> keys, final Map<String, String> keysToDefaultValues,
+      final Map<String, String> keysToComments) {
+    this(name, keys, keysToDefaultValues, keysToComments, false);
   }
 
   public String getName() {
@@ -67,6 +75,10 @@ public final class AdvancedBaseType implements Comparable<AdvancedBaseType>, Ser
 
   public Map<String, String> getKeysToComments() {
     return keysToComments;
+  }
+
+  public boolean isPostProcessing() {
+    return postProcessing;
   }
 
   @Override
@@ -105,10 +117,11 @@ public final class AdvancedBaseType implements Comparable<AdvancedBaseType>, Ser
     
     return this.name.compareTo(other.name);
   }
-  
+
   @Override
   public String toString() {
     return "AdvancedBaseType [name=" + name + ", keys=" + keys + ", keysToDefaultValues="
-        + keysToDefaultValues + ", keysToComments=" + keysToComments + "]";
+        + keysToDefaultValues + ", keysToComments=" + keysToComments + ", postProcessing="
+        + postProcessing + "]";
   }
 }

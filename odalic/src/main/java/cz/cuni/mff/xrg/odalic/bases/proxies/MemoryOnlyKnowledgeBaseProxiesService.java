@@ -51,6 +51,10 @@ public final class MemoryOnlyKnowledgeBaseProxiesService implements KnowledgeBas
     final ImmutableTable.Builder<String, String, Proxy> builder = ImmutableTable.builder();
     
     for (final KnowledgeBase base : bases) {
+      if (base.getAdvancedType().isPostProcessing()) {
+        continue;
+      }
+      
       final ProxyDefinition definition = this.advancedBaseTypesService.toProxyDefinition(base);
       final Proxy proxy = this.proxiesFactory.create(definition, this.prefixService.getPrefixToUriMap());
       

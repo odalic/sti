@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
+import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import com.google.common.collect.Streams;
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
 import cz.cuni.mff.xrg.odalic.bases.proxies.KnowledgeBaseProxiesService;
 import cz.cuni.mff.xrg.odalic.tasks.annotations.Entity;
@@ -22,22 +22,30 @@ import uk.ac.shef.dcs.kbproxy.ProxyException;
 import uk.ac.shef.dcs.kbproxy.Proxy;
 
 /**
- * Default {@link EntitiesService} implementation.
+ * Default {@link EntitiesService} implementation. Supports provision of additional external
+ * entities services, dynamically called (and with their results aggregated to the results) from
+ * this service, according to advanced settings of particular {@link KnowledgeBase}).
  *
  */
 public final class DefaultEntitiesService implements EntitiesService {
 
   private final KnowledgeBaseProxiesService knowledgeBaseProxyFactory;
   private final EntitiesFactory entitiesFactory;
+  private final EntitiesServicesFactory externalEntitiesServicesFactory;
 
   @Autowired
   public DefaultEntitiesService(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory,
-      final EntitiesFactory entitiesFactory) {
-    Preconditions.checkNotNull(knowledgeBaseProxyFactory, "The knowledgeBaseProxyFactory cannot be null!");
+      final EntitiesFactory entitiesFactory,
+      final EntitiesServicesFactory externalEntitiesServicesFactory) {
+    Preconditions.checkNotNull(knowledgeBaseProxyFactory,
+        "The knowledgeBaseProxyFactory cannot be null!");
     Preconditions.checkNotNull(entitiesFactory, "The entitiesFactory cannot be null!");
+    Preconditions.checkNotNull(externalEntitiesServicesFactory,
+        "The externalEntitiesServicesFactory cannot be null!");
 
     this.knowledgeBaseProxyFactory = knowledgeBaseProxyFactory;
     this.entitiesFactory = entitiesFactory;
+    this.externalEntitiesServicesFactory = externalEntitiesServicesFactory;
   }
 
   private String getEntityValue(final Entity property) {
@@ -49,7 +57,8 @@ public final class DefaultEntitiesService implements EntitiesService {
   }
 
   private Proxy getKBProxy(final KnowledgeBase base) {
-    final Proxy kbProxy = this.knowledgeBaseProxyFactory.toProxies(ImmutableSet.of(base)).values().iterator().next();
+    final Proxy kbProxy =
+        this.knowledgeBaseProxyFactory.toProxies(ImmutableSet.of(base)).values().iterator().next();
 
     if (kbProxy == null) {
       throw new IllegalArgumentException(
@@ -62,6 +71,8 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Override
   public Entity propose(final KnowledgeBase base, final ClassProposal proposal)
       throws ProxyException {
+    externalPropose(base, proposal);
+
     final Proxy kbProxy = getKBProxy(base);
 
     final String superClassUri = getEntityValue(proposal.getSuperClass());
@@ -75,6 +86,8 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Override
   public Entity propose(final KnowledgeBase base, final PropertyProposal proposal)
       throws ProxyException {
+    externalPropose(base, proposal);
+
     final Proxy kbProxy = getKBProxy(base);
 
     final String superPropertyUri = getEntityValue(proposal.getSuperProperty());
@@ -84,6 +97,48 @@ public final class DefaultEntitiesService implements EntitiesService {
         proposal.getDomain(), proposal.getRange(), convertPropertyType(proposal.getType()));
 
     return this.entitiesFactory.create(entity.getId(), entity.getLabel());
+  }
+
+  private void externalPropose(final KnowledgeBase base, final ResourceProposal proposal)
+      throws ProxyException {
+    final List<EntitiesService> externalEntitiesServices =
+        this.externalEntitiesServicesFactory.getEntitiesServices(base);
+
+    for (final EntitiesService externalEntitiesService : externalEntitiesServices) {
+      try {
+        externalEntitiesService.propose(base, proposal);
+      } catch (final IllegalArgumentException e) {
+        throw e;
+      }
+    }
+  }
+
+  private void externalPropose(final KnowledgeBase base, final ClassProposal proposal)
+      throws ProxyException {
+    final List<EntitiesService> externalEntitiesServices =
+        this.externalEntitiesServicesFactory.getEntitiesServices(base);
+
+    for (final EntitiesService externalEntitiesService : externalEntitiesServices) {
+      try {
+        externalEntitiesService.propose(base, proposal);
+      } catch (final IllegalArgumentException e) {
+        throw e;
+      }
+    }
+  }
+
+  private void externalPropose(final KnowledgeBase base, final PropertyProposal proposal)
+      throws ProxyException {
+    final List<EntitiesService> externalEntitiesServices =
+        this.externalEntitiesServicesFactory.getEntitiesServices(base);
+
+    for (final EntitiesService externalEntitiesService : externalEntitiesServices) {
+      try {
+        externalEntitiesService.propose(base, proposal);
+      } catch (final IllegalArgumentException e) {
+        throw e;
+      }
+    }
   }
 
   private uk.ac.shef.dcs.kbproxy.model.PropertyType convertPropertyType(PropertyType type) {
@@ -99,6 +154,8 @@ public final class DefaultEntitiesService implements EntitiesService {
   @Override
   public Entity propose(final KnowledgeBase base, final ResourceProposal proposal)
       throws ProxyException {
+    externalPropose(base, proposal);
+
     final Proxy kbProxy = getKBProxy(base);
 
     Collection<String> classes = null;
@@ -120,9 +177,12 @@ public final class DefaultEntitiesService implements EntitiesService {
     final List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
         kbProxy.findClassByFulltext(query, limit);
 
-    return searchResult.stream()
-        .map(entity -> this.entitiesFactory.create(entity.getId(), entity.getLabel()))
-        .collect(Collectors.toCollection(TreeSet::new));
+    final Stream<Entity> externalSearchResults = externalSearchClasses(base, query, limit);
+
+    return Streams.concat(
+        searchResult.stream()
+            .map(entity -> this.entitiesFactory.create(entity.getId(), entity.getLabel())),
+        externalSearchResults).collect(Collectors.toCollection(TreeSet::new));
   }
 
   @Override
@@ -136,9 +196,13 @@ public final class DefaultEntitiesService implements EntitiesService {
     final List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
         kbProxy.findPredicateByFulltext(query, limit, domain, range);
 
-    return searchResult.stream()
-        .map(entity -> this.entitiesFactory.create(entity.getId(), entity.getLabel()))
-        .collect(Collectors.toCollection(TreeSet::new));
+    final Stream<Entity> externalSearchResults =
+        externalSearchProperties(base, query, limit, domain, range);
+
+    return Streams.concat(
+        searchResult.stream()
+            .map(entity -> this.entitiesFactory.create(entity.getId(), entity.getLabel())),
+        externalSearchResults).collect(Collectors.toCollection(TreeSet::new));
   }
 
   @Override
@@ -149,8 +213,53 @@ public final class DefaultEntitiesService implements EntitiesService {
     final List<uk.ac.shef.dcs.kbproxy.model.Entity> searchResult =
         kbProxy.findResourceByFulltext(query, limit);
 
-    return searchResult.stream()
-        .map(entity -> this.entitiesFactory.create(entity.getId(), entity.getLabel()))
-        .collect(Collectors.toCollection(TreeSet::new));
+    final Stream<Entity> externalSearchResults = externalSearchResources(base, query, limit);
+
+    return Streams.concat(
+        searchResult.stream()
+            .map(entity -> this.entitiesFactory.create(entity.getId(), entity.getLabel())),
+        externalSearchResults).collect(Collectors.toCollection(TreeSet::new));
+  }
+
+  private Stream<Entity> externalSearchClasses(final KnowledgeBase base, final String query,
+      final int limit) throws ProxyException {
+    final List<EntitiesService> externalEntitiesServices =
+        this.externalEntitiesServicesFactory.getEntitiesServices(base);
+
+    Stream<Entity> result = ImmutableList.<Entity>of().stream();
+    for (final EntitiesService externalEntitiesService : externalEntitiesServices) {
+      result = Streams.concat(result,
+          externalEntitiesService.searchClasses(base, query, limit).stream());
+    }
+
+    return result;
+  }
+
+  private Stream<Entity> externalSearchProperties(final KnowledgeBase base, final String query,
+      final int limit, final URI domain, final URI range) throws ProxyException {
+    final List<EntitiesService> externalEntitiesServices =
+        this.externalEntitiesServicesFactory.getEntitiesServices(base);
+
+    Stream<Entity> result = ImmutableList.<Entity>of().stream();
+    for (final EntitiesService externalEntitiesService : externalEntitiesServices) {
+      result = Streams.concat(result,
+          externalEntitiesService.searchProperties(base, query, limit, domain, range).stream());
+    }
+
+    return result;
+  }
+
+  private Stream<Entity> externalSearchResources(final KnowledgeBase base, final String query,
+      final int limit) throws ProxyException {
+    final List<EntitiesService> externalEntitiesServices =
+        this.externalEntitiesServicesFactory.getEntitiesServices(base);
+
+    Stream<Entity> result = ImmutableList.<Entity>of().stream();
+    for (final EntitiesService externalEntitiesService : externalEntitiesServices) {
+      result = Streams.concat(result,
+          externalEntitiesService.searchResources(base, query, limit).stream());
+    }
+
+    return result;
   }
 }

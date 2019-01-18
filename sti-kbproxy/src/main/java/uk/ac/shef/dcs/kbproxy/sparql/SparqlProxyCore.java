@@ -10,7 +10,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.Asserts;
 import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.ext.com.google.common.collect.ImmutableMap;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
@@ -25,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
 import uk.ac.shef.dcs.kbproxy.ProxyException;

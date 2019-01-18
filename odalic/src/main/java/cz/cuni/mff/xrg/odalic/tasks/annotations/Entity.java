@@ -145,7 +145,7 @@ public final class Entity implements Comparable<Entity>, Serializable {
   }
 
   /**
-   * @return the part of the resources ID that follows the part substitued by prefix, {@code null}
+   * @return the part of the resources ID that follows the part substituted by prefix, {@code null}
    *         if the prefix is not defined
    */
   @Nullable

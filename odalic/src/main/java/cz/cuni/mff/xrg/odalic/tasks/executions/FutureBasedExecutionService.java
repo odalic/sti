@@ -5,6 +5,7 @@ package cz.cuni.mff.xrg.odalic.tasks.executions;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -17,7 +18,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.beans.factory.annotation.Value;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
@@ -35,8 +36,11 @@ import cz.cuni.mff.xrg.odalic.input.ParsingResult;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
+import cz.cuni.mff.xrg.odalic.tasks.postprocessing.PostProcessor;
+import cz.cuni.mff.xrg.odalic.tasks.postprocessing.PostProcessorFactory;
 import cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
+import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
@@ -68,12 +72,16 @@ public final class FutureBasedExecutionService implements ExecutionService {
   private final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter;
   private final CsvInputParser csvInputParser;
   private final InputToTableAdapter inputToTableAdapter;
+  private final PostProcessorFactory extraAnnotatorFactory;
   private final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
+  private final boolean experimentalMode;
+  
   /**
    * Table of result futures where rows are indexed by user IDs and the columns by task IDs.
    */
   private final com.google.common.collect.Table<String, String, Future<Result>> userTaskIdsToResults;
+
 
   @Autowired
   public FutureBasedExecutionService(final ConfigurationService configurationService,
@@ -81,7 +89,9 @@ public final class FutureBasedExecutionService implements ExecutionService {
       final BasesService basesService, final AnnotationToResultAdapter annotationToResultAdapter,
       final SemanticTableInterpreterFactory semanticTableInterpreterFactory,
       final FeedbackToConstraintsAdapter feedbackToConstraintsAdapter,
-      final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter) {
+      final CsvInputParser csvInputParser, final InputToTableAdapter inputToTableAdapter,
+      final PostProcessorFactory extraAnnotatorFactory,
+      final @Value("${cz.cuni.mff.xrg.odalic.experimentalMode:false}") boolean experimentalMode) {
     Preconditions.checkNotNull(configurationService, "The configurationService cannot be null!");
     Preconditions.checkNotNull(inputSnapshotsService, "The inputSnapshotsService cannot be null!");
     Preconditions.checkNotNull(fileService, "The fileService cannot be null!");
@@ -91,6 +101,7 @@ public final class FutureBasedExecutionService implements ExecutionService {
     Preconditions.checkNotNull(feedbackToConstraintsAdapter, "The feedbackToConstraintsAdapter cannot be null!");
     Preconditions.checkNotNull(csvInputParser, "The csvInputParser cannot be null!");
     Preconditions.checkNotNull(inputToTableAdapter, "The inputToTableAdapter cannot be null!");
+    Preconditions.checkNotNull(extraAnnotatorFactory, "The extraAnnotatorFactory cannot be null!");
 
     this.configurationService = configurationService;
     this.inputSnapshotsService = inputSnapshotsService;
@@ -101,6 +112,9 @@ public final class FutureBasedExecutionService implements ExecutionService {
     this.feedbackToConstraintsAdapter = feedbackToConstraintsAdapter;
     this.csvInputParser = csvInputParser;
     this.inputToTableAdapter = inputToTableAdapter;
+    this.extraAnnotatorFactory = extraAnnotatorFactory;
+    
+    this.experimentalMode = experimentalMode;
 
     this.userTaskIdsToResults = HashBasedTable.create();
   }
@@ -277,6 +291,78 @@ public final class FutureBasedExecutionService implements ExecutionService {
 
     final Future<Result> future = this.executorService.submit(execution);
     this.userTaskIdsToResults.put(userId, taskId, future);
+  }
+  
+  @Override
+  public Result compute(final String userId, final Set<? extends String> usedBaseNames, final String primaryBase, final Input input, final boolean isStatistical, final Feedback feedback)
+      throws InterruptedException, ExecutionException {
+    Preconditions.checkArgument(this.experimentalMode, "Not available outside of experimental mode!");
+    
+    Preconditions.checkNotNull(userId);
+    Preconditions.checkNotNull(usedBaseNames);
+    Preconditions.checkArgument(!usedBaseNames.isEmpty(), "No base selected!");
+    Preconditions.checkNotNull(primaryBase);
+    Preconditions.checkArgument(usedBaseNames.contains(primaryBase), "Primary base is not among the selected!");
+    Preconditions.checkNotNull(input);
+    Preconditions.checkNotNull(feedback);
+    
+    final Callable<Result> execution = () -> {
+      try {
+        final Table table = this.inputToTableAdapter.toTable(input);
+        
+        final Set<KnowledgeBase> usedBases =
+            usedBaseNames.stream().map(e -> this.basesService.getByName(userId, e))
+                .collect(ImmutableSet.toImmutableSet());        
+        
+        final Result result = interpret(userId, feedback, table, isStatistical, usedBases);
+        final Result finalResult = postProcess(userId, feedback, input, usedBases, primaryBase, result);
+
+        return finalResult;
+      } catch (final Exception e) {
+        logger.error("Error during task execution!", e);
+
+        throw e;
+      }
+    };
+
+    return this.executorService.submit(execution).get();
+  }
+  
+  private Result interpret(final String userId, final Feedback feedback, final Table table,
+      final boolean isStatistical, final Set<KnowledgeBase> usedBases)
+      throws STIException, IOException {
+    final Map<String, SemanticTableInterpreter> interpreters =
+        this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases);
+
+    final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
+
+    for (final Map.Entry<String, SemanticTableInterpreter> interpreterEntry : interpreters
+        .entrySet()) {
+      final KnowledgeBase base = this.basesService.getByName(userId, interpreterEntry.getKey());
+
+      final Constraints constraints =
+          this.feedbackToConstraintsAdapter.toConstraints(feedback, base);
+      final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
+
+      final TAnnotation annotationResult = interpreter.start(table, isStatistical, constraints);
+
+      results.put(base, annotationResult);
+    }
+
+    final Result result = this.annotationResultAdapter.toResult(results);
+    return result;
+  }
+
+  private Result postProcess(final String userId, final Feedback feedback, final Input input,
+      final Set<KnowledgeBase> usedBases, final String primaryBaseName, final Result result) {
+    final List<PostProcessor> postProcessors =
+        this.extraAnnotatorFactory.getPostProcessors(usedBases);
+    
+    Result postProcessedResult = result;
+    for (final PostProcessor postProcessor : postProcessors) {
+      postProcessedResult = postProcessor.process(input, postProcessedResult, feedback, primaryBaseName);
+    }
+    return postProcessedResult;
   }
 
   @Override

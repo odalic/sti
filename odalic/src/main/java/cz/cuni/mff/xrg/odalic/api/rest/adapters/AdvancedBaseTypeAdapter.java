@@ -15,6 +15,6 @@ public final class AdvancedBaseTypeAdapter extends XmlAdapter<AdvancedBaseTypeVa
 
   @Override
   public AdvancedBaseType unmarshal(final AdvancedBaseTypeValue value) throws Exception {
-    return new AdvancedBaseType(value.getName(), value.getKeys(), value.getKeysToDefaultValues(), value.getKeysToComments());
+    throw new UnsupportedOperationException();
   }
 }
