@@ -124,7 +124,7 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
 
     final ParsedTableValue parsedTable =
         this.inputConverter.convert(input, this.languageTag, this.user, declaredContextClasses,
-            declaredContextProperties, collectedContextClasses, collectedContextProperties);
+            removeSynthetic(declaredContextProperties), collectedContextClasses, removeSynthetic(collectedContextProperties));
 
     final AnnotationResultValue payload = request(parsedTable, AnnotationResultValue.class);
 
@@ -140,6 +140,18 @@ public final class ExtraRelatablePostProcessor implements PostProcessor {
             columnsCount),
         alterColumnProcessingAnnotations(result, feedback, annotatedColumns, columnsCount),
         result.getWarnings());
+  }
+  
+  private Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> removeSynthetic(final Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> map) {
+    return map.entrySet().stream().filter(e -> {
+        final String resource = e.getValue().getResource();
+        
+        if (resource == null) {
+          return true;
+        }
+        
+        return !resource.startsWith(syntheticPropertiesPath.toString());
+    }).collect(ImmutableMap.toImmutableMap(e -> e.getKey(), e-> e.getValue()));
   }
 
   private Map<Integer, cz.cuni.mff.xrg.odalic.tasks.annotations.Entity> getCollectedContextProperties(
