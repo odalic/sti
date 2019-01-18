@@ -1,0 +1,1 @@
+Contains ERT-friendly version of the Odalic config. Assumes default port, localhost and /home/sti as the sti.home directory.
