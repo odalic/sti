@@ -1,9 +1,8 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -13,25 +12,29 @@ import com.google.common.base.Preconditions;
 
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.annotations.ComponentTypeValue;
 import uk.ac.shef.dcs.sti.core.extension.annotations.EntityCandidate;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Ambiguity;
+import uk.ac.shef.dcs.sti.core.extension.constraints.Classification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.extension.constraints.DataCubeComponent;
 import uk.ac.shef.dcs.sti.core.extension.positions.CellPosition;
-import uk.ac.shef.dcs.sti.core.model.TAnnotation;
-import uk.ac.shef.dcs.sti.core.model.TColumnProcessingAnnotation;
+import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
+import uk.ac.shef.dcs.sti.core.model.*;
 import uk.ac.shef.dcs.sti.core.model.TColumnProcessingAnnotation.TColumnProcessingType;
-import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation;
 import uk.ac.shef.dcs.sti.core.model.TStatisticalAnnotation.TComponentType;
-import uk.ac.shef.dcs.sti.core.model.Table;
 import uk.ac.shef.dcs.sti.core.subjectcol.SubjectColumnDetector;
+import uk.ac.shef.dcs.sti.core.subjectcol.TColumnDataType;
 import uk.ac.shef.dcs.sti.util.DataTypeClassifier;
 import uk.ac.shef.dcs.util.Pair;
 
 public class TMPOdalicInterpreter extends SemanticTableInterpreter {
 
   private static final Logger LOG = LoggerFactory.getLogger(TMPOdalicInterpreter.class.getName());
+
+  private final MLPreClassifier mlPreClassifier;
   private final SubjectColumnDetector subjectColumnDetector;
   private final LEARNING learning;
   private final LiteralColumnTagger literalColumnTagger;
@@ -39,11 +42,13 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
 
   private final UPDATE update;
 
-  public TMPOdalicInterpreter(final SubjectColumnDetector subjectColumnDetector,
+  public TMPOdalicInterpreter(final MLPreClassifier mlPreClassifier,
+      final SubjectColumnDetector subjectColumnDetector,
       final LEARNING learning, final UPDATE update,
       final TColumnColumnRelationEnumerator relationEnumerator,
       final LiteralColumnTagger literalColumnTagger) {
     super(new int[0], new int[0]);
+    this.mlPreClassifier = mlPreClassifier;
     this.subjectColumnDetector = subjectColumnDetector;
     this.learning = learning;
     this.literalColumnTagger = literalColumnTagger;
@@ -138,13 +143,25 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
     return ambiguities;
   }
 
-  @Override
-  public TAnnotation start(final Table table, final boolean relationLearning) throws STIException {
-    return start(table, !relationLearning, new Constraints());
+  private void overrideColumnDataTypesToNE(Table table, Set<Integer> mlClassColumnIndices) {
+    for (Integer col : mlClassColumnIndices) {
+      TColumnHeader hdr = table.getColumnHeader(col);
+      if (!hdr.getFeature().getMostFrequentDataType().getType().equals(DataTypeClassifier.DataType.NAMED_ENTITY)) {
+        // use total number of rows as number of supporting rows for the datatype
+        TColumnDataType newType = new TColumnDataType(DataTypeClassifier.DataType.NAMED_ENTITY, table.getNumRows());
+        table.getColumnHeader(col).getTypes().add(newType);
+        table.getColumnHeader(col).getFeature().setMostFrequentDataType(newType);
+      }
+    }
   }
 
   @Override
-  public TAnnotation start(final Table table, final boolean statistical, Constraints constraints)
+  public TAnnotation start(final Table table, final boolean relationLearning) throws STIException {
+    return start(table, !relationLearning, MLPreClassification.empty(), new Constraints());
+  }
+
+  @Override
+  public TAnnotation start(final Table table, final boolean statistical, MLPreClassification mlPreClassification, Constraints constraints)
       throws STIException {
     Preconditions.checkNotNull(constraints, "The constraints cannot be null!");
 
@@ -173,14 +190,21 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
           this.subjectColumnDetector.compute(table, ignoreColumnsArray);
       tableAnnotations.setSubjectColumn(subjectColumnScores.get(0).getKey());
 
+      // columns ML-Classified as classes need to be set as NAMED_ENTITY type in order to make disambiguation work
+      overrideColumnDataTypesToNE(table, mlPreClassification.getClassHeaderAnnotations().keySet());
+
       // set column processing annotations
       final Set<Ambiguity> newAmbiguities = setColumnProcessingAnnotationsAndAmbiguities(table,
           tableAnnotations, constraints);
 
-      constraints = new Constraints(constraints.getSubjectColumnsPositions(),
+      constraints = new Constraints(
+          // add ML-discovered subject column candidates (if any) to constraints
+          chooseSubjectColumnPositions(constraints.getSubjectColumnsPositions(), mlPreClassification.getSubjectColumnPositions()),
           constraints.getColumnIgnores(), constraints.getColumnCompulsory(),
           constraints.getColumnAmbiguities(),
-          constraints.getClassifications(), constraints.getColumnRelations(),
+          // add ML-discovered classifications as constraints
+          mergeClassifications(constraints.getClassifications(), mlPreClassification.getColumnClassifications(), table.getNumCols()),
+          constraints.getColumnRelations(),
           constraints.getDisambiguations(), newAmbiguities, constraints.getDataCubeComponents());
 
       // learning phase
@@ -211,11 +235,11 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
         if (constraints.getSubjectColumnsPositions().isEmpty()) {
           new RELATIONENUMERATION().enumerate(subjectColumnScores, getIgnoreColumns(),
               this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
-              constraints);
+              mlPreClassification, constraints);
         } else {
           new RELATIONENUMERATION().enumerate(
               this.relationEnumerator, tableAnnotations, table, annotatedColumns, this.update,
-              constraints);
+              mlPreClassification, constraints);
         }
 
         // consolidation - for columns that have relation with subject columns:
@@ -229,6 +253,56 @@ public class TMPOdalicInterpreter extends SemanticTableInterpreter {
       return tableAnnotations;
     } catch (final Exception e) {
       throw new STIException(e);
+    }
+  }
+
+  /**
+   * If there exists Human-provided (constraints-provided) classification for column with index I,
+   * keep that classification. If there is no such classification for column I, assign a new classification for that
+   * column made by the ML PreClassification (if exists).
+   * @param constraintClassifications
+   * @param mlClassifications
+   * @return
+   */
+  private Set<Classification> mergeClassifications(Set<Classification> constraintClassifications,
+                                                   Set<Classification> mlClassifications, int numCols) {
+
+    Map<Integer, Classification> constraintsForCols = constraintClassifications.stream()
+            .collect(Collectors.toMap(cls -> cls.getPosition().getIndex(), Function.identity()));
+
+    Map<Integer, Classification> mlForCols = mlClassifications.stream()
+            .collect(Collectors.toMap(cls -> cls.getPosition().getIndex(), Function.identity()));
+
+    Set<Classification> mergedClassifications = new HashSet<>();
+
+    for (int col = 0; col < numCols; col++) {
+      Classification constraintsClassification = constraintsForCols.get(col);
+      Classification mlClassification = mlForCols.get(col);
+      if (constraintsClassification != null) {
+        // add from constraints
+        mergedClassifications.add(constraintsClassification);
+      } else if (mlClassification != null) {
+        // add ML based classification
+        mergedClassifications.add(mlClassification);
+      }
+    }
+    return mergedClassifications;
+  }
+
+  /**
+   * If there are subject column positions provided by constraints (human input), return them, otherwise
+   * return subject column suggestions provided by MLPreClassification.
+   * @param constraintSubColPositions
+   * @param mlSubColPositions
+   * @return
+   */
+  private Set<ColumnPosition> chooseSubjectColumnPositions(Set<ColumnPosition> constraintSubColPositions,
+                                                  Set<ColumnPosition> mlSubColPositions) {
+
+    if (constraintSubColPositions != null && !constraintSubColPositions.isEmpty()) {
+      return constraintSubColPositions;
+    } else {
+      return mlSubColPositions;
     }
   }
 }

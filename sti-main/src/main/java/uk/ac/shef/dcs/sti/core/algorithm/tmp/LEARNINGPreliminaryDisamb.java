@@ -49,7 +49,7 @@ public class LEARNINGPreliminaryDisamb {
     DisambiguationResult entity_and_scoreMap;
 
     final EntityResult entityResult =
-        constraints.getDisambChosenForCell(column, rowBlock.get(0), this.kbSearch);;
+        constraints.getDisambChosenForCell(column, rowBlock.get(0), this.kbSearch);
     List<Entity> candidates = entityResult.getResult();
     final List<String> warnings = entityResult.getWarnings();
 

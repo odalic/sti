@@ -1,10 +1,7 @@
 package uk.ac.shef.dcs.sti.core.extension.constraints;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -217,7 +214,7 @@ public final class Constraints implements Serializable {
       final Proxy kbProxy) {
     ProxyResult<Entity> entity = kbProxy.loadEntity(resource);
 
-    if (entity == null) {
+    if (entity == null || entity.getResult() == null) {
       entity = new ProxyResult<Entity>(new Entity(resource, label));
     }
     return entity;
@@ -338,6 +335,15 @@ public final class Constraints implements Serializable {
    */
   public Set<ColumnPosition> getSubjectColumnsPositions() {
     return this.subjectColumnsPositions;
+  }
+
+  public SortedSet<ColumnPosition> getSubjectColumnsPositionsSorted() {
+    // sort the subject column candidates according to their positions
+    SortedSet<ColumnPosition> sortedSubjectColumnPositions =
+            new TreeSet<>(Comparator.comparingInt(ColumnPosition::getIndex));
+
+    sortedSubjectColumnPositions.addAll(getSubjectColumnsPositions());
+    return sortedSubjectColumnPositions;
   }
 
   /*

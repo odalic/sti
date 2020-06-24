@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import cz.cuni.mff.xrg.odalic.input.ml.TaskMLConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,8 @@ import uk.ac.shef.dcs.kbproxy.DefaultProxiesFactory;
 import uk.ac.shef.dcs.kbproxy.solr.MemoryOnlySolrCacheProviderService;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.NoMLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
@@ -162,14 +165,15 @@ public class CoreExecutionBatch {
     final Configuration configuration = new Configuration(parsedFile,
         ImmutableSet.of(primaryBase.getName(),
             "DBpedia Clone", "German DBpedia"),
-        primaryBase.getName(), createFeedback(true), rowsLimit, false);
+        primaryBase.getName(), createFeedback(true), rowsLimit, false, false, null);
 
     // TableMinerPlus initialization
     final Map<String, SemanticTableInterpreter> semanticTableInterpreters;
     try {
       semanticTableInterpreters = new TableMinerPlusFactory(kbf, cps, dps).getInterpreters(
           configuration.getInput().getOwner().getEmail(), configuration.getUsedBases().stream().map(e ->
-          mbs.getByName(configuration.getInput().getOwner().getEmail(), e)).collect(ImmutableSet.toImmutableSet()));
+          mbs.getByName(configuration.getInput().getOwner().getEmail(), e)).collect(ImmutableSet.toImmutableSet()),
+          new NoMLPreClassifier());
     } catch (final Exception e) {
       log.error("Error - TMP interpreters failed to initialize:", e);
       return null;
@@ -188,7 +192,7 @@ public class CoreExecutionBatch {
             configuration.getFeedback(), base);
 
         TAnnotation annotationResult = interpreterEntry.getValue().start(table,
-            configuration.isStatistical(), constraints);
+            configuration.isStatistical(), MLPreClassification.empty(), constraints);
 
         results.put(base, annotationResult);
       }

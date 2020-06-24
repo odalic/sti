@@ -18,6 +18,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import cz.cuni.mff.xrg.odalic.input.ml.*;
+import cz.cuni.mff.xrg.odalic.tasks.annotations.*;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
@@ -55,11 +57,6 @@ import cz.cuni.mff.xrg.odalic.input.ParsingResult;
 import cz.cuni.mff.xrg.odalic.positions.CellPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnPosition;
 import cz.cuni.mff.xrg.odalic.positions.ColumnRelationPosition;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.CellAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnProcessingAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.ColumnRelationAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.HeaderAnnotation;
-import cz.cuni.mff.xrg.odalic.tasks.annotations.StatisticalAnnotation;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.Configuration;
 import cz.cuni.mff.xrg.odalic.tasks.configurations.ConfigurationService;
 import cz.cuni.mff.xrg.odalic.tasks.feedbacks.snapshots.InputSnapshotsService;
@@ -67,10 +64,13 @@ import cz.cuni.mff.xrg.odalic.tasks.results.AnnotationToResultAdapter;
 import cz.cuni.mff.xrg.odalic.tasks.results.Result;
 import cz.cuni.mff.xrg.odalic.util.storage.DbService;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPreClassifier;
+
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLFeedback;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
-
 /**
  * Implementation of {@link ExecutionService} based on {@link Future} and {@link ExecutorService}
  * implementations. Stores the latest computed results using {@link DB}-backed map.
@@ -288,6 +288,19 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     return result;
   }
 
+  private TaskMLConfiguration createTaskMLConfiguration(final String userId,
+                                                        final Configuration configuration) throws IOException {
+    // load ml training dataset file & its format
+    TaskMLConfiguration taskMlConfig;
+    if (configuration.isUseMLClassifier()) {
+      ParsingResult trainingDatasetParsed = parse(userId, configuration.getMlTrainingDatasetFile().getId(), Configuration.MAXIMUM_ROWS_LIMIT);
+      taskMlConfig = new TaskMLConfiguration(configuration.isUseMLClassifier(), trainingDatasetParsed);
+    } else {
+      taskMlConfig = TaskMLConfiguration.disabled();
+    }
+    return taskMlConfig;
+  }
+
   @Override
   public void submitForTaskId(final String userId, final String taskId)
       throws IllegalStateException, IOException {
@@ -303,6 +316,9 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
     final ParsingResult parsingResult = parse(userId, fileId, rowsLimit);
     final Input input = parsingResult.getInput();
 
+    // load ml training dataset file & its format
+    final TaskMLConfiguration taskMlConfig = createTaskMLConfiguration(userId, configuration);
+
     this.inputSnapshotsService.setInputSnapshotForTaskid(userId, taskId, input);
     this.db.commit();
 
@@ -315,8 +331,16 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
             usedBaseNames.stream().map(e -> this.basesService.getByName(userId, e))
                 .collect(ImmutableSet.toImmutableSet());
 
+        // initialize ML classifier and perform ML PreClassification phase here
+        final MLPreClassifier mlPreClassifier = this.semanticTableInterpreterFactory.getMLPreClassifier(taskMlConfig);
+
         final Map<String, SemanticTableInterpreter> interpreters =
-            this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases);
+            this.semanticTableInterpreterFactory.getInterpreters(userId, usedBases, mlPreClassifier);
+
+        // run the ML PreClassification
+        logger.info("\t> PHASE: ML PRE-CLASSIFICATION ...");
+        MLFeedback mlFeedback = createMLFeedback(configuration, feedback);
+        MLPreClassification mlPreClassification = mlPreClassifier.preClassificate(table, mlFeedback);
 
         final Map<KnowledgeBase, TAnnotation> results = new HashMap<>();
 
@@ -328,7 +352,7 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
               this.feedbackToConstraintsAdapter.toConstraints(feedback, base);
           final SemanticTableInterpreter interpreter = interpreterEntry.getValue();
 
-          final TAnnotation annotationResult = interpreter.start(table, isStatistical, constraints);
+          final TAnnotation annotationResult = interpreter.start(table, isStatistical, mlPreClassification, constraints);
 
           results.put(base, annotationResult);
         }
@@ -400,6 +424,41 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
 
     this.userTaskIdsToCachedResults.put(userTaskId, mergedResult);
     this.db.commit();
+  }
+
+  private MLFeedback createMLFeedback(Configuration configuration, Feedback feedback) {
+    Set<Integer> columnsToIgnorePreClassification = feedback
+            .getColumnIgnores()
+            .stream()
+            .map(ci -> ci.getPosition().getIndex())
+            .collect(Collectors.toSet());
+
+    Map<Integer, String> classificationsMap = new HashMap<>();
+    for (Classification classification: feedback.getClassifications()) {
+      int position = classification.getPosition().getIndex();
+      String resource = getChosenResourceFromAnnotation(configuration, classification.getAnnotation());
+      if (resource != null) {
+        classificationsMap.put(position, resource);
+      }
+    }
+    return new MLFeedback(columnsToIgnorePreClassification, classificationsMap);
+  }
+
+  private String getChosenResourceFromAnnotation(Configuration configuration, HeaderAnnotation headerAnnotation) {
+    String primaryBase = configuration.getPrimaryBase();
+    Set<EntityCandidate> chosenPrimary = headerAnnotation.getChosen().get(primaryBase);
+    // if there is any chosen value from primary knowledge base, use that
+    if (!chosenPrimary.isEmpty()) {
+      return chosenPrimary.iterator().next().getEntity().getResource();
+    } else {
+      // else use any existing chosen value
+      for (Map.Entry<String, Set<EntityCandidate>> entry : headerAnnotation.getChosen().entrySet()) {
+        if (!entry.getValue().isEmpty()) {
+          return entry.getValue().iterator().next().getEntity().getResource();
+        }
+      }
+    }
+    return null;
   }
 
   private static List<ColumnProcessingAnnotation> mergeColumnProcessingAnnotations(
@@ -559,4 +618,5 @@ public final class DbCachedFutureBasedExecutionService implements ExecutionServi
       }
     }).collect(ImmutableList.toImmutableList());
   }
+
 }

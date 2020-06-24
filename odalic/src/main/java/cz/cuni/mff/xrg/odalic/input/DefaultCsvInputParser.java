@@ -1,11 +1,7 @@
 package cz.cuni.mff.xrg.odalic.input;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -134,4 +130,5 @@ public final class DefaultCsvInputParser implements CsvInputParser {
       return parse(reader, identifier, configuration, rowsLimit);
     }
   }
+
 }

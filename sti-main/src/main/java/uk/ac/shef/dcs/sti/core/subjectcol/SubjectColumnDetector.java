@@ -64,8 +64,8 @@ public class SubjectColumnDetector {
    *         the main column of the table, the second part is a boolean indicating whether the
    *         column is acronym column. (only NE likely columns can be considered main column)
    */
-  public List<Pair<Integer, Pair<Double, Boolean>>> compute(final Table table,
-      final int... skipColumns) throws IOException, ClassNotFoundException {
+  public List<Pair<Integer, Pair<Double, Boolean>>> compute(final Table table,  final int... skipColumns)
+          throws IOException, ClassNotFoundException {
     final List<Pair<Integer, Pair<Double, Boolean>>> rs = new ArrayList<>();
 
     // 1. initiate all columns' feature objects

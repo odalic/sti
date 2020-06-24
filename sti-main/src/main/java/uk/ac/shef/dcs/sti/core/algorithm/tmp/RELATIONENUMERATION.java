@@ -1,16 +1,13 @@
 package uk.ac.shef.dcs.sti.core.algorithm.tmp;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.STIException;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.extension.positions.ColumnPosition;
 import uk.ac.shef.dcs.sti.core.model.RelationColumns;
@@ -32,14 +29,16 @@ public class RELATIONENUMERATION {
       final Set<Integer> ignoreCols, final TColumnColumnRelationEnumerator relationEnumerator,
       final TAnnotation tableAnnotations, final Table table, final List<Integer> annotatedColumns,
       final UPDATE update) throws STIException {
+
     enumerate(subjectColCandidadteScores, ignoreCols, relationEnumerator, tableAnnotations, table,
-        annotatedColumns, update, new Constraints());
+        annotatedColumns, update, new MLPreClassification(), new Constraints());
   }
 
   public void enumerate(final List<Pair<Integer, Pair<Double, Boolean>>> subjectColCandidadteScores,
-      final Set<Integer> ignoreCols, final TColumnColumnRelationEnumerator relationEnumerator,
-      TAnnotation tableAnnotations, final Table table, final List<Integer> annotatedColumns,
-      final UPDATE update, final Constraints constraints) throws STIException {
+                        final Set<Integer> ignoreCols, final TColumnColumnRelationEnumerator relationEnumerator,
+                        TAnnotation tableAnnotations, final Table table, final List<Integer> annotatedColumns,
+                        final UPDATE update, final MLPreClassification mlPreClassification,
+                        final Constraints constraints) throws STIException {
     double winningSolutionScore = 0;
     int subjectCol;
     TAnnotation winningSolution = null;
@@ -52,7 +51,7 @@ public class RELATIONENUMERATION {
 
       LOG.info(">>\t\t Let subject column=" + subjectCol);
       final int relatedColumns = relationEnumerator.runRelationEnumeration(tableAnnotations, table,
-          subjectCol, constraints);
+          subjectCol, mlPreClassification, constraints);
 
       boolean interpretable = false;
       if (relatedColumns > 0) {
@@ -90,12 +89,13 @@ public class RELATIONENUMERATION {
 
   public void enumerate(final TColumnColumnRelationEnumerator relationEnumerator,
       TAnnotation tableAnnotations, final Table table, final List<Integer> annotatedColumns,
-      final UPDATE update, final Constraints constraints) throws STIException {
+      final UPDATE update, final MLPreClassification mlPreClassification, final Constraints constraints) throws STIException {
     Set<Integer> subjectColumns = new HashSet<>();
-    for (ColumnPosition subjectPosition : constraints.getSubjectColumnsPositions()) {
+
+    for (ColumnPosition subjectPosition : constraints.getSubjectColumnsPositionsSorted()) {
       LOG.info(">>\t\t Let subject column=" + subjectPosition.getIndex());
       relationEnumerator.runRelationEnumeration(tableAnnotations, table,
-          subjectPosition.getIndex(), constraints);
+          subjectPosition.getIndex(), mlPreClassification, constraints);
       subjectColumns.add(subjectPosition.getIndex());
     }
     tableAnnotations.setSubjectColumns(subjectColumns);

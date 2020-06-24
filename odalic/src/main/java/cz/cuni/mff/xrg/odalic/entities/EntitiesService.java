@@ -1,6 +1,7 @@
 package cz.cuni.mff.xrg.odalic.entities;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.NavigableSet;
 
 import cz.cuni.mff.xrg.odalic.bases.KnowledgeBase;
@@ -50,6 +51,17 @@ public interface EntitiesService {
    * @throws ProxyException when an exception happens within the base proxy
    */
   Entity propose(KnowledgeBase base, ResourceProposal proposal) throws ProxyException;
+
+  /**
+   * Propose new entities to the primary base.
+   *
+   * @param base used knowledge base
+   * @param proposals resource proposals
+   * @throws IllegalArgumentException when the entity is already defined or some part of the
+   *         proposal is invalid
+   * @throws ProxyException when an exception happens within the base proxy
+   */
+  void propose(KnowledgeBase base, Collection<ResourceProposal> proposals) throws ProxyException;
 
   /**
    * Searches for classes conforming to the query.

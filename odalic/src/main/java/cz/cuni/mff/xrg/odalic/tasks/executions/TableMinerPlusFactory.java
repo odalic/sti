@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import cz.cuni.mff.xrg.odalic.input.ml.*;
 import org.apache.commons.lang3.StringUtils;
 import org.simmetrics.metrics.StringMetrics;
 import org.slf4j.Logger;
@@ -26,25 +28,29 @@ import uk.ac.shef.dcs.kbproxy.solr.CacheProviderService;
 import uk.ac.shef.dcs.sti.STIConstantProperty;
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.LEARNING;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.LEARNINGPreliminaryColumnClassifier;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.LEARNINGPreliminaryDisamb;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.LiteralColumnTagger;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.LiteralColumnTaggerImpl;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.TCellDisambiguator;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.TColumnClassifier;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.TColumnColumnRelationEnumerator;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.TMPOdalicInterpreter;
-import uk.ac.shef.dcs.sti.core.algorithm.tmp.UPDATE;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.*;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.DefaultMLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.MLPropertiesLoader;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.NoMLPreClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier.MLClassifier;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.classifier.RandomForestMLClassifier;
+import cz.cuni.mff.xrg.odalic.input.ml.TaskMLConfiguration;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.DefaultMLFeatureDetector;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.MLFeatureDetector;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.OSPD_nonEmpty;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentCellRanker;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.sampler.TContentTContentRowRankerImpl;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPClazzScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPEntityScorer;
 import uk.ac.shef.dcs.sti.core.algorithm.tmp.scorer.TMPRelationScorer;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.preprocessing.InputValue;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyDefinition;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLOntologyMapping;
 import uk.ac.shef.dcs.sti.core.feature.ConceptBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.feature.RelationBoWCreatorImpl;
 import uk.ac.shef.dcs.sti.core.scorer.AttributeValueMatcher;
+import uk.ac.shef.dcs.sti.core.scorer.ClazzScorer;
 import uk.ac.shef.dcs.sti.core.scorer.RelationScorer;
 import uk.ac.shef.dcs.sti.core.subjectcol.SubjectColumnDetector;
 import uk.ac.shef.dcs.sti.util.FileUtils;
@@ -76,6 +82,8 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   private static final String PROPERTY_TMP_IINF_LEARNING_STOPPING_CLASS_CONSTR_PARAM =
       "sti.tmp.iinf.learning.stopping.class.constructor.params";
 
+  private static final String PROPERTY_ML_PROP_FILE = "sti.ml.properties";
+
   private static final Logger logger = LoggerFactory.getLogger(TableMinerPlusFactory.class);
 
   private final KnowledgeBaseProxiesService knowledgeBaseProxyFactory;
@@ -84,11 +92,13 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
   private final Properties properties;
 
   @Autowired
-  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService, final PropertiesService propertiesService) {
+  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService,
+                               final PropertiesService propertiesService) {
     this(knowledgeBaseProxyFactory, cacheProviderService, propertiesService.get());
   }
 
-  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService, final Properties properties) {
+  public TableMinerPlusFactory(final KnowledgeBaseProxiesService knowledgeBaseProxyFactory, final CacheProviderService cacheProviderService,
+                               final Properties properties) {
     Preconditions.checkNotNull(knowledgeBaseProxyFactory, "The knowledgeBaseProxyFactory cannot be null!");
     Preconditions.checkNotNull(cacheProviderService, "The cacheProviderService cannot be null!");
     Preconditions.checkNotNull(properties, "The properties cannot be null!");
@@ -98,21 +108,27 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     this.properties = properties;
   }
 
-  private String getAbsolutePath(final String propertyName) {
-    return combinePaths(this.properties.getProperty(PROPERTY_HOME),
-        this.properties.getProperty(propertyName));
-  }
-
   @Override
-  public Map<String, SemanticTableInterpreter> getInterpreters(final String userId, final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
-    return initializeInterpreters(userId, bases);
+  public Map<String, SemanticTableInterpreter> getInterpreters(final String userId,
+                                                               final Set<? extends KnowledgeBase> bases,
+                                                               final MLPreClassifier mlPreClassifier) throws STIException, IOException {
+    return initializeInterpreters(userId, bases, mlPreClassifier);
   }
 
   private String getNLPResourcesDir() throws STIException {
-    final String prop = getAbsolutePath(PROPERTY_NLP_RESOURCES);
+    return getAndValidatePath(PROPERTY_NLP_RESOURCES, "nlp resources folder");
+  }
+
+  private String getAbsolutePath(final String propertyName) {
+
+    return combinePaths(properties.getProperty(PROPERTY_HOME), properties.getProperty(propertyName));
+  }
+
+  private String getAndValidatePath(String pathPropertyName, String propertyDescription) throws STIException {
+    final String prop = getAbsolutePath(pathPropertyName);
     if ((prop == null) || !new File(prop).exists()) {
-      final String error = "Cannot proceed: nlp resources folder is not set or does not exist. "
-          + PROPERTY_NLP_RESOURCES + "=" + prop;
+      final String error = "Cannot proceed: " + propertyDescription + " is not set or does not exist. "
+              + pathPropertyName + "=" + prop;
       logger.error(error);
       throw new STIException(error);
     }
@@ -125,25 +141,36 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
 
   private TColumnClassifier initClassifier() throws STIException {
     try {
-      return new TColumnClassifier(
-          new TMPClazzScorer(getNLPResourcesDir(), new ConceptBoWCreatorImpl(), getStopwords(),
-              STIConstantProperty.SCORER_CLAZZ_CONTEXT_WEIGHT) // all 1.0
-      ); // header, column, out trivial, out important
+      ClazzScorer clazzScorer = initClazzScorer();
+      return new TColumnClassifier(clazzScorer); // header, column, out trivial, out important
     } catch (final Exception e) {
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing LEARNING components.", e);
     }
   }
 
+  private TMPClazzScorer initClazzScorer() throws STIException {
+    try {
+      return new TMPClazzScorer(getNLPResourcesDir(), new ConceptBoWCreatorImpl(), getStopwords(),
+              STIConstantProperty.SCORER_CLAZZ_CONTEXT_WEIGHT); // all 1.0
+    } catch (final Exception e) {
+      logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
+      throw new STIException("Failed initializing Clazz Scorer components.", e);
+    }
+  }
+
   // Initialize kbsearcher, websearcher
-  private synchronized Map<String, SemanticTableInterpreter> initializeInterpreters(final String userId, final Set<? extends KnowledgeBase> bases) throws STIException, IOException {
+  private synchronized Map<String, SemanticTableInterpreter> initializeInterpreters(final String userId,
+                                          final Set<? extends KnowledgeBase> bases,
+                                          final MLPreClassifier mlPreClassifier) throws STIException, IOException {
+
       // object to fetch things from KB
       final Table<String, String, Proxy> kbProxyInstances = this.knowledgeBaseProxyFactory.toProxies(bases);
 
       final Map<String, SemanticTableInterpreter> interpreters = new HashMap<>();
       for (final Map.Entry<String, Proxy> kbProxyEntry : kbProxyInstances.row(userId).entrySet()) {
         final Proxy kbProxy = kbProxyEntry.getValue();
-        
+
         final SubjectColumnDetector subcolDetector = initSubColDetector(kbProxy);
 
         final TCellDisambiguator disambiguator = initDisambiguator(kbProxy);
@@ -154,19 +181,62 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
 
         final UPDATE update = initUpdate(kbProxy, selector, disambiguator, classifier);
 
-        final TColumnColumnRelationEnumerator relationEnumerator = initRelationEnumerator();
+        final TColumnColumnRelationEnumerator relationEnumerator = initRelationEnumerator(mlPreClassifier.getMlOntologyDefinition());
 
         // object to consolidate previous output, further computeElementScores columns
         // and disambiguate entities
         final LiteralColumnTagger literalColumnTagger = new LiteralColumnTaggerImpl();
 
-        final SemanticTableInterpreter interpreter = new TMPOdalicInterpreter(subcolDetector,
+        final SemanticTableInterpreter interpreter = new TMPOdalicInterpreter(mlPreClassifier, subcolDetector,
             learning, update, relationEnumerator, literalColumnTagger);
 
         interpreters.put(kbProxyEntry.getKey(), interpreter);
       }
       
       return interpreters;
+  }
+
+  @Override
+  public MLPreClassifier getMLPreClassifier(final TaskMLConfiguration mlConfig) throws STIException {
+    if (mlConfig.isUseMlClassifier()) {
+      // ML should be used
+      String mlPropsFilePath = getAbsolutePath(PROPERTY_ML_PROP_FILE);
+
+      try {
+        final String homePath = this.properties.getProperty(PROPERTY_HOME);
+        final MLFeatureDetector mlFeatureDetector = new DefaultMLFeatureDetector();
+
+        MLPropertiesLoader mlPropertiesLoader = new MLPropertiesLoader(homePath, mlPropsFilePath);
+
+        // parse traning dataset to input values
+        InputValue[] trainingDatasetInputValues = InputValueFactory.fromParsingResult(mlConfig.getTrainingDataset());
+
+        // parse ontology mapping
+        OntologyMappingReader ontologyMappingReader = new JsonOntologyMappingReader();
+        MLOntologyMapping ontologyMapping =
+                ontologyMappingReader.readOntologyMapping(mlPropertiesLoader.getMLClassifierOntologyMappingFilePath());
+
+        // load ontology definitions
+        OntologyDefinitionReader ontologyDefinitionReader = new Rdf4jOntologyDefinitionReader();
+        MLOntologyDefinition ontologyDefinition = ontologyDefinitionReader.readOntologyDefinitions(
+                mlPropertiesLoader.getMLClassifierOntologyDefinitionFilePaths()
+        );
+
+
+        MLClassifier classifier = new RandomForestMLClassifier(
+                homePath, mlPropertiesLoader.getProperties(), mlFeatureDetector, trainingDatasetInputValues
+        );
+        classifier.trainClassifier();
+        return new DefaultMLPreClassifier(classifier, ontologyMapping, ontologyDefinition);
+
+      } catch (final Exception e) {
+        logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
+        throw new STIException("Failed initializing Machine Learning Classifier components.", e);
+      }
+    } else {
+      // ML is disabled
+      return new NoMLPreClassifier();
+    }
   }
 
   private TCellDisambiguator initDisambiguator(final Proxy kbProxy) throws STIException {
@@ -202,7 +272,7 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
     }
   }
 
-  private TColumnColumnRelationEnumerator initRelationEnumerator() throws STIException {
+  private TColumnColumnRelationEnumerator initRelationEnumerator(MLOntologyDefinition mlOntologyDefinition) throws STIException {
     logger.info("Initializing RELATIONLEARNING components ...");
     try {
       // object to computeElementScores relations between columns
@@ -211,10 +281,11 @@ public final class TableMinerPlusFactory implements SemanticTableInterpreterFact
               getStopwords(), STIConstantProperty.SCORER_RELATION_CONTEXT_WEIGHT
           // new double[]{1.0, 1.0, 0.0, 0.0, 1.0}
           );
-      return new TColumnColumnRelationEnumerator(
-          new AttributeValueMatcher(STIConstantProperty.ATTRIBUTE_MATCHER_MIN_SCORE, getStopwords(),
-              StringMetrics.levenshtein()),
-          relationScorer);
+
+      return new TMLColumnColumnRelationEnumerator(
+              new AttributeValueMatcher(STIConstantProperty.ATTRIBUTE_MATCHER_MIN_SCORE, getStopwords(),
+                      StringMetrics.levenshtein()), relationScorer, mlOntologyDefinition);
+
     } catch (final Exception e) {
       logger.error("Exception", e.getLocalizedMessage(), e.getStackTrace());
       throw new STIException("Failed initializing RELATIONLEARNING components.", e);

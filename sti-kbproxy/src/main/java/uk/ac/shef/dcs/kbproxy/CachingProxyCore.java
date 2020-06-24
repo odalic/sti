@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import uk.ac.shef.dcs.kbproxy.model.Attribute;
+import uk.ac.shef.dcs.kbproxy.model.Concept;
 import uk.ac.shef.dcs.kbproxy.model.Entity;
 import uk.ac.shef.dcs.kbproxy.model.PropertyType;
 import uk.ac.shef.dcs.kbproxy.solr.CacheQueries;
@@ -201,7 +202,7 @@ public class CachingProxyCore implements ProxyCore {
 
   @Override
   public List<Attribute> findAttributesOfEntities(Entity ec) throws ProxyException {
-    return this.core.findAttributesOfEntities(ec, this);
+    return this.core.findAttributesOfEntities(ec);
   }
 
 //  @Override
@@ -257,6 +258,11 @@ public class CachingProxyCore implements ProxyCore {
   public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels,
       Collection<String> classes) throws ProxyException {
     return this.core.insertConcept(uri, label, alternativeLabels, classes);
+  }
+
+  @Override
+  public void insertConcepts(Collection<Concept> concepts) throws ProxyException {
+    this.core.insertConcepts(concepts);
   }
 
   @Override

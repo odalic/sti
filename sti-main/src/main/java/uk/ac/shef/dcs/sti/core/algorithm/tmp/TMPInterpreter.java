@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.shef.dcs.sti.STIException;
 import uk.ac.shef.dcs.sti.core.algorithm.SemanticTableInterpreter;
+import uk.ac.shef.dcs.sti.core.algorithm.tmp.ml.config.MLPreClassification;
 import uk.ac.shef.dcs.sti.core.extension.constraints.Constraints;
 import uk.ac.shef.dcs.sti.core.model.TAnnotation;
 import uk.ac.shef.dcs.sti.core.model.Table;
@@ -112,8 +113,7 @@ public class TMPInterpreter extends SemanticTableInterpreter {
   }
 
   @Override
-  public TAnnotation start(final Table table, final boolean statistical,
-      final Constraints constraints) throws STIException {
+  public TAnnotation start(Table table, boolean statistical, MLPreClassification mlPreclassification, Constraints constraints) throws STIException {
     return start(table, !statistical);
   }
 

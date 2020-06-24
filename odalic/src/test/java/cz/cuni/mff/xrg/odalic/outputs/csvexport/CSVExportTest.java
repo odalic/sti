@@ -120,7 +120,7 @@ public class CSVExportTest {
               StandardCharsets.UTF_8, ';', true, '"', null, null), true),
           ImmutableSet.of(primaryBase.getName(),
               "DBpedia Clone", "German DBpedia"),
-          primaryBase.getName(), new Feedback(), null, false);
+          primaryBase.getName(), new Feedback(), null, false, false, null);
     } catch (MalformedURLException e) {
       log.error("Error - configuration settings:", e);
       return;

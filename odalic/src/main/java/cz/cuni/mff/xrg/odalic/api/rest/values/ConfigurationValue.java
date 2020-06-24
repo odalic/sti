@@ -38,6 +38,10 @@ public final class ConfigurationValue implements Serializable {
 
   private Boolean statistical;
 
+  private Boolean useMLClassifier;
+
+  private String mlTrainingDatasetFile;
+
   public ConfigurationValue() {}
 
   public ConfigurationValue(final Configuration adaptee) {
@@ -48,6 +52,9 @@ public final class ConfigurationValue implements Serializable {
     this.rowsLimit =
         adaptee.getRowsLimit() == Configuration.MAXIMUM_ROWS_LIMIT ? null : adaptee.getRowsLimit();
     this.statistical = adaptee.isStatistical();
+    this.useMLClassifier = adaptee.isUseMLClassifier();
+    this.mlTrainingDatasetFile = (adaptee.getMlTrainingDatasetFile() != null) ?
+                                    adaptee.getMlTrainingDatasetFile().getId() : null;
   }
 
   /**
@@ -105,6 +112,22 @@ public final class ConfigurationValue implements Serializable {
   }
 
   /**
+   * @return true for usage of ML classifier
+   */
+  @XmlElement
+  @Nullable
+  public Boolean getUseMLClassifier() { return useMLClassifier; }
+
+  /**
+   * @return the ML classifier training dataset file
+   */
+  @XmlElement
+  @Nullable
+  public String getMlTrainingDatasetFile() {
+    return this.mlTrainingDatasetFile;
+  }
+
+  /**
    * @param feedback the feedback to set
    */
   public void setFeedback(final Feedback feedback) {
@@ -156,10 +179,24 @@ public final class ConfigurationValue implements Serializable {
     this.usedBases = ImmutableSortedSet.copyOf(usedBases);
   }
 
+  /**
+   * @param useMLClassifier true for usage of ML classifier
+   */
+  public void setUseMLClassifier(final @Nullable Boolean useMLClassifier) { this.useMLClassifier = useMLClassifier; }
+
+  /**
+   * @param mlTrainingDatasetFile the ML classifier training dataset file
+   */
+  public void setMlTrainingDatasetFile(final @Nullable String mlTrainingDatasetFile) {
+    this.mlTrainingDatasetFile = mlTrainingDatasetFile;
+  }
+
+
   @Override
   public String toString() {
     return "ConfigurationValue [input=" + this.input + ", feedback=" + this.feedback
         + ", usedBases=" + this.usedBases + ", primaryBase=" + this.primaryBase + ", rowsLimit="
-        + this.rowsLimit + ", statistical=" + this.statistical + "]";
+        + this.rowsLimit + ", statistical=" + this.statistical + ", useMLClassifier= " + this.useMLClassifier
+            + ", mlTrainingDatasetFile="  + this.mlTrainingDatasetFile +  "]";
   }
 }

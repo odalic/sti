@@ -1,5 +1,6 @@
 package uk.ac.shef.dcs.kbproxy.sparql;
 
+import cz.cuni.mff.xrg.odalic.util.parsing.UriParsingUtil;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -29,10 +30,7 @@ import com.google.common.base.Preconditions;
 import uk.ac.shef.dcs.kbproxy.ProxyDefinition;
 import uk.ac.shef.dcs.kbproxy.ProxyException;
 import uk.ac.shef.dcs.kbproxy.ProxyCore;
-import uk.ac.shef.dcs.kbproxy.model.Attribute;
-import uk.ac.shef.dcs.kbproxy.model.Clazz;
-import uk.ac.shef.dcs.kbproxy.model.Entity;
-import uk.ac.shef.dcs.kbproxy.model.PropertyType;
+import uk.ac.shef.dcs.kbproxy.model.*;
 import uk.ac.shef.dcs.kbproxy.sparql.helpers.SelectBuilder;
 import uk.ac.shef.dcs.kbproxy.utils.Uris;
 import uk.ac.shef.dcs.util.Pair;
@@ -40,15 +38,7 @@ import uk.ac.shef.dcs.util.StringUtils;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.concurrent.TimeUnit;
 
@@ -57,6 +47,8 @@ public class SparqlProxyCore implements ProxyCore {
   protected static final String LANGUAGE_TAG_SEPARATOR = "@";
   protected static final String SPARQL_PREFIX = "PREFIX %1$s: <%2$s>";
   protected static final String INSERT_BASE = "INSERT DATA {GRAPH <%1$s> {%2$s .}}";
+  protected static final String INSERT_DATA_PREFIX = "INSERT DATA {GRAPH <%1$s> {";
+  protected static final String INSERT_DATA_TRIPLE_DEFINITION = "%1$s .\n";
 
   protected static final String SPARQL_VARIABLE_SUBJECT = "?subject";
   protected static final String SPARQL_VARIABLE_PREDICATE = "?predicate";
@@ -384,64 +376,10 @@ public class SparqlProxyCore implements ProxyCore {
     // The resource has no statement with label property, apply simple heuristics to parse the
     // resource URI.
     if (labels.size() == 0) {
-      filteredLabels.add(parseLabelFromResource(resourceURI));
+      filteredLabels.add(UriParsingUtil.parseLabelFromResourceUri(resourceURI, this.definition.isUriLabelHeuristicApplied()));
     }
 
     return filteredLabels;
-  }
-
-  protected String parseLabelFromResource(String resourceURI) {
-    if (!resourceURI.startsWith("http")) {
-      return resourceURI;
-    }
-
-    // URI like https://www.w3.org/1999/02/22-rdf-syntax-ns#type
-    int trimPosition = resourceURI.lastIndexOf("#");
-
-    // URI like http://dbpedia.org/property/name
-    if (trimPosition == -1) {
-      trimPosition = resourceURI.lastIndexOf("/");
-    }
-
-    if (trimPosition != -1) {
-      // Remove anything that is not a character or digit
-      // TODO: For a future improvement, take into account the "_" character.
-      String stringValue = resourceURI.substring(trimPosition + 1).replaceAll("[^a-zA-Z0-9]", "").trim();
-
-      // Derived KBs can have custom URI conventions.
-      stringValue = applyCustomUriHeuristics(resourceURI, stringValue);
-      stringValue = StringUtils.splitCamelCase(stringValue);
-
-      return stringValue;
-    }
-
-    return resourceURI;
-  }
-
-  protected String applyCustomUriHeuristics(String resourceURI, String label) {
-    if (!this.definition.isUriLabelHeuristicApplied()) {
-      return label;
-    }
-    
-    // This is an yago resource, which may have numbered ids as suffix
-    // e.g., City015467.
-    if (resourceURI.contains("yago")) {
-      int end = 0;
-      for (int i = 0; i < label.length(); i++) {
-        if (Character.isDigit(label.charAt(i))) {
-          end = i;
-          break;
-        }
-      }
-
-      if (end > 0) {
-        label = label.substring(0, end);
-      }
-    } else {
-      return label;
-    }
-
-    return label;
   }
 
   /**
@@ -583,19 +521,36 @@ public class SparqlProxyCore implements ProxyCore {
 
   @Override
   public Entity insertConcept(URI uri, String label, Collection<String> alternativeLabels, Collection<String> classes) throws ProxyException {
-    performInsertChecks(label);
-
     String url = checkOrGenerateUrl(definition.getInsertPrefixData(), uri);
-
-    StringBuilder tripleDefinition = createTripleDefinitionBase(url, label);
-    appendCollection(tripleDefinition, definition.getInsertPredicateAlternativeLabel(), alternativeLabels, true);
-    boolean typeSpecified = appendCollection(tripleDefinition, definition.getStructureInstanceOf(), classes, false);
-    if (!typeSpecified){
-      appendValue(tripleDefinition, definition.getStructureInstanceOf(), definition.getInsertDefaultClass(), false);
-    }
-
-    insert(tripleDefinition.toString());
+    String tripleDefinition = createInsertTripleDefinition(url, label, alternativeLabels, classes);
+    insert(tripleDefinition);
     return new Entity(url, label);
+  }
+
+  @Override
+  public void insertConcepts(Collection<Concept> concepts) throws ProxyException {
+    Set<String> tripleDefinitions = new HashSet<>();
+    for (Concept concept : concepts) {
+        String url = checkOrGenerateUrl(definition.getInsertPrefixData(), concept.getUri());
+        String tripleDefinition = createInsertTripleDefinition(url, concept.getLabel(), concept.getAlternativeLabels(),
+            concept.getClasses());
+        tripleDefinitions.add(tripleDefinition);
+    }
+    insertTriples(tripleDefinitions.toArray(new String[tripleDefinitions.size()]));
+  }
+
+  private String createInsertTripleDefinition(String url, String label, Collection<String> alternativeLabels, Collection<String> classes)
+          throws ProxyException {
+      performInsertChecks(label);
+
+      StringBuilder tripleDefinition = createTripleDefinitionBase(url, label);
+      appendCollection(tripleDefinition, definition.getInsertPredicateAlternativeLabel(), alternativeLabels, true);
+      boolean typeSpecified = appendCollection(tripleDefinition, definition.getStructureInstanceOf(), classes, false);
+      if (!typeSpecified){
+          appendValue(tripleDefinition, definition.getStructureInstanceOf(), definition.getInsertDefaultClass(), false);
+      }
+
+      return tripleDefinition.toString();
   }
 
   @Override
@@ -762,6 +717,42 @@ public class SparqlProxyCore implements ProxyCore {
     queryExecution.execute();
   }
 
+  private void insertTriples(String[] tripleDefinitions) {
+    StringBuilder queryBuilder = new StringBuilder();
+
+    if (prefixToUriMap != null) {
+      for(Map.Entry<String, String> prefix : prefixToUriMap.entrySet()) {
+        queryBuilder.append(String.format(SPARQL_PREFIX, prefix.getKey(), prefix.getValue()));
+        queryBuilder.append("\n");
+      }
+    }
+
+    queryBuilder.append(String.format(INSERT_DATA_PREFIX, definition.getInsertGraph()));
+
+    for (String tripleDefinition : tripleDefinitions) {
+      queryBuilder.append(String.format(INSERT_DATA_TRIPLE_DEFINITION, tripleDefinition));
+    }
+
+
+    queryBuilder.append("}}");
+
+    String sparqlQuery = queryBuilder.toString();
+    log.info("SPARQL query: \n" + sparqlQuery);
+
+    UpdateRequest query = UpdateFactory.create(sparqlQuery);
+
+    UpdateProcessor queryExecution;
+    if (httpClient != null) {
+      queryExecution = UpdateExecutionFactory.createRemote(query, definition.getInsertEndpoint(), httpClient);
+    }
+    else{
+      queryExecution = UpdateExecutionFactory.createRemote(query, definition.getInsertEndpoint());
+    }
+
+    queryExecution.execute();
+
+  }
+
   protected String checkOrGenerateUrl(URI baseURI, URI uri) throws ProxyException {
     if (uri == null) {
       return combineURI(baseURI, UUID.randomUUID().toString());
@@ -923,12 +914,17 @@ public class SparqlProxyCore implements ProxyCore {
         RDFNode predicateLabel = qs.get(SPARQL_VARIABLE_PREDICATE_LABEL);
         RDFNode object = qs.get(SPARQL_VARIABLE_OBJECT);
         RDFNode objectLabel = qs.get(SPARQL_VARIABLE_OBJECT_LABEL);
+        boolean applyUriLabelHeuristics = this.definition.isUriLabelHeuristicApplied();
         if (object != null) {
           res.add(
               new SparqlAttribute(
-                  (predicateLabel != null) ? (predicateLabel.toString()) : (parseLabelFromResource(predicate.toString())),
+                  (predicateLabel != null) ? (predicateLabel.toString()) : (
+                          UriParsingUtil.parseLabelFromResourceUri(predicate.toString(), applyUriLabelHeuristics)
+                  ),
                   predicate.toString(),
-                  (objectLabel != null) ? (objectLabel.toString()) : (parseLabelFromResource(object.toString())),
+                  (objectLabel != null) ? (objectLabel.toString()) : (
+                          UriParsingUtil.parseLabelFromResourceUri(object.toString(), applyUriLabelHeuristics)
+                  ),
                   object.toString()
               ));
         }

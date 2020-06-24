@@ -162,7 +162,8 @@ public class TurtleRdfMappingTaskSerializationService implements TaskSerializati
     }
 
     final File input = getInput(userId, configurationValue);
-    final Configuration configuration = initializeConfiguration(userId, configurationValue, input);
+    final File mlTrainingDatasetFile = getMLTrainingDatasetFile(userId, configurationValue);
+    final Configuration configuration = initializeConfiguration(userId, configurationValue, input, mlTrainingDatasetFile);
 
     final Task task = fromProxies(userId, taskId, taskValue, configuration);
 
@@ -180,11 +181,20 @@ public class TurtleRdfMappingTaskSerializationService implements TaskSerializati
   }
 
   private File getInput(final String userId, final ConfigurationValue configurationValue) {
-    return this.fileService.getById(userId, configurationValue.getInput());
+    return getFile(userId, configurationValue.getInput());
+  }
+
+  private File getMLTrainingDatasetFile(final String userId, final ConfigurationValue configurationValue) {
+    return getFile(userId, configurationValue.getMlTrainingDatasetFile());
+  }
+
+  private File getFile(final String userId, final String fileId) {
+    return this.fileService.getById(userId, fileId);
   }
 
   private Configuration initializeConfiguration(final String userId,
-      final ConfigurationValue configurationValue, final File input) {
+      final ConfigurationValue configurationValue, final File input,
+      final File mlTrainingDatasetFile) {
     final Set<KnowledgeBase> usedBases = extractUsedBases(userId, configurationValue);
 
     final String primaryBaseName = configurationValue.getPrimaryBase();
@@ -196,7 +206,8 @@ public class TurtleRdfMappingTaskSerializationService implements TaskSerializati
     return new Configuration(input,
         usedBases.stream().map(e -> e.getName()).collect(ImmutableSet.toImmutableSet()),
         primaryBase.getName(), configurationValue.getFeedback().toFeedback(),
-        configurationValue.getRowsLimit(), configurationValue.isStatistical());
+        configurationValue.getRowsLimit(), configurationValue.isStatistical(),
+        configurationValue.isUseMLClassifier(), mlTrainingDatasetFile);
   }
 
   private Set<KnowledgeBase> extractUsedBases(final String userId,

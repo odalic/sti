@@ -44,6 +44,7 @@ public class TColumnClassifier {
       final Proxy kbProxy)
       throws STIException {
     final Collection<TColumnHeaderAnnotation> candidateHeaderAnnotations =
+            // TODO USE THE ML CLASSIFIER TO SUGGEST ENTITY CANDIDATE USING ML
         this.clazzScorer.computeElementScores(entityScoresForBlock, existingColumnClazzCandidates,
             table, blockOfRows, column, kbProxy);
 
